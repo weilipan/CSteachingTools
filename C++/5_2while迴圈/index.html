@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ While 迴圈詳解：視覺化學習指南</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i data-lucide="code-2"></i> C++ While 迴圈探索</h1>
+            <p class="subtitle">深入淺出地理解條件循環的奧秘</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Introduction Section -->
+        <section id="intro" class="card fade-in">
+            <h2>什麼是 While 迴圈？</h2>
+            <p><code>while</code> 迴圈是 C++ 中最基本的循環結構之一。它會根據一個<strong>布林條件</strong>（Boolean condition）來決定是否重複執行一段程式碼。只要條件為 <code>true</code>，迴圈就會一直執行下去。</p>
+            <div class="note">
+                <i data-lucide="info"></i>
+                <span>就像是：只要天還在下雨，我就一直待在室內。</span>
+            </div>
+        </section>
+
+        <!-- Syntax Section -->
+        <section id="syntax" class="card fade-in">
+            <h2>基本語法</h2>
+            <div class="code-container">
+                <pre><code><span class="keyword">while</span> (<span class="condition">布林運算式</span>) {
+    <span class="comment">// 只要條件為 true，這裡的程式碼就會執行</span>
+    <span class="comment">// ...</span>
+}</code></pre>
+            </div>
+            <ul class="features">
+                <li><i data-lucide="check-circle"></i> <strong>入口檢查：</strong> 在執行迴圈本體前先檢查條件。</li>
+                <li><i data-lucide="check-circle"></i> <strong>次數不固定：</strong> 只要條件成立就繼續，不一定要預知執行次數。</li>
+            </ul>
+        </section>
+
+        <!-- Simulator Section -->
+        <section id="simulator" class="card layout-grid fade-in">
+            <div class="simulator-controls">
+                <h2>互動式模擬器</h2>
+                <div class="control-panel">
+                    <div class="code-display" id="code-display">
+                        <div class="line" data-line="1">int i = 0;</div>
+                        <div class="line" data-line="2">while (i < 5) {</div>
+                        <div class="line" data-line="3">&nbsp;&nbsp;&nbsp;&nbsp;cout << i << " ";</div>
+                        <div class="line" data-line="4">&nbsp;&nbsp;&nbsp;&nbsp;i++;</div>
+                        <div class="line" data-line="5">}</div>
+                    </div>
+                    <div class="buttons">
+                        <button id="btn-next" class="btn primary"><i data-lucide="play"></i> 下一步</button>
+                        <button id="btn-reset" class="btn secondary"><i data-lucide="rotate-ccw"></i> 重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="simulator-output">
+                <h3>即時狀態</h3>
+                <div class="status-panel">
+                    <div class="variable-box">
+                        <span class="label">變數 i</span>
+                        <span class="value" id="var-i">?</span>
+                    </div>
+                    <div class="variable-box">
+                        <span class="label">條件 (i < 5)</span>
+                        <span class="value" id="cond-status">?</span>
+                    </div>
+                </div>
+                <h3>主控台輸出</h3>
+                <div class="console" id="console-output">
+                    <ctrl94> 準備就緒
+                </div>
+            </div>
+        </section>
+
+        <!-- Logic Flow Section -->
+        <section id="flowchart-section" class="card fade-in">
+            <h2>流程圖視覺化</h2>
+            <div class="flowchart-container" id="flowchart">
+                <!-- SVG flowchart will be here -->
+                <svg width="100%" height="400" viewBox="0 0 600 400" id="svg-flow">
+                    <!-- Definitions for markers -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="var(--primary)" />
+                        </marker>
+                    </defs>
+                    
+                    <!-- Nodes -->
+                    <rect x="250" y="20" width="100" height="40" rx="20" class="flow-node" id="node-start"></rect>
+                    <text x="300" y="45" text-anchor="middle" class="flow-text">開始</text>
+
+                    <path d="M300 120 L350 150 L300 180 L250 150 Z" class="flow-node diamond" id="node-cond"></path>
+                    <text x="300" y="155" text-anchor="middle" class="flow-text">條件成立？</text>
+
+                    <rect x="250" y="250" width="100" height="40" class="flow-node" id="node-body"></rect>
+                    <text x="300" y="275" text-anchor="middle" class="flow-text">執行本體</text>
+
+                    <rect x="450" y="130" width="100" height="40" rx="20" class="flow-node" id="node-end"></rect>
+                    <text x="500" y="155" text-anchor="middle" class="flow-text">結束</text>
+
+                    <!-- Connections -->
+                    <line x1="300" y1="60" x2="300" y2="120" stroke="var(--primary)" stroke-width="2" marker-end="url(#arrowhead)"></line>
+                    <line x1="300" y1="180" x2="300" y2="250" stroke="var(--primary)" stroke-width="2" marker-end="url(#arrowhead)" id="line-true"></line>
+                    <line x1="350" y1="150" x2="450" y2="150" stroke="var(--primary)" stroke-width="2" marker-end="url(#arrowhead)" id="line-false"></line>
+                    
+                    <!-- Loop back path -->
+                    <path d="M250 270 L150 270 L150 150 L250 150" fill="none" stroke="var(--primary)" stroke-width="2" marker-end="url(#arrowhead)" id="line-loop"></path>
+                    
+                    <text x="310" y="210" class="small-text">Yes</text>
+                    <text x="400" y="140" class="small-text">No</text>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Common Mistakes Section -->
+        <section id="mistakes" class="card fade-in">
+            <h2>常見錯誤</h2>
+            <div class="mistake-grid">
+                <div class="mistake-item">
+                    <h3>1. 無窮迴圈 (Infinite Loop)</h3>
+                    <p>忘記更新迴圈變數，導致條件永遠為 <code>true</code>。</p>
+                    <div class="code-container error">
+<pre><code>while (i < 5) {
+    cout << i;
+    // 漏掉了 i++!
+}</code></pre>
+                    </div>
+                </div>
+                <div class="mistake-item">
+                    <h3>2. 分號誤用</h3>
+                    <p>在 <code>while</code> 括號後多加了分號，這會讓迴圈執行一個空語句。</p>
+                    <div class="code-container error">
+<pre><code>while (i < 5); // 這裡的分號是錯誤的
+{
+    i++;
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 C++ 學習小幫手 | 互動式教學演示</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

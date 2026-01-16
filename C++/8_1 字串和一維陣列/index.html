@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ String & Array Visualizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="background-glow"></div>
+
+    <main class="container">
+        <header class="hero">
+            <h1>C++ String & Array <span class="gradient-text">Visualizer</span></h1>
+            <p class="subtitle">探索 std::string、字元與記憶體陣列之間的奧秘</p>
+        </header>
+
+        <section class="visualization-stage glass-panel">
+            <div class="array-container" id="arrayContainer">
+                <!-- Array elements will be generated here -->
+            </div>
+            <div class="memory-info">
+                <span class="label">Index:</span>
+                <span class="label">Value:</span>
+                <span class="label">Address (Sim):</span>
+            </div>
+        </section>
+
+        <section class="controls-area glass-panel">
+            <div class="input-group">
+                <label for="mainStringInput">Current String (std::string str)</label>
+                <div class="input-wrapper">
+                    <input type="text" id="mainStringInput" value="Hello C++" placeholder="Enter a string...">
+                    <button id="updateBtn" class="btn primary">Update</button>
+                </div>
+            </div>
+
+            <div class="operations-grid">
+                <!-- Length / Size -->
+                <div class="op-card">
+                    <h3>length() / size()</h3>
+                    <div class="op-inputs">
+                        <span class="info-text">Returns string length</span>
+                    </div>
+                    <button class="btn secondary" onclick="runLength()">Run</button>
+                </div>
+
+                <!-- Find -->
+                <div class="op-card">
+                    <h3>find(str)</h3>
+                    <div class="op-inputs">
+                        <input type="text" id="findInput" placeholder="substring" class="sm-input">
+                    </div>
+                    <button class="btn secondary" onclick="runFind()">Run</button>
+                </div>
+
+                <!-- Substr -->
+                <div class="op-card">
+                    <h3>substr(pos, len)</h3>
+                    <div class="op-inputs">
+                        <input type="number" id="substrPos" placeholder="pos" class="sm-input" min="0">
+                        <input type="number" id="substrLen" placeholder="len" class="sm-input" min="0">
+                    </div>
+                    <button class="btn secondary" onclick="runSubstr()">Run</button>
+                </div>
+
+                <!-- At / [] -->
+                <div class="op-card">
+                    <h3>at(pos) / [pos]</h3>
+                    <div class="op-inputs">
+                        <input type="number" id="atPos" placeholder="pos" class="sm-input" min="0">
+                    </div>
+                    <button class="btn secondary" onclick="runAt()">Run</button>
+                </div>
+
+                <!-- Append -->
+                <div class="op-card">
+                    <h3>append(str)</h3>
+                    <div class="op-inputs">
+                        <input type="text" id="appendInput" placeholder="text" class="sm-input">
+                    </div>
+                    <button class="btn secondary" onclick="runAppend()">Run</button>
+                </div>
+
+                <!-- Insert -->
+                <div class="op-card">
+                    <h3>insert(pos, str)</h3>
+                    <div class="op-inputs">
+                        <input type="number" id="insertPos" placeholder="pos" class="sm-input" min="0">
+                        <input type="text" id="insertStr" placeholder="text" class="sm-input">
+                    </div>
+                    <button class="btn secondary" onclick="runInsert()">Run</button>
+                </div>
+
+                <!-- Erase -->
+                <div class="op-card">
+                    <h3>erase(pos, len)</h3>
+                    <div class="op-inputs">
+                        <input type="number" id="erasePos" placeholder="pos" class="sm-input" min="0">
+                        <input type="number" id="eraseLen" placeholder="len" class="sm-input" min="0">
+                    </div>
+                    <button class="btn secondary" onclick="runErase()">Run</button>
+                </div>
+
+                <!-- Replace -->
+                <div class="op-card">
+                    <h3>replace(pos, len, str)</h3>
+                    <div class="op-inputs">
+                        <input type="number" id="replacePos" placeholder="pos" class="sm-input" min="0">
+                        <input type="number" id="replaceLen" placeholder="len" class="sm-input" min="0">
+                        <input type="text" id="replaceStr" placeholder="str" class="sm-input">
+                    </div>
+                    <button class="btn secondary" onclick="runReplace()">Run</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="log-area glass-panel">
+            <div class="log-header">
+                <h3>Execution Log & Explanation</h3>
+                <button class="btn text-btn" onclick="clearLog()">Clear</button>
+            </div>
+            <div id="logContent" class="log-content">
+                <div class="log-entry welcome">
+                    <span class="code">std::string str = "Hello C++";</span>
+                    <p>Ready to visualize. Try an operation above!</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

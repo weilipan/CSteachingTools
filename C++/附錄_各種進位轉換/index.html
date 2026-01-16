@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>進位轉換視覺化教學 | Number System Converter</title>
+    <meta name="description" content="互動式進位轉換教學工具，結合C++程式設計說明，幫助學生理解二進位、八進位、十進位、十六進位的轉換概念">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <h1 class="main-title">
+                <span class="gradient-text">進位轉換視覺化</span>
+                <span class="subtitle">Number System Converter</span>
+            </h1>
+            <p class="header-description">
+                探索二進位、八進位、十進位、十六進位之間的轉換奧秘
+            </p>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="main-grid">
+            <!-- Left Panel: Converter -->
+            <section class="converter-panel">
+                <h2 class="section-title">
+                    <span class="icon">🔄</span>
+                    進位轉換器
+                </h2>
+
+                <div class="converter-grid">
+                    <!-- Binary Input -->
+                    <div class="input-group binary-group">
+                        <label for="binary-input">
+                            <span class="label-title">二進位 (Binary)</span>
+                            <span class="label-hint">Base 2 • 0-1</span>
+                        </label>
+                        <input type="text" id="binary-input" class="number-input binary-input" placeholder="例如: 1010"
+                            data-base="2">
+                        <div class="input-prefix">0b</div>
+                    </div>
+
+                    <!-- Octal Input -->
+                    <div class="input-group octal-group">
+                        <label for="octal-input">
+                            <span class="label-title">八進位 (Octal)</span>
+                            <span class="label-hint">Base 8 • 0-7</span>
+                        </label>
+                        <input type="text" id="octal-input" class="number-input octal-input" placeholder="例如: 12"
+                            data-base="8">
+                        <div class="input-prefix">0</div>
+                    </div>
+
+                    <!-- Decimal Input -->
+                    <div class="input-group decimal-group">
+                        <label for="decimal-input">
+                            <span class="label-title">十進位 (Decimal)</span>
+                            <span class="label-hint">Base 10 • 0-9</span>
+                        </label>
+                        <input type="text" id="decimal-input" class="number-input decimal-input" placeholder="例如: 10"
+                            data-base="10">
+                    </div>
+
+                    <!-- Hexadecimal Input -->
+                    <div class="input-group hex-group">
+                        <label for="hex-input">
+                            <span class="label-title">十六進位 (Hexadecimal)</span>
+                            <span class="label-hint">Base 16 • 0-9, A-F</span>
+                        </label>
+                        <input type="text" id="hex-input" class="number-input hex-input" placeholder="例如: A"
+                            data-base="16">
+                        <div class="input-prefix">0x</div>
+                    </div>
+                </div>
+
+                <!-- Quick Examples -->
+                <div class="quick-examples">
+                    <span class="examples-label">快速範例：</span>
+                    <button class="example-btn" data-decimal="42">42</button>
+                    <button class="example-btn" data-decimal="255">255</button>
+                    <button class="example-btn" data-decimal="1024">1024</button>
+                    <button class="example-btn" data-decimal="65535">65535</button>
+                </div>
+            </section>
+
+            <!-- Right Panel: Visualization -->
+            <section class="visualization-panel">
+                <h2 class="section-title">
+                    <span class="icon">👁️</span>
+                    視覺化分解
+                </h2>
+
+                <div id="visualization-container" class="visualization-container">
+                    <div class="empty-state">
+                        <div class="empty-icon">🎯</div>
+                        <p>請在左側輸入數值以查看視覺化分解</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Conversion Methods Section -->
+        <section class="teaching-section conversion-methods-section">
+            <h2 class="section-title">
+                <span class="icon">🔀</span>
+                進位轉換方法教學
+            </h2>
+
+            <p class="section-description">選擇想要學習的轉換方式，查看詳細步驟、C++程式碼範例與視覺化演示</p>
+
+            <!-- Conversion Selector -->
+            <div class="conversion-selector">
+                <div class="selector-group">
+                    <label>從 (From)：</label>
+                    <select id="from-base" class="base-select">
+                        <option value="10">十進位 (Decimal)</option>
+                        <option value="2">二進位 (Binary)</option>
+                        <option value="8">八進位 (Octal)</option>
+                        <option value="16">十六進位 (Hexadecimal)</option>
+                    </select>
+                </div>
+                <div class="arrow-icon">→</div>
+                <div class="selector-group">
+                    <label>到 (To)：</label>
+                    <select id="to-base" class="base-select">
+                        <option value="2">二進位 (Binary)</option>
+                        <option value="8">八進位 (Octal)</option>
+                        <option value="10">十進位 (Decimal)</option>
+                        <option value="16">十六進位 (Hexadecimal)</option>
+                    </select>
+                </div>
+                <button id="show-conversion" class="show-conversion-btn">顯示轉換方法</button>
+            </div>
+
+            <!-- Conversion Content Display -->
+            <div id="conversion-content" class="conversion-content">
+                <div class="empty-state">
+                    <div class="empty-icon">📚</div>
+                    <p>請選擇轉換方式後點擊「顯示轉換方法」</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- C++ Teaching Section -->
+        <section class="teaching-section">
+            <h2 class="section-title">
+                <span class="icon">💻</span>
+                C++ 程式設計教學
+            </h2>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="concept">概念說明</button>
+                <button class="tab-btn" data-tab="syntax">語法與表示</button>
+                <button class="tab-btn" data-tab="code">程式碼範例</button>
+                <button class="tab-btn" data-tab="functions">常用函數</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content-container">
+                <!-- Concept Tab -->
+                <div class="tab-content active" id="concept-tab">
+                    <h3>進位系統概念</h3>
+                    <div class="concept-grid">
+                        <div class="concept-card">
+                            <h4>🔢 二進位 (Binary)</h4>
+                            <p><strong>基數：2</strong></p>
+                            <p>只使用 0 和 1 兩個數字，是電腦內部儲存資料的基本方式。</p>
+                            <p class="example">範例：1011₂ = 1×2³ + 0×2² + 1×2¹ + 1×2⁰ = 11₁₀</p>
+                        </div>
+                        <div class="concept-card">
+                            <h4>🎯 八進位 (Octal)</h4>
+                            <p><strong>基數：8</strong></p>
+                            <p>使用 0-7 八個數字，常用於Unix系統的檔案權限表示。</p>
+                            <p class="example">範例：17₈ = 1×8¹ + 7×8⁰ = 15₁₀</p>
+                        </div>
+                        <div class="concept-card">
+                            <h4>🌟 十進位 (Decimal)</h4>
+                            <p><strong>基數：10</strong></p>
+                            <p>使用 0-9 十個數字，是人類日常使用的計數系統。</p>
+                            <p class="example">範例：123₁₀ = 1×10² + 2×10¹ + 3×10⁰</p>
+                        </div>
+                        <div class="concept-card">
+                            <h4>🚀 十六進位 (Hexadecimal)</h4>
+                            <p><strong>基數：16</strong></p>
+                            <p>使用 0-9 和 A-F，常用於記憶體位址和顏色代碼。</p>
+                            <p class="example">範例：1F₁₆ = 1×16¹ + 15×16⁰ = 31₁₀</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Syntax Tab -->
+                <div class="tab-content" id="syntax-tab">
+                    <h3>C++ 中的進位表示法</h3>
+                    <div class="syntax-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>進位系統</th>
+                                    <th>前綴</th>
+                                    <th>範例</th>
+                                    <th>說明</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>二進位</td>
+                                    <td><code>0b</code> 或 <code>0B</code></td>
+                                    <td><code>0b1010</code></td>
+                                    <td>C++14 起支援</td>
+                                </tr>
+                                <tr>
+                                    <td>八進位</td>
+                                    <td><code>0</code></td>
+                                    <td><code>012</code></td>
+                                    <td>以 0 開頭</td>
+                                </tr>
+                                <tr>
+                                    <td>十進位</td>
+                                    <td>無</td>
+                                    <td><code>10</code></td>
+                                    <td>預設表示法</td>
+                                </tr>
+                                <tr>
+                                    <td>十六進位</td>
+                                    <td><code>0x</code> 或 <code>0X</code></td>
+                                    <td><code>0xA</code></td>
+                                    <td>字母不區分大小寫</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="note-box">
+                        <strong>💡 注意事項：</strong>
+                        <ul>
+                            <li>二進位字面值需要 C++14 或更新版本</li>
+                            <li>八進位以 0 開頭，容易造成混淆，使用時需特別注意</li>
+                            <li>十六進位的字母 A-F 可以大寫或小寫</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Code Examples Tab -->
+                <div class="tab-content" id="code-tab">
+                    <h3>完整程式碼範例</h3>
+                    <div class="code-example">
+                        <div class="code-header">
+                            <span>number_conversion.cpp</span>
+                            <button class="copy-btn" onclick="copyCode(this)">📋 複製</button>
+                        </div>
+                        <pre><code>#include &lt;iostream&gt;
+#include &lt;bitset&gt;
+#include &lt;iomanip&gt;
+using namespace std;
+
+int main() {
+    // 宣告同一個數值的不同進位表示
+    int binary = 0b1010;      // 二進位
+    int octal = 012;          // 八進位
+    int decimal = 10;         // 十進位
+    int hexadecimal = 0xA;    // 十六進位
+    
+    cout &lt;&lt; "=== 進位轉換示範 ===" &lt;&lt; endl;
+    cout &lt;&lt; "所有數值都等於十進位的 10" &lt;&lt; endl &lt;&lt; endl;
+    
+    // 輸出為十進位
+    cout &lt;&lt; "十進位輸出：" &lt;&lt; endl;
+    cout &lt;&lt; "binary = " &lt;&lt; binary &lt;&lt; endl;
+    cout &lt;&lt; "octal = " &lt;&lt; octal &lt;&lt; endl;
+    cout &lt;&lt; "decimal = " &lt;&lt; decimal &lt;&lt; endl;
+    cout &lt;&lt; "hexadecimal = " &lt;&lt; hexadecimal &lt;&lt; endl &lt;&lt; endl;
+    
+    // 以不同進位格式輸出
+    int num = 255;
+    cout &lt;&lt; "數值 255 的各種進位表示：" &lt;&lt; endl;
+    cout &lt;&lt; "二進位：" &lt;&lt; bitset&lt;8&gt;(num) &lt;&lt; endl;
+    cout &lt;&lt; "八進位：" &lt;&lt; oct &lt;&lt; num &lt;&lt; endl;
+    cout &lt;&lt; "十進位：" &lt;&lt; dec &lt;&lt; num &lt;&lt; endl;
+    cout &lt;&lt; "十六進位：" &lt;&lt; hex &lt;&lt; uppercase &lt;&lt; num &lt;&lt; endl;
+    
+    return 0;
+}</code></pre>
+                    </div>
+
+                    <div class="output-box">
+                        <div class="output-header">執行結果</div>
+                        <pre>=== 進位轉換示範 ===
+所有數值都等於十進位的 10
+
+十進位輸出：
+binary = 10
+octal = 10
+decimal = 10
+hexadecimal = 10
+
+數值 255 的各種進位表示：
+二進位：11111111
+八進位：377
+十進位：255
+十六進位：FF</pre>
+                    </div>
+                </div>
+
+                <!-- Functions Tab -->
+                <div class="tab-content" id="functions-tab">
+                    <h3>常用轉換函數</h3>
+                    <div class="function-list">
+                        <div class="function-card">
+                            <h4><code>std::stoi()</code></h4>
+                            <p class="function-desc">將字串轉換為整數，可指定進位基數</p>
+                            <div class="code-snippet">
+                                <pre><code>string binary = "1010";
+int decimal = stoi(binary, nullptr, 2);  // 結果: 10
+
+string hex = "FF";
+int decimal2 = stoi(hex, nullptr, 16);   // 結果: 255</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="function-card">
+                            <h4><code>std::bitset</code></h4>
+                            <p class="function-desc">用於二進位操作和顯示</p>
+                            <div class="code-snippet">
+                                <pre><code>bitset&lt;8&gt; bits(42);
+cout &lt;&lt; bits &lt;&lt; endl;           // 輸出: 00101010
+cout &lt;&lt; bits.to_ulong() &lt;&lt; endl; // 輸出: 42</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="function-card">
+                            <h4><code>std::oct, std::dec, std::hex</code></h4>
+                            <p class="function-desc">設定輸出流的進位格式</p>
+                            <div class="code-snippet">
+                                <pre><code>int num = 100;
+cout &lt;&lt; oct &lt;&lt; num &lt;&lt; endl;  // 輸出: 144 (八進位)
+cout &lt;&lt; dec &lt;&lt; num &lt;&lt; endl;  // 輸出: 100 (十進位)
+cout &lt;&lt; hex &lt;&lt; num &lt;&lt; endl;  // 輸出: 64 (十六進位)</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="function-card">
+                            <h4><code>std::setbase()</code></h4>
+                            <p class="function-desc">動態設定輸出基數（需 #include &lt;iomanip&gt;）</p>
+                            <div class="code-snippet">
+                                <pre><code>int num = 42;
+cout &lt;&lt; setbase(8) &lt;&lt; num &lt;&lt; endl;   // 八進位
+cout &lt;&lt; setbase(10) &lt;&lt; num &lt;&lt; endl;  // 十進位
+cout &lt;&lt; setbase(16) &lt;&lt; num &lt;&lt; endl;  // 十六進位</code></pre>
+                                <script src="script.js"></script>
+</body>
+
+</html>

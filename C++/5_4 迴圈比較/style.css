@@ -1,0 +1,398 @@
+:root {
+    --bg-dark: #121212;
+    --bg-panel: #1e1e1e;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --accent-for: #00ff9d;
+    /* Neon Green */
+    --accent-while: #00ccff;
+    /* Neon Blue */
+    --accent-do: #ff00ff;
+    /* Neon Pink */
+    --code-bg: #2d2d2d;
+    --highlight-bg: #3d3d3d;
+    --border-color: #333;
+    --table-header-bg: #2a2a2a;
+    --table-row-hover: #262626;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    line-height: 1.6;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app-container {
+    width: 90%;
+    max-width: 1200px;
+    height: 90vh;
+    background-color: var(--bg-panel);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+header h1 {
+    font-size: 2rem;
+    margin-bottom: 5px;
+    background: linear-gradient(90deg, var(--accent-for), var(--accent-while), var(--accent-do));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 15px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.tab-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border-bottom: 3px solid;
+}
+
+.tab-btn[data-tab="for"].active {
+    border-color: var(--accent-for);
+}
+
+.tab-btn[data-tab="while"].active {
+    border-color: var(--accent-while);
+}
+
+.tab-btn[data-tab="dowhile"].active {
+    border-color: var(--accent-do);
+}
+
+.tab-btn[data-tab="comparison"].active {
+    border-color: white;
+}
+
+/* Settings Bar */
+.settings-bar {
+    padding: 15px 20px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.settings-bar label {
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.settings-bar input {
+    background-color: var(--code-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 5px 10px;
+    border-radius: 4px;
+    width: 60px;
+    font-family: inherit;
+    text-align: center;
+}
+
+.settings-bar .hint {
+    font-size: 0.8em;
+    font-style: italic;
+    opacity: 0.7;
+}
+
+
+.content-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.loop-section {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    /* Hidden by default */
+    padding: 30px;
+    gap: 30px;
+}
+
+.loop-section.active {
+    display: flex;
+}
+
+.theory-panel,
+.visual-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.highlight {
+    font-weight: bold;
+    color: var(--accent-for);
+    /* Contextual color will be set by JS or generic */
+}
+
+/* Theory Panel Styles */
+.code-block {
+    background-color: var(--code-bg);
+    padding: 20px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+.line,
+.lineindent {
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.lineindent {
+    margin-left: 20px;
+}
+
+.line.active-line,
+.lineindent.active-line {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-left: 3px solid var(--accent-for);
+    /* Default color */
+}
+
+#while .line.active-line,
+#while .lineindent.active-line {
+    border-color: var(--accent-while);
+}
+
+#dowhile .line.active-line,
+#dowhile .lineindent.active-line {
+    border-color: var(--accent-do);
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn.start {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn.next {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn.reset {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Visual Panel Styles */
+.variable-display {
+    display: flex;
+    gap: 20px;
+}
+
+.var-box,
+.condition-box {
+    background-color: var(--code-bg);
+    padding: 15px;
+    border-radius: 8px;
+    flex: 1;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.var-name,
+.cond-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.var-value,
+.cond-value {
+    font-size: 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: bold;
+}
+
+.output-console {
+    flex: 1;
+    background-color: #000;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.console-header {
+    background-color: #333;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    color: #ccc;
+}
+
+.console-body {
+    padding: 15px;
+    flex: 1;
+    overflow-y: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    color: #0f0;
+}
+
+/* Animations */
+@keyframes flash {
+    0% {
+        background-color: transparent;
+    }
+
+    50% {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    100% {
+        background-color: transparent;
+    }
+}
+
+.flash {
+    animation: flash 0.5s ease;
+}
+
+/* Comparison Section Styles */
+.comparison-panel {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.comparison-panel h2 {
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+.comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    min-width: 600px;
+}
+
+.comp-table th,
+.comp-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.comp-table th {
+    background-color: var(--table-header-bg);
+    font-weight: bold;
+    color: var(--text-primary);
+    position: sticky;
+    top: 0;
+}
+
+.comp-table tr:hover {
+    background-color: var(--table-row-hover);
+}
+
+.comp-table td:first-child {
+    font-weight: bold;
+    color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .app-container {
+        height: 100vh;
+        width: 100%;
+        border-radius: 0;
+    }
+
+    .loop-section.active {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .theory-panel,
+    .visual-panel {
+        flex: none;
+    }
+}

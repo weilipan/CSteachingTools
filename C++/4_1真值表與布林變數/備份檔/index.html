@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="互動式真值表與布林變數教學 - 學習 C++ 布林邏輯、真值表和邏輯運算子">
+    <meta name="keywords" content="C++, 布林變數, 真值表, 邏輯運算子, 程式設計教學">
+    <title>真值表與布林變數 - C++ 互動式教學</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>真值表與布林變數</h1>
+        <p class="subtitle">C++ Boolean Logic Interactive Visualization</p>
+        
+        <nav id="main-nav">
+            <button class="tab-btn active" data-tab="basics" id="tab-basics-btn">布林基礎</button>
+            <button class="tab-btn" data-tab="truth-tables" id="tab-truth-tables-btn">真值表</button>
+            <button class="tab-btn" data-tab="logical-ops" id="tab-logical-ops-btn">邏輯運算子</button>
+            <button class="tab-btn" data-tab="relational-ops" id="tab-relational-ops-btn">關係運算子</button>
+            <button class="tab-btn" data-tab="compound" id="tab-compound-btn">複合運算式</button>
+            <button class="tab-btn" data-tab="examples" id="tab-examples-btn">互動範例</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Boolean Basics Section -->
+        <section id="basics" class="tab-content active">
+            <div class="card">
+                <h2>什麼是布林變數？</h2>
+                <p>布林（Boolean）變數是一種只能儲存兩種值的資料型態：<span class="highlight">true</span>（真）或 <span class="highlight">false</span>（假）。在 C++ 中，我們使用 <code>bool</code> 關鍵字來宣告布林變數。</p>
+                
+                <div class="code-block">
+<code><span class="comment">// 宣告布林變數</span>
+<span class="keyword">bool</span> isStudent = <span class="keyword">true</span>;
+<span class="keyword">bool</span> hasLicense = <span class="keyword">false</span>;
+
+<span class="comment">// 布林變數在記憶體中佔用 1 byte</span>
+<span class="keyword">bool</span> flag;  <span class="comment">// 未初始化的布林變數</span></code>
+                </div>
+
+                <h3>視覺化表示</h3>
+                <div class="interactive-demo">
+                    <div class="boolean-visual">
+                        <div class="boolean-box true" id="true-box">
+                            <div>TRUE</div>
+                            <div style="font-size: 0.9rem; margin-top: 0.5rem;">真 (1)</div>
+                        </div>
+                        <div class="boolean-box false" id="false-box">
+                            <div>FALSE</div>
+                            <div style="font-size: 0.9rem; margin-top: 0.5rem;">假 (0)</div>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2" style="color: var(--text-muted);">點擊方塊查看動畫效果</p>
+                </div>
+
+                <h3>常見用途</h3>
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>條件判斷</h3>
+                        <div class="code-block">
+<code><span class="keyword">if</span> (isStudent) {
+    cout << <span class="string">"學生票價"</span>;
+}</code>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>迴圈控制</h3>
+                        <div class="code-block">
+<code><span class="keyword">while</span> (gameRunning) {
+    <span class="comment">// 遊戲主迴圈</span>
+}</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>布林值的記憶體表示</h2>
+                <p>在 C++ 中，布林值在記憶體中以整數形式儲存：</p>
+                <ul style="color: var(--text-secondary); margin-left: 2rem; line-height: 2;">
+                    <li><strong style="color: var(--success);">true</strong> 通常表示為 <code>1</code></li>
+                    <li><strong style="color: var(--danger);">false</strong> 通常表示為 <code>0</code></li>
+                    <li>任何非零值在布林上下文中都被視為 <code>true</code></li>
+                </ul>
+                
+                <div class="code-block">
+<code><span class="keyword">bool</span> a = <span class="number">5</span>;      <span class="comment">// a 為 true (非零值)</span>
+<span class="keyword">bool</span> b = <span class="number">0</span>;      <span class="comment">// b 為 false</span>
+<span class="keyword">bool</span> c = -<span class="number">3</span>;     <span class="comment">// c 為 true (非零值)</span></code>
+                </div>
+            </div>
+        </section>
+
+        <!-- Truth Tables Section -->
+        <section id="truth-tables" class="tab-content">
+            <div class="card">
+                <h2>真值表 (Truth Tables)</h2>
+                <p>真值表是一種用來表示邏輯運算結果的表格。它列出所有可能的輸入組合及其對應的輸出結果。</p>
+
+                <h3>基本邏輯運算子</h3>
+                <div class="truth-table-container">
+                    <!-- AND Truth Table -->
+                    <div>
+                        <h4 class="text-center mb-1" style="color: var(--accent-primary);">AND (且) - &&</h4>
+                        <table class="truth-table" id="and-table">
+                            <thead>
+                                <tr>
+                                    <th>A</th>
+                                    <th>B</th>
+                                    <th>A && B</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="false-value">false</td>
+                                    <td class="false-value">false</td>
+                                    <td class="false-value">false</td>
+                                </tr>
+                                <tr>
+                                    <td class="false-value">false</td>
+                                    <td class="true-value">true</td>
+                                    <td class="false-value">false</td>
+                                </tr>
+                                <tr>
+                                    <td class="true-value">true</td>
+                                    <td class="false-value">false</td>
+                                    <td class="false-value">false</td>
+                                </tr>
+                                <tr>
+                                    <td class="true-value">true</td>
+                                    <td class="true-value">true</td>
+                                    <td class="true-value">true</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="text-center mt-1" style="color: var(--text-muted); font-size: 0.9rem;">兩者皆為真時才為真</p>
+                    </div>
+
+                    <!-- OR Truth Table -->
+                    <div>
+                        <h4 class="text-center mb-1" style="color: var(--accent-primary);">OR (或) - ||</h4>
+                        <table class="truth-table" id="or-table">
+                            <thead>
+                                <tr>
+                                    <th>A</th>
+                                    <th>B</th>
+                                    <th>A || B</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="false-value">false</td>
+                                    <td class="false-value">false</td>
+                                    <td class="false-value">false</td>
+                                </tr>
+                                <tr>
+                                    <td class="false-value">false</td>
+                                    <td class="true-value">true</td>
+                                    <td class="true-value">true</td>
+                                </tr>
+                                <tr>
+                                    <td class="true-value">true</td>
+                                    <td class="false-value">false</td>
+                                    <td class="true-value">true</td>
+                                </tr>
+                                <tr>
+                                    <td class="true-value">true</td>
+                                    <td class="true-value">true</td>
+                                    <td class="true-value">true</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="text-center mt-1" style="color: var(--text-muted); font-size: 0.9rem;">至少一個為真時就為真</p>
+                    </div>
+                </div>
+
+                <div class="truth-table-container mt-3">
+                    <!-- NOT Truth Table -->
+                    <div>
+                        <h4 class="text-center mb-1" style="color: var(--accent-primary);">NOT (非) - !</h4>
+                        <table class="truth-table" id="not-table">
+                            <thead>
+                                <tr>
+                                    <th>A</th>
+                                    <th>!A</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="false-value">false</td>
+                                    <td class="true-value">true</td>
+                                </tr>
+                                <tr>
+                                    <td class="true-value">true</td>
+                                    <td class="false-value">false</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="text-center mt-1" style="color: var(--text-muted); font-size: 0.9rem;">反轉布林值</p>
+                    </div>
+
+                    <!-- XOR Truth Table -->
+                    <div>
+                        <h4 class="text-center mb-1" style="color: var(--accent-primary);">XOR (互斥或)</h4>
+                        <table class="truth-table" id="xor-table">
+                            <thead>
+                                <tr>
+                                    <th>A</th>
+                                    <th>B</th>
+                                    <th>A ^ B</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="false-value">false</td>
+                                    <td class="false-value">false</td>
+                                    <td class="false-value">false</td>
+                                </tr>
+                                <tr>
+                                    <td class="false-value">false</td>
+                                    <td class="true-value">true</td>
+                                    <td class="true-value">true</td>
+                                </tr>
+                                <tr>
+                                    <td class="true-value">true</td>
+                                    <td class="false-value">false</td>
+                                    <td class="true-value">true</td>
+                                </tr>
+                                <tr>
+                                    <td class="true-value">true</td>
+                                    <td class="true-value">true</td>
+                                    <td class="false-value">false</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="text-center mt-1" style="color: var(--text-muted); font-size: 0.9rem;">兩者不同時為真</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logical Operators Section -->
+        <section id="logical-ops" class="tab-content">
+            <div class="card">
+                <h2>邏輯運算子 (Logical Operators)</h2>
+                <p>C++ 提供三種主要的邏輯運算子，用於組合或修改布林運算式。</p>
+
+                <div class="grid-2 mt-2">
+                    <div class="card">
+                        <h3>&& (邏輯 AND)</h3>
+                        <p>當且僅當兩個運算元都為 true 時，結果才為 true。</p>
+                        <div class="code-block">
+<code><span class="keyword">bool</span> hasTicket = <span class="keyword">true</span>;
+<span class="keyword">bool</span> hasID = <span class="keyword">true</span>;
+
+<span class="keyword">if</span> (hasTicket && hasID) {
+    cout << <span class="string">"可以入場"</span>;
+}</code>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 1rem;">✓ 兩個條件都必須滿足</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>|| (邏輯 OR)</h3>
+                        <p>只要有一個運算元為 true，結果就為 true。</p>
+                        <div class="code-block">
+<code><span class="keyword">bool</span> isWeekend = <span class="keyword">false</span>;
+<span class="keyword">bool</span> isHoliday = <span class="keyword">true</span>;
+
+<span class="keyword">if</span> (isWeekend || isHoliday) {
+    cout << <span class="string">"不用上班"</span>;
+}</code>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 1rem;">✓ 至少一個條件滿足即可</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>! (邏輯 NOT)</h3>
+                        <p>反轉布林值：true 變 false，false 變 true。</p>
+                        <div class="code-block">
+<code><span class="keyword">bool</span> isRaining = <span class="keyword">false</span>;
+
+<span class="keyword">if</span> (!isRaining) {
+    cout << <span class="string">"可以出門"</span>;
+}</code>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 1rem;">✓ 否定原本的條件</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>短路求值 (Short-Circuit)</h3>
+                        <p>邏輯運算子具有短路特性，可提升效能。</p>
+                        <div class="code-block">
+<code><span class="comment">// && 短路：左邊為 false 就不檢查右邊</span>
+<span class="keyword">if</span> (<span class="keyword">false</span> && expensiveFunction()) {
+    <span class="comment">// expensiveFunction() 不會被呼叫</span>
+}
+
+<span class="comment">// || 短路：左邊為 true 就不檢查右邊</span>
+<span class="keyword">if</span> (<span class="keyword">true</span> || expensiveFunction()) {
+    <span class="comment">// expensiveFunction() 不會被呼叫</span>
+}</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>互動式邏輯運算器</h2>
+                <div class="interactive-demo">
+                    <div class="grid-2">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">變數 A:</label>
+                            <select id="logic-a" class="expression-input" style="width: 100%;">
+                                <option value="true">true</option>
+                                <option value="false">false</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">變數 B:</label>
+                            <select id="logic-b" class="expression-input" style="width: 100%;">
+                                <option value="true">true</option>
+                                <option value="false">false</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid-3 mt-2">
+                        <div>
+                            <p class="text-center" style="font-weight: 600; margin-bottom: 0.5rem;">A && B</p>
+                            <div id="result-and" class="expression-result true">true</div>
+                        </div>
+                        <div>
+                            <p class="text-center" style="font-weight: 600; margin-bottom: 0.5rem;">A || B</p>
+                            <div id="result-or" class="expression-result true">true</div>
+                        </div>
+                        <div>
+                            <p class="text-center" style="font-weight: 600; margin-bottom: 0.5rem;">!A</p>
+                            <div id="result-not" class="expression-result false">false</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Relational Operators Section -->
+        <section id="relational-ops" class="tab-content">
+            <div class="card">
+                <h2>關係運算子 (Relational Operators)</h2>
+                <p>關係運算子用於比較兩個值，並返回布林結果。這些運算子在條件判斷中非常常用。</p>
+
+                <div class="grid-2 mt-2">
+                    <div class="card">
+                        <h3>== (等於)</h3>
+                        <div class="code-block">
+<code><span class="keyword">int</span> x = <span class="number">5</span>;
+<span class="keyword">int</span> y = <span class="number">5</span>;
+<span class="keyword">bool</span> result = (x == y);  <span class="comment">// true</span></code>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>!= (不等於)</h3>
+                        <div class="code-block">
+<code><span class="keyword">int</span> x = <span class="number">5</span>;
+<span class="keyword">int</span> y = <span class="number">3</span>;
+<span class="keyword">bool</span> result = (x != y);  <span class="comment">// true</span></code>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>< (小於)</h3>
+                        <div class="code-block">
+<code><span class="keyword">int</span> x = <span class="number">3</span>;
+<span class="keyword">int</span> y = <span class="number">5</span>;
+<span class="keyword">bool</span> result = (x < y);   <span class="comment">// true</span></code>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>> (大於)</h3>
+                        <div class="code-block">
+<code><span class="keyword">int</span> x = <span class="number">7</span>;
+<span class="keyword">int</span> y = <span class="number">5</span>;
+<span class="keyword">bool</span> result = (x > y);   <span class="comment">// true</span></code>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3><= (小於等於)</h3>
+                        <div class="code-block">
+<code><span class="keyword">int</span> x = <span class="number">5</span>;
+<span class="keyword">int</span> y = <span class="number">5</span>;
+<span class="keyword">bool</span> result = (x <= y);  <span class="comment">// true</span></code>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>>= (大於等於)</h3>
+                        <div class="code-block">
+<code><span class="keyword">int</span> x = <span class="number">7</span>;
+<span class="keyword">int</span> y = <span class="number">5</span>;
+<span class="keyword">bool</span> result = (x >= y);  <span class="comment">// true</span></code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>互動式比較器</h2>
+                <div class="interactive-demo">
+                    <div class="grid-2">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">數值 A:</label>
+                            <input type="number" id="rel-a" class="expression-input" value="5" style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">數值 B:</label>
+                            <input type="number" id="rel-b" class="expression-input" value="3" style="width: 100%;">
+                        </div>
+                    </div>
+                    
+                    <div class="grid-3 mt-2">
+                        <div>
+                            <p class="text-center" style="font-weight: 600; margin-bottom: 0.5rem;">A == B</p>
+                            <div id="result-eq" class="expression-result false">false</div>
+                        </div>
+                        <div>
+                            <p class="text-center" style="font-weight: 600; margin-bottom: 0.5rem;">A != B</p>
+                            <div id="result-neq" class="expression-result true">true</div>
+                        </div>
+                        <div>
+                            <p class="text-center" style="font-weight: 600; margin-bottom: 0.5rem;">A < B</p>
+                            <div id="result-lt" class="expression-result false">false</div>
+                        </div>
+                        <div>
+                            <p class="text-center" style="font-weight: 600; margin-bottom: 0.5rem;">A > B</p>
+                            <div id="result-gt" class="expression-result true">true</div>
+                        </div>
+                        <div>
+                            <p class="text-center" style="font-weight: 600; margin-bottom: 0.5rem;">A <= B</p>
+                            <div id="result-lte" class="expression-result false">false</div>
+                        </div>
+                        <div>
+                            <p class="text-center" style="font-weight: 600; margin-bottom: 0.5rem;">A >= B</p>
+                            <div id="result-gte" class="expression-result true">true</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Compound Expressions Section -->
+        <section id="compound" class="tab-content">
+            <div class="card">
+                <h2>複合布林運算式</h2>
+                <p>在實際程式設計中，我們經常需要組合多個條件來做出決策。這就需要使用複合布林運算式。</p>
+
+                <h3>運算子優先順序</h3>
+                <div class="code-block">
+<code><span class="comment">// 優先順序（由高到低）：</span>
+<span class="comment">// 1. ! (NOT)</span>
+<span class="comment">// 2. 關係運算子 (<, >, <=, >=, ==, !=)</span>
+<span class="comment">// 3. && (AND)</span>
+<span class="comment">// 4. || (OR)</span>
+
+<span class="keyword">bool</span> result = !<span class="keyword">false</span> || <span class="keyword">true</span> && <span class="keyword">false</span>;
+<span class="comment">// 等同於: (!false) || (true && false)</span>
+<span class="comment">// 等同於: true || false</span>
+<span class="comment">// 結果: true</span></code>
+                </div>
+
+                <h3>實際應用範例</h3>
+                <div class="grid-2 mt-2">
+                    <div class="card">
+                        <h3>範例 1: 入場資格檢查</h3>
+                        <div class="code-block">
+<code><span class="keyword">int</span> age = <span class="number">20</span>;
+<span class="keyword">bool</span> hasTicket = <span class="keyword">true</span>;
+<span class="keyword">bool</span> isVIP = <span class="keyword">false</span>;
+
+<span class="comment">// 18歲以上且有票，或是VIP</span>
+<span class="keyword">bool</span> canEnter = (age >= <span class="number">18</span> && hasTicket) || isVIP;
+
+cout << canEnter;  <span class="comment">// true</span></code>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>範例 2: 成績評定</h3>
+                        <div class="code-block">
+<code><span class="keyword">int</span> score = <span class="number">85</span>;
+<span class="keyword">bool</span> attendance = <span class="keyword">true</span>;
+
+<span class="comment">// 及格條件：分數>=60 且 出席率良好</span>
+<span class="keyword">bool</span> passed = score >= <span class="number">60</span> && attendance;
+
+<span class="comment">// 優等：分數>=90 或 (分數>=80 且出席)</span>
+<span class="keyword">bool</span> excellent = score >= <span class="number">90</span> || 
+                 (score >= <span class="number">80</span> && attendance);</code>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>範例 3: 範圍檢查</h3>
+                        <div class="code-block">
+<code><span class="keyword">int</span> temperature = <span class="number">25</span>;
+
+<span class="comment">// 舒適溫度範圍：20-28度</span>
+<span class="keyword">bool</span> comfortable = temperature >= <span class="number">20</span> && 
+                   temperature <= <span class="number">28</span>;
+
+<span class="comment">// 極端溫度：<0 或 >40</span>
+<span class="keyword">bool</span> extreme = temperature < <span class="number">0</span> || 
+               temperature > <span class="number">40</span>;</code>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>範例 4: 使用括號明確化</h3>
+                        <div class="code-block">
+<code><span class="keyword">bool</span> a = <span class="keyword">true</span>, b = <span class="keyword">false</span>, c = <span class="keyword">true</span>;
+
+<span class="comment">// 不建議：容易混淆</span>
+<span class="keyword">bool</span> result1 = a || b && c;
+
+<span class="comment">// 建議：使用括號明確表達意圖</span>
+<span class="keyword">bool</span> result2 = a || (b && c);
+<span class="keyword">bool</span> result3 = (a || b) && c;</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>運算式求值器</h2>
+                <p>輸入一個布林運算式，系統會自動計算結果。支援 true、false、&&、||、! 和括號。</p>
+                <div class="expression-evaluator">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">輸入運算式:</label>
+                    <input type="text" id="compound-expr" class="expression-input" 
+                           placeholder="例如: (true && false) || !false" 
+                           value="(true && false) || !false">
+                    <button class="btn" id="eval-btn" onclick="evaluateExpression()">計算結果</button>
+                    <div id="compound-result" class="expression-result true" style="display: none;">
+                        結果: <span id="compound-value"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Examples Section -->
+        <section id="examples" class="tab-content">
+            <div class="card">
+                <h2>互動式程式範例</h2>
+                <p>以下是一些實用的 C++ 程式範例，展示布林變數和邏輯運算的應用。</p>
+
+                <div class="grid-2 mt-2">
+                    <div class="card">
+                        <h3>範例 1: 閏年判斷</h3>
+                        <div class="code-block">
+<code><span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="keyword">int</span> <span class="function">main</span>() {
+    <span class="keyword">int</span> year = <span class="number">2024</span>;
+    
+    <span class="comment">// 閏年規則：</span>
+    <span class="comment">// 能被4整除 且 (不能被100整除 或 能被400整除)</span>
+    <span class="keyword">bool</span> isLeapYear = (year % <span class="number">4</span> == <span class="number">0</span>) && 
+                       (year % <span class="number">100</span> != <span class="number">0</span> || 
+                        year % <span class="number">400</span> == <span class="number">0</span>);
+    
+    <span class="keyword">if</span> (isLeapYear) {
+        cout << year << <span class="string">" 是閏年"</span> << endl;
+    } <span class="keyword">else</span> {
+        cout << year << <span class="string">" 不是閏年"</span> << endl;
+    }
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</code>
+                        </div>
+                        <div class="interactive-demo mt-1">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">輸入年份:</label>
+                            <input type="number" id="leap-year" class="expression-input" value="2024">
+                            <button class="btn mt-1" onclick="checkLeapYear()">檢查</button>
+                            <div id="leap-result" style="margin-top: 1rem; font-weight: 600; display: none;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>範例 2: 成績等第判定</h3>
+                        <div class="code-block">
+<code><span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="keyword">int</span> <span class="function">main</span>() {
+    <span class="keyword">int</span> score = <span class="number">85</span>;
+    
+    <span class="keyword">bool</span> isA = score >= <span class="number">90</span>;
+    <span class="keyword">bool</span> isB = score >= <span class="number">80</span> && score < <span class="number">90</span>;
+    <span class="keyword">bool</span> isC = score >= <span class="number">70</span> && score < <span class="number">80</span>;
+    <span class="keyword">bool</span> isD = score >= <span class="number">60</span> && score < <span class="number">70</span>;
+    <span class="keyword">bool</span> isF = score < <span class="number">60</span>;
+    
+    <span class="keyword">if</span> (isA) cout << <span class="string">"等第: A"</span> << endl;
+    <span class="keyword">else if</span> (isB) cout << <span class="string">"等第: B"</span> << endl;
+    <span class="keyword">else if</span> (isC) cout << <span class="string">"等第: C"</span> << endl;
+    <span class="keyword">else if</span> (isD) cout << <span class="string">"等第: D"</span> << endl;
+    <span class="keyword">else</span> cout << <span class="string">"等第: F"</span> << endl;
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</code>
+                        </div>
+                        <div class="interactive-demo mt-1">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">輸入分數 (0-100):</label>
+                            <input type="number" id="grade-score" class="expression-input" value="85" min="0" max="100">
+                            <button class="btn mt-1" onclick="checkGrade()">判定等第</button>
+                            <div id="grade-result" style="margin-top: 1rem; font-weight: 600; display: none;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>範例 3: 三角形判斷</h3>
+                        <div class="code-block">
+<code><span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="keyword">int</span> <span class="function">main</span>() {
+    <span class="keyword">int</span> a = <span class="number">3</span>, b = <span class="number">4</span>, c = <span class="number">5</span>;
+    
+    <span class="comment">// 三角形成立條件：任兩邊和大於第三邊</span>
+    <span class="keyword">bool</span> isTriangle = (a + b > c) && 
+                       (b + c > a) && 
+                       (a + c > b);
+    
+    <span class="keyword">if</span> (isTriangle) {
+        cout << <span class="string">"可以形成三角形"</span> << endl;
+    } <span class="keyword">else</span> {
+        cout << <span class="string">"無法形成三角形"</span> << endl;
+    }
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</code>
+                        </div>
+                        <div class="interactive-demo mt-1">
+                            <div class="grid-3">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">邊 a:</label>
+                                    <input type="number" id="tri-a" class="expression-input" value="3" min="1">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">邊 b:</label>
+                                    <input type="number" id="tri-b" class="expression-input" value="4" min="1">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">邊 c:</label>
+                                    <input type="number" id="tri-c" class="expression-input" value="5" min="1">
+                                </div>
+                            </div>
+                            <button class="btn mt-1" onclick="checkTriangle()">檢查</button>
+                            <div id="tri-result" style="margin-top: 1rem; font-weight: 600; display: none;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>範例 4: 密碼強度檢查</h3>
+                        <div class="code-block">
+<code><span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">#include</span> <span class="string">&lt;string&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="keyword">int</span> <span class="function">main</span>() {
+    string password = <span class="string">"Abc123!@"</span>;
+    
+    <span class="keyword">bool</span> hasLength = password.length() >= <span class="number">8</span>;
+    <span class="keyword">bool</span> hasUpper = <span class="keyword">false</span>;  <span class="comment">// 簡化示範</span>
+    <span class="keyword">bool</span> hasLower = <span class="keyword">false</span>;
+    <span class="keyword">bool</span> hasDigit = <span class="keyword">false</span>;
+    <span class="keyword">bool</span> hasSpecial = <span class="keyword">false</span>;
+    
+    <span class="comment">// 強密碼：長度>=8 且 包含多種字元</span>
+    <span class="keyword">bool</span> isStrong = hasLength && hasUpper && 
+                     hasLower && hasDigit;
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</code>
+                        </div>
+                        <p style="color: var(--text-muted); margin-top: 1rem;">
+                            💡 提示：實際應用中會遍歷字串檢查每個字元
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

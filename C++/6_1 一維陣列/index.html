@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ 1D Array Visualization</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>C++ 1D Array Visualization</h1>
+            <p>Learn how arrays work in memory through animation.</p>
+        </header>
+
+        <main>
+            <aside class="controls-panel">
+                <div class="control-group">
+                    <h3>1. Declaration</h3>
+                    <div class="input-row">
+                        <label>Size (N):</label>
+                        <input type="number" id="arraySize" min="1" max="10" value="5">
+                        <button id="btnCreate">Create Array</button>
+                    </div>
+                    <p class="hint">int arr[N];</p>
+                </div>
+
+                <div class="control-group">
+                    <h3>2. Access / Update</h3>
+                    <div class="input-row">
+                        <label>Index (i):</label>
+                        <input type="number" id="accessIndex" min="0" max="9" value="0">
+                    </div>
+                    <div class="input-row">
+                        <label>Value:</label>
+                        <input type="number" id="newValue" value="10">
+                        <button id="btnUpdate">Update</button>
+                    </div>
+                    <p class="hint">arr[i] = value;</p>
+                </div>
+
+                <div class="control-group">
+                    <h3>3. Traversal</h3>
+                    <button id="btnTraverse" class="accent-btn">Run Loop Animation</button>
+                    <p class="hint">for(int i=0; i&lt;N; i++)</p>
+                </div>
+
+                <div class="code-display">
+                    <h3>C++ Code View</h3>
+                    <pre><code id="codeBlock">// Ready to start...</code></pre>
+                </div>
+            </aside>
+
+            <section class="visualization-panel">
+                <div class="memory-container">
+                    <div class="memory-label">Memory Address Space (Contiguous)</div>
+                    <div id="arrayContainer" class="array-grid">
+                        <!-- Array Elements will be injected here -->
+                        <div class="placeholder-text">Create an array to begin visualization</div>
+                    </div>
+                </div>
+                
+                <div id="statusMessage" class="status-bar">
+                    Waiting for user action...
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

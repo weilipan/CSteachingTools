@@ -1,0 +1,57 @@
+<!-- Bitwise Section -->
+<section id="section-bitwise" class="content-section hidden" role="tabpanel">
+    <div class="card animate-slide-up">
+        <div class="card__header">
+            <h2 class="card__title">位元運算子 (Bitwise Operators)</h2>
+            <p class="card__description">觀察二進位層級的運算過程</p>
+        </div>
+
+        <div class="card__body">
+            <!-- Input Controls -->
+            <div class="bitwise-controls">
+                <div class="input-group">
+                    <label class="input-label">數值 A (0-255)</label>
+                    <input type="number" id="bit-a" class="input" value="5" min="0" max="255">
+                </div>
+
+                <div class="bitwise-operators">
+                    <button class="btn btn--icon operator-btn active" data-bitop="&" title="AND">&</button>
+                    <button class="btn btn--icon operator-btn" data-bitop="|" title="OR">|</button>
+                    <button class="btn btn--icon operator-btn" data-bitop="^" title="XOR">^</button>
+                    <button class="btn btn--icon operator-btn" data-bitop="<<" title="Left Shift">&lt;&lt;</button>
+                    <button class="btn btn--icon operator-btn" data-bitop=">>" title="Right Shift">&gt;&gt;</button>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">數值 B (0-255)</label>
+                    <input type="number" id="bit-b" class="input" value="3" min="0" max="255">
+                </div>
+            </div>
+
+            <!-- Binary Visualization -->
+            <div class="binary-grid">
+                <div class="binary-row">
+                    <div class="binary-label">A (<span id="disp-a">5</span>)</div>
+                    <div class="binary-bits" id="bits-a"></div>
+                </div>
+
+                <div class="binary-row">
+                    <div class="binary-label">B (<span id="disp-b">3</span>)</div>
+                    <div class="binary-bits" id="bits-b"></div>
+                </div>
+
+                <div class="binary-row binary-row--result">
+                    <div class="binary-label">Result (<span id="disp-result">1</span>)</div>
+                    <div class="binary-bits" id="bits-result"></div>
+                </div>
+            </div>
+
+            <!-- Code Example -->
+            <div class="code-block">
+                <code><span class="code-type">int</span> a = <span class="code-number" id="code-bit-a">5</span>;   <span class="code-comment">// 0000 0101</span>
+<span class="code-type">int</span> b = <span class="code-number" id="code-bit-b">3</span>;   <span class="code-comment">// 0000 0011</span>
+<span class="code-type">int</span> result = a <span class="code-operator" id="code-bit-op">&</span> b;  <span class="code-comment">// <span id="code-bit-result">1</span> (0000 0001)</span></code>
+            </div>
+        </div>
+    </div>
+</section>

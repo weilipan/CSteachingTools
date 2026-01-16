@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python 判斷結構視覺化</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> <!-- Placeholder for FontAwesome if needed/available, otherwise relying on CSS shapes/svgs -->
+</head>
+<body>
+    <div class="background-glow"></div>
+    
+    <header class="hero-section">
+        <div class="container">
+            <h1>Python 判斷結構 <span class="gradient-text">Visualization</span></h1>
+            <p class="subtitle">互動式學習 Python 的 If, If-Else, Elif 與 Nested If</p>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- Section 1: Simple IF -->
+        <section id="if-structure" class="card">
+            <div class="card-header">
+                <h2>01. If 判斷式</h2>
+                <div class="badge">單向選擇</div>
+            </div>
+            <div class="card-content">
+                <div class="explanation">
+                    <p>最基本的判斷結構。如果條件成立 (True)，則執行縮排區塊內的程式碼；否則跳過。</p>
+                </div>
+                
+                <div class="interactive-area">
+                    <div class="code-block">
+                        <pre><code><span class="keyword">score</span> = <span class="variable-input" id="display-score-1">60</span>
+<span class="keyword">if</span> <span class="variable">score</span> >= <span class="number">60</span>:
+    <span class="func">print</span>(<span class="string">"及格！"</span>)</code></pre>
+                    </div>
+
+                    <div class="demo-ui">
+                        <div class="input-group">
+                            <label>輸入分數：</label>
+                            <input type="number" id="input-score-1" value="60" min="0" max="100">
+                        </div>
+                        <div class="visualization" id="viz-1">
+                            <div class="flow-step start">開始</div>
+                            <div class="arrow">↓</div>
+                            <div class="flow-step condition" id="cond-1">分數 >= 60 ?</div>
+                            <div class="branches">
+                                <div class="branch true-branch">
+                                    <div class="arrow-label">True</div>
+                                    <div class="arrow">↓</div>
+                                    <div class="flow-step action" id="action-1">印出 "及格"</div>
+                                </div>
+                                <div class="branch false-branch">
+                                    <div class="arrow-label">False</div>
+                                    <div class="arrow-long">↓</div> <!-- Visual path bypassing action -->
+                                </div>
+                            </div>
+                            <div class="arrow-merge">↓</div>
+                            <div class="flow-step end">結束</div>
+                        </div>
+                        <div class="result-box" id="result-1">
+                            等待輸入...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: IF-ELSE -->
+        <section id="if-else-structure" class="card">
+            <div class="card-header">
+                <h2>02. If-Else 判斷式</h2>
+                <div class="badge">雙向選擇</div>
+            </div>
+            <div class="card-content">
+                <div class="explanation">
+                    <p>二選一的結構。條件成立時執行 If 區塊，不成立時執行 Else 區塊。</p>
+                </div>
+
+                <div class="interactive-area">
+                    <div class="code-block">
+                        <pre><code><span class="keyword">password</span> = <span class="string">"<span class="variable-input" id="display-pwd">1234</span>"</span>
+<span class="keyword">if</span> <span class="variable">password</span> == <span class="string">"1234"</span>:
+    <span class="func">print</span>(<span class="string">"登入成功"</span>)
+<span class="keyword">else</span>:
+    <span class="func">print</span>(<span class="string">"密碼錯誤"</span>)</code></pre>
+                    </div>
+
+                    <div class="demo-ui">
+                        <div class="input-group">
+                            <label>輸入密碼 (預設: 1234)：</label>
+                            <input type="text" id="input-pwd" value="1234">
+                        </div>
+                        <div class="visualization" id="viz-2">
+                            <div class="flow-step condition" id="cond-2">密碼 == "1234" ?</div>
+                            <div class="split-branches">
+                                <div class="branch-path" id="path-2-true">
+                                    <span class="label">True</span>
+                                    <div class="flow-step action success">登入成功</div>
+                                </div>
+                                <div class="branch-path" id="path-2-false">
+                                    <span class="label">False</span>
+                                    <div class="flow-step action error">密碼錯誤</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="result-box" id="result-2">
+                            等待輸入...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: IF-ELIF-ELSE -->
+        <section id="elif-structure" class="card">
+            <div class="card-header">
+                <h2>03. If-Elif-Else 多重判斷</h2>
+                <div class="badge">多向選擇</div>
+            </div>
+            <div class="card-content">
+                <div class="explanation">
+                    <p>當有多個條件需要檢查時使用。程式會由上而下檢查，一旦某個條件成立，執行對應區塊後即離開整個結構。</p>
+                </div>
+
+                <div class="interactive-area">
+                    <div class="code-block">
+                        <pre><code><span class="keyword">age</span> = <span class="variable-input" id="display-age">15</span>
+<span class="keyword">if</span> <span class="variable">age</span> < <span class="number">12</span>:
+    <span class="func">print</span>(<span class="string">"兒童票"</span>)
+<span class="keyword">elif</span> <span class="variable">age</span> < <span class="number">65</span>:
+    <span class="func">print</span>(<span class="string">"全票"</span>)
+<span class="keyword">else</span>:
+    <span class="func">print</span>(<span class="string">"敬老票"</span>)</code></pre>
+                    </div>
+
+                    <div class="demo-ui">
+                        <div class="input-group">
+                            <label>輸入年齡：</label>
+                            <input type="number" id="input-age" value="15" min="0" max="120">
+                            <input type="range" id="range-age" min="0" max="100" value="15">
+                        </div>
+                        
+                        <div class="visualization-horizontal" id="viz-3">
+                            <div class="step-container" id="step-3-1">
+                                <div class="diamond">Age < 12?</div>
+                                <div class="arrow-right">True → 兒童票</div>
+                                <div class="arrow-down">False ↓</div>
+                            </div>
+                            <div class="step-container" id="step-3-2">
+                                <div class="diamond">Age < 65?</div>
+                                <div class="arrow-right">True → 全票</div>
+                                <div class="arrow-down">False ↓</div>
+                            </div>
+                            <div class="step-container" id="step-3-3">
+                                <div class="rect">Else: 敬老票</div>
+                            </div>
+                        </div>
+
+                        <div class="result-box" id="result-3">
+                            等待輸入...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Nested IF -->
+        <section id="nested-structure" class="card">
+            <div class="card-header">
+                <h2>04. 巢狀判斷 (Nested If)</h2>
+                <div class="badge">進階結構</div>
+            </div>
+            <div class="card-content">
+                <div class="explanation">
+                    <p>在一個判斷式內部再包含另一個判斷式。就像剝洋蔥一樣，層層檢查。</p>
+                </div>
+
+                <div class="interactive-area">
+                    <div class="code-block">
+                        <pre><code><span class="keyword">has_ticket</span> = <span class="variable-input" id="display-ticket">True</span>
+<span class="keyword">is_vip</span> = <span class="variable-input" id="display-vip">False</span>
+
+<span class="keyword">if</span> <span class="variable">has_ticket</span>:
+    <span class="keyword">if</span> <span class="variable">is_vip</span>:
+        <span class="func">print</span>(<span class="string">"VIP 通道"</span>)
+    <span class="keyword">else</span>:
+        <span class="func">print</span>(<span class="string">"一般通道"</span>)
+<span class="keyword">else</span>:
+    <span class="func">print</span>(<span class="string">"請先購票"</span>)</code></pre>
+                    </div>
+
+                    <div class="demo-ui">
+                        <div class="controls-row">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="input-ticket" checked>
+                                <span class="slider"></span>
+                                <span class="label-text">有票 (has_ticket)</span>
+                            </label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="input-vip">
+                                <span class="slider"></span>
+                                <span class="label-text">是 VIP (is_vip)</span>
+                            </label>
+                        </div>
+
+                        <div class="nested-viz" id="viz-4">
+                            <div class="outer-box" id="outer-box">
+                                <div class="viz-label">Outer If (Has Ticket?)</div>
+                                <div class="inner-content">
+                                    <div class="inner-box" id="inner-box">
+                                        <div class="viz-label">Inner If (Is VIP?)</div>
+                                        <div class="outcome" id="outcome-vip">VIP 通道</div>
+                                        <div class="outcome" id="outcome-normal">一般通道</div>
+                                    </div>
+                                    <div class="outcome" id="outcome-no-ticket">請先購票</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="result-box" id="result-4">
+                            等待輸入...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>Designed for Python Learners with ❤️</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

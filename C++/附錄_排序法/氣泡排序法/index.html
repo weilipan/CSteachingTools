@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>氣泡排序法視覺化 (Bubble Sort Visualization)</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>氣泡排序法視覺化</h1>
+
+            <div class="controls">
+                <button id="generateBtn">產生新陣列</button>
+                <button id="startBtn">開始排序</button>
+                <button id="pauseBtn" disabled>暫停</button>
+                <button id="resetBtn" disabled>重置</button>
+                <div class="speed-control">
+                    <label for="speedSlider">速度:</label>
+                    <input type="range" id="speedSlider" min="1" max="100" value="50">
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="visualization-area" id="arrayContainer">
+                    <!-- Array bars will be generated here -->
+                </div>
+                <div class="legend">
+                    <div class="legend-item"><span class="color-box default"></span> 未排序</div>
+                    <div class="legend-item"><span class="color-box compare"></span> 比較中</div>
+                    <div class="legend-item"><span class="color-box swap"></span> 交換中</div>
+                    <div class="legend-item"><span class="color-box sorted"></span> 已排序</div>
+                </div>
+                <div class="status-box">
+                    <h3>當前狀態</h3>
+                    <p id="statusText">請點擊「產生新陣列」或「開始排序」</p>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="code-box">
+                    <h3>演算法步驟</h3>
+                    <pre id="codeDisplay">
+void bubbleSort(int arr[], int n) {
+  for (int i = 0; i < n-1; i++) {     
+    for (int j = 0; j < n-i-1; j++) { 
+      if (arr[j] > arr[j+1]) {        
+        swap(&arr[j], &arr[j+1]);     
+      }
+    }
+  }
+}
+                    </pre>
+                </div>
+
+                <div class="complexity-panel">
+                    <h3>複雜度分析</h3>
+                    <div class="complexity-item">
+                        <h4>時間複雜度 (Time Complexity)</h4>
+                        <ul>
+                            <li><strong>最差情況 (Worst Case):</strong> $O(n^2)$ <br> <small>當陣列為反向排序時。</small></li>
+                            <li><strong>平均情況 (Average Case):</strong> $O(n^2)$ <br> <small>需進行約 $n(n-1)/2$ 次比較。</small>
+                            </li>
+                            <li><strong>最佳情況 (Best Case):</strong> $O(n)$ <br> <small>當陣列已經排序時 (需優化版)。</small></li>
+                        </ul>
+                        <div class="calculation-note">
+                            <strong>計算方式：</strong>
+                            <p>外層迴圈執行 $n-1$ 次，內層迴圈分別執行 $n-1, n-2, ..., 1$ 次。</p>
+                            <p>總比較次數 = $(n-1) + (n-2) + ... + 1 = \frac{n(n-1)}{2} \approx O(n^2)$</p>
+                        </div>
+                    </div>
+                    <div class="complexity-item">
+                        <h4>空間複雜度 (Space Complexity)</h4>
+                        <ul>
+                            <li><strong>$O(1)$</strong> <br> <small>只需要一個額外的暫存變數進行交換，屬於原地排序 (In-place Sort)。</small>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

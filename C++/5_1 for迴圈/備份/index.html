@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ For Loop 視覺化教學</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>C++ <code>for</code> Loop 視覺化詳解</h1>
+            <p>掌握程式迴圈的核心邏輯，從初始化到條件終止。</p>
+        </header>
+
+        <main>
+            <section class="explanation-card">
+                <h2>1. 語法結構解析</h2>
+                <div class="code-syntax-explorer">
+                    <pre><code id="syntax-code"><span class="keyword">for</span> (<span class="init">初始化</span>; <span class="cond">條件</span>; <span class="update">更新</span>) {
+    <span class="body">// 執行內容</span>
+}</code></pre>
+                </div>
+                <div class="syntax-details">
+                    <div class="detail-item" data-part="init">
+                        <h3>初始化 (Initialization)</h3>
+                        <p>迴圈開始前僅執行一次，通常用於宣告並設定計數變數。</p>
+                    </div>
+                    <div class="detail-item" data-part="cond">
+                        <h3>條件 (Condition)</h3>
+                        <p>每次進入迴圈前檢查。若為 <code>true</code> 則執行，<code>false</code> 則結束迴圈。</p>
+                    </div>
+                    <div class="detail-item" data-part="update">
+                        <h3>更新 (Update)</h3>
+                        <p>每次執行完迴圈本體後執行，通常用於增減計數器。</p>
+                    </div>
+                </div>
+                <!-- 新增：作用域說明 -->
+                <div class="scope-note">
+                    <p>💡 <strong>專家提醒：</strong> 在 <code>for</code> 標頭中宣告的變數（如 <code>int i</code>）具有<strong>區塊作用域 (Block
+                            Scope)</strong>。這意味著一旦離開迴圈，該變數就會被銷毀，無法再被存取。</p>
+                </div>
+            </section>
+
+            <section class="simulator-container">
+                <div class="simulator-header">
+                    <h2>2. 互動式模擬器</h2>
+                    <div class="controls">
+                        <button id="btn-play">執行</button>
+                        <button id="btn-next">下一步</button>
+                        <button id="btn-reset">重設</button>
+                    </div>
+                </div>
+
+                <div class="simulator-layout">
+                    <div class="code-editor">
+                        <div class="line-numbers">
+                            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                        </div>
+                        <div class="code-display" id="simulator-code">
+                            <div class="code-line" id="line-1"><span class="keyword">for</span> (int i = <span
+                                    id="val-init">0</span>; i < <span id="val-limit">5</span>; i++) {</div>
+                            <div class="code-line" id="line-2"> cout << <span class="string">"i = "</span>
+                                    << i << endl;</div>
+                                        <div class="code-line" id="line-3">}</div>
+                                        <div class="code-line" id="line-4">cout << <span class="string">"Done!"</span>;
+                                        </div>
+                            </div>
+                        </div>
+
+                        <div class="visualization-panel">
+                            <div class="state-monitor">
+                                <h3>變數狀態</h3>
+                                <div class="variable">
+                                    <span class="name">i</span>
+                                    <span class="value" id="var-i">?</span>
+                                </div>
+                            </div>
+                            <div class="output-console">
+                                <h3>控制台輸出</h3>
+                                <pre id="console-output"></pre>
+                            </div>
+                        </div>
+                    </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>© 2025 C++ 視覺化教學筆記</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>

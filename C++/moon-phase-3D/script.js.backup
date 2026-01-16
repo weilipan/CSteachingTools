@@ -1,0 +1,454 @@
+// Three.js Scene Setup
+let scene, camera, renderer, controls;
+let sun, earth, moon;
+let earthOrbit, moonOrbit;
+let sunLight;
+let stars;
+let labels = [];
+
+// State Management
+const state = {
+    isPlaying: false,
+    speed: 1,
+    earthAngle: 0,
+    moonAngle: 0,
+    manualControl: false,
+    currentView: 'perspective',
+    showOrbits: true,
+    showLabels: true,
+    showGrid: false,
+    showStars: true,
+    eclipse: {
+        isOccurring: false,
+        type: 'none', // 'none', 'penumbral', 'partial', 'total'
+        magnitude: 0  // 0-1, eclipse magnitude
+    }
+};
+
+// Constants
+const SCALE = {
+    SUN_RADIUS: 3,
+    EARTH_RADIUS: 1.2,
+    MOON_RADIUS: 0.4,
+    EARTH_ORBIT: 25,
+    MOON_ORBIT: 4,
+    MOON_INCLINATION: 5.14 * Math.PI / 180  // 5.14° orbital inclination
+};
+
+// Initialize
+function init() {
+    setupScene();
+    createObjects();
+    setupLighting();
+    createStarfield();
+    setupEventListeners();
+    updateUI();
+    animate();
+}
+
+// Setup Three.js Scene
+function setupScene() {
+    const container = document.getElementById('scene-container');
+
+    // Scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0e27);
+
+    // Camera
+    camera = new THREE.PerspectiveCamera(
+        45,
+        container.clientWidth / container.clientHeight,
+        0.1,
+        1000
+    );
+    camera.position.set(30, 20, 30);
+    camera.lookAt(0, 0, 0);
+
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    // Controls
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 10;
+    controls.maxDistance = 100;
+
+    // Handle window resize
+    window.addEventListener('resize', onWindowResize);
+}
+
+// Create 3D Objects
+function createObjects() {
+    // Sun
+    const sunGeometry = new THREE.SphereGeometry(SCALE.SUN_RADIUS, 64, 64);
+    const sunMaterial = new THREE.MeshBasicMaterial({
+        color: 0xFDB813,
+        emissive: 0xFDB813,
+        emissiveIntensity: 1
+    });
+    sun = new THREE.Mesh(sunGeometry, sunMaterial);
+    sun.name = 'Sun';
+    scene.add(sun);
+
+    // Sun glow
+    const glowGeometry = new THREE.SphereGeometry(SCALE.SUN_RADIUS * 1.3, 32, 32);
+    const glowMaterial = new THREE.MeshBasicMaterial({
+        color: 0xFF6B35,
+        transparent: true,
+        opacity: 0.3
+    });
+    const sunGlow = new THREE.Mesh(glowGeometry, glowMaterial);
+    sun.add(sunGlow);
+
+    // Earth
+    const earthGeometry = new THREE.SphereGeometry(SCALE.EARTH_RADIUS, 64, 64);
+    const earthMaterial = new THREE.MeshPhongMaterial({
+        color: 0x4A90E2,
+        emissive: 0x112244,
+        specular: 0x333333,
+        shininess: 25
+    });
+    earth = new THREE.Mesh(earthGeometry, earthMaterial);
+    earth.name = 'Earth';
+    earth.castShadow = true;
+    earth.receiveShadow = true;
+    scene.add(earth);
+
+    // Earth clouds (optional detail)
+    const cloudsGeometry = new THREE.SphereGeometry(SCALE.EARTH_RADIUS * 1.01, 64, 64);
+    const cloudsMaterial = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.2
+    });
+    const clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
+    earth.add(clouds);
+
+    // Moon
+    const moonGeometry = new THREE.SphereGeometry(SCALE.MOON_RADIUS, 64, 64);
+    const moonMaterial = new THREE.MeshPhongMaterial({
+        color: 0xE8E8E8,
+        emissive: 0x111111,
+        specular: 0x111111,
+        shininess: 5
+    });
+    moon = new THREE.Mesh(moonGeometry, moonMaterial);
+    moon.name = 'Moon';
+    moon.castShadow = true;
+    moon.receiveShadow = true;
+    scene.add(moon);
+
+    // Earth Orbit
+    const earthOrbitGeometry = new THREE.RingGeometry(
+        SCALE.EARTH_ORBIT - 0.05,
+        SCALE.EARTH_ORBIT + 0.05,
+        128
+    );
+    const earthOrbitMaterial = new THREE.MeshBasicMaterial({
+        color: 0x6366f1,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.DoubleSide
+    });
+    earthOrbit = new THREE.Mesh(earthOrbitGeometry, earthOrbitMaterial);
+    earthOrbit.rotation.x = Math.PI / 2;
+    scene.add(earthOrbit);
+
+    // Moon Orbit (will be positioned relative to Earth)
+    const moonOrbitGeometry = new THREE.RingGeometry(
+        SCALE.MOON_ORBIT - 0.02,
+        SCALE.MOON_ORBIT + 0.02,
+        64
+    );
+    const moonOrbitMaterial = new THREE.MeshBasicMaterial({
+        color: 0x8b5cf6,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.DoubleSide
+    });
+    moonOrbit = new THREE.Mesh(moonOrbitGeometry, moonOrbitMaterial);
+    moonOrbit.rotation.x = Math.PI / 2;
+    moonOrbit.rotation.z = SCALE.MOON_INCLINATION;  // Apply orbital inclination
+    scene.add(moonOrbit);
+
+    // Grid helper (optional)
+    const gridHelper = new THREE.GridHelper(100, 50, 0x6366f1, 0x333333);
+    gridHelper.visible = state.showGrid;
+    gridHelper.name = 'GridHelper';
+    scene.add(gridHelper);
+}
+
+// Setup Lighting
+function setupLighting() {
+    // Point light from the Sun
+    sunLight = new THREE.PointLight(0xffffff, 2, 100);
+    sunLight.position.set(0, 0, 0);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.camera.near = 0.5;
+    sunLight.shadow.camera.far = 100;
+    scene.add(sunLight);
+
+    // Ambient light for visibility
+    const ambientLight = new THREE.AmbientLight(0x222222, 0.3);
+    scene.add(ambientLight);
+}
+
+// Create Starfield
+function createStarfield() {
+    const starsGeometry = new THREE.BufferGeometry();
+    const starsMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.1,
+        transparent: true,
+        opacity: 0.8
+    });
+
+    const starsVertices = [];
+    for (let i = 0; i < 5000; i++) {
+        const x = (Math.random() - 0.5) * 200;
+        const y = (Math.random() - 0.5) * 200;
+        const z = (Math.random() - 0.5) * 200;
+        starsVertices.push(x, y, z);
+    }
+
+    starsGeometry.setAttribute(
+        'position',
+        new THREE.Float32BufferAttribute(starsVertices, 3)
+    );
+
+    stars = new THREE.Points(starsGeometry, starsMaterial);
+    stars.name = 'Stars';
+    scene.add(stars);
+}
+
+// Setup Event Listeners
+function setupEventListeners() {
+    // Playback controls
+    document.getElementById('playPauseBtn').addEventListener('click', togglePlayPause);
+    document.getElementById('resetBtn').addEventListener('click', reset);
+
+    // Sliders
+    document.getElementById('speedSlider').addEventListener('input', (e) => {
+        state.speed = parseFloat(e.target.value);
+        updateUI();
+    });
+
+    document.getElementById('moonPositionSlider').addEventListener('input', (e) => {
+        state.manualControl = true;
+        state.moonAngle = parseFloat(e.target.value) * Math.PI / 180;
+        updateUI();
+    });
+
+    // Checkboxes
+    document.getElementById('showOrbitsCheck').addEventListener('change', (e) => {
+        state.showOrbits = e.target.checked;
+        earthOrbit.visible = state.showOrbits;
+        moonOrbit.visible = state.showOrbits;
+    });
+
+    document.getElementById('showLabelsCheck').addEventListener('change', (e) => {
+        state.showLabels = e.target.checked;
+    });
+
+    document.getElementById('showGridCheck').addEventListener('change', (e) => {
+        state.showGrid = e.target.checked;
+        const grid = scene.getObjectByName('GridHelper');
+        if (grid) grid.visible = state.showGrid;
+    });
+
+    document.getElementById('showStarsCheck').addEventListener('change', (e) => {
+        state.showStars = e.target.checked;
+        if (stars) stars.visible = state.showStars;
+    });
+
+    // View buttons
+    document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            state.currentView = e.target.dataset.view;
+            updateCameraView();
+        });
+    });
+
+    // Moon phase items
+    document.querySelectorAll('.phase-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            const angle = parseFloat(item.dataset.angle);
+            state.moonAngle = angle * Math.PI / 180;
+            state.manualControl = true;
+            updateUI();
+        });
+    });
+}
+
+// Toggle Play/Pause
+function togglePlayPause() {
+    state.isPlaying = !state.isPlaying;
+    state.manualControl = false;
+
+    const btn = document.getElementById('playPauseBtn');
+    const icon = btn.querySelector('.icon');
+    const text = btn.querySelector('.text');
+
+    if (state.isPlaying) {
+        icon.textContent = '⏸';
+        text.textContent = '暫停';
+    } else {
+        icon.textContent = '▶';
+        text.textContent = '播放';
+    }
+}
+
+// Reset
+function reset() {
+    state.earthAngle = 0;
+    state.moonAngle = 0;
+    updateCameraView();
+    updateUI();
+}
+
+// Update Camera View
+function updateCameraView() {
+    controls.reset();
+
+    switch (state.currentView) {
+        case 'perspective':
+            camera.position.set(30, 20, 30);
+            break;
+        case 'top':
+            camera.position.set(0, 50, 0);
+            break;
+        case 'side':
+            camera.position.set(50, 0, 0);
+            break;
+        case 'earth':
+            const earthX = Math.cos(state.earthAngle) * SCALE.EARTH_ORBIT;
+            const earthZ = Math.sin(state.earthAngle) * SCALE.EARTH_ORBIT;
+            camera.position.set(earthX + 5, 3, earthZ + 5);
+            break;
+    }
+
+    camera.lookAt(0, 0, 0);
+    controls.update();
+}
+
+// Update UI
+function updateUI() {
+    // Update angles display
+    document.getElementById('earthAngle').textContent =
+        Math.round(state.earthAngle * 180 / Math.PI) + '°';
+    document.getElementById('moonAngle').textContent =
+        Math.round(state.moonAngle * 180 / Math.PI) + '°';
+    document.getElementById('speedDisplay').textContent =
+        state.speed.toFixed(1) + 'x';
+
+    // Update moon position slider
+    document.getElementById('moonPositionSlider').value =
+        (state.moonAngle * 180 / Math.PI) % 360;
+
+    // Update moon phase
+    updateMoonPhaseDisplay();
+}
+
+// Update Moon Phase Display
+function updateMoonPhaseDisplay() {
+    // Calculate phase angle from Earth's perspective
+    // When moon is between Earth and Sun (angle = 0), it's New Moon
+    // When moon is opposite Sun from Earth (angle = 180), it's Full Moon
+    const phaseAngle = (state.moonAngle - state.earthAngle + Math.PI) % (2 * Math.PI);
+    const normalizedAngle = phaseAngle * 180 / Math.PI;
+
+    let phaseName = '';
+    let phasePercentage = 0;
+
+    // Corrected phase calculations
+    if (normalizedAngle < 22.5 || normalizedAngle >= 337.5) {
+        phaseName = '新月';
+        phasePercentage = 0;
+    } else if (normalizedAngle < 67.5) {
+        phaseName = '眉月';
+        phasePercentage = 25;
+    } else if (normalizedAngle < 112.5) {
+        phaseName = '上弦月';
+        phasePercentage = 50;
+    } else if (normalizedAngle < 157.5) {
+        phaseName = '盈凸月';
+        phasePercentage = 75;
+    } else if (normalizedAngle < 202.5) {
+        phaseName = '滿月';
+        phasePercentage = 100;
+    } else if (normalizedAngle < 247.5) {
+        phaseName = '虧凸月';
+        phasePercentage = 75;
+    } else if (normalizedAngle < 292.5) {
+        phaseName = '下弦月';
+        phasePercentage = 50;
+    } else {
+        phaseName = '殘月';
+        phasePercentage = 25;
+    }
+
+    document.getElementById('phaseName').textContent = phaseName;
+    document.getElementById('phasePercentage').textContent = phasePercentage + '%';
+
+    // Update phase icon
+    const phaseIcon = document.getElementById('phaseIcon');
+    const illumination = (1 - Math.cos(phaseAngle)) / 2;
+    const gradientPos = 50 - (illumination - 0.5) * 100;
+    phaseIcon.style.background =
+        `linear-gradient(90deg, #1e293b ${gradientPos}%, #f1f5f9 ${gradientPos}%)`;
+}
+
+// Window Resize Handler
+if (state.isPlaying && !state.manualControl) {
+    state.earthAngle += 0.002 * state.speed;
+    state.moonAngle += 0.02 * state.speed;
+}
+
+// Update Earth position
+const earthX = Math.cos(state.earthAngle) * SCALE.EARTH_ORBIT;
+const earthZ = Math.sin(state.earthAngle) * SCALE.EARTH_ORBIT;
+earth.position.set(earthX, 0, earthZ);
+
+// Rotate Earth on its axis
+earth.rotation.y += 0.01 * state.speed;
+
+// Update Moon orbit position (follows Earth)
+moonOrbit.position.set(earthX, 0, earthZ);
+
+// Update Moon position (relative to Earth) with orbital inclination
+const moonX = earthX + Math.cos(state.moonAngle) * SCALE.MOON_ORBIT;
+const moonY = Math.sin(state.moonAngle) * SCALE.MOON_ORBIT * Math.sin(SCALE.MOON_INCLINATION);
+const moonZ = earthZ + Math.sin(state.moonAngle) * SCALE.MOON_ORBIT * Math.cos(SCALE.MOON_INCLINATION);
+moon.position.set(moonX, moonY, moonZ);
+
+// Make moon always face the sun (tidal locking)
+moon.lookAt(sun.position);
+
+// Update camera for earth view
+if (state.currentView === 'earth') {
+    camera.position.set(earthX + 5, 3, earthZ + 5);
+    camera.lookAt(0, 0, 0);
+}
+
+// Update controls
+controls.update();
+
+// Update UI
+updateUI();
+
+// Render scene
+renderer.render(scene, camera);
+}
+
+// Start the application
+init();

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>選擇排序法視覺化 (Selection Sort Visualization)</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>選擇排序法視覺化 <span class="subtitle">Selection Sort</span></h1>
+        </header>
+        
+        <main>
+            <div class="visualization-panel">
+                <div id="array-container" class="array-container">
+                    <!-- Array elements will be generated here -->
+                </div>
+                <div class="status-bar">
+                    <div class="legend">
+                        <span class="legend-item"><span class="color-box default"></span> 未排序</span>
+                        <span class="legend-item"><span class="color-box current-min"></span> 目前最小值</span>
+                        <span class="legend-item"><span class="color-box scanning"></span> 掃描中</span>
+                        <span class="legend-item"><span class="color-box sorted"></span> 已排序</span>
+                    </div>
+                    <div id="status-text" class="status-text">準備就緒</div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="code-section">
+                    <h3>C++ 程式碼</h3>
+                    <pre><code id="code-display">void selectionSort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int min_idx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j] < arr[min_idx])
+                min_idx = j;
+        }
+        swap(arr[min_idx], arr[i]);
+    }
+}</code></pre>
+                </div>
+
+                <div class="complexity-section">
+                    <h3>複雜度分析</h3>
+                    <div class="complexity-grid">
+                        <div class="complexity-item">
+                            <span class="label">時間複雜度 (Time Complexity)</span>
+                            <span class="value">\( O(n^2) \)</span>
+                            <div class="detail">
+                                <p>選擇排序法需要兩層迴圈：</p>
+                                <ul>
+                                    <li>外層迴圈執行 \( n-1 \) 次。</li>
+                                    <li>內層迴圈分別執行 \( n-1, n-2, \dots, 1 \) 次。</li>
+                                </ul>
+                                <p>總比較次數為等差級數總和：</p>
+                                <p class="formula">
+                                    \[ \sum_{i=1}^{n-1} i = \frac{n(n-1)}{2} \approx \frac{n^2}{2} \]
+                                </p>
+                                <p>因此時間複雜度為 \( O(n^2) \)。無論陣列是否已排序，比較次數皆固定。</p>
+                            </div>
+                        </div>
+                        <div class="complexity-item">
+                            <span class="label">空間複雜度 (Space Complexity)</span>
+                            <span class="value">\( O(1) \)</span>
+                            <div class="detail">
+                                <p>僅需少數變數（如 <code>min_idx</code>, <code>i</code>, <code>j</code>, <code>temp</code>）來儲存索引與暫存值。</p>
+                                <p>排序過程在原陣列中進行（In-place），不需要額外的記憶體空間來儲存陣列副本。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="explanation-section">
+                    <h3>步驟說明</h3>
+                    <p id="explanation-text">點擊「開始排序」來觀察演算法運作。</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="controls">
+                <button id="generate-btn" class="btn secondary">重新產生陣列</button>
+                <div class="divider"></div>
+                <button id="start-btn" class="btn primary">開始排序</button>
+                <button id="pause-btn" class="btn warning" disabled>暫停</button>
+                <button id="step-btn" class="btn info" disabled>單步執行</button>
+                <div class="divider"></div>
+                <div class="speed-control">
+                    <label for="speed-slider">速度</label>
+                    <input type="range" id="speed-slider" min="1" max="100" value="50">
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

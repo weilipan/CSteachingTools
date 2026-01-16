@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pandas & Jupyter/Colab 可視化指南</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Icon set -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Pandas & Jupyter 實戰指南</h1>
+        <p class="hero-subtitle">
+            掌握 Python 數據分析的核心工具。在這這互動式筆記本中學習 DataFrame 的各種操作與技巧。
+        </p>
+        <div class="feature-icons">
+            <div class="f-icon">
+                <i class="fab fa-python fa-3x"></i>
+                <span>Python</span>
+            </div>
+            <div class="f-icon">
+                <i class="fas fa-table fa-3x" style="color: #ffca00;"></i>
+                <span>Pandas</span>
+            </div>
+            <div class="f-icon">
+                <i class="fas fa-satellite-dish fa-3x" style="color: #f37626;"></i>
+                <span>Jupyter</span>
+            </div>
+        </div>
+        <br><br>
+        <a href="#notebook-start" class="btn-primary">開始學習 <i class="fas fa-arrow-down"></i></a>
+    </header>
+
+    <div class="container" id="notebook-start">
+
+        <section class="notebook">
+            <div class="notebook-header">
+                <div class="notebook-icon colab-icon">
+                    <i class="fas fa-infinity"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0;">Pandas_Masterclass.ipynb</h3>
+                    <small style="color: var(--text-secondary);">Google Colab / Jupyter Notebook Simulation</small>
+                </div>
+                <div style="margin-left: auto; color: var(--success); font-size: 0.9rem;">
+                    <i class="fas fa-check-circle"></i> Connected (RAM, Disk)
+                </div>
+            </div>
+
+            <!-- Intro Cell (Markdown) -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter"></div>
+                    <div class="code-block" style="background: transparent; border: none; padding-left: 0;">
+                        <h2>1. 建立 DataFrame (Creating Data)</h2>
+                        <p>首先，我們需要引入 pandas 庫。最常見的核心物件是 <code>DataFrame</code>，它就像是一個強大的 Excel 表格。</p>
+                        <ul style="color: var(--text-secondary); margin-left: 1.5rem; list-style-type: square;">
+                            <li><code>pd.DataFrame(data)</code>: 將字典或陣列轉換為表格。</li>
+                            <li>字典的 Key 會變成欄位名稱 (Column Name)。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Cell 1: Creation -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter" data-for="out-1">[ ]:</div>
+                    <div class="code-block">
+                        <button class="run-btn" data-target="out-1">
+                            <span class="play-icon"><i class="fas fa-play"></i></span>
+                            <div class="loading-spinner"></div>
+                        </button>
+                        <div>
+                            <span class="kwd">import</span> pandas <span class="kwd">as</span> pd<br><br>
+                            <span class="comment"># 準備數據</span><br>
+                            data = {<br>
+                            &nbsp;&nbsp;<span class="str">'Name'</span>: [<span class="str">'Alice'</span>, <span
+                                class="str">'Bob'</span>, <span class="str">'Charlie'</span>, <span
+                                class="str">'David'</span>],<br>
+                            &nbsp;&nbsp;<span class="str">'Age'</span>: [<span class="num">25</span>, <span
+                                class="num">30</span>, <span class="num">35</span>, <span class="num">28</span>],<br>
+                            &nbsp;&nbsp;<span class="str">'City'</span>: [<span class="str">'New York'</span>, <span
+                                class="str">'Los Angeles'</span>, <span class="str">'Chicago'</span>, <span
+                                class="str">'Houston'</span>],<br>
+                            &nbsp;&nbsp;<span class="str">'Score'</span>: [<span class="num">85</span>, <span
+                                class="num">92</span>, <span class="num">78</span>, <span class="num">95</span>]<br>
+                            }<br><br>
+                            <span class="comment"># 建立 DataFrame</span><br>
+                            df = pd.<span class="func">DataFrame</span>(data)<br>
+                            df <span class="comment"># 顯示表格</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="out-1" class="output-area"></div>
+            </div>
+
+            <div class="hint-box">
+                <i class="fas fa-lightbulb" style="color: var(--pandas-secondary); margin-right: 0.5rem;"></i>
+                <strong>小撇步：</strong> 在 Colab/Jupyter 中，直接在 Cell 最後一行打變數名稱（如 <code>df</code>），會自動印出漂亮的表格，不需要用
+                <code>print(df)</code>。
+            </div>
+
+            <hr style="border-color: var(--border); margin: 3rem 0;">
+
+            <!-- Intro Cell 2 -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter"></div>
+                    <div class="code-block" style="background: transparent; border: none; padding-left: 0;">
+                        <h2>2. 快速檢視數據 (Inspection)</h2>
+                        <p>拿到數據後，我們先檢查此數據的基本樣貌。</p>
+                        <p><span class="highlight-text">常用方法：</span></p>
+                        <ul style="color: var(--text-secondary); margin-left: 1.5rem;">
+                            <li><code>df.head(n)</code>: 看前 n 筆資料 (預設 5)。</li>
+                            <li><code>df.tail(n)</code>: 看後 n 筆資料。</li>
+                            <li><code>df.info()</code>: 查看資料型態、是否有缺失值。</li>
+                            <li><code>df.describe()</code>: 查看數值欄位的統計資訊 (平均、標準差、最大最小)。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Cell 2: HEAD -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter" data-for="out-2">[ ]:</div>
+                    <div class="code-block">
+                        <button class="run-btn" data-target="out-2">
+                            <span class="play-icon"><i class="fas fa-play"></i></span>
+                            <div class="loading-spinner"></div>
+                        </button>
+                        <div>
+                            <span class="comment"># 查看前 2 筆數據</span><br>
+                            df.<span class="func">head</span>(<span class="num">2</span>)
+                        </div>
+                    </div>
+                </div>
+                <div id="out-2" class="output-area"></div>
+            </div>
+
+            <!-- Code Cell 2.5: INFO -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter" data-for="out-4">[ ]:</div>
+                    <div class="code-block">
+                        <button class="run-btn" data-target="out-4">
+                            <span class="play-icon"><i class="fas fa-play"></i></span>
+                            <div class="loading-spinner"></div>
+                        </button>
+                        <div>
+                            <span class="comment"># 查看資料結構與型態</span><br>
+                            df.<span class="func">info</span>()
+                        </div>
+                    </div>
+                </div>
+                <div id="out-4" class="output-area"></div>
+            </div>
+
+            <!-- Code Cell 2.6: DESCRIBE -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter" data-for="out-6">[ ]:</div>
+                    <div class="code-block">
+                        <button class="run-btn" data-target="out-6">
+                            <span class="play-icon"><i class="fas fa-play"></i></span>
+                            <div class="loading-spinner"></div>
+                        </button>
+                        <div>
+                            <span class="comment"># 快速統計數據分佈</span><br>
+                            df.<span class="func">describe</span>()
+                        </div>
+                    </div>
+                </div>
+                <div id="out-6" class="output-area"></div>
+            </div>
+
+            <hr style="border-color: var(--border); margin: 3rem 0;">
+
+            <!-- Intro Cell 3 -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter"></div>
+                    <div class="code-block" style="background: transparent; border: none; padding-left: 0;">
+                        <h2>3. 選取與過濾 (Selection & Filtering)</h2>
+                        <p>精準提取我們需要的資料。</p>
+                        <ul style="color: var(--text-secondary); margin-left: 1.5rem;">
+                            <li><code>df['欄位名']</code>: 選取單一欄位 (Series)。</li>
+                            <li><code>df[['欄A', '欄B']]</code>: 選取多個欄位。</li>
+                            <li><code>df[條件]</code>: 條件過濾，例如 <code>df[df['Score'] > 90]</code>。</li>
+                            <li><code>.loc[]</code>: 透過「標籤名稱」選取。</li>
+                            <li><code>.iloc[]</code>: 透過「索引位置(第幾列/第幾行)」選取。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Cell 3: Conditional Selection -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter" data-for="out-3">[ ]:</div>
+                    <div class="code-block">
+                        <button class="run-btn" data-target="out-3">
+                            <span class="play-icon"><i class="fas fa-play"></i></span>
+                            <div class="loading-spinner"></div>
+                        </button>
+                        <div>
+                            <span class="comment"># 1. 單一條件：找出 Age 大於 28 的人</span><br>
+                            df[df[<span class="str">'Age'</span>] > <span class="num">28</span>]
+                        </div>
+                    </div>
+                </div>
+                <div id="out-3" class="output-area"></div>
+            </div>
+
+            <!-- Code Cell 3.1: Multiple Conditions -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter" data-for="out-3-1">[ ]:</div>
+                    <div class="code-block">
+                        <button class="run-btn" data-target="out-3-1">
+                            <span class="play-icon"><i class="fas fa-play"></i></span>
+                            <div class="loading-spinner"></div>
+                        </button>
+                        <div>
+                            <span class="comment"># 2. 多重條件：找出 Age > 25 且 Score >= 90 (使用 & 及 | )</span><br>
+                            <span class="comment"># 注意：每個條件都要用括號 () 包起來</span><br>
+                            df[(df[<span class="str">'Age'</span>] > <span class="num">25</span>) & (df[<span
+                                class="str">'Score'</span>] >= <span class="num">90</span>)]
+                        </div>
+                    </div>
+                </div>
+                <div id="out-3-1" class="output-area"></div>
+            </div>
+
+            <!-- Code Cell 3.2: Column Selection -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter" data-for="out-3-2">[ ]:</div>
+                    <div class="code-block">
+                        <button class="run-btn" data-target="out-3-2">
+                            <span class="play-icon"><i class="fas fa-play"></i></span>
+                            <div class="loading-spinner"></div>
+                        </button>
+                        <div>
+                            <span class="comment"># 3. 選取特定欄位</span><br>
+                            df[[<span class="str">'Name'</span>, <span class="str">'Score'</span>]]
+                        </div>
+                    </div>
+                </div>
+                <div id="out-3-2" class="output-area"></div>
+            </div>
+
+            <!-- Code Cell 3.3: Slicing iloc -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter" data-for="out-3-3">[ ]:</div>
+                    <div class="code-block">
+                        <button class="run-btn" data-target="out-3-3">
+                            <span class="play-icon"><i class="fas fa-play"></i></span>
+                            <div class="loading-spinner"></div>
+                        </button>
+                        <div>
+                            <span class="comment"># 4. 使用 .iloc 切片 (選取第 1 到 3 列，第 0 到 2 行)</span><br>
+                            <span class="comment"># 語法：df.iloc[列範圍, 行範圍] (不包含結束點)</span><br>
+                            df.<span class="func">iloc</span>[<span class="num">1</span>:<span class="num">3</span>,
+                            <span class="num">0</span>:<span class="num">2</span>]
+                        </div>
+                    </div>
+                </div>
+                <div id="out-3-3" class="output-area"></div>
+            </div>
+
+            <hr style="border-color: var(--border); margin: 3rem 0;">
+
+            <!-- Intro Cell 4 -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter"></div>
+                    <div class="code-block" style="background: transparent; border: none; padding-left: 0;">
+                        <h2>4. 分組統計 (Grouping)</h2>
+                        <p><code>groupby</code> 是數據分析的神器，類似 SQL 的 GROUP BY。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Cell 4: GroupBy -->
+            <div class="cell">
+                <div class="input-area">
+                    <div class="gutter" data-for="out-5">[ ]:</div>
+                    <div class="code-block">
+                        <button class="run-btn" data-target="out-5">
+                            <span class="play-icon"><i class="fas fa-play"></i></span>
+                            <div class="loading-spinner"></div>
+                        </button>
+                        <div>
+                            <span class="comment"># 依城市分組，並計算分數平均值</span><br>
+                            df.<span class="func">groupby</span>(<span class="str">'City'</span>)[<span
+                                class="str">'Score'</span>].<span class="func">mean</span>()
+                        </div>
+                    </div>
+                </div>
+                <div id="out-5" class="output-area"></div>
+            </div>
+
+            <div style="margin-top: 4rem; text-align: center;">
+                <p>這只是 Pandas 的冰山一角！持續探索更多功能，讓數據為你說話。</p>
+            </div>
+
+        </section>
+
+    </div>
+
+    <footer>
+        &copy; 2024 Pandas Interactive Guide. Designed for Learning.
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ 輸入教學：cin vs getline</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>C++ 輸入方式視覺化：<code class="header-code">cin</code> vs <code class="header-code">getline</code></h1>
+            <p class="subtitle">互動式探索 C++ 如何處理輸入串流與緩衝區</p>
+        </header>
+
+        <main>
+            <!-- Control Section -->
+            <section class="control-panel glass-panel">
+                <h2>輸入緩衝區 (Input Buffer)</h2>
+                <div class="input-group">
+                    <label for="simulation-input">模擬輸入文字：</label>
+                    <input type="text" id="simulation-input" value="Hello World 123" placeholder="在這裡輸入文字...">
+                    <button id="reset-btn" class="secondary-btn">重置</button>
+                </div>
+                
+                <div class="buffer-visualization" id="buffer-viz">
+                    <!-- Buffer blocks will be generated here -->
+                    <div class="buffer-placeholder">等待輸入...</div>
+                </div>
+            </section>
+
+            <!-- Simulation Container -->
+            <div class="simulation-grid">
+                <!-- CIN Section -->
+                <section class="sim-card glass-panel" id="cin-section">
+                    <div class="card-header">
+                        <h3>使用 <code class="code-highlight">cin &gt;&gt; var</code></h3>
+                        <button class="run-btn" id="run-cin">讀取一次 (cin)</button>
+                    </div>
+                    <div class="code-display">
+                        <pre><code class="language-cpp">string s;
+cin >> s;</code></pre>
+                    </div>
+                    <div class="variable-state">
+                        <span class="var-label">變數 s:</span>
+                        <span class="var-value" id="cin-var-value">""</span>
+                    </div>
+                    <div class="explanation">
+                        <p>特性：讀取直到遇到<strong>空白</strong> (Space, Tab, Newline) 為止。會跳過開頭的空白。</p>
+                        <div class="status-log" id="cin-log"></div>
+                    </div>
+                </section>
+
+                <!-- GETLINE Section -->
+                <section class="sim-card glass-panel" id="getline-section">
+                    <div class="card-header">
+                        <h3>使用 <code class="code-highlight">getline(cin, var)</code></h3>
+                        <button class="run-btn" id="run-getline">讀取一行 (getline)</button>
+                    </div>
+                    <div class="code-display">
+                        <pre><code class="language-cpp">string s;
+getline(cin, s);</code></pre>
+                    </div>
+                    <div class="variable-state">
+                        <span class="var-label">變數 s:</span>
+                        <span class="var-value" id="getline-var-value">""</span>
+                    </div>
+                    <div class="explanation">
+                        <p>特性：讀取直到遇到<strong>換行符號</strong> ('\n') 為止。會讀取並捨棄換行符號。</p>
+                        <div class="status-log" id="getline-log"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Comparison & Usage Guide -->
+            <section class="usage-guide glass-panel">
+                <h2>什麼時候該用哪個？ (Best Practices)</h2>
+                <div class="guide-grid">
+                    <div class="guide-item">
+                        <h4><span class="icon">🔹</span> 使用 <code>cin</code> 的時機</h4>
+                        <ul>
+                            <li>讀取<strong>單個單字</strong>或數值 (如 <code>int</code>, <code>double</code>)。</li>
+                            <li>輸入資料以空白分隔 (例如：<code>10 20 30</code>)。</li>
+                            <li>不需要包含空白的字串。</li>
+                        </ul>
+                    </div>
+                    <div class="guide-item">
+                        <h4><span class="icon">🔸</span> 使用 <code>getline</code> 的時機</h4>
+                        <ul>
+                            <li>讀取<strong>整行文字</strong> (包含空白)。</li>
+                            <li>輸入姓名、地址、句子等可能包含空白的長字串。</li>
+                            <li>需要精確控制讀取到換行符號為止。</li>
+                        </ul>
+                    </div>
+                    <div class="guide-item danger-zone">
+                        <h4><span class="icon">⚠️</span> 常見陷阱：混合使用</h4>
+                        <p>如果在 <code>cin >> n;</code> 之後接著使用 <code>getline</code>，<code>cin</code> 會在緩衝區留下一個換行符號 (Newline)，導致接下來的 <code>getline</code> 讀到空字串。</p>
+                        <p class="solution"><strong>解法：</strong> 在 <code>getline</code> 前使用 <code>cin.ignore();</code> 清除緩衝區。</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+        <footer>
+            <p>Designed for C++ Learning</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

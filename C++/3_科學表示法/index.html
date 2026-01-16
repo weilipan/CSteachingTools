@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ setprecision & fixed 視覺化</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>C++ IO Manipulators 視覺化</h1>
+            <p class="subtitle">探索 <code class="highlight">std::fixed</code> 與 <code class="highlight">std::setprecision</code> 的奧秘</p>
+        </header>
+
+        <main>
+            <!-- Control Panel -->
+            <section class="panel control-panel">
+                <h2><span class="icon">⚙️</span> 設定 (Settings)</h2>
+                
+                <div class="input-group">
+                    <label for="numberInput">輸入數值 (Input Number)</label>
+                    <input type="number" id="numberInput" value="123.456789" step="any">
+                </div>
+
+                <div class="input-group">
+                    <label>格式標記 (Format Flags)</label>
+                    <div class="toggle-group">
+                        <button class="toggle-btn active" data-mode="default">default</button>
+                        <button class="toggle-btn" data-mode="fixed">std::fixed</button>
+                        <button class="toggle-btn" data-mode="scientific">std::scientific</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="precisionInput">精確度 (Precision): <span id="precisionValue" class="value-display">6</span></label>
+                    <input type="range" id="precisionInput" min="0" max="20" value="6">
+                </div>
+            </section>
+
+            <!-- Visualization Area -->
+            <section class="panel visualization-panel">
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                        <span class="title">main.cpp</span>
+                    </div>
+                    <pre><code id="cppCode">
+#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+
+int main() {
+    double num = 123.456789;
+    std::cout << std::setprecision(6) << num;
+    return 0;
+}
+                    </code></pre>
+                </div>
+
+                <div class="output-block">
+                    <div class="output-header">
+                        <span class="icon">🖥️</span> Console Output
+                    </div>
+                    <div class="console" id="consoleOutput">
+                        123.457
+                    </div>
+                </div>
+            </section>
+
+            <!-- Explanation Section -->
+            <section class="panel explanation-panel">
+                <h2><span class="icon">📚</span> 詳細說明 (Explanation)</h2>
+                
+                <div class="card" id="defaultCard">
+                    <h3>預設模式 (Default)</h3>
+                    <p>當沒有設定 <code class="code-sm">fixed</code> 或 <code class="code-sm">scientific</code> 時，<code class="code-sm">setprecision(n)</code> 設定的是<strong>最大有效位數 (Significant Digits)</strong>。</p>
+                    <ul>
+                        <li>如果整數部分位數大於 n，可能會切換成科學記號 (視編譯器實作而定)。</li>
+                        <li>會自動移除末尾無意義的 0。</li>
+                    </ul>
+                </div>
+
+                <div class="card hidden" id="fixedCard">
+                    <h3>std::fixed 模式</h3>
+                    <p>使用 <code class="code-sm">std::fixed</code> 後，<code class="code-sm">setprecision(n)</code> 設定的是<strong>小數點後的位數</strong>。</p>
+                    <ul>
+                        <li>無論數值大小，都會以定點數形式顯示。</li>
+                        <li>若小數位數不足，會補 0。</li>
+                    </ul>
+                </div>
+
+                <div class="card hidden" id="scientificCard">
+                    <h3>std::scientific 模式</h3>
+                    <p>使用 <code class="code-sm">std::scientific</code> 後，<code class="code-sm">setprecision(n)</code> 設定的是<strong>科學記號中小數點後的位數</strong>。</p>
+                    <ul>
+                        <li>數值總是顯示為科學記號形式 (e.g., 1.23e+02)。</li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

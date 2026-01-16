@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ 迴圈視覺化 | C++ Loop Visualization</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <h1>C++ 迴圈大對決</h1>
+            <p class="subtitle">視覺化理解 For, While, Do-While 的差異</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="for">For Loop</button>
+            <button class="tab-btn" data-tab="while">While Loop</button>
+            <button class="tab-btn" data-tab="dowhile">Do-While Loop</button>
+            <button class="tab-btn" data-tab="comparison">Comparison</button>
+        </nav>
+
+        <div class="settings-bar">
+            <label for="initial-value">Inital Value (i): </label>
+            <input type="number" id="initial-value" value="0" min="-2" max="6">
+            <span class="hint">(Try 5 to see the difference!)</span>
+        </div>
+
+        <main class="content-area">
+            <!-- For Loop Section -->
+            <section id="for" class="loop-section active">
+                <div class="theory-panel">
+                    <h2>For Loop (計次迴圈)</h2>
+                    <p>適用於 <span class="highlight">已知執行次數</span> 的情況。</p>
+                    <div class="code-block">
+                        <div class="line" id="for-line-1">for (int i = <span class="val-display">0</span>; i &lt; 5;
+                            i++) {</div>
+                        <div class="lineindent" id="for-line-2"> cout &lt;&lt; "Count: " &lt;&lt; i &lt;&lt; endl;</div>
+                        <div class="line" id="for-line-3">}</div>
+                    </div>
+                    <div class="controls">
+                        <button class="btn start" onclick="startForLoop()">開始演示 (Start)</button>
+                        <button class="btn next" onclick="stepForLoop()" disabled>下一步 (Step)</button>
+                        <button class="btn reset" onclick="resetForLoop()">重置 (Reset)</button>
+                    </div>
+                </div>
+                <div class="visual-panel">
+                    <div class="variable-display">
+                        <div class="var-box">
+                            <span class="var-name">i</span>
+                            <span class="var-value" id="for-var-i">-</span>
+                        </div>
+                        <div class="condition-box">
+                            <span class="cond-label">i &lt; 5 ?</span>
+                            <span class="cond-value" id="for-cond">-</span>
+                        </div>
+                    </div>
+                    <div class="output-console" id="for-output">
+                        <div class="console-header">Console Output</div>
+                        <div class="console-body"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- While Loop Section -->
+            <section id="while" class="loop-section">
+                <div class="theory-panel">
+                    <h2>While Loop (前測迴圈)</h2>
+                    <p>適用於 <span class="highlight">未知次數</span>，條件為真才執行。</p>
+                    <div class="code-block">
+                        <div class="line" id="while-line-1">int i = <span class="val-display">0</span>;</div>
+                        <div class="line" id="while-line-2">while (i &lt; 5) {</div>
+                        <div class="lineindent" id="while-line-3"> cout &lt;&lt; "Count: " &lt;&lt; i &lt;&lt; endl;
+                        </div>
+                        <div class="lineindent" id="while-line-4"> i++;</div>
+                        <div class="line" id="while-line-5">}</div>
+                    </div>
+                    <div class="controls">
+                        <button class="btn start" onclick="startWhileLoop()">開始演示 (Start)</button>
+                        <button class="btn next" onclick="stepWhileLoop()" disabled>下一步 (Step)</button>
+                        <button class="btn reset" onclick="resetWhileLoop()">重置 (Reset)</button>
+                    </div>
+                </div>
+                <div class="visual-panel">
+                    <div class="variable-display">
+                        <div class="var-box">
+                            <span class="var-name">i</span>
+                            <span class="var-value" id="while-var-i">-</span>
+                        </div>
+                        <div class="condition-box">
+                            <span class="cond-label">i &lt; 5 ?</span>
+                            <span class="cond-value" id="while-cond">-</span>
+                        </div>
+                    </div>
+                    <div class="output-console" id="while-output">
+                        <div class="console-header">Console Output</div>
+                        <div class="console-body"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Do-While Loop Section -->
+            <section id="dowhile" class="loop-section">
+                <div class="theory-panel">
+                    <h2>Do-While Loop (後測迴圈)</h2>
+                    <p>保證 <span class="highlight">至少執行一次</span>，之後再檢查條件。</p>
+                    <div class="code-block">
+                        <div class="line" id="do-line-1">int i = <span class="val-display">0</span>;</div>
+                        <div class="line" id="do-line-2">do {</div>
+                        <div class="lineindent" id="do-line-3"> cout &lt;&lt; "Count: " &lt;&lt; i &lt;&lt; endl;</div>
+                        <div class="lineindent" id="do-line-4"> i++;</div>
+                        <div class="line" id="do-line-5">} while (i &lt; 5);</div>
+                    </div>
+                    <div class="controls">
+                        <button class="btn start" onclick="startDoLoop()">開始演示 (Start)</button>
+                        <button class="btn next" onclick="stepDoLoop()" disabled>下一步 (Step)</button>
+                        <button class="btn reset" onclick="resetDoLoop()">重置 (Reset)</button>
+                    </div>
+                </div>
+                <div class="visual-panel">
+                    <div class="variable-display">
+                        <div class="var-box">
+                            <span class="var-name">i</span>
+                            <span class="var-value" id="dowhile-var-i">-</span>
+                        </div>
+                        <div class="condition-box">
+                            <span class="cond-label">i &lt; 5 ?</span>
+                            <span class="cond-value" id="dowhile-cond">-</span>
+                        </div>
+                    </div>
+                    <div class="output-console" id="dowhile-output">
+                        <div class="console-header">Console Output</div>
+                        <div class="console-body"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Comparison Section -->
+            <section id="comparison" class="loop-section">
+                <div class="comparison-panel">
+                    <h2>Loop Comparison Summary</h2>
+                    <table class="comp-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th style="color: var(--accent-for)">For Loop</th>
+                                <th style="color: var(--accent-while)">While Loop</th>
+                                <th style="color: var(--accent-do)">Do-While Loop</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Check Position</td>
+                                <td>Top (Pre-check)</td>
+                                <td>Top (Pre-check)</td>
+                                <td>Bottom (Post-check)</td>
+                            </tr>
+                            <tr>
+                                <td>Min Executions</td>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>1 (Always runs once)</td>
+                            </tr>
+                            <tr>
+                                <td>Use Case</td>
+                                <td>Fixed iterations</td>
+                                <td>Unknown iterations</td>
+                                <td>Menu / At least once</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>

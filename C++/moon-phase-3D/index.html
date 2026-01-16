@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>太陽-地球-月球 3D 視覺化 | 月相變化模擬器</title>
+    <meta name="description" content="互動式3D太陽系模擬器，展示太陽、地球和月球的位置關係，以及太陽光如何影響月相變化">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🌍 太陽-地球-月球系統 3D 視覺化</h1>
+            <p class="subtitle">探索太陽光如何創造月相變化</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- 3D Canvas -->
+            <div class="canvas-container">
+                <div id="scene-container"></div>
+
+                <!-- Info Overlay -->
+                <div class="info-overlay">
+                    <div class="info-card">
+                        <h3>當前月相</h3>
+                        <div class="moon-phase-display">
+                            <div class="phase-icon" id="phaseIcon"></div>
+                            <div class="phase-info">
+                                <div class="phase-name" id="phaseName">新月</div>
+                                <div class="phase-percentage" id="phasePercentage">0%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>軌道資訊</h3>
+                        <div class="orbital-info">
+                            <div class="info-row">
+                                <span class="label">地球公轉:</span>
+                                <span class="value" id="earthAngle">0°</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">月球公轉:</span>
+                                <span class="value" id="moonAngle">0°</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">模擬速度:</span>
+                                <span class="value" id="speedDisplay">1x</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View Controls -->
+                <div class="view-controls">
+                    <button class="view-btn active" data-view="perspective">透視圖</button>
+                    <button class="view-btn" data-view="top">俯視圖</button>
+                    <button class="view-btn" data-view="side">側視圖</button>
+                    <button class="view-btn" data-view="earth">地球視角</button>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <!-- Playback Controls -->
+                <div class="control-section">
+                    <h3>播放控制</h3>
+                    <div class="playback-controls">
+                        <button class="control-btn primary" id="playPauseBtn">
+                            <span class="icon">▶</span>
+                            <span class="text">播放</span>
+                        </button>
+                        <button class="control-btn" id="resetBtn">
+                            <span class="icon">↻</span>
+                            <span class="text">重置</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Speed Control -->
+                <div class="control-section">
+                    <h3>速度控制</h3>
+                    <div class="slider-control">
+                        <input type="range" id="speedSlider" min="0.1" max="5" step="0.1" value="1">
+                        <div class="slider-labels">
+                            <span>0.1x</span>
+                            <span>5x</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Moon Position Control -->
+                <div class="control-section">
+                    <h3>月球位置</h3>
+                    <div class="slider-control">
+                        <input type="range" id="moonPositionSlider" min="0" max="360" step="1" value="0">
+                        <div class="slider-labels">
+                            <span>0°</span>
+                            <span>360°</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Display Options -->
+                <div class="control-section">
+                    <h3>顯示選項</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showOrbitsCheck" checked>
+                            <span>顯示軌道</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showLabelsCheck" checked>
+                            <span>顯示標籤</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showGridCheck">
+                            <span>顯示網格</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showStarsCheck" checked>
+                            <span>顯示星空</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Moon Phases Reference -->
+                <div class="control-section">
+                    <h3>月相參考</h3>
+                    <div class="moon-phases-grid">
+                        <div class="phase-item" data-angle="0">
+                            <div class="phase-visual new-moon"></div>
+                            <span>新月</span>
+                        </div>
+                        <div class="phase-item" data-angle="45">
+                            <div class="phase-visual waxing-crescent"></div>
+                            <span>眉月</span>
+                        </div>
+                        <div class="phase-item" data-angle="90">
+                            <div class="phase-visual first-quarter"></div>
+                            <span>上弦月</span>
+                        </div>
+                        <div class="phase-item" data-angle="135">
+                            <div class="phase-visual waxing-gibbous"></div>
+                            <span>盈凸月</span>
+                        </div>
+                        <div class="phase-item" data-angle="180">
+                            <div class="phase-visual full-moon"></div>
+                            <span>滿月</span>
+                        </div>
+                        <div class="phase-item" data-angle="225">
+                            <div class="phase-visual waning-gibbous"></div>
+                            <span>虧凸月</span>
+                        </div>
+                        <div class="phase-item" data-angle="270">
+                            <div class="phase-visual last-quarter"></div>
+                            <span>下弦月</span>
+                        </div>
+                        <div class="phase-item" data-angle="315">
+                            <div class="phase-visual waning-crescent"></div>
+                            <span>殘月</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Educational Info -->
+        <div class="educational-section">
+            <div class="edu-card">
+                <h3>💡 月相是如何形成的？</h3>
+                <p>月相的變化是由於月球繞地球公轉時，太陽光照射月球的角度不同而產生的。從地球上看，我們只能看到被太陽照亮的那一面月球。</p>
+            </div>
+            <div class="edu-card">
+                <h3>🌙 月相週期</h3>
+                <p>月球繞地球公轉一周約需29.5天，這個週期稱為「朔望月」。在這段時間內，月相會從新月逐漸變化到滿月，再回到新月。</p>
+            </div>
+            <div class="edu-card">
+                <h3>☀️ 太陽的角色</h3>
+                <p>太陽是唯一的光源。月球本身不發光，我們看到的月光實際上是月球反射的太陽光。太陽、地球、月球三者的相對位置決定了我們看到的月相。</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

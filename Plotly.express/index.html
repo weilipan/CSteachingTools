@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Plotly.express 資料視覺化圖鑑</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Prism.js for Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <span class="icon">📊</span>
+                <span class="text">Plotly<span class="highlight">.express</span></span>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-target="intro">介紹</li>
+                <li data-target="bar">長條圖 (Bar)</li>
+                <li data-target="histogram">直方圖 (Histogram)</li>
+                <li data-target="line">折線圖 (Line)</li>
+                <li data-target="stacked">堆疊圖 (Stacked)</li>
+                <li data-target="pie">圓餅圖 (Pie)</li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            <!-- Intro Section -->
+            <section id="intro" class="section active">
+                <div class="header-hero">
+                    <h1>Python 資料視覺化</h1>
+                    <p class="subtitle">使用 <code>plotly.express</code> 打造互動式圖表</p>
+                    <p class="description">
+                        Plotly Express 是 Python 中一個高層次的資料視覺化庫，它語法簡潔、功能強大，能輕鬆產出互動性極高的圖表。
+                        本指南將帶你快速掌握最常用的五種圖表類型。
+                    </p>
+                </div>
+            </section>
+
+            <!-- Bar Chart Section -->
+            <section id="bar" class="section">
+                <div class="section-header">
+                    <h2>長條圖 <span class="chart-type">Bar Chart</span></h2>
+                    <p>用於比較不同類別之間的數值大小。</p>
+                </div>
+                
+                <div class="card-container">
+                    <div class="code-card">
+                        <div class="card-header">
+                            <span class="lang">Python</span>
+                        </div>
+                        <pre><code class="language-python">import plotly.express as px
+
+# 準備資料
+data = {
+    "City": ["台北", "台中", "高雄", "台南"],
+    "Population": [250, 280, 270, 180]
+}
+
+# 繪製長條圖
+fig = px.bar(
+    data, 
+    x="City", 
+    y="Population", 
+    title="台灣主要城市人口數",
+    color="City"  # 根據城市上色
+)
+fig.show()</code></pre>
+                    </div>
+                    <div class="preview-card">
+                        <div class="card-header">
+                            <span class="label">Interactive Preview</span>
+                        </div>
+                        <div id="plot-bar" class="plot-container"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Histogram Section -->
+            <section id="histogram" class="section">
+                <div class="section-header">
+                    <h2>直方圖 <span class="chart-type">Histogram</span></h2>
+                    <p>用於顯示連續數據的分布情況，了解數據的集中趨勢與離散程度。</p>
+                </div>
+
+                <div class="card-container">
+                    <div class="code-card">
+                        <div class="card-header">
+                            <span class="lang">Python</span>
+                        </div>
+                        <pre><code class="language-python">import plotly.express as px
+import numpy as np
+
+# 產生隨機數據 (假設為學生成績)
+scores = np.random.normal(70, 10, 200)
+
+# 繪製直方圖
+fig = px.histogram(
+    x=scores, 
+    nbins=20, 
+    title="學生成績分布直方圖",
+    labels={'x':'分數', 'y':'人數'},
+    color_discrete_sequence=['#ff7f0e']
+)
+fig.show()</code></pre>
+                    </div>
+                    <div class="preview-card">
+                        <div class="card-header">
+                            <span class="label">Interactive Preview</span>
+                        </div>
+                        <div id="plot-histogram" class="plot-container"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Line Chart Section -->
+            <section id="line" class="section">
+                <div class="section-header">
+                    <h2>折線圖 <span class="chart-type">Line Chart</span></h2>
+                    <p>用於顯示數據隨時間變化的趨勢，適合觀察波動與成長。</p>
+                </div>
+
+                <div class="card-container">
+                    <div class="code-card">
+                        <div class="card-header">
+                            <span class="lang">Python</span>
+                        </div>
+                        <pre><code class="language-python">import plotly.express as px
+
+# 準備時間序列資料
+data = {
+    "Month": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+    "Sales": [100, 120, 150, 170, 160, 200],
+    "Profit": [20, 30, 40, 50, 45, 70]
+}
+
+# 繪製折線圖
+fig = px.line(
+    data, 
+    x="Month", 
+    y=["Sales", "Profit"], 
+    title="上半年營收與利潤趨勢",
+    markers=True # 顯示數據點
+)
+fig.show()</code></pre>
+                    </div>
+                    <div class="preview-card">
+                        <div class="card-header">
+                            <span class="label">Interactive Preview</span>
+                        </div>
+                        <div id="plot-line" class="plot-container"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stacked Chart Section -->
+            <section id="stacked" class="section">
+                <div class="section-header">
+                    <h2>堆疊圖 <span class="chart-type">Stacked Bar Chart</span></h2>
+                    <p>用於顯示各類別內部的組成結構，同時比較總量。</p>
+                </div>
+
+                <div class="card-container">
+                    <div class="code-card">
+                        <div class="card-header">
+                            <span class="lang">Python</span>
+                        </div>
+                        <pre><code class="language-python">import plotly.express as px
+
+# 準備分類資料
+data = {
+    "Year": ["2023", "2023", "2023", "2024", "2024", "2024"],
+    "Product": ["Phone", "Laptop", "Tablet", "Phone", "Laptop", "Tablet"],
+    "Revenue": [500, 300, 150, 600, 350, 200]
+}
+
+# 繪製堆疊長條圖
+fig = px.bar(
+    data, 
+    x="Year", 
+    y="Revenue", 
+    color="Product", # 根據產品堆疊
+    title="年度產品營收結構",
+    barmode="stack" # 預設即為 stack, 也可以用 'group'
+)
+fig.show()</code></pre>
+                    </div>
+                    <div class="preview-card">
+                        <div class="card-header">
+                            <span class="label">Interactive Preview</span>
+                        </div>
+                        <div id="plot-stacked" class="plot-container"></div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- Pie Chart Section -->
+             <section id="pie" class="section">
+                <div class="section-header">
+                    <h2>圓餅圖 <span class="chart-type">Pie Chart</span></h2>
+                    <p>用於顯示各部分佔總體的比例。</p>
+                </div>
+
+                <div class="card-container">
+                    <div class="code-card">
+                        <div class="card-header">
+                            <span class="lang">Python</span>
+                        </div>
+                        <pre><code class="language-python">import plotly.express as px
+
+# 準備資料
+data = {
+    "Browser": ["Chrome", "Edge", "Firefox", "Safari", "Others"],
+    "Usage": [65, 15, 10, 8, 2]
+}
+
+# 繪製圓餅圖
+fig = px.pie(
+    data, 
+    values="Usage", 
+    names="Browser", 
+    title="瀏覽器市佔率",
+    hole=0.4 # 設定中空大小 (變成甜甜圈圖)
+)
+fig.show()</code></pre>
+                    </div>
+                    <div class="preview-card">
+                        <div class="card-header">
+                            <span class="label">Interactive Preview</span>
+                        </div>
+                        <div id="plot-pie" class="plot-container"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Prism JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+</html>
