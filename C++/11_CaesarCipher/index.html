@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>C++ 凱撒密碼加解密 — 互動教學</title>
+    <link rel="stylesheet" href="../../theme.css" />
+    <script src="../../layout.js" defer></script>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            padding-top: 80px;
+            padding-bottom: 60px;
+        }
+
+        .section-title {
+            margin-bottom: 1.2rem;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 1px 7px;
+            border-radius: 5px;
+            font-size: .78rem;
+            font-weight: 700;
+            margin-left: .4rem;
+            background: rgba(124, 156, 252, .18);
+            color: var(--accent, #7c9cfc);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: .45rem 1.1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: .88rem;
+            background: var(--accent, #7c9cfc);
+            color: #1e1e2e;
+            transition: opacity .2s, transform .1s;
+        }
+
+        .btn:active {
+            transform: scale(.96);
+        }
+
+        .btn:hover {
+            opacity: .88;
+        }
+
+        .btn:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
+        .btn.green {
+            background: #a6e3a1;
+        }
+
+        .btn.red {
+            background: #f38ba8;
+        }
+
+        .btn.yellow {
+            background: #f9e2af;
+        }
+
+        .btn.teal {
+            background: #89dceb;
+        }
+
+        .ctrl {
+            display: flex;
+            gap: .6rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            align-items: center;
+        }
+
+        /* Result / terminal */
+        .result-box {
+            margin-top: 1rem;
+            padding: .7rem 1rem;
+            border-radius: 10px;
+            background: var(--bg-secondary, #1e1e2e);
+            border-left: 4px solid var(--accent, #7c9cfc);
+            font-family: monospace;
+            font-size: .92rem;
+            white-space: pre-wrap;
+            min-height: 2.5rem;
+            color: var(--text-primary, #cdd6f4);
+        }
+
+        .terminal {
+            background: #0d0d16;
+            border-radius: 10px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: .9rem;
+            border: 2px solid #333;
+            min-height: 80px;
+            white-space: pre-wrap;
+            color: #a6e3a1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── MOD 1: Alphabet Slider ── */
+        .alpha-row {
+            display: flex;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid var(--border-color, #333);
+            border-radius: 10px;
+            background: var(--bg-secondary, #1e1e2e);
+            padding: .3rem 0;
+        }
+
+        .alpha-track {
+            display: flex;
+            transition: transform .35s ease;
+            min-width: max-content;
+        }
+
+        .alpha-cell {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 1rem;
+            border-right: 1px solid #333;
+            color: var(--text-primary, #cdd6f4);
+            flex-shrink: 0;
+        }
+
+        .alpha-cell.active {
+            background: rgba(124, 156, 252, .3);
+            color: #7c9cfc;
+        }
+
+        .alpha-cell.matched {
+            background: rgba(166, 227, 161, .25);
+            color: #a6e3a1;
+        }
+
+        .alpha-label {
+            font-size: .75rem;
+            color: #888;
+            margin-bottom: .3rem;
+            font-family: monospace;
+        }
+
+        .alpha-frame {
+            position: absolute;
+            top: 0;
+            width: 36px;
+            height: 100%;
+            border: 3px solid #f9e2af;
+            box-sizing: border-box;
+            pointer-events: none;
+            border-radius: 4px;
+            left: 0;
+        }
+
+        input[type=range] {
+            flex: 1;
+            accent-color: var(--accent, #7c9cfc);
+        }
+
+        .key-display {
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #f9e2af;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        /* ── MOD 2: ASCII Bug Bar ── */
+        .ascii-bar {
+            display: flex;
+            gap: 2px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: .5rem 0;
+        }
+
+        .ascii-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+
+        .ascii-box {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #444;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: .8rem;
+            font-weight: bold;
+            color: var(--text-primary, #cdd6f4);
+            transition: all .3s;
+        }
+
+        .ascii-box.alpha-zone {
+            border-color: #7c9cfc;
+            background: rgba(124, 156, 252, .1);
+        }
+
+        .ascii-box.danger-zone {
+            border-color: #f38ba8;
+            background: rgba(243, 139, 168, .15);
+            color: #f38ba8;
+        }
+
+        .ascii-box.cursor-pos {
+            border-color: #f9e2af;
+            background: #f9e2af;
+            color: #1e1e2e;
+            transform: scale(1.2);
+            z-index: 2;
+        }
+
+        .ascii-lbl {
+            font-size: .65rem;
+            color: #666;
+            font-family: monospace;
+        }
+
+        .warn-badge {
+            margin-top: .8rem;
+            padding: .5rem 1rem;
+            border-radius: 8px;
+            background: rgba(243, 139, 168, .15);
+            border: 2px solid #f38ba8;
+            color: #f38ba8;
+            font-family: monospace;
+            font-size: .9rem;
+            display: none;
+        }
+
+        /* ── MOD 3: Step Animation ── */
+        .step-stages {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: .6rem;
+            margin-top: 1rem;
+        }
+
+        @media(max-width:640px) {
+            .step-stages {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .stage-box {
+            border: 2px solid #444;
+            border-radius: 10px;
+            padding: .8rem .6rem;
+            text-align: center;
+            transition: all .4s;
+            opacity: .35;
+            font-family: monospace;
+        }
+
+        .stage-box.active {
+            opacity: 1;
+            border-color: #f9e2af;
+            background: rgba(249, 226, 175, .1);
+        }
+
+        .stage-box.done {
+            opacity: 1;
+            border-color: #a6e3a1;
+            background: rgba(166, 227, 161, .1);
+        }
+
+        .stage-num {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #f9e2af;
+        }
+
+        .stage-title {
+            font-size: .72rem;
+            color: #888;
+            margin: .2rem 0;
+        }
+
+        .stage-formula {
+            font-size: .78rem;
+            color: #cdd6f4;
+            margin: .3rem 0;
+        }
+
+        .mod3-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto .5rem;
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all .5s;
+        }
+
+        /* ── MOD 4: Conveyor ── */
+        .conveyor-wrap {
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #444;
+            border-radius: 10px;
+            background: var(--bg-secondary, #1e1e2e);
+            padding: 1rem;
+        }
+
+        .conveyor-belt {
+            display: flex;
+            gap: .6rem;
+            align-items: center;
+            min-height: 80px;
+            flex-wrap: wrap;
+        }
+
+        .char-token {
+            width: 54px;
+            height: 64px;
+            border: 2px solid #444;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-weight: bold;
+            transition: all .4s;
+            position: relative;
+            font-size: 1.1rem;
+        }
+
+        .char-token.scanning {
+            border-color: #f9e2af;
+            background: rgba(249, 226, 175, .15);
+        }
+
+        .char-token.upper-ch {
+            border-color: #7c9cfc;
+            background: rgba(124, 156, 252, .2);
+            color: #7c9cfc;
+        }
+
+        .char-token.lower-ch {
+            border-color: #a6e3a1;
+            background: rgba(166, 227, 161, .2);
+            color: #a6e3a1;
+        }
+
+        .char-token.pass-ch {
+            border-color: #89dceb;
+            background: rgba(137, 220, 235, .1);
+            color: #89dceb;
+        }
+
+        .char-route {
+            font-size: .65rem;
+            margin-top: .3rem;
+            color: #888;
+        }
+
+        /* ── MOD 5: String Iteration ── */
+        .iter-wrap {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 1rem;
+            align-items: start;
+            margin-top: .8rem;
+        }
+
+        .iter-chars {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .iter-cell {
+            width: 40px;
+            height: 48px;
+            border: 2px solid #444;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-weight: bold;
+            transition: all .3s;
+            font-size: 1rem;
+            gap: 2px;
+        }
+
+        .iter-cell .ch {
+            font-size: 1rem;
+        }
+
+        .iter-cell .idx {
+            font-size: .65rem;
+            color: #666;
+        }
+
+        .iter-cell.scanning {
+            border-color: #f9e2af;
+            background: rgba(249, 226, 175, .15);
+        }
+
+        .iter-cell.done {
+            border-color: #7c9cfc;
+            background: rgba(124, 156, 252, .15);
+        }
+
+        .iter-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #888;
+            padding-top: 1rem;
+        }
+
+        .cipher-cells {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            min-height: 52px;
+        }
+
+        .cipher-cell {
+            width: 40px;
+            height: 48px;
+            border: 2px solid #a6e3a1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-weight: bold;
+            color: #a6e3a1;
+            font-size: 1rem;
+            animation: popIn .3s ease;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            70% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ── MOD 6: Clock ── */
+        .clock-wrap {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .clock-svg-wrap {
+            position: relative;
+            width: 180px;
+            height: 180px;
+        }
+
+        .clock-label {
+            text-align: center;
+            font-family: monospace;
+            font-size: .9rem;
+            margin-top: .5rem;
+        }
+
+        .clock-info {
+            font-size: .9rem;
+            line-height: 1.8;
+            font-family: monospace;
+            color: var(--text-primary, #cdd6f4);
+        }
+
+        /* ── MOD 7: Dual Column ── */
+        .dual-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media(max-width:720px) {
+            .dual-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sim-label {
+            font-size: .85rem;
+            color: #888;
+            margin-bottom: .3rem;
+        }
+
+        .sim-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: .5rem .8rem;
+            border-radius: 8px;
+            border: 2px solid var(--border-color, #333);
+            background: var(--bg-secondary, #1e1e2e);
+            color: var(--text-primary, #cdd6f4);
+            font-family: monospace;
+            font-size: .95rem;
+        }
+
+        .sim-input:focus {
+            outline: none;
+            border-color: var(--accent, #7c9cfc);
+        }
+
+        .console-out {
+            background: #0d0d16;
+            border-radius: 10px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: .88rem;
+            white-space: pre-wrap;
+            color: #a6e3a1;
+            min-height: 60px;
+            margin-top: .8rem;
+            border: 2px solid #333;
+        }
+
+        /* Code panel */
+        .code-panel {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .code-panel pre {
+            margin: 0;
+            padding: 1rem;
+            background: #0d0d16;
+            color: #cdd6f4;
+            font-family: monospace;
+            font-size: .8rem;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            overflow-x: auto;
+            border: 2px solid #333;
+            border-radius: 10px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: .25rem .65rem;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #1a1a2e;
+            color: #cdd6f4;
+            font-size: .75rem;
+            cursor: pointer;
+            transition: all .2s;
+            z-index: 2;
+        }
+
+        .copy-btn:hover {
+            background: #7c9cfc;
+            color: #1e1e2e;
+            border-color: #7c9cfc;
+        }
+
+        /* Syntax highlight */
+        .kw {
+            color: #cba6f7;
+        }
+
+        .fn {
+            color: #89dceb;
+        }
+
+        .str {
+            color: #a6e3a1;
+        }
+
+        .cmt {
+            color: #585b70;
+            font-style: italic;
+        }
+
+        .num {
+            color: #fab387;
+        }
+
+        .inc {
+            color: #f38ba8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- ════════════════ MOD 1 ════════════════ -->
+        <section id="mod1">
+            <h2 class="section-title">① 什麼是凱撒密碼？<span class="tag">位移密碼學</span></h2>
+            <div class="card">
+                <p>凱撒密碼是最古老的加密術之一：把字母表整體「位移」一個固定量 <strong>Key</strong>。<br>拖曳下方拉桿，觀察密碼表的對應關係。</p>
+                <div class="alpha-label">明文字母（固定）</div>
+                <div class="alpha-row" id="m1-plain-row" style="margin-bottom:.5rem;">
+                    <div class="alpha-track" id="m1-plain-track"></div>
+                    <div class="alpha-frame"></div>
+                </div>
+                <div class="alpha-label">密文字母（隨 Key 滑動）</div>
+                <div class="alpha-row" id="m1-cipher-row">
+                    <div class="alpha-track" id="m1-cipher-track"></div>
+                </div>
+                <div class="ctrl" style="margin-top:1rem;">
+                    <span style="font-family:monospace;font-size:.9rem;color:#888;">Key =</span>
+                    <span class="key-display" id="m1-key-val">3</span>
+                    <input type="range" id="m1-slider" min="0" max="25" value="3" />
+                </div>
+                <div class="result-box" id="m1-result">試試不同 Key 值，A → D (Key=3) 表示凱撒常用的位移 3。</div>
+            </div>
+        </section>
+
+        <!-- ════════════════ MOD 2 ════════════════ -->
+        <section id="mod2">
+            <h2 class="section-title">② 初學者大坑：直接加減的慘劇<span class="tag">Wrap-around Bug</span></h2>
+            <div class="card">
+                <p>如果只是 <code>'Z' + 3</code>，ASCII 值 90 + 3 = <strong>93</strong>，對應的是 <code>']'</code> 符號，不是字母！</p>
+                <div class="ascii-bar" id="m2-ascii-bar"></div>
+                <div class="ctrl">
+                    <button class="btn red" id="m2-btn-run">🚨 'Z' + 3 → 結果是？</button>
+                    <button class="btn yellow" id="m2-btn-reset">↺ 重置</button>
+                </div>
+                <div class="warn-badge" id="m2-warn">⚠️ 超出字母範圍！'Z'(90) + 3 = 93 → ']' 不是字母！</div>
+            </div>
+        </section>
+
+        <!-- ════════════════ MOD 3 ════════════════ -->
+        <section id="mod3">
+            <h2 class="section-title">③ 完美解法：歸零與取餘數<span class="tag">Modulo Arithmetic</span></h2>
+            <div class="card">
+                <p>公式：<code>(c - 'A' + key) % 26 + 'A'</code><br>以 <strong>'Y' (89) + key 3</strong> 為例，逐步拆解。</p>
+                <div class="step-stages" id="m3-stages">
+                    <div class="stage-box" id="m3-s0">
+                        <div class="mod3-circle" id="m3-c0" style="border-color:#7c9cfc;color:#7c9cfc;">Y</div>
+                        <div class="stage-title">起始值</div>
+                        <div class="stage-formula">'Y' = 89</div>
+                    </div>
+                    <div class="stage-box" id="m3-s1">
+                        <div class="mod3-circle" id="m3-c1">24</div>
+                        <div class="stage-title">① 歸零 (-'A')</div>
+                        <div class="stage-formula">89 - 65 = 24</div>
+                    </div>
+                    <div class="stage-box" id="m3-s2">
+                        <div class="mod3-circle" id="m3-c2">27</div>
+                        <div class="stage-title">② 加 Key (+3)</div>
+                        <div class="stage-formula">24 + 3 = 27</div>
+                    </div>
+                    <div class="stage-box" id="m3-s3">
+                        <div class="mod3-circle" id="m3-c3">1</div>
+                        <div class="stage-title">③ 取餘數 (%26)</div>
+                        <div class="stage-formula">27 % 26 = 1 🔄</div>
+                    </div>
+                </div>
+                <div class="result-box" id="m3-result" style="display:none;"></div>
+                <div class="ctrl">
+                    <button class="btn" id="m3-btn-play">▶ 逐步演示</button>
+                    <button class="btn yellow" id="m3-btn-reset">↺ 重置</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ════════════════ MOD 4 ════════════════ -->
+        <section id="mod4">
+            <h2 class="section-title">④ 大小寫與標點符號過濾<span class="tag">The Filter</span></h2>
+            <div class="card">
+                <p>使用 <code>&lt;cctype&gt;</code>
+                    的函式進行分揀：<code>isupper()</code>、<code>islower()</code>、<code>isalpha()</code>。</p>
+                <div class="conveyor-wrap">
+                    <div style="font-size:.8rem;color:#888;margin-bottom:.5rem;">▶ 字元分揀輸送帶 — 字串 "Hi, C++"</div>
+                    <div class="conveyor-belt" id="m4-belt"></div>
+                </div>
+                <div class="result-box" id="m4-log" style="min-height:60px;">按下執行後，字元將依序通過分揀器。</div>
+                <div class="ctrl">
+                    <button class="btn" id="m4-btn-run">▶ 開始分揀</button>
+                    <button class="btn yellow" id="m4-btn-reset">↺ 重置</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ════════════════ MOD 5 ════════════════ -->
+        <section id="mod5">
+            <h2 class="section-title">⑤ 字串走訪與組裝<span class="tag">String Iteration</span></h2>
+            <div class="card">
+                <p><code>for</code> 迴圈逐字掃過明文 <code>"Cat"</code>，加密後用 <code>+=</code> 拼接密文。</p>
+                <div class="iter-wrap">
+                    <div>
+                        <div class="alpha-label">明文（plaintext）</div>
+                        <div class="iter-chars" id="m5-plain"></div>
+                    </div>
+                    <div class="iter-arrow" id="m5-arrow">→</div>
+                    <div>
+                        <div class="alpha-label">密文（ciphertext）</div>
+                        <div class="cipher-cells" id="m5-cipher"></div>
+                    </div>
+                </div>
+                <div class="result-box" id="m5-log" style="min-height:50px;">Key = 3 ｜ C→F, a→d, t→w</div>
+                <div class="ctrl">
+                    <button class="btn" id="m5-btn-run">▶ 開始走訪加密</button>
+                    <button class="btn yellow" id="m5-btn-reset">↺ 重置</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ════════════════ MOD 6 ════════════════ -->
+        <section id="mod6">
+            <h2 class="section-title">⑥ 解密大魔王：負數處理<span class="tag">Negative Key</span></h2>
+            <div class="card">
+                <p>解密時 <code>- key</code> 可能產生負數，C++ 取餘數會出錯。<br>解法：將 <code>- key</code> 改為
+                    <code>+ (26 - key)</code>，等效且安全。
+                </p>
+                <div class="clock-wrap">
+                    <div>
+                        <svg id="m6-clock-a" width="180" height="180" viewBox="0 0 180 180"></svg>
+                        <div class="clock-label" style="color:#f38ba8;">❌ 直接 -3（逆時針）</div>
+                    </div>
+                    <div style="font-size:2rem;color:#888;align-self:center;">=</div>
+                    <div>
+                        <svg id="m6-clock-b" width="180" height="180" viewBox="0 0 180 180"></svg>
+                        <div class="clock-label" style="color:#a6e3a1;">✅ +23（順時針）</div>
+                    </div>
+                </div>
+                <div class="clock-info" id="m6-info" style="text-align:center;margin-top:.8rem;color:#888;">點擊按鈕查看動畫
+                </div>
+                <div class="ctrl" style="justify-content:center;">
+                    <button class="btn" id="m6-btn-run">🕐 播放時鐘動畫</button>
+                    <button class="btn yellow" id="m6-btn-reset">↺ 重置</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ════════════════ MOD 7 ════════════════ -->
+        <section id="mod7">
+            <h2 class="section-title">⑦ 🌟 終極實戰<span class="tag">Interactive Simulator + Full Code</span></h2>
+            <div class="card">
+                <div class="dual-col">
+                    <!-- Left: Simulator -->
+                    <div>
+                        <div class="sim-label">輸入明文 / 密文</div>
+                        <input class="sim-input" id="m7-text" value="Hello, World!" placeholder="輸入文字…" />
+                        <div class="ctrl" style="margin-top:.6rem;">
+                            <span style="font-family:monospace;font-size:.9rem;color:#888;">Key =</span>
+                            <span class="key-display" id="m7-key-val">3</span>
+                            <input type="range" id="m7-slider" min="1" max="25" value="3"
+                                style="flex:1;accent-color:var(--accent,#7c9cfc);" />
+                        </div>
+                        <div class="ctrl">
+                            <button class="btn" id="m7-btn-enc">🔐 執行加密</button>
+                            <button class="btn teal" id="m7-btn-dec">🔓 執行解密</button>
+                        </div>
+                        <div class="sim-label" style="margin-top:.8rem;">Console 輸出</div>
+                        <div class="console-out" id="m7-console">// 結果會顯示在這裡…</div>
+                    </div>
+                    <!-- Right: Code -->
+                    <div class="code-panel">
+                        <button class="copy-btn" id="m7-copy">📋 複製</button>
+                        <pre id="m7-code"><span class="inc">#include</span> <span class="str">&lt;iostream&gt;</span>
+<span class="inc">#include</span> <span class="str">&lt;string&gt;</span>
+<span class="inc">#include</span> <span class="str">&lt;cctype&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="cmt">// 加密單一字元</span>
+<span class="kw">char</span> <span class="fn">encryptChar</span>(<span class="kw">char</span> c, <span class="kw">int</span> key) {
+    <span class="kw">if</span> (<span class="fn">isupper</span>(c))
+        <span class="kw">return</span> (c - <span class="str">'A'</span> + key) % <span class="num">26</span> + <span class="str">'A'</span>;
+    <span class="kw">if</span> (<span class="fn">islower</span>(c))
+        <span class="kw">return</span> (c - <span class="str">'a'</span> + key) % <span class="num">26</span> + <span class="str">'a'</span>;
+    <span class="kw">return</span> c; <span class="cmt">// 標點/空白原封不動</span>
+}
+
+<span class="cmt">// 解密單一字元（負數解法）</span>
+<span class="kw">char</span> <span class="fn">decryptChar</span>(<span class="kw">char</span> c, <span class="kw">int</span> key) {
+    <span class="kw">if</span> (<span class="fn">isupper</span>(c))
+        <span class="kw">return</span> (c - <span class="str">'A'</span> + <span class="num">26</span> - key) % <span class="num">26</span> + <span class="str">'A'</span>;
+    <span class="kw">if</span> (<span class="fn">islower</span>(c))
+        <span class="kw">return</span> (c - <span class="str">'a'</span> + <span class="num">26</span> - key) % <span class="num">26</span> + <span class="str">'a'</span>;
+    <span class="kw">return</span> c;
+}
+
+<span class="cmt">// 走訪字串，組裝結果</span>
+string <span class="fn">caesar</span>(string text, <span class="kw">int</span> key, <span class="kw">bool</span> encrypt) {
+    string result = <span class="str">""</span>;
+    <span class="kw">for</span> (<span class="kw">char</span> c : text) {
+        <span class="kw">if</span> (encrypt) result += <span class="fn">encryptChar</span>(c, key);
+        <span class="kw">else</span>        result += <span class="fn">decryptChar</span>(c, key);
+    }
+    <span class="kw">return</span> result;
+}
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    string plain = <span class="str">"Hello, World!"</span>;
+    <span class="kw">int</span> key = <span class="num">3</span>;
+
+    string cipher  = <span class="fn">caesar</span>(plain,  key, <span class="kw">true</span>);
+    string decoded = <span class="fn">caesar</span>(cipher, key, <span class="kw">false</span>);
+
+    cout &lt;&lt; <span class="str">"明文:  "</span> &lt;&lt; plain   &lt;&lt; endl;
+    cout &lt;&lt; <span class="str">"密文:  "</span> &lt;&lt; cipher  &lt;&lt; endl;
+    cout &lt;&lt; <span class="str">"解密:  "</span> &lt;&lt; decoded &lt;&lt; endl;
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div><!-- /.container -->
+
+    <script>
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+
+        /* ══ MOD 1: Alphabet Slider ══ */
+        (function () {
+            const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const plainTrack = document.getElementById('m1-plain-track');
+            const cipherTrack = document.getElementById('m1-cipher-track');
+            const slider = document.getElementById('m1-slider');
+            const keyVal = document.getElementById('m1-key-val');
+            const result = document.getElementById('m1-result');
+
+            function buildRow(track, letters, cls) {
+                track.innerHTML = '';
+                for (let l of letters) {
+                    const d = document.createElement('div');
+                    d.className = 'alpha-cell' + (cls ? ' ' + cls : '');
+                    d.textContent = l;
+                    track.appendChild(d);
+                }
+            }
+
+            function update() {
+                const k = parseInt(slider.value);
+                keyVal.textContent = k;
+                buildRow(plainTrack, ALPHA, 'active');
+                // Rotate alphabet by k
+                const rotated = ALPHA.slice(k) + ALPHA.slice(0, k);
+                buildRow(cipherTrack, rotated, 'matched');
+                result.textContent = `Key = ${k} ｜ 'A' → '${rotated[0]}' ｜ 'Z' → '${rotated[25]}'\n明文 ${ALPHA[0]}${ALPHA[1]}${ALPHA[2]}…${ALPHA[25]} 對應密文 ${rotated[0]}${rotated[1]}${rotated[2]}…${rotated[25]}`;
+            }
+
+            slider.addEventListener('input', update);
+            update();
+        })();
+
+        /* ══ MOD 2: ASCII Bug Bar ══ */
+        (function () {
+            const bar = document.getElementById('m2-ascii-bar');
+            const warn = document.getElementById('m2-warn');
+            // Show chars from 'W'(87) to ']'(93)
+            const CHARS = [];
+            for (let i = 87; i <= 95; i++) CHARS.push(i);
+
+            function buildBar(cursorCode) {
+                bar.innerHTML = '';
+                for (let code of CHARS) {
+                    const ch = String.fromCharCode(code);
+                    const isAlpha = (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+                    const isCursor = code === cursorCode;
+                    const item = document.createElement('div');
+                    item.className = 'ascii-item';
+                    const box = document.createElement('div');
+                    box.className = 'ascii-box' + (isCursor ? ' cursor-pos' : isAlpha ? ' alpha-zone' : ' danger-zone');
+                    box.textContent = ch;
+                    const lbl = document.createElement('div');
+                    lbl.className = 'ascii-lbl';
+                    lbl.textContent = code;
+                    item.appendChild(box);
+                    item.appendChild(lbl);
+                    bar.appendChild(item);
+                }
+            }
+
+            async function runBug() {
+                document.getElementById('m2-btn-run').disabled = true;
+                warn.style.display = 'none';
+                buildBar(90); // 'Z'
+                await delay(700);
+                buildBar(93); // ']'
+                await delay(500);
+                warn.style.display = 'block';
+                document.getElementById('m2-btn-run').disabled = false;
+            }
+
+            function reset() {
+                warn.style.display = 'none';
+                buildBar(90);
+            }
+
+            document.getElementById('m2-btn-run').addEventListener('click', runBug);
+            document.getElementById('m2-btn-reset').addEventListener('click', reset);
+            buildBar(90);
+        })();
+
+        /* ══ MOD 3: Step Animation ══ */
+        (function () {
+            const stages = [
+                { id: 'm3-s0', cid: 'm3-c0', color: '#7c9cfc', val: 'Y\n89' },
+                { id: 'm3-s1', cid: 'm3-c1', color: '#89dceb', val: '24' },
+                { id: 'm3-s2', cid: 'm3-c2', color: '#f9e2af', val: '27' },
+                { id: 'm3-s3', cid: 'm3-c3', color: '#cba6f7', val: '1 🔄' },
+            ];
+            const result = document.getElementById('m3-result');
+            let running = false;
+
+            function reset() {
+                running = false;
+                stages.forEach(s => {
+                    const box = document.getElementById(s.id);
+                    box.className = 'stage-box';
+                    const circ = document.getElementById(s.cid);
+                    circ.style.borderColor = '#444';
+                    circ.style.color = '#cdd6f4';
+                    circ.style.background = 'transparent';
+                });
+                result.style.display = 'none';
+                document.getElementById('m3-btn-play').disabled = false;
+            }
+
+            async function play() {
+                if (running) return;
+                running = true;
+                document.getElementById('m3-btn-play').disabled = true;
+                reset();
+                running = true;
+
+                // Stage 0 light up
+                const s0 = document.getElementById('m3-s0');
+                const c0 = document.getElementById('m3-c0');
+                s0.className = 'stage-box active';
+                c0.style.borderColor = '#7c9cfc'; c0.style.color = '#7c9cfc';
+                await delay(800);
+                s0.className = 'stage-box done';
+
+                const steps = [
+                    { i: 1, color: '#89dceb', bg: 'rgba(137,220,235,.15)' },
+                    { i: 2, color: '#f9e2af', bg: 'rgba(249,226,175,.15)' },
+                    { i: 3, color: '#cba6f7', bg: 'rgba(203,166,247,.15)' },
+                ];
+                for (const st of steps) {
+                    const box = document.getElementById('m3-s' + st.i);
+                    const circ = document.getElementById('m3-c' + st.i);
+                    box.className = 'stage-box active';
+                    circ.style.borderColor = st.color;
+                    circ.style.color = st.color;
+                    circ.style.background = st.bg;
+                    await delay(900);
+                    box.className = 'stage-box done';
+                }
+
+                result.style.display = 'block';
+                result.textContent = "① 89 - 65 = 24  (歸零到 0~25)\n② 24 + 3  = 27  (加上 Key)\n③ 27 % 26 = 1   (繞回字母表頭！)\n④  1 + 65 = 66  → 'B'\n\n∴ 'Y' 加密 Key=3 → 'B' ✅";
+                running = false;
+                document.getElementById('m3-btn-play').disabled = false;
+            }
+
+            document.getElementById('m3-btn-play').addEventListener('click', play);
+            document.getElementById('m3-btn-reset').addEventListener('click', reset);
+        })();
+
+        /* ══ MOD 4: Conveyor Belt ══ */
+        (function () {
+            const INPUT = 'Hi, C++';
+            const belt = document.getElementById('m4-belt');
+            const log = document.getElementById('m4-log');
+            let running = false;
+
+            function reset() {
+                running = false;
+                belt.innerHTML = '';
+                log.textContent = '按下執行後，字元將依序通過分揀器。';
+                document.getElementById('m4-btn-run').disabled = false;
+            }
+
+            function makeToken(ch) {
+                const d = document.createElement('div');
+                d.className = 'char-token';
+                d.innerHTML = `<span>${ch === ' ' ? '␣' : ch}</span><span class="char-route"></span>`;
+                return d;
+            }
+
+            async function run() {
+                if (running) return;
+                running = true;
+                document.getElementById('m4-btn-run').disabled = true;
+                belt.innerHTML = '';
+                log.textContent = '';
+
+                for (const ch of INPUT) {
+                    const tok = makeToken(ch);
+                    belt.appendChild(tok);
+                    tok.classList.add('scanning');
+                    await delay(400);
+
+                    const route = tok.querySelector('.char-route');
+                    if (ch >= 'A' && ch <= 'Z') {
+                        tok.classList.remove('scanning');
+                        tok.classList.add('upper-ch');
+                        route.textContent = 'isupper()✓';
+                        log.textContent += `'${ch}': isupper()=true → 大寫公式 (c-'A'+key)%26+'A'\n`;
+                    } else if (ch >= 'a' && ch <= 'z') {
+                        tok.classList.remove('scanning');
+                        tok.classList.add('lower-ch');
+                        route.textContent = 'islower()✓';
+                        log.textContent += `'${ch}': islower()=true → 小寫公式 (c-'a'+key)%26+'a'\n`;
+                    } else {
+                        tok.classList.remove('scanning');
+                        tok.classList.add('pass-ch');
+                        route.textContent = 'isalpha()✗';
+                        log.textContent += `'${ch === ' ' ? '空白' : ch}': isalpha()=false → 原封不動放行\n`;
+                    }
+                    await delay(300);
+                }
+                log.textContent += '\n✅ 分揀完成！大寫/小寫/符號各走不同通道。';
+                running = false;
+                document.getElementById('m4-btn-run').disabled = false;
+            }
+
+            document.getElementById('m4-btn-run').addEventListener('click', run);
+            document.getElementById('m4-btn-reset').addEventListener('click', reset);
+        })();
+
+        /* ══ MOD 5: String Iteration ══ */
+        (function () {
+            const PLAIN = 'Cat';
+            const KEY = 3;
+            const plainEl = document.getElementById('m5-plain');
+            const cipherEl = document.getElementById('m5-cipher');
+            const logEl = document.getElementById('m5-log');
+            let running = false;
+
+            function encChar(c) {
+                if (c >= 'A' && c <= 'Z') return String.fromCharCode((c.charCodeAt(0) - 65 + KEY) % 26 + 65);
+                if (c >= 'a' && c <= 'z') return String.fromCharCode((c.charCodeAt(0) - 97 + KEY) % 26 + 97);
+                return c;
+            }
+
+            function buildPlain() {
+                plainEl.innerHTML = '';
+                PLAIN.split('').forEach((ch, i) => {
+                    const d = document.createElement('div');
+                    d.className = 'iter-cell';
+                    d.id = 'm5-p' + i;
+                    d.innerHTML = `<span class="ch">${ch}</span><span class="idx">[${i}]</span>`;
+                    plainEl.appendChild(d);
+                });
+            }
+
+            function reset() {
+                running = false;
+                buildPlain();
+                cipherEl.innerHTML = '';
+                logEl.textContent = 'Key = 3 ｜ C→F, a→d, t→w';
+                document.getElementById('m5-btn-run').disabled = false;
+            }
+
+            async function run() {
+                if (running) return;
+                running = true;
+                document.getElementById('m5-btn-run').disabled = true;
+                buildPlain();
+                cipherEl.innerHTML = '';
+                logEl.textContent = 'cipher = "";\n';
+
+                for (let i = 0; i < PLAIN.length; i++) {
+                    const ch = PLAIN[i];
+                    const enc = encChar(ch);
+                    const cell = document.getElementById('m5-p' + i);
+                    cell.classList.add('scanning');
+                    await delay(600);
+                    cell.classList.remove('scanning');
+                    cell.classList.add('done');
+
+                    const cc = document.createElement('div');
+                    cc.className = 'cipher-cell';
+                    cc.textContent = enc;
+                    cipherEl.appendChild(cc);
+
+                    logEl.textContent += `i=${i}: '${ch}'(${ch.charCodeAt(0)}) → '${enc}'(${enc.charCodeAt(0)})\ncipher += '${enc}';\n`;
+                    await delay(400);
+                }
+                logEl.textContent += `\n✅ cipher = "${PLAIN.split('').map(encChar).join('')}"`;
+                running = false;
+                document.getElementById('m5-btn-run').disabled = false;
+            }
+
+            document.getElementById('m5-btn-run').addEventListener('click', run);
+            document.getElementById('m5-btn-reset').addEventListener('click', reset);
+            buildPlain();
+        })();
+
+        /* ══ MOD 6: Clock Animation ══ */
+        (function () {
+            const svgA = document.getElementById('m6-clock-a');
+            const svgB = document.getElementById('m6-clock-b');
+            const info = document.getElementById('m6-info');
+            const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let running = false;
+
+            function drawClock(svg, highlightIdx, color, sweepDeg, trail) {
+                svg.innerHTML = '';
+                const cx = 90, cy = 90, r = 72, innerR = 58;
+                // Outer circle
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', cx); circle.setAttribute('cy', cy);
+                circle.setAttribute('r', r); circle.setAttribute('fill', '#0d0d16');
+                circle.setAttribute('stroke', '#333'); circle.setAttribute('stroke-width', '2');
+                svg.appendChild(circle);
+
+                // Letter dots
+                const N = 26;
+                for (let i = 0; i < N; i++) {
+                    const angle = (i / N) * 2 * Math.PI - Math.PI / 2;
+                    const x = cx + innerR * Math.cos(angle);
+                    const y = cy + innerR * Math.sin(angle);
+                    const inTrail = trail && trail.includes(i);
+                    const isHighlight = i === highlightIdx;
+                    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    dot.setAttribute('cx', x.toFixed(1));
+                    dot.setAttribute('cy', y.toFixed(1));
+                    dot.setAttribute('r', isHighlight ? 8 : 4);
+                    dot.setAttribute('fill', isHighlight ? color : inTrail ? color + '66' : '#333');
+                    svg.appendChild(dot);
+                    if (i % 6 === 0 || isHighlight) {
+                        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        const tx = cx + (innerR + 14) * Math.cos(angle);
+                        const ty = cy + (innerR + 14) * Math.sin(angle);
+                        txt.setAttribute('x', tx.toFixed(1));
+                        txt.setAttribute('y', ty.toFixed(1));
+                        txt.setAttribute('text-anchor', 'middle');
+                        txt.setAttribute('dominant-baseline', 'middle');
+                        txt.setAttribute('fill', isHighlight ? color : '#555');
+                        txt.setAttribute('font-size', '10');
+                        txt.setAttribute('font-family', 'monospace');
+                        txt.textContent = LETTERS[i];
+                        svg.appendChild(txt);
+                    }
+                }
+            }
+
+            function reset() {
+                running = false;
+                // Z is index 25
+                drawClock(svgA, 25, '#f38ba8', 0, null);
+                drawClock(svgB, 25, '#a6e3a1', 0, null);
+                info.style.color = '#888';
+                info.textContent = '點擊按鈕查看動畫';
+                document.getElementById('m6-btn-run').disabled = false;
+            }
+
+            async function run() {
+                if (running) return;
+                running = true;
+                document.getElementById('m6-btn-run').disabled = true;
+
+                // Clock A: -3 (counterclockwise from Z=25 → 22=W)
+                // But in alphabet terms: Z-3 = W
+                info.textContent = "起始位置：Z (index 25)";
+                info.style.color = '#cdd6f4';
+                await delay(600);
+
+                // Animate clockA going backwards 3 steps
+                const trailA = [];
+                for (let step = 1; step <= 3; step++) {
+                    const idx = (25 - step + 26) % 26;
+                    trailA.push(idx);
+                    drawClock(svgA, idx, '#f38ba8', 0, [...trailA]);
+                    await delay(500);
+                }
+                info.textContent = "❌ 逆時針走 3 格：Z → W (index 22)\n   但 'Z'-'A' - 3 = 22，這裡沒問題…";
+                await delay(800);
+                info.textContent = "⚠️ 問題：'A'-3 時 → 0-3 = -3！C++ 的 -3%26 = -3 (非 23)！";
+                info.style.color = '#f38ba8';
+                await delay(1200);
+
+                // Clock B: +23 (clockwise 23 steps from Z=25)
+                const trailB = [];
+                info.style.color = '#cdd6f4';
+                info.textContent = "✅ 改用 +(26-3)=+23，順時針走 23 格";
+                for (let step = 1; step <= 23; step++) {
+                    const idx = (25 + step) % 26;
+                    trailB.push(idx);
+                    drawClock(svgB, idx, '#a6e3a1', 0, step <= 3 ? trailB.slice(-3) : trailB.slice(-5));
+                    await delay(80);
+                }
+                await delay(500);
+                info.textContent = "✅ -3 ≡ +23 (mod 26)\n   兩者都到達同一個位置！\n   解密公式：(c - 'A' + 26 - key) % 26 + 'A'";
+                info.style.color = '#a6e3a1';
+                running = false;
+                document.getElementById('m6-btn-run').disabled = false;
+            }
+
+            document.getElementById('m6-btn-run').addEventListener('click', run);
+            document.getElementById('m6-btn-reset').addEventListener('click', reset);
+            reset();
+        })();
+
+        /* ══ MOD 7: Simulator + Copy ══ */
+        (function () {
+            const slider = document.getElementById('m7-slider');
+            const keyVal = document.getElementById('m7-key-val');
+            const txt = document.getElementById('m7-text');
+            const cons = document.getElementById('m7-console');
+            const copyBtn = document.getElementById('m7-copy');
+            const code = document.getElementById('m7-code');
+
+            slider.addEventListener('input', () => { keyVal.textContent = slider.value; });
+
+            function encChar(c, key) {
+                const C = c.charCodeAt(0);
+                if (C >= 65 && C <= 90) return String.fromCharCode((C - 65 + key) % 26 + 65);
+                if (C >= 97 && C <= 122) return String.fromCharCode((C - 97 + key) % 26 + 97);
+                return c;
+            }
+            function decChar(c, key) {
+                const C = c.charCodeAt(0);
+                if (C >= 65 && C <= 90) return String.fromCharCode((C - 65 + 26 - key) % 26 + 65);
+                if (C >= 97 && C <= 122) return String.fromCharCode((C - 97 + 26 - key) % 26 + 97);
+                return c;
+            }
+            function process(mode) {
+                const key = parseInt(slider.value);
+                const input = txt.value;
+                const output = input.split('').map(c => mode === 'enc' ? encChar(c, key) : decChar(c, key)).join('');
+                const op = mode === 'enc' ? '加密' : '解密';
+                cons.textContent = `// Key = ${key}，執行${op}\n輸入: "${input}"\n輸出: "${output}"\n\n// ${mode === 'enc' ? '公式: (c - base + key) % 26 + base' : '公式: (c - base + 26 - key) % 26 + base'}`;
+            }
+
+            document.getElementById('m7-btn-enc').addEventListener('click', () => process('enc'));
+            document.getElementById('m7-btn-dec').addEventListener('click', () => process('dec'));
+
+            copyBtn.addEventListener('click', () => {
+                const raw = code.innerText;
+                navigator.clipboard.writeText(raw).then(() => {
+                    copyBtn.textContent = '✅ 已複製';
+                    setTimeout(() => { copyBtn.textContent = '📋 複製'; }, 2000);
+                }).catch(() => {
+                    copyBtn.textContent = '❌ 失敗';
+                    setTimeout(() => { copyBtn.textContent = '📋 複製'; }, 2000);
+                });
+            });
+        })();
+    </script>
+</body>
+
+</html>
