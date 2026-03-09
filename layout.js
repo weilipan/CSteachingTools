@@ -1,0 +1,21 @@
+// layout.js
+document.addEventListener("DOMContentLoaded", function() {
+    // 定義全站共用的標頭
+    const headerHTML = `
+        <header style="background-color: #24292e; color: white; padding: 1rem 2rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h1 style="margin: 0; font-size: 1.5rem; font-weight: 600;">基礎程式視覺化模擬網站</h1>
+        </header>
+    `;
+
+    // 定義全站共用的頁尾
+    const footerHTML = `
+        <footer style="text-align: center; padding: 30px 20px; color: #586069; font-size: 0.9rem; border-top: 1px solid #e1e4e8; margin-top: 50px; background-color: #fafbfc;">
+            &copy; 2026 建中資訊科潘威歷師程式語言教學庫
+        </footer>
+    `;
+
+    // 將標頭插入到 body 的最前面
+    document.body.insertAdjacentHTML('afterbegin', headerHTML);
+    // 將頁尾插入到 body 的最後面
+    document.body.insertAdjacentHTML('beforeend', footerHTML);
+});

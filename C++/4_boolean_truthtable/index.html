@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ 真值表與布林變數 - 互動式視覺化教學</title>
+<meta name="description" content="互動式 C++ 布林變數與真值表教學，涵蓋布林基礎、關係運算子、AND/OR/NOT/XOR 真值表、短路求值及複合運算式五大主題。">
+
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../layout.js" defer></script>
+
+<style>
+/* ── 本頁專用的元件與互動樣式 (明亮風格) ── */
+:root {
+  --surface: #f6f8fa;
+  --accent2: #005cc5;
+  --accent3: #e36209;
+  --green: #28a745;
+  --red: #d73a49;
+}
+
+code, .mono { font-family: 'Courier New', Courier, monospace; }
+
+/* ── Inputs & Buttons ── */
+input[type="number"], input[type="range"], input[type="text"], select {
+  background: #fff; border: 1px solid var(--border-color); color: var(--text-main);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-family: monospace; font-size: 0.95rem; outline: none;
+  transition: border-color .2s;
+}
+input[type="number"]:focus, input[type="text"]:focus, select:focus { border-color: var(--accent-color); }
+input[type="number"] { width: 80px; }
+input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
+
+/* ── Helpers ── */
+.row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media(max-width:640px){ .grid2 { grid-template-columns: 1fr; } }
+.result-box { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem 1.2rem; margin-top: 1rem; font-family: monospace; font-size: .95rem; line-height: 1.8; }
+.divider { height: 1px; background: var(--border-color); margin: 1.5rem 0; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.fade-in { animation: fadeIn .35s ease; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
+
+/* ── Highlight Tags ── */
+.hi { background: #e1f5fe; border-radius: 4px; padding: 2px 6px; color: var(--accent-color); font-weight: bold; }
+.hi-green { background: #d4edda; color: var(--green); border-radius: 4px; padding: 2px 6px; font-weight: bold; }
+.hi-red { background: #f8d7da; color: var(--red); border-radius: 4px; padding: 2px 6px; font-weight: bold; }
+
+/* ═══════════════════════════════════════════
+   MODULE 1 – Boolean Basics
+═══════════════════════════════════════════ */
+.switch-wrapper { display: flex; align-items: center; gap: 3rem; justify-content: center; margin: 1.5rem 0; }
+.switch-label { font-size: .9rem; color: var(--text-muted); margin-bottom: .5rem; font-weight: bold; text-align: center; }
+
+/* Toggle */
+.toggle-track { position: relative; width: 64px; height: 32px; border-radius: 16px; cursor: pointer; background: #d1d5db; transition: background .3s; border: none; outline: none; }
+.toggle-track.on { background: var(--green); }
+.toggle-thumb { position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.toggle-track.on .toggle-thumb { transform: translateX(32px); }
+
+/* Bulb */
+.bulb-area { text-align: center; }
+.bulb-icon { font-size: 4rem; line-height: 1; transition: filter .4s, transform .4s; filter: grayscale(1) opacity(0.5); }
+.bulb-icon.lit { filter: grayscale(0) drop-shadow(0 0 15px #ffd33d) brightness(1.2); animation: pulse 1s ease-in-out infinite; }
+.bool-badge { margin-top: .5rem; font-family: monospace; font-size: 1.5rem; font-weight: 700; }
+.bool-badge .val-word { color: var(--green); }
+.bool-badge .val-word.off { color: var(--red); }
+.bool-badge .val-num { font-size: 1rem; color: var(--text-muted); margin-left: .5rem; font-family: sans-serif; font-weight: normal; }
+.bool-cpp { margin-top: 1rem; background: var(--surface); border-radius: 8px; padding: 1rem; font-family: monospace; border-left: 4px solid var(--accent-color); }
+
+/* ═══════════════════════════════════════════
+   MODULE 2 – Relational Operators
+═══════════════════════════════════════════ */
+.rel-row { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; margin-bottom: 1rem; margin-top: 15px; }
+.rel-row label { font-size: .95rem; font-weight: bold; display: flex; align-items: center; gap: .4rem; }
+.rel-result { background: #fff; border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 1.05rem; border: 2px solid var(--border-color); transition: border-color .3s; }
+.rel-result.true { border-color: var(--green); background: #f0fdf4; }
+.rel-result.false { border-color: var(--red); background: #fef2f2; }
+
+/* = vs == warning */
+.eq-warning { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+@media(max-width:520px){ .eq-warning { grid-template-columns: 1fr; } }
+.eq-card { border-radius: 8px; padding: 1rem; font-family: monospace; font-size: .9rem; border: 1px solid var(--border-color); background: #fff; }
+.eq-card.compare { border-left: 4px solid var(--green); }
+.eq-card.assign  { border-left: 4px solid var(--red); }
+.eq-card .eq-op { font-size: 1.5rem; font-weight: 700; margin-bottom: .3rem; }
+.eq-card.compare .eq-op { color: var(--green); }
+.eq-card.assign  .eq-op { color: var(--red); }
+.eq-card .eq-desc { color: var(--text-muted); font-size: .85rem; font-family: sans-serif; margin-top: .5rem; line-height: 1.5; }
+
+/* ═══════════════════════════════════════════
+   MODULE 3 – Truth Table
+═══════════════════════════════════════════ */
+.pq-controls { display: flex; gap: 2rem; justify-content: center; margin: 1.5rem 0; flex-wrap: wrap; }
+.pq-btn-wrap { text-align: center; }
+.pq-btn-label { font-size: .9rem; font-weight: bold; margin-bottom: .5rem; }
+.pq-btn { width: 80px; padding: .5rem; border-radius: 20px; border: 2px solid var(--border-color); cursor: pointer; font-weight: 700; font-size: .95rem; transition: all .2s; background: var(--surface); color: var(--text-muted); }
+.pq-btn.on { background: var(--green); border-color: var(--green); color: #fff; }
+.pq-btn.off { background: var(--red); border-color: var(--red); color: #fff; }
+
+.tt-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+@media(max-width:600px){ .tt-grid { grid-template-columns: 1fr; } }
+.tt-card { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+.tt-head { background: var(--surface); padding: .6rem 1rem; display: flex; align-items: center; gap: .5rem; border-bottom: 1px solid var(--border-color); }
+.tt-head .op-badge { font-family: monospace; font-weight: 700; font-size: 1.1rem; color: var(--accent-color); }
+.tt-head .op-name { font-size: .85rem; color: var(--text-muted); font-weight: bold; }
+table.tt { width: 100%; border-collapse: collapse; font-family: monospace; font-size: .95rem; }
+table.tt th { background: #fff; padding: .6rem; color: var(--text-muted); font-weight: bold; text-align: center; border-bottom: 1px solid var(--border-color); }
+table.tt td { padding: .6rem; text-align: center; border-bottom: 1px solid #f0f0f0; transition: background .2s; }
+table.tt tr:last-child td { border-bottom: none; }
+table.tt tr.highlight-row td { background: #e6f2ff; color: var(--text-main); font-weight: 700; }
+table.tt tr.highlight-row td:last-child.result-true { color: var(--green); }
+table.tt tr.highlight-row td:last-child.result-false { color: var(--red); }
+td.result-true  { color: var(--green); font-weight: bold; }
+td.result-false { color: var(--red); font-weight: bold; }
+
+/* ═══════════════════════════════════════════
+   MODULE 4 – Short-Circuit Evaluation
+═══════════════════════════════════════════ */
+.sc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 15px;}
+@media(max-width:600px){ .sc-grid { grid-template-columns: 1fr; } }
+.sc-demo { background: #fff; border-radius: 8px; padding: 1.5rem; border: 1px solid var(--border-color); }
+.sc-demo h4 { font-family: monospace; color: var(--accent-color); font-size: 1.1rem; margin-top: 0; margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+.sc-var-row { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+.sc-tag { font-size: .85rem; font-weight: bold; margin-bottom: 5px; }
+.sc-expr { display: flex; align-items: center; gap: .5rem; font-family: monospace; font-size: 1.1rem; margin: 1rem 0; padding: 10px; background: var(--surface); border-radius: 6px; }
+.sc-part { padding: .2rem .6rem; border-radius: 4px; transition: all .4s; font-weight: bold; }
+.sc-part.cond { background: #cce5ff; color: var(--accent2); }
+.sc-part.op   { color: var(--text-main); }
+.sc-part.side { background: #ffeeba; color: var(--accent3); position: relative; }
+.sc-part.side.blocked { background: #e2e3e5; color: #6c757d; text-decoration: line-through; }
+.sc-part.side.blocked::after { content: '✕'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 1.5rem; color: var(--red); opacity: 0.8; }
+.sc-part.side.pass { background: #d4edda; color: var(--green); }
+.sc-counter { font-size: .95rem; margin-top: .5rem; color: var(--text-main); font-weight: bold; }
+.sc-counter span { font-family: monospace; color: var(--accent-color); font-size: 1.2rem; }
+.sc-msg { margin-top: 1rem; padding: .8rem; border-radius: 6px; font-size: .9rem; font-weight: bold; transition: all .3s; }
+.sc-msg.blocked { background: #f8d7da; color: var(--red); border: 1px solid #f5c6cb; }
+.sc-msg.pass    { background: #d4edda; color: var(--green); border: 1px solid #c3e6cb; }
+
+/* ═══════════════════════════════════════════
+   MODULE 5 – Sandbox (Roller Coaster)
+═══════════════════════════════════════════ */
+.sb-controls { display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: 1.5rem; margin-top: 15px; }
+.sb-control-item label { font-size: .95rem; font-weight: bold; display: block; margin-bottom: .5rem; }
+.sb-control-item input[type="range"] { width: 240px; }
+.sb-height-val { font-family: monospace; font-weight: 700; font-size: 1.3rem; color: var(--accent-color); margin-left: .5rem; }
+.sb-checkbox-wrap { display: flex; align-items: center; gap: .6rem; cursor: pointer; background: var(--surface); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); }
+.sb-checkbox-wrap input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--red); cursor: pointer; }
+.sb-checkbox-label { font-size: .95rem; font-weight: bold; }
+
+.sb-parse { background: var(--surface); border-radius: 8px; padding: 1.2rem; border-left: 4px solid var(--accent-color); font-family: monospace; }
+.sb-line { margin: .5rem 0; font-size: 1rem; }
+.sb-line .arrow { color: var(--accent-color); margin: 0 .5rem; font-weight: bold; }
+.sb-final { margin-top: 1rem; padding: 1rem; border-radius: 8px; font-size: 1.1rem; font-weight: 700; text-align: center; transition: all .3s; background: #fff; }
+.sb-final.allow { color: var(--green); border: 2px solid var(--green); }
+.sb-final.deny  { color: var(--red);   border: 2px solid var(--red); }
+.sb-emoji { font-size: 1.5rem; margin-right: .5rem; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  
+  <div style="text-align: center; margin-bottom: 40px;">
+    <h1 class="section-title" style="border-bottom: none; margin-bottom: 5px; font-size: 2rem;">C++ 真值表與布林變數</h1>
+    <p style="color: var(--text-muted);">五大主題 · 全互動式視覺化教學</p>
+  </div>
+
+  <div class="card">
+    <h2>💡 1. 布林基礎 (Boolean Basics)</h2>
+    <p>true / false &nbsp;|&nbsp; 底層數值 1 / 0</p>
+
+    <div class="switch-wrapper">
+      <div>
+        <div class="switch-label">電燈開關</div>
+        <button class="toggle-track on" id="lightSwitch" onclick="toggleLight()" aria-label="Toggle light">
+          <div class="toggle-thumb"></div>
+        </button>
+        <div style="margin-top:.5rem;font-size:.85rem;color:var(--text-muted);text-align:center;">點我切換</div>
+      </div>
+
+      <div class="bulb-area">
+        <div class="bulb-icon lit" id="bulbIcon">💡</div>
+        <div class="bool-badge">
+          <span class="val-word" id="boolWord">true</span>
+          <span class="val-num" id="boolNum">( 值 = 1 )</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bool-cpp mono" id="boolCpp">
+      <span style="color:var(--accent2);font-weight:bold;">bool</span> light = <span style="color:var(--green);font-weight:bold;" id="cppVal">true</span>;
+      <br><br>
+      <span style="color:var(--text-muted)">// 底層整數值：</span>
+      <span style="color:var(--accent3);font-weight:bold;font-size:1.1rem;" id="cppInt">1</span>
+      <br>
+      <span style="color:var(--text-muted)">// C++ 規定：true → 1（非零），false → 0</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⚖️ 2. 關係運算子 (Relational Operators)</h2>
+    <p>==, !=, &gt;, &lt;, &gt;=, &lt;= &nbsp;|&nbsp; 即時比較與常見錯誤說明</p>
+
+    <div class="rel-row">
+      <label>A = <input type="number" id="relA" value="5" oninput="updateRelational()"></label>
+      <select id="relOp" onchange="updateRelational()">
+        <option value="==">== (等於)</option>
+        <option value="!=">!= (不等於)</option>
+        <option value="&gt;">&#62; (大於)</option>
+        <option value="&lt;">&#60; (小於)</option>
+        <option value="&gt;=">&#62;= (大於等於)</option>
+        <option value="&lt;=">&#60;= (小於等於)</option>
+      </select>
+      <label>B = <input type="number" id="relB" value="3" oninput="updateRelational()"></label>
+    </div>
+    <div class="rel-result fade-in" id="relResult"></div>
+
+    <div class="divider"></div>
+    <div style="font-size:.95rem; font-weight:bold; margin-bottom:.6rem; color: var(--text-main);">⚠️ 初學者常犯錯誤：搞混 <code>==</code> 與 <code>=</code></div>
+    <div class="eq-warning">
+      <div class="eq-card compare">
+        <div class="eq-op">==</div>
+        <div class="mono" style="font-size:1rem; font-weight:bold; margin-bottom:5px;">if (a == b)</div>
+        <div class="eq-desc"><strong>比較運算子</strong>：詢問「a 是否等於 b？」<br>運算結果是 <strong>bool</strong> 型態（true 或 false）。</div>
+      </div>
+      <div class="eq-card assign">
+        <div class="eq-op">=</div>
+        <div class="mono" style="font-size:1rem; font-weight:bold; margin-bottom:5px;">a = b;</div>
+        <div class="eq-desc"><strong>賦值運算子</strong>：把 b 的值「存進」a 裡面。<br>這不是比較！常見 Bug 來源：誤打成 <code>if (a = b)</code></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📊 3. 互動式真值表 (Interactive Truth Table)</h2>
+    <p>&amp;&amp;, ||, !, ^ &nbsp;|&nbsp; 點擊切換 P 與 Q，即時高亮對應結果</p>
+
+    <div class="pq-controls">
+      <div class="pq-btn-wrap">
+        <div class="pq-btn-label">變數 P</div>
+        <button class="pq-btn on" id="btnP" onclick="togglePQ('P')">true</button>
+      </div>
+      <div class="pq-btn-wrap">
+        <div class="pq-btn-label">變數 Q</div>
+        <button class="pq-btn on" id="btnQ" onclick="togglePQ('Q')">true</button>
+      </div>
+    </div>
+
+    <div class="tt-grid" id="ttGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2>⚡ 4. 短路求值 (Short-Circuit Evaluation)</h2>
+    <p>&amp;&amp; 遇 false / || 遇 true 立即停止，後方算式將被跳過不執行</p>
+
+    <div class="sc-grid">
+      <div class="sc-demo">
+        <h4>A &amp;&amp; (x++)</h4>
+        <div class="sc-var-row">
+          <div>
+            <div class="sc-tag">A 的值</div>
+            <button class="pq-btn on" id="btnA" onclick="toggleSC('A')">true</button>
+          </div>
+          <div style="font-size:.9rem;color:var(--text-muted); margin-left: 10px;">x 初始值 = 0</div>
+        </div>
+        <div class="sc-expr">
+          <span class="sc-part cond" id="scA_cond">A</span>
+          <span class="sc-part op">&amp;&amp;</span>
+          <span class="sc-part side" id="scA_side">(x++)</span>
+        </div>
+        <div class="sc-counter">x 目前值 = <span id="scX">0</span></div>
+        <div class="sc-msg" id="scA_msg"></div>
+      </div>
+
+      <div class="sc-demo">
+        <h4>B || (y++)</h4>
+        <div class="sc-var-row">
+          <div>
+            <div class="sc-tag">B 的值</div>
+            <button class="pq-btn off" id="btnB" onclick="toggleSC('B')">false</button>
+          </div>
+          <div style="font-size:.9rem;color:var(--text-muted); margin-left: 10px;">y 初始值 = 0</div>
+        </div>
+        <div class="sc-expr">
+          <span class="sc-part cond" id="scB_cond">B</span>
+          <span class="sc-part op">||</span>
+          <span class="sc-part side" id="scB_side">(y++)</span>
+        </div>
+        <div class="sc-counter">y 目前值 = <span id="scY">0</span></div>
+        <div class="sc-msg" id="scB_msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🎢 5. 複合運算式情境 – 雲霄飛車搭乘條件</h2>
+    <p>結合關係運算與邏輯運算：(height &gt;= 140) &amp;&amp; (!hasHeartDisease)</p>
+
+    <div class="sb-controls">
+      <div class="sb-control-item">
+        <label>身高 (height)</label>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <input type="range" id="sbHeight" min="100" max="200" value="130" oninput="updateSandbox()">
+          <span class="sb-height-val" id="sbHeightVal">130</span> cm
+        </div>
+      </div>
+      <div class="sb-control-item">
+        <label>心臟病史 (hasHeartDisease)</label>
+        <label class="sb-checkbox-wrap">
+          <input type="checkbox" id="sbHeart" onchange="updateSandbox()">
+          <span class="sb-checkbox-label">有心臟病史</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sb-parse" id="sbParse"></div>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   MODULE 1 – Boolean Basics
+═══════════════════════════════════════════ */
+let lightOn = true;
+function toggleLight() {
+  lightOn = !lightOn;
+  const sw   = document.getElementById('lightSwitch');
+  const bulb = document.getElementById('bulbIcon');
+  const word = document.getElementById('boolWord');
+  const num  = document.getElementById('boolNum');
+  const cv   = document.getElementById('cppVal');
+  const ci   = document.getElementById('cppInt');
+
+  if (lightOn) {
+    sw.classList.add('on');
+    bulb.classList.add('lit');
+    word.textContent = 'true';  word.className = 'val-word';
+    num.textContent  = '( 值 = 1 )';
+    cv.textContent   = 'true';  cv.style.color = 'var(--green)';
+    ci.textContent   = '1';
+  } else {
+    sw.classList.remove('on');
+    bulb.classList.remove('lit');
+    word.textContent = 'false'; word.className = 'val-word off';
+    num.textContent  = '( 值 = 0 )';
+    cv.textContent   = 'false'; cv.style.color = 'var(--red)';
+    ci.textContent   = '0';
+  }
+}
+
+/* ═══════════════════════════════════════════
+   MODULE 2 – Relational Operators
+═══════════════════════════════════════════ */
+function updateRelational() {
+  const a  = parseFloat(document.getElementById('relA').value) || 0;
+  const b  = parseFloat(document.getElementById('relB').value) || 0;
+  const op = document.getElementById('relOp').value;
+  let result;
+  if      (op === '==') result = (a === b);
+  else if (op === '!=') result = (a !== b);
+  else if (op === '>')  result = (a > b);
+  else if (op === '<')  result = (a < b);
+  else if (op === '>=') result = (a >= b);
+  else                  result = (a <= b);
+
+  const box = document.getElementById('relResult');
+  const resultStr = result ? 'true' : 'false';
+  const boolColor = result ? 'var(--green)' : 'var(--red)';
+  box.className = 'rel-result fade-in ' + (result ? 'true' : 'false');
+  box.innerHTML = `
+    <span style="color:var(--text-muted)">// 運算式：</span>
+    <span class="hi">${a} ${op} ${b}</span>
+    <span style="color:var(--text-muted); font-weight:bold; margin: 0 5px;"> → </span>
+    <strong style="color:${boolColor};font-size:1.2rem">${resultStr}</strong>
+    <br><br>
+    <small style="color:var(--text-muted); font-family:sans-serif;">C++ 程式碼：</small>
+    <code>bool result = (${a} ${op} ${b}); // ${resultStr}</code>`;
+}
+updateRelational();
+
+/* ═══════════════════════════════════════════
+   MODULE 3 – Interactive Truth Table
+═══════════════════════════════════════════ */
+let pVal = true, qVal = true;
+
+function togglePQ(v) {
+  if (v === 'P') {
+    pVal = !pVal;
+    const b = document.getElementById('btnP');
+    b.textContent = pVal ? 'true' : 'false';
+    b.className = 'pq-btn ' + (pVal ? 'on' : 'off');
+  } else {
+    qVal = !qVal;
+    const b = document.getElementById('btnQ');
+    b.textContent = qVal ? 'true' : 'false';
+    b.className = 'pq-btn ' + (qVal ? 'on' : 'off');
+  }
+  renderTruthTables();
+}
+
+const OPERATORS = [
+  {
+    name: 'AND',
+    badge: 'P && Q',
+    cols: ['P','Q','P && Q'],
+    rows: [
+      [true,  true,  true],
+      [true,  false, false],
+      [false, true,  false],
+      [false, false, false],
+    ],
+    highlight: (p,q) => p && q,
+  },
+  {
+    name: 'OR',
+    badge: 'P || Q',
+    cols: ['P','Q','P || Q'],
+    rows: [
+      [true,  true,  true],
+      [true,  false, true],
+      [false, true,  true],
+      [false, false, false],
+    ],
+    highlight: (p,q) => p || q,
+  },
+  {
+    name: 'NOT',
+    badge: '!P',
+    cols: ['P','!P'],
+    rows: [
+      [true,  false],
+      [false, true],
+    ],
+    highlight: (p,q) => p, 
+    notOp: true,
+  },
+  {
+    name: 'XOR',
+    badge: 'P ^ Q',
+    cols: ['P','Q','P ^ Q'],
+    rows: [
+      [true,  true,  false],
+      [true,  false, true],
+      [false, true,  true],
+      [false, false, false],
+    ],
+    highlight: (p,q) => p ^ q,
+  },
+];
+
+function boolStr(v) { return v ? 'true' : 'false'; }
+function resultClass(v) { return v ? 'result-true' : 'result-false'; }
+
+function renderTruthTables() {
+  const grid = document.getElementById('ttGrid');
+  grid.innerHTML = OPERATORS.map(op => {
+    const rowsHtml = op.rows.map(row => {
+      let isHighlight;
+      if (op.notOp) {
+        isHighlight = (row[0] === pVal);
+      } else {
+        isHighlight = (row[0] === pVal && row[1] === qVal);
+      }
+      const lastIdx = row.length - 1;
+      const cells = row.map((val, i) => {
+        const cls = (i === lastIdx) ? resultClass(val) : '';
+        return `<td class="${cls}">${boolStr(val)}</td>`;
+      }).join('');
+      return `<tr class="${isHighlight ? 'highlight-row' : ''}">${cells}</tr>`;
+    }).join('');
+
+    const headerCells = op.cols.map(c => `<th>${c}</th>`).join('');
+
+    return `
+      <div class="tt-card fade-in">
+        <div class="tt-head">
+          <span class="op-badge">${op.badge}</span>
+          <span class="op-name">(${op.name})</span>
+        </div>
+        <table class="tt">
+          <thead><tr>${headerCells}</tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>`;
+  }).join('');
+}
+renderTruthTables();
+
+/* ═══════════════════════════════════════════
+   MODULE 4 – Short-Circuit Evaluation
+═══════════════════════════════════════════ */
+let scA = true, scB = false;
+let scX = 0, scY = 0;
+
+function toggleSC(v) {
+  if (v === 'A') {
+    scA = !scA;
+    const b = document.getElementById('btnA');
+    b.textContent = scA ? 'true' : 'false';
+    b.className = 'pq-btn ' + (scA ? 'on' : 'off');
+    scX = 0;
+  } else {
+    scB = !scB;
+    const b = document.getElementById('btnB');
+    b.textContent = scB ? 'true' : 'false';
+    b.className = 'pq-btn ' + (scB ? 'on' : 'off');
+    scY = 0;
+  }
+  updateSC();
+}
+
+function updateSC() {
+  const sideA = document.getElementById('scA_side');
+  const msgA  = document.getElementById('scA_msg');
+  const xEl   = document.getElementById('scX');
+
+  if (!scA) {
+    sideA.className = 'sc-part side blocked';
+    msgA.className  = 'sc-msg blocked';
+    msgA.textContent = '⚡ 短路！A 為 false，&& 後面不執行，x 維持不變。';
+  } else {
+    scX++;
+    sideA.className = 'sc-part side pass';
+    msgA.className  = 'sc-msg pass';
+    msgA.textContent = `✅ A 為 true，繼續執行 (x++)，x 從 ${scX-1} 變為 ${scX}。`;
+  }
+  xEl.textContent = scX;
+
+  const sideB = document.getElementById('scB_side');
+  const msgB  = document.getElementById('scB_msg');
+  const yEl   = document.getElementById('scY');
+
+  if (scB) {
+    sideB.className = 'sc-part side blocked';
+    msgB.className  = 'sc-msg blocked';
+    msgB.textContent = '⚡ 短路！B 為 true，|| 後面不執行，y 維持不變。';
+  } else {
+    scY++;
+    sideB.className = 'sc-part side pass';
+    msgB.className  = 'sc-msg pass';
+    msgB.textContent = `✅ B 為 false，繼續執行 (y++)，y 從 ${scY-1} 變為 ${scY}。`;
+  }
+  yEl.textContent = scY;
+}
+
+(function initSC(){
+  const sideA = document.getElementById('scA_side');
+  const msgA  = document.getElementById('scA_msg');
+  const sideB = document.getElementById('scB_side');
+  const msgB  = document.getElementById('scB_msg');
+
+  sideA.className = 'sc-part side pass';
+  msgA.className  = 'sc-msg pass';
+  msgA.textContent = '✅ A 為 true，繼續執行 (x++)，切換 A 可觀察變化。';
+
+  sideB.className = 'sc-part side pass';
+  msgB.className  = 'sc-msg pass';
+  msgB.textContent = '✅ B 為 false，繼續執行 (y++)，切換 B 可觀察變化。';
+})();
+
+/* ═══════════════════════════════════════════
+   MODULE 5 – Sandbox (Roller Coaster)
+═══════════════════════════════════════════ */
+function updateSandbox() {
+  const height  = parseInt(document.getElementById('sbHeight').value);
+  const hasHeart = document.getElementById('sbHeart').checked;
+  document.getElementById('sbHeightVal').textContent = height;
+
+  const h1 = height >= 140;
+  const h2 = !hasHeart;
+  const final = h1 && h2;
+
+  const h1Color = h1 ? 'var(--green)' : 'var(--red)';
+  const h2Color = h2 ? 'var(--green)' : 'var(--red)';
+
+  const parse = document.getElementById('sbParse');
+  parse.innerHTML = `
+    <div class="sb-line" style="color:var(--text-muted)">// 搭乘條件：(height &gt;= 140) &amp;&amp; (!hasHeartDisease)</div>
+    <div class="sb-line">
+      步驟 1 代入數值：
+      <span style="color:var(--accent2); font-weight:bold;">(${height} &gt;= 140)</span>
+      <span class="arrow">&amp;&amp;</span>
+      <span style="color:var(--accent2); font-weight:bold;">(!${hasHeart})</span>
+    </div>
+    <div class="sb-line">
+      步驟 2 計算子式：
+      <span style="color:${h1Color};font-weight:700">${h1}</span>
+      <span class="arrow">&amp;&amp;</span>
+      <span style="color:${h2Color};font-weight:700">${h2}</span>
+    </div>
+    <div class="sb-line" style="color:var(--text-muted); margin-top: 15px;">步驟 3 整體結果：</div>
+    <div class="sb-final ${final ? 'allow' : 'deny'} fade-in">
+      <span class="sb-emoji">${final ? '✅' : '🚫'}</span>
+      最終結果：<strong>${final}</strong> &nbsp;→&nbsp;
+      ${final ? '允許搭乘 🎢' : '禁止搭乘'}
+      ${!h1 ? '<br><small style="font-family:sans-serif; margin-top:5px; display:inline-block;">原因：身高不足 140cm</small>' : ''}
+      ${!h2 ? '<br><small style="font-family:sans-serif; margin-top:5px; display:inline-block;">原因：有心臟病史</small>' : ''}
+    </div>`;
+}
+updateSandbox();
+</script>
+</body>
+</html>

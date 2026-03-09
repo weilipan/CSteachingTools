@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ 基礎程式視覺化教學庫 - 入口首頁</title>
+    
+    <link rel="stylesheet" href="../../theme.css">
+    <script src="../../layout.js" defer></script>
+
+    <style>
+        /* ── 入口網頁專用樣式 ── */
+        :root {
+            --surface: #f6f8fa;
+            --hover-bg: #f1f8ff;
+        }
+
+        body {
+            padding-top: 80px;  /* 預留給 Header 的空間 */
+            padding-bottom: 60px; /* 預留給 Footer 的空間 */
+            background-color: #fcfcfc;
+        }
+
+        .portal-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        .portal-desc {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* 網格佈局：自適應排版，電腦版一行三張，平板兩張，手機一張 */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 10px;
+        }
+
+        /* 卡片設計：加入可點擊的連結特效 */
+        .module-card {
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            text-decoration: none; /* 移除超連結底線 */
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-left: 5px solid var(--border-color);
+        }
+
+        /* 依照不同主題給予不同的左側邊框顏色 */
+        .module-card:nth-child(3n+1) { border-left-color: #0366d6; } /* 藍 */
+        .module-card:nth-child(3n+2) { border-left-color: #28a745; } /* 綠 */
+        .module-card:nth-child(3n+3) { border-left-color: #e36209; } /* 橘 */
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-color: var(--accent-color);
+            background-color: var(--hover-bg);
+        }
+
+        .module-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .module-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .module-title::after {
+            content: "➔";
+            font-size: 1rem;
+            color: var(--text-muted);
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .module-card:hover .module-title::after {
+            transform: translateX(5px);
+            color: var(--accent-color);
+        }
+
+        .module-details {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .module-tag {
+            display: inline-block;
+            background: #e1e4e8;
+            color: #586069;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-family: monospace;
+            margin-top: 15px;
+            align-self: flex-start;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="portal-header">
+        <h1 class="section-title" style="border-bottom: none; font-size: 2.2rem; margin-bottom: 10px;">C++ 基礎程式設計</h1>
+        <p class="portal-desc">
+            歡迎來到互動式視覺化教學庫！<br>
+            點擊下方各單元卡片，透過動畫與模擬器，探索 C++ 程式語言的底層奧秘。
+        </p>
+    </div>
+
+    <div class="module-grid">
+        
+        <a href="1_BasicIO/index.html" class="module-card">
+            <div class="module-icon">🖥️</div>
+            <h2 class="module-title">1. 基礎輸入輸出</h2>
+            <p class="module-details">探索 cout, cin 的運作機制，以及 setprecision 與 fixed 的格式化魔法。</p>
+            <span class="module-tag">Basic I/O</span>
+        </a>
+
+        <a href="2_OperatorOperand/index.html" class="module-card">
+            <div class="module-icon">➕</div>
+            <h2 class="module-title">2. 運算元與運算子</h2>
+            <p class="module-details">算術運算、遞增遞減的先後順序、邏輯與位元運算的視覺化拆解。</p>
+            <span class="module-tag">Operators</span>
+        </a>
+
+        <a href="3_ScienceExpress/index.html" class="module-card">
+            <div class="module-icon">🔬</div>
+            <h2 class="module-title">3. 科學記號與運算式</h2>
+            <p class="module-details">數值型別轉換、浮點數誤差，以及科學記號 (Scientific Notation) 的呈現。</p>
+            <span class="module-tag">Expressions</span>
+        </a>
+
+        <a href="4_boolean_truthtable/index.html" class="module-card">
+            <div class="module-icon">📊</div>
+            <h2 class="module-title">4. 布林與真值表</h2>
+            <p class="module-details">true/false 的底層數值，動態真值表連動，以及短路求值 (Short-Circuit) 動畫。</p>
+            <span class="module-tag">Boolean Logic</span>
+        </a>
+
+        <a href="5_judgement/index.html" class="module-card">
+            <div class="module-icon">🔀</div>
+            <h2 class="module-title">5. 判斷結構</h2>
+            <p class="module-details">if-else 分岔路、else-if 的提前跳出，以及 switch 忘記寫 break 的瀑布效應。</p>
+            <span class="module-tag">Control Flow</span>
+        </a>
+
+        <a href="6_loop/index.html" class="module-card">
+            <div class="module-icon">🔄</div>
+            <h2 class="module-title">6. 重複結構 (迴圈)</h2>
+            <p class="module-details">for/while 執行順序、break/continue 的差異，體驗無窮迴圈的當機恐懼。</p>
+            <span class="module-tag">Loops</span>
+        </a>
+
+        <a href="7_1Darray/index.html" class="module-card">
+            <div class="module-icon">📦</div>
+            <h2 class="module-title">7. 一維陣列</h2>
+            <p class="module-details">連續記憶體透視、範圍 for 迴圈走訪，以及陣列越界 (Out of Bounds) 的危險。</p>
+            <span class="module-tag">1D Arrays</span>
+        </a>
+
+        <a href="8_Sorting/index.html" class="module-card">
+            <div class="module-icon">📶</div>
+            <h2 class="module-title">8. 排序演算法</h2>
+            <p class="module-details">六大排序法 (Bubble, Quick, Merge 等) 動畫全解析，外加 Big O 終極競速賽。</p>
+            <span class="module-tag">Sorting Algos</span>
+        </a>
+
+        <a href="9_char/index.html" class="module-card">
+            <div class="module-icon">🔤</div>
+            <h2 class="module-title">9. 字元型態</h2>
+            <p class="module-details">ASCII 碼透視、大小寫轉換運算，以及初學者最常搞混的單引號與雙引號記憶體對比。</p>
+            <span class="module-tag">char & ASCII</span>
+        </a>
+
+        <a href="10_String/index.html" class="module-card">
+            <div class="module-icon">🧵</div>
+            <h2 class="module-title">10. 字串處理</h2>
+            <p class="module-details">cin vs getline 死亡陷阱、動態擴容、字串切割，以及凱薩密碼加解密實作。</p>
+            <span class="module-tag">std::string</span>
+        </a>
+
+        <a href="11_function/index.html" class="module-card">
+            <div class="module-icon">⚙️</div>
+            <h2 class="module-title">11. 函式與模組化</h2>
+            <p class="module-details">傳值 vs 傳參照的影印機與任意門動畫、變數作用域，以及 Call Stack 呼叫堆疊解析。</p>
+            <span class="module-tag">Functions</span>
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

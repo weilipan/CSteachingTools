@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C++ std::string 字串互動教學</title>
+  <link rel="stylesheet" href="../../theme.css" />
+  <script src="../../layout.js" defer></script>
+  <style>
+    /* ── Reset & base ── */
+    body { padding: 0; margin: 0; }
+    .container { padding-top: 80px; padding-bottom: 60px; }
+
+    /* ── Section titles ── */
+    .section-title { margin-bottom: 1.5rem; }
+
+    /* ── Two-column compare ── */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+    @media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } }
+
+    .compare-box {
+      background: var(--bg-secondary, #1e1e2e);
+      border: 2px solid var(--border-color, #333);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .compare-box h4 {
+      margin: 0 0 .8rem;
+      font-family: monospace;
+      font-size: .95rem;
+      color: var(--accent, #7c9cfc);
+    }
+
+    /* ── Memory cells ── */
+    .mem-row {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      min-height: 40px;
+      align-items: center;
+    }
+    .mem-cell {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--accent, #7c9cfc);
+      border-radius: 6px;
+      background: transparent;
+      font-family: monospace;
+      font-size: .85rem;
+      font-weight: bold;
+      color: var(--text-primary, #cdd6f4);
+      transition: all .35s ease;
+    }
+    .mem-cell.fill { background: rgba(124,156,252,.18); }
+    .mem-cell.overflow {
+      border-color: #f38ba8;
+      background: rgba(243,139,168,.25);
+      color: #f38ba8;
+      animation: shake .4s ease;
+    }
+    .mem-cell.dynamic {
+      border-color: #a6e3a1;
+      background: rgba(166,227,161,.18);
+      color: #a6e3a1;
+      animation: pop .3s ease;
+    }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)}
+    }
+    @keyframes pop {
+      0%{transform:scale(0);opacity:0} 70%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1}
+    }
+    .overflow-badge {
+      color: #f38ba8; font-size: .8rem; font-weight: bold;
+      margin-top: .4rem; min-height:1em;
+    }
+
+    /* ── Common controls ── */
+    .ctrl { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; align-items: center; }
+    .ctrl input {
+      flex: 1; min-width: 140px; max-width: 280px;
+      padding: .45rem .8rem;
+      border-radius: 8px;
+      border: 2px solid var(--border-color, #333);
+      background: var(--bg-secondary, #1e1e2e);
+      color: var(--text-primary, #cdd6f4);
+      font-family: monospace; font-size: .9rem;
+    }
+    .ctrl input:focus { outline: none; border-color: var(--accent, #7c9cfc); }
+    .btn {
+      padding: .45rem 1.1rem;
+      border-radius: 8px; border: none; cursor: pointer;
+      font-weight: 600; font-size: .88rem;
+      background: var(--accent, #7c9cfc);
+      color: #1e1e2e;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn:active { transform: scale(.96); }
+    .btn:hover { opacity: .88; }
+    .btn.green { background: #a6e3a1; }
+    .btn.red   { background: #f38ba8; }
+    .btn.yellow{ background: #f9e2af; }
+    .btn.teal  { background: #89dceb; }
+
+    .result-box {
+      margin-top: 1rem;
+      padding: .7rem 1rem;
+      border-radius: 10px;
+      background: var(--bg-secondary, #1e1e2e);
+      border-left: 4px solid var(--accent, #7c9cfc);
+      font-family: monospace; font-size: .92rem;
+      white-space: pre-wrap;
+      min-height: 2.5rem;
+      color: var(--text-primary, #cdd6f4);
+    }
+
+    /* ── Module 2 – Train ── */
+    .train-track {
+      display: flex;
+      gap: 0; align-items: center;
+      min-height: 64px;
+      flex-wrap: wrap;
+    }
+    .train-car {
+      display: flex; align-items: center; justify-content: center;
+      padding: .5rem .9rem;
+      border: 3px solid var(--accent, #7c9cfc);
+      border-radius: 10px;
+      font-family: monospace; font-size:.9rem; font-weight:bold;
+      background: rgba(124,156,252,.15);
+      color: var(--text-primary, #cdd6f4);
+      position: relative;
+      transition: transform .3s ease;
+    }
+    .train-car::after {
+      content: '🔗';
+      position: absolute; right: -18px;
+      font-size: .8rem; z-index:1;
+    }
+    .train-car:last-child::after { display:none; }
+    .train-car.linked { border-color: #a6e3a1; background: rgba(166,227,161,.2); }
+    .train-inputs { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom:.8rem; }
+    .train-inputs input { width: 120px; }
+
+    /* ── Module 3 – Terminal ── */
+    .terminal {
+      background: #0d0d16; border-radius: 10px; padding: 1rem;
+      font-family: monospace; font-size: .9rem;
+      border: 2px solid #333; min-height: 100px;
+      white-space: pre-wrap;
+      color: #a6e3a1;
+      position: relative; overflow: hidden;
+    }
+    .scan-line {
+      position: absolute; top:0; left:0;
+      width: 3px; height: 100%;
+      background: #f9e2af; opacity: .9;
+      transition: left .6s linear;
+    }
+    .stop-wall {
+      position: absolute; top:0;
+      width: 4px; height: 100%;
+      background: #f38ba8;
+      opacity: 0; transition: opacity .2s;
+    }
+    .term-label { color: #89dceb; margin-right:.4rem; }
+    .term-result { color: #cba6f7; }
+
+    /* ── Module 4 – Safe Access ── */
+    .str-cells {
+      display: flex; gap: 4px; flex-wrap: wrap; align-items: flex-start;
+    }
+    .str-cell {
+      position: relative;
+      width: 48px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .str-cell .ch {
+      width: 44px; height: 44px;
+      display: flex; align-items:center; justify-content:center;
+      border: 2px solid var(--accent, #7c9cfc);
+      border-radius: 8px;
+      font-family: monospace; font-size: 1.1rem; font-weight:bold;
+      background: rgba(124,156,252,.1);
+      color: var(--text-primary, #cdd6f4);
+      transition: all .3s;
+    }
+    .str-cell .idx { font-size:.7rem; color:#888; margin-top:2px; }
+    .str-cell.active .ch { border-color:#f9e2af; background:rgba(249,226,175,.2); color:#f9e2af; }
+    .str-cell.error .ch  { border-color:#f38ba8; background:rgba(243,139,168,.2); }
+    .shield {
+      display:none; position:absolute; top:-4px; right:-6px;
+      font-size:1.2rem;
+    }
+    .str-cell.shielded .shield { display:block; animation: bounceIn .4s ease; }
+    @keyframes bounceIn {
+      0%{transform:scale(0)} 60%{transform:scale(1.3)} 100%{transform:scale(1)}
+    }
+    .garbage-bug {
+      display:none; position:absolute; top:-8px; right:-8px; font-size:1.1rem;
+    }
+    .str-cell.bugged .garbage-bug { display:block; animation: wiggle .4s ease; }
+    @keyframes wiggle {
+      0%,100%{transform:rotate(0)} 25%{transform:rotate(-15deg)} 75%{transform:rotate(15deg)}
+    }
+    .exception-box {
+      display:none; margin-top:.8rem; padding:.6rem 1rem;
+      border-radius:10px; border:2px solid #f38ba8;
+      background:rgba(243,139,168,.12);
+      color:#f38ba8; font-family:monospace; font-size:.9rem;
+    }
+
+    /* ── Module 5 – Radar ── */
+    .radar-str {
+      display:flex; gap:4px; flex-wrap:wrap; position:relative;
+    }
+    .radar-cell {
+      width:36px; height:36px;
+      display:flex; align-items:center; justify-content:center;
+      border:2px solid var(--border-color,#333); border-radius:6px;
+      font-family:monospace; font-size:.9rem; font-weight:bold;
+      color: var(--text-primary,#cdd6f4);
+      background: transparent;
+      transition: all .25s;
+    }
+    .radar-cell.scanning { border-color:#f9e2af; background:rgba(249,226,175,.2); }
+    .radar-cell.found    { border-color:#a6e3a1; background:rgba(166,227,161,.3); color:#a6e3a1; }
+
+    /* ── Module 6 – Surgery ── */
+    .surgery-str {
+      display:flex; gap:3px; flex-wrap:wrap; min-height:44px;
+    }
+    .surg-cell {
+      width: 34px; height: 34px;
+      display:flex; align-items:center; justify-content:center;
+      border:2px solid var(--border-color,#333); border-radius:6px;
+      font-family: monospace; font-size:.9rem; font-weight:bold;
+      color: var(--text-primary,#cdd6f4);
+      background: transparent;
+      transition: all .3s;
+    }
+    .surg-cell.clip    { border-color:#f9e2af; background:rgba(249,226,175,.25); }
+    .surg-cell.erasing { border-color:#f38ba8; background:rgba(243,139,168,.2); animation: fadeOut .4s forwards; }
+    @keyframes fadeOut { to { opacity:0; transform: scale(.5); } }
+    .surg-cell.inserting { border-color:#a6e3a1; background:rgba(166,227,161,.25); animation: slideIn .35s ease; }
+    @keyframes slideIn { from{ transform:translateY(-18px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+
+    /* ── Module 7 – Caesar ── */
+    .cipher-chars {
+      display:flex; gap:6px; flex-wrap:wrap; min-height:52px;
+    }
+    .cipher-char {
+      width:42px; height:52px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      border:2px solid var(--border-color,#333); border-radius:8px;
+      font-family:monospace; font-size:1rem; font-weight:bold;
+      color: var(--text-primary,#cdd6f4);
+      background: transparent;
+      gap:2px;
+      transition: all .3s;
+    }
+    .cipher-char .orig { font-size:.75rem; color:#888; }
+    .cipher-char .shifted { font-size:1rem; }
+    .cipher-char.processing { border-color:#f9e2af; background:rgba(249,226,175,.2); }
+    .cipher-char.done-alpha { border-color:#a6e3a1; background:rgba(166,227,161,.2); color:#a6e3a1; }
+    .cipher-char.done-pass  { border-color:#89dceb; background:rgba(137,220,235,.1); color:#89dceb; }
+    .cipher-char.wrap-hint  { border-color:#cba6f7; background:rgba(203,166,247,.2); color:#cba6f7; }
+    .cipher-step-log {
+      margin-top:.6rem; padding:.5rem .8rem;
+      background: #0d0d16; border-radius:8px;
+      font-family:monospace; font-size:.82rem;
+      white-space:pre-wrap; max-height:140px; overflow-y:auto;
+      color:#cdd6f4;
+    }
+    .step-alpha { color:#a6e3a1; }
+    .step-wrap  { color:#cba6f7; }
+    .step-pass  { color:#89dceb; }
+
+    /* ── misc ── */
+    .tag {
+      display:inline-block; padding:1px 7px; border-radius:5px;
+      font-size:.78rem; font-weight:700; margin-left:.4rem;
+      background: rgba(124,156,252,.18); color:var(--accent,#7c9cfc);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ─────────────────────────────────────────────
+       Module 1: C-style vs std::string
+  ───────────────────────────────────────────────── -->
+  <section id="mod1">
+    <h2 class="section-title">① 字串宣告與底層彈性<span class="tag">C-style vs std::string</span></h2>
+    <div class="card">
+      <p>傳統 <code>char str[5]</code> 容量<strong>固定</strong>，塞超過就溢出（Overflow）；
+         而 <code>std::string</code> 像橡皮筋，會<strong>動態擴充</strong>記憶體。</p>
+      <div class="compare-grid">
+        <!-- Left: fixed char array -->
+        <div class="compare-box">
+          <h4>char str[5] = "Hi";</h4>
+          <div id="m1-fixed-row" class="mem-row"></div>
+          <div id="m1-fixed-msg" class="overflow-badge"></div>
+        </div>
+        <!-- Right: std::string -->
+        <div class="compare-box">
+          <h4>string s = "Hi";</h4>
+          <div id="m1-dynamic-row" class="mem-row"></div>
+          <div id="m1-dynamic-msg" class="overflow-badge" style="color:#a6e3a1;"></div>
+        </div>
+      </div>
+      <div class="ctrl">
+        <button class="btn" id="m1-btn-hi">① 初始化 "Hi"</button>
+        <button class="btn red" id="m1-btn-long">② 塞入 "Hello World"</button>
+        <button class="btn yellow" id="m1-btn-reset">↺ 重置</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────
+       Module 2: Concatenation train
+  ───────────────────────────────────────────────── -->
+  <section id="mod2">
+    <h2 class="section-title">② 字串串接<span class="tag">+ 與 +=</span></h2>
+    <div class="card">
+      <p>字串可以直接用 <code>+</code> 運算子串接，結果會組成一個新字串。<br>
+         輸入三節「車廂」，點按鈕讓它們「喀嚓」相連。</p>
+      <div class="train-inputs">
+        <input id="m2-s1" value="Hello" placeholder="s1" />
+        <input id="m2-s2" value=", " placeholder="s2" />
+        <input id="m2-s3" value="World!" placeholder="s3" />
+      </div>
+      <div id="m2-track" class="train-track"></div>
+      <div class="ctrl">
+        <button class="btn" id="m2-btn-link">🚂 s1 + s2 + s3 串接！</button>
+        <button class="btn yellow" id="m2-btn-reset">↺ 重置</button>
+      </div>
+      <div id="m2-result" class="result-box" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────
+       Module 3: cin vs getline
+  ───────────────────────────────────────────────── -->
+  <section id="mod3">
+    <h2 class="section-title">③ 輸入大魔王<span class="tag">cin vs getline</span></h2>
+    <div class="card">
+      <p><code>cin</code> 遇到<strong>空白就停止</strong>；<code>getline</code> 讀取<strong>整行</strong>直到換行。</p>
+      <div class="ctrl" style="margin-bottom:.8rem;">
+        <input id="m3-input" value="Hello World" placeholder="模擬輸入文字…" style="max-width:320px;" />
+      </div>
+      <div id="m3-terminal" class="terminal" style="min-height:80px; margin-bottom:.4rem;">
+        <span class="term-label">Input &gt;</span><span id="m3-display-text"></span>
+        <div id="m3-scan" class="scan-line" style="display:none;"></div>
+        <div id="m3-wall" class="stop-wall" style="display:none;"></div>
+      </div>
+      <div id="m3-result" class="result-box" style="display:none; white-space:pre-wrap;"></div>
+      <div class="ctrl">
+        <button class="btn red" id="m3-btn-cin">用 cin 讀取</button>
+        <button class="btn green" id="m3-btn-getline">用 getline 讀取</button>
+        <button class="btn yellow" id="m3-btn-reset">↺ 重置</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────
+       Module 4: s[i] vs s.at(i)
+  ───────────────────────────────────────────────── -->
+  <section id="mod4">
+    <h2 class="section-title">④ 安全存取<span class="tag">s[i] vs s.at(i)</span></h2>
+    <div class="card">
+      <p>字串 <code>s = "C++"</code>（合法 index：0 ~ 2）<br>
+         <code>s[i]</code> 越界時讀到「垃圾值」；<code>s.at(i)</code> 越界時拋出例外保護你。</p>
+      <div id="m4-cells" class="str-cells" style="margin-bottom:.8rem;"></div>
+      <div class="ctrl">
+        <label style="color:var(--text-secondary,#888); font-size:.9rem;">輸入 index：</label>
+        <input id="m4-idx" type="number" value="5" style="width:80px; min-width:60px;" />
+        <button class="btn" id="m4-btn-bracket">s[i] 存取</button>
+        <button class="btn green" id="m4-btn-at">s.at(i) 存取</button>
+        <button class="btn yellow" id="m4-btn-reset">↺ 重置</button>
+      </div>
+      <div id="m4-exception" class="exception-box"></div>
+      <div id="m4-result" class="result-box" style="display:none; margin-top:.6rem;"></div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────
+       Module 5: s.find / string::npos
+  ───────────────────────────────────────────────── -->
+  <section id="mod5">
+    <h2 class="section-title">⑤ 字串搜尋<span class="tag">s.find &amp; string::npos</span></h2>
+    <div class="card">
+      <p>主字串 <code>"Programming"</code>，輸入目標子字串。
+         雷達由左向右掃描，找到時亮起；找不到則回傳 <code>string::npos</code>（代表「不存在」）。</p>
+      <div id="m5-cells" class="radar-str" style="margin-bottom:.8rem;"></div>
+      <div class="ctrl">
+        <input id="m5-target" value="gram" placeholder="搜尋目標…" style="max-width:200px;" />
+        <button class="btn" id="m5-btn-search">🔍 Search</button>
+        <button class="btn yellow" id="m5-btn-reset">↺ 重置</button>
+      </div>
+      <div id="m5-result" class="result-box" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────
+       Module 6: substr / insert / erase
+  ───────────────────────────────────────────────── -->
+  <section id="mod6">
+    <h2 class="section-title">⑥ 字串手術刀<span class="tag">substr · insert · erase</span></h2>
+    <div class="card">
+      <p>操作字串 <code>"I love Bugs"</code>，三把手術刀示範擷取、刪除與插入。</p>
+      <div id="m6-cells" class="surgery-str" style="margin-bottom:.8rem;"></div>
+      <div class="ctrl">
+        <button class="btn yellow" id="m6-btn-substr">✂️ substr(7,4)</button>
+        <button class="btn red"    id="m6-btn-erase" >🧹 erase(7,4)</button>
+        <button class="btn green"  id="m6-btn-insert">📌 insert(7,"Coding ")</button>
+        <button class="btn teal"   id="m6-btn-reset" >↺ 重置</button>
+      </div>
+      <div id="m6-result" class="result-box" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────
+       Module 7: Caesar Cipher
+  ───────────────────────────────────────────────── -->
+  <section id="mod7">
+    <h2 class="section-title">⑦ 綜合實作<span class="tag">凱薩加解密 Caesar Cipher</span></h2>
+    <div class="card">
+      <p>結合字串走訪、<code>isalpha()</code> 字元判斷與 ASCII 數學，實作凱薩加密。
+         大寫 Z + 3 → 繞回 C（mod 26）！</p>
+      <div class="ctrl" style="margin-bottom:.6rem;">
+        <input id="m7-plain" value="Hello Z" placeholder="明文…" style="max-width:260px;" />
+        <label style="color:var(--text-secondary,#888); font-size:.9rem;">位移量：</label>
+        <input id="m7-shift" type="number" value="3" min="1" max="25" style="width:60px; min-width:50px;" />
+      </div>
+      <div id="m7-chars" class="cipher-chars" style="margin-bottom:.6rem;"></div>
+      <div id="m7-log" class="cipher-step-log" style="display:none;"></div>
+      <div class="ctrl">
+        <button class="btn" id="m7-btn-encrypt">🔐 開始加密</button>
+        <button class="btn teal" id="m7-btn-decrypt">🔓 解密（反向）</button>
+        <button class="btn yellow" id="m7-btn-reset">↺ 重置</button>
+      </div>
+      <div id="m7-result" class="result-box" style="display:none;"></div>
+    </div>
+  </section>
+
+</div><!-- /.container -->
+
+<script>
+/* ══════════════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════════════ */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function makeCell(ch, extra = '') {
+  const d = document.createElement('div');
+  d.className = 'mem-cell' + (extra ? ' ' + extra : '');
+  d.textContent = ch;
+  return d;
+}
+
+function disableButtons(...ids) {
+  ids.forEach(id => { const el = document.getElementById(id); if(el) el.disabled = true; });
+}
+function enableButtons(...ids) {
+  ids.forEach(id => { const el = document.getElementById(id); if(el) el.disabled = false; });
+}
+
+/* ══════════════════════════════════════════════════════
+   MODULE 1 – C-style vs std::string
+══════════════════════════════════════════════════════ */
+(function() {
+  const CAP = 5;
+  const fixedRow   = document.getElementById('m1-fixed-row');
+  const dynamicRow = document.getElementById('m1-dynamic-row');
+  const fixedMsg   = document.getElementById('m1-fixed-msg');
+  const dynamicMsg = document.getElementById('m1-dynamic-msg');
+
+  function clearAll() {
+    fixedRow.innerHTML = '';
+    dynamicRow.innerHTML = '';
+    fixedMsg.textContent = '';
+    dynamicMsg.textContent = '';
+  }
+
+  async function showHi() {
+    clearAll();
+    // Fixed array: show 5 slots with "Hi\0" then empty
+    const hi = ['H','i','\\0',' ',' '];
+    for(let i=0; i<CAP; i++){
+      const c = makeCell(hi[i], hi[i] !== ' ' ? 'fill' : '');
+      fixedRow.appendChild(c);
+      await sleep(120);
+    }
+    // Dynamic: same but shown as one flex group
+    const hi2 = ['H','i','\\0'];
+    for(const ch of hi2){
+      const c = makeCell(ch,'fill');
+      c.style.borderColor='#a6e3a1'; c.style.color='#a6e3a1';
+      dynamicRow.appendChild(c);
+      await sleep(120);
+    }
+    dynamicMsg.textContent = '✅ std::string 自動管理記憶體';
+  }
+
+  async function showLong() {
+    const text = 'Hello World';
+    // Fixed: fill 5 slots, overflow the rest red
+    fixedRow.innerHTML = '';
+    fixedMsg.textContent = '';
+    for(let i=0; i<text.length; i++){
+      const cls = i < CAP ? 'fill' : 'overflow';
+      const c = makeCell(text[i], cls);
+      fixedRow.appendChild(c);
+      await sleep(100);
+    }
+    fixedMsg.textContent = '⚠️ Buffer Overflow！超出 char[5] 範圍！';
+
+    // Dynamic: grow smoothly
+    dynamicRow.innerHTML = '';
+    for(let i=0; i<text.length; i++){
+      const c = makeCell(text[i],'dynamic');
+      dynamicRow.appendChild(c);
+      await sleep(80);
+    }
+    dynamicMsg.textContent = '✅ std::string 自動擴充至 ' + text.length + ' 格！';
+  }
+
+  document.getElementById('m1-btn-hi').addEventListener('click', showHi);
+  document.getElementById('m1-btn-long').addEventListener('click', showLong);
+  document.getElementById('m1-btn-reset').addEventListener('click', clearAll);
+})();
+
+/* ══════════════════════════════════════════════════════
+   MODULE 2 – Train concatenation
+══════════════════════════════════════════════════════ */
+(function() {
+  const track  = document.getElementById('m2-track');
+  const result = document.getElementById('m2-result');
+  let running  = false;
+
+  function reset() {
+    track.innerHTML = '';
+    result.style.display = 'none';
+    running = false;
+    enableButtons('m2-btn-link');
+  }
+
+  function makeCar(text, label) {
+    const div = document.createElement('div');
+    div.className = 'train-car';
+    div.innerHTML = `<span style="font-size:.7rem;color:#888;margin-right:.3rem;">${label}</span>${text}`;
+    return div;
+  }
+
+  async function link() {
+    if(running) return;
+    running = true;
+    disableButtons('m2-btn-link');
+
+    const s1 = document.getElementById('m2-s1').value || 's1';
+    const s2 = document.getElementById('m2-s2').value || 's2';
+    const s3 = document.getElementById('m2-s3').value || 's3';
+
+    track.innerHTML = '';
+    result.style.display = 'none';
+
+    // Show three separate cars
+    const car1 = makeCar(s1, 's1 =');
+    const car2 = makeCar(s2, 's2 =');
+    const car3 = makeCar(s3, 's3 =');
+    track.appendChild(car1);
+    await sleep(300);
+    track.appendChild(car2);
+    await sleep(300);
+    track.appendChild(car3);
+    await sleep(700);
+
+    // Animate link
+    [car1, car2, car3].forEach(c => c.classList.add('linked'));
+    await sleep(500);
+
+    const combined = s1 + s2 + s3;
+    result.style.display = 'block';
+    result.textContent = `result = s1 + s2 + s3\n       = "${combined}"\nresult.length() = ${combined.length}`;
+  }
+
+  document.getElementById('m2-btn-link').addEventListener('click', link);
+  document.getElementById('m2-btn-reset').addEventListener('click', reset);
+})();
+
+/* ══════════════════════════════════════════════════════
+   MODULE 3 – cin vs getline
+══════════════════════════════════════════════════════ */
+(function() {
+  const terminal   = document.getElementById('m3-terminal');
+  const displayEl  = document.getElementById('m3-display-text');
+  const scanEl     = document.getElementById('m3-scan');
+  const wallEl     = document.getElementById('m3-wall');
+  const resultEl   = document.getElementById('m3-result');
+  let   running    = false;
+
+  function reset() {
+    displayEl.textContent = '';
+    scanEl.style.display  = 'none';
+    wallEl.style.display  = 'none';
+    resultEl.style.display = 'none';
+    running = false;
+    enableButtons('m3-btn-cin','m3-btn-getline');
+  }
+
+  function getInput() { return document.getElementById('m3-input').value || 'Hello World'; }
+
+  async function runCin() {
+    if(running) return;
+    running = true;
+    disableButtons('m3-btn-cin','m3-btn-getline');
+    const text = getInput();
+    const spaceIdx = text.indexOf(' ');
+
+    displayEl.textContent = text;
+    scanEl.style.display = 'block';
+    scanEl.style.left = '16px';
+    wallEl.style.display = 'none';
+    resultEl.style.display = 'none';
+
+    // Estimate char width in terminal (~9px per char for monospace)
+    const charW = 9;
+    const baseX = 84; // offset for "Input > "
+
+    if(spaceIdx === -1) {
+      // No space – scan to end
+      await sleep(200);
+      scanEl.style.left = (baseX + text.length * charW) + 'px';
+      await sleep(700);
+      resultEl.style.display = 'block';
+      resultEl.textContent = `cin >> s;\n// s = "${text}"  (找不到空白，整行讀完)`;
+    } else {
+      // Scan to space position
+      await sleep(200);
+      scanEl.style.left = (baseX + spaceIdx * charW) + 'px';
+      await sleep(700);
+      // Wall appears
+      wallEl.style.left  = scanEl.style.left;
+      wallEl.style.display = 'block';
+      wallEl.style.opacity = '1';
+      await sleep(600);
+      resultEl.style.display = 'block';
+      resultEl.textContent =
+        `cin >> s;\n// 掃到空白「 」→ 撞牆停止！\n// s = "${text.substring(0, spaceIdx)}"  (空白後的 "${text.substring(spaceIdx+1)}" 被遺留在緩衝區)`;
+    }
+    running = false;
+    enableButtons('m3-btn-cin','m3-btn-getline');
+  }
+
+  async function runGetline() {
+    if(running) return;
+    running = true;
+    disableButtons('m3-btn-cin','m3-btn-getline');
+    const text = getInput();
+    displayEl.textContent = text + '↵';
+    scanEl.style.display = 'block';
+    scanEl.style.left = '16px';
+    wallEl.style.display = 'none';
+    resultEl.style.display = 'none';
+
+    const charW = 9;
+    const baseX = 84;
+
+    await sleep(200);
+    // Sweep slowly across entire string
+    const steps = text.length + 1;
+    for(let i=0; i<=steps; i++){
+      scanEl.style.left = (baseX + i * charW) + 'px';
+      await sleep(60);
+    }
+    await sleep(300);
+    resultEl.style.display = 'block';
+    resultEl.textContent =
+      `getline(cin, s);\n// 掃過空白，繼續讀取…\n// 遇到 \\n 停止\n// s = "${text}"  ✅ 完整讀取！`;
+    running = false;
+    enableButtons('m3-btn-cin','m3-btn-getline');
+  }
+
+  document.getElementById('m3-btn-cin').addEventListener('click', runCin);
+  document.getElementById('m3-btn-getline').addEventListener('click', runGetline);
+  document.getElementById('m3-btn-reset').addEventListener('click', reset);
+})();
+
+/* ══════════════════════════════════════════════════════
+   MODULE 4 – s[i] vs s.at(i)
+══════════════════════════════════════════════════════ */
+(function() {
+  const STR = 'C++';
+  const cellsEl    = document.getElementById('m4-cells');
+  const exceptionEl= document.getElementById('m4-exception');
+  const resultEl   = document.getElementById('m4-result');
+
+  function buildCells() {
+    cellsEl.innerHTML = '';
+    for(let i=0; i<STR.length; i++){
+      const wrap = document.createElement('div');
+      wrap.className = 'str-cell';
+      wrap.id = `m4-cell-${i}`;
+      wrap.innerHTML = `<div class="ch">${STR[i]}</div><div class="idx">[${i}]</div>
+                        <span class="shield">🛡️</span>
+                        <span class="garbage-bug">🐛</span>`;
+      cellsEl.appendChild(wrap);
+    }
+  }
+
+  function reset() {
+    buildCells();
+    exceptionEl.style.display = 'none';
+    resultEl.style.display    = 'none';
+    enableButtons('m4-btn-bracket','m4-btn-at');
+  }
+
+  async function accessBracket() {
+    disableButtons('m4-btn-bracket','m4-btn-at');
+    exceptionEl.style.display='none';
+    resultEl.style.display='none';
+    // Reset cell classes
+    document.querySelectorAll('.str-cell').forEach(c=>{c.className='str-cell';});
+
+    const idx = parseInt(document.getElementById('m4-idx').value);
+    if(idx >= 0 && idx < STR.length) {
+      const cell = document.getElementById(`m4-cell-${idx}`);
+      if(cell) { cell.classList.add('active'); }
+      resultEl.style.display='block';
+      resultEl.textContent = `s[${idx}] = '${STR[idx]}' ✅ (合法 index)`;
+    } else {
+      // Out of bounds – show bug
+      const ghost = document.createElement('div');
+      ghost.className = 'str-cell';
+      ghost.innerHTML = `<div class="ch" style="border-color:#f38ba8; background:rgba(243,139,168,.2);">?</div>
+                         <div class="idx">[${idx}]</div>
+                         <span class="garbage-bug" style="display:block;">🐛</span>`;
+      cellsEl.appendChild(ghost);
+      await sleep(300);
+      resultEl.style.display='block';
+      resultEl.textContent = `s[${idx}] → 越界！讀到「垃圾值」🐛\n未定義行為 (Undefined Behavior)！\n程式可能崩潰或讀到隨機記憶體。`;
+    }
+    enableButtons('m4-btn-bracket','m4-btn-at');
+  }
+
+  async function accessAt() {
+    disableButtons('m4-btn-bracket','m4-btn-at');
+    exceptionEl.style.display='none';
+    resultEl.style.display='none';
+    document.querySelectorAll('.str-cell').forEach(c=>{c.className='str-cell';});
+
+    const idx = parseInt(document.getElementById('m4-idx').value);
+    if(idx >= 0 && idx < STR.length) {
+      const cell = document.getElementById(`m4-cell-${idx}`);
+      if(cell) { cell.classList.add('active'); }
+      resultEl.style.display='block';
+      resultEl.textContent = `s.at(${idx}) = '${STR[idx]}' ✅ (合法 index)`;
+    } else {
+      // Show shield bounce on last cell
+      const lastCell = document.getElementById(`m4-cell-${STR.length-1}`);
+      if(lastCell) lastCell.classList.add('shielded');
+      await sleep(300);
+      exceptionEl.style.display='block';
+      exceptionEl.innerHTML =
+        `🛡️ <strong>std::out_of_range Exception！</strong><br>
+         s.at(${idx}) → index ${idx} 超出範圍 [0, ${STR.length-1}]<br>
+         程式安全拋出例外，不會讀到垃圾值！<br>
+         <code>try { s.at(${idx}); } catch(const out_of_range& e) { ... }</code>`;
+    }
+    enableButtons('m4-btn-bracket','m4-btn-at');
+  }
+
+  buildCells();
+  document.getElementById('m4-btn-bracket').addEventListener('click', accessBracket);
+  document.getElementById('m4-btn-at').addEventListener('click', accessAt);
+  document.getElementById('m4-btn-reset').addEventListener('click', reset);
+})();
+
+/* ══════════════════════════════════════════════════════
+   MODULE 5 – s.find / string::npos
+══════════════════════════════════════════════════════ */
+(function() {
+  const SRC = 'Programming';
+  const cellsEl = document.getElementById('m5-cells');
+  const resultEl= document.getElementById('m5-result');
+  let   running = false;
+
+  function buildCells() {
+    cellsEl.innerHTML = '';
+    for(let i=0; i<SRC.length; i++){
+      const d = document.createElement('div');
+      d.className = 'radar-cell';
+      d.id = `m5-cell-${i}`;
+      d.textContent = SRC[i];
+      cellsEl.appendChild(d);
+    }
+  }
+
+  function reset() {
+    buildCells();
+    resultEl.style.display='none';
+    running = false;
+    enableButtons('m5-btn-search');
+  }
+
+  async function search() {
+    if(running) return;
+    running = true;
+    disableButtons('m5-btn-search');
+    buildCells();
+    resultEl.style.display='none';
+
+    const target = document.getElementById('m5-target').value;
+    if(!target){ running=false; enableButtons('m5-btn-search'); return; }
+
+    const idx = SRC.indexOf(target);
+
+    for(let i=0; i<SRC.length; i++){
+      const cell = document.getElementById(`m5-cell-${i}`);
+      cell.classList.add('scanning');
+      await sleep(110);
+      if(idx === -1 || i < idx) cell.classList.remove('scanning');
+    }
+
+    if(idx !== -1){
+      for(let i=idx; i<idx+target.length && i<SRC.length; i++){
+        document.getElementById(`m5-cell-${i}`).classList.add('found');
+      }
+      resultEl.style.display='block';
+      resultEl.textContent = `s.find("${target}") = ${idx}\n找到了！起始位置 index = ${idx}`;
+    } else {
+      resultEl.style.display='block';
+      resultEl.textContent = `s.find("${target}") = string::npos\n找不到！npos = 18446744073709551615 (≈∞)`;
+    }
+    running = false;
+    enableButtons('m5-btn-search');
+  }
+
+  buildCells();
+  document.getElementById('m5-btn-search').addEventListener('click', search);
+  document.getElementById('m5-btn-reset').addEventListener('click', reset);
+})();
+
+/* ══════════════════════════════════════════════════════
+   MODULE 6 – substr / insert / erase
+══════════════════════════════════════════════════════ */
+(function() {
+  const ORIG = 'I love Bugs';
+  const cellsEl = document.getElementById('m6-cells');
+  const resultEl= document.getElementById('m6-result');
+  let   running = false;
+
+  function buildCells(text) {
+    cellsEl.innerHTML = '';
+    for(const ch of text){
+      const d = document.createElement('div');
+      d.className = 'surg-cell';
+      d.textContent = ch === ' ' ? '·' : ch;
+      cellsEl.appendChild(d);
+    }
+  }
+
+  function reset() {
+    buildCells(ORIG);
+    resultEl.style.display='none';
+    running=false;
+    enableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
+  }
+
+  async function doSubstr() {
+    if(running) return; running=true;
+    disableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
+    buildCells(ORIG);
+    resultEl.style.display='none';
+    // Highlight index 7..10
+    const cells = cellsEl.querySelectorAll('.surg-cell');
+    for(let i=7; i<11 && i<cells.length; i++){
+      cells[i].classList.add('clip');
+      await sleep(120);
+    }
+    await sleep(400);
+    const sub = ORIG.substr(7, 4);
+    resultEl.style.display='block';
+    resultEl.textContent = `✂️ s.substr(7, 4)\n→ 從 index 7 開始，擷取 4 個字元\n→ "${sub}"`;
+    running=false;
+    enableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
+  }
+
+  async function doErase() {
+    if(running) return; running=true;
+    disableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
+    buildCells(ORIG);
+    resultEl.style.display='none';
+    const cells = Array.from(cellsEl.querySelectorAll('.surg-cell'));
+    for(let i=7; i<11 && i<cells.length; i++){
+      cells[i].classList.add('erasing');
+      await sleep(120);
+    }
+    await sleep(600);
+    buildCells(ORIG.slice(0,7) + ORIG.slice(11));
+    const res = ORIG.slice(0,7) + ORIG.slice(11);
+    resultEl.style.display='block';
+    resultEl.textContent = `🧹 s.erase(7, 4)\n→ 從 index 7 刪除 4 個字元\n→ "${res}"`;
+    running=false;
+    enableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
+  }
+
+  async function doInsert() {
+    if(running) return; running=true;
+    disableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
+    buildCells(ORIG);
+    resultEl.style.display='none';
+    await sleep(300);
+    const ins = 'Coding ';
+    const newStr = ORIG.slice(0,7) + ins + ORIG.slice(7);
+    // Rebuild with insert cells highlighted
+    cellsEl.innerHTML = '';
+    for(let i=0; i<newStr.length; i++){
+      const d = document.createElement('div');
+      d.className = 'surg-cell' + (i>=7 && i<7+ins.length ? ' inserting' : '');
+      d.textContent = newStr[i] === ' ' ? '·' : newStr[i];
+      cellsEl.appendChild(d);
+      if(i>=7 && i<7+ins.length) await sleep(80);
+    }
+    resultEl.style.display='block';
+    resultEl.textContent = `📌 s.insert(7, "Coding ")\n→ 在 index 7 插入字串\n→ "${newStr}"`;
+    running=false;
+    enableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
+  }
+
+  buildCells(ORIG);
+  document.getElementById('m6-btn-substr').addEventListener('click', doSubstr);
+  document.getElementById('m6-btn-erase').addEventListener('click', doErase);
+  document.getElementById('m6-btn-insert').addEventListener('click', doInsert);
+  document.getElementById('m6-btn-reset').addEventListener('click', reset);
+})();
+
+/* ══════════════════════════════════════════════════════
+   MODULE 7 – Caesar Cipher
+══════════════════════════════════════════════════════ */
+(function() {
+  const charsEl  = document.getElementById('m7-chars');
+  const logEl    = document.getElementById('m7-log');
+  const resultEl = document.getElementById('m7-result');
+  let   running  = false;
+
+  function reset() {
+    charsEl.innerHTML  = '';
+    logEl.style.display='none';
+    logEl.textContent  = '';
+    resultEl.style.display='none';
+    running=false;
+    enableButtons('m7-btn-encrypt','m7-btn-decrypt');
+  }
+
+  function shiftChar(ch, n, forwards) {
+    if(!/[a-zA-Z]/.test(ch)) return ch;
+    const base = ch === ch.toUpperCase() ? 65 : 97;
+    const code = ch.charCodeAt(0) - base;
+    const shifted = forwards
+      ? (code + n) % 26
+      : (code - n + 260) % 26;
+    return String.fromCharCode(shifted + base);
+  }
+
+  async function runCipher(forwards) {
+    if(running) return;
+    running = true;
+    disableButtons('m7-btn-encrypt','m7-btn-decrypt');
+    const plain = document.getElementById('m7-plain').value || 'Hello Z';
+    const shift = Math.abs(parseInt(document.getElementById('m7-shift').value) || 3) % 26;
+
+    charsEl.innerHTML = '';
+    logEl.textContent = '';
+    logEl.style.display = 'block';
+    resultEl.style.display = 'none';
+
+    const cards = [];
+    for(const ch of plain){
+      const d = document.createElement('div');
+      d.className = 'cipher-char';
+      d.innerHTML = `<span class="orig">${ch === ' ' ? '(sp)' : ch}</span><span class="shifted">…</span>`;
+      charsEl.appendChild(d);
+      cards.push({el: d, ch});
+    }
+
+    let cipher = '';
+    for(const {el, ch} of cards){
+      el.classList.add('processing');
+      await sleep(380);
+
+      const shifted = shiftChar(ch, shift, forwards);
+      const isAlpha = /[a-zA-Z]/.test(ch);
+
+      let logLine = '';
+      if(!isAlpha){
+        el.classList.remove('processing');
+        el.classList.add('done-pass');
+        el.querySelector('.shifted').textContent = ch === ' ' ? '(sp)' : ch;
+        logLine = `<span class="step-pass">'${ch === ' ' ? ' ' : ch}' → 非字母，原封不動</span>\n`;
+      } else {
+        const base    = ch === ch.toUpperCase() ? 65 : 97;
+        const origCode= ch.charCodeAt(0);
+        const newCode = shifted.charCodeAt(0);
+        const wrapFlag= forwards
+          ? (origCode + shift) > (base + 25)
+          : (origCode - shift) < base ;
+
+        el.querySelector('.shifted').textContent = shifted;
+        if(wrapFlag){
+          el.classList.remove('processing');
+          el.classList.add('wrap-hint');
+          logLine = `<span class="step-wrap">'${ch}'(${origCode}) ${forwards?'+':'-'}${shift} → 超出邊界，繞回 → '${shifted}'(${newCode}) 🔄</span>\n`;
+        } else {
+          el.classList.remove('processing');
+          el.classList.add('done-alpha');
+          logLine = `<span class="step-alpha">'${ch}'(${origCode}) ${forwards?'+':'-'}${shift} = '${shifted}'(${newCode})</span>\n`;
+        }
+      }
+      logEl.innerHTML += logLine;
+      logEl.scrollTop = logEl.scrollHeight;
+      cipher += shifted;
+      await sleep(80);
+    }
+
+    resultEl.style.display='block';
+    resultEl.textContent =
+      `${forwards ? '🔐 加密' : '🔓 解密'}完成！\n明文  : "${plain}"\n${forwards?'密文':'還原'}: "${cipher}"\n位移量: ${forwards?'+':'-'}${shift}`;
+    running=false;
+    enableButtons('m7-btn-encrypt','m7-btn-decrypt');
+  }
+
+  document.getElementById('m7-btn-encrypt').addEventListener('click', () => runCipher(true));
+  document.getElementById('m7-btn-decrypt').addEventListener('click', () => runCipher(false));
+  document.getElementById('m7-btn-reset').addEventListener('click', reset);
+})();
+</script>
+</body>
+</html>

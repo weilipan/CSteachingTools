@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python 基礎課程 | 建中資訊科</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <style>
+        :root {
+            --primary-color: #24292e;
+            --accent-color: #0366d6;
+            --bg-color: #f6f8fa;
+            --border-color: #e1e4e8;
+            --text-main: #24292e;
+            --text-muted: #586069;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: #fff;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* 確保內容不足時，頁尾仍能推到畫面最下方 */
+        }
+
+        /* 麵包屑導航列 (顯示在自動插入的 header 下方) */
+        nav {
+            background-color: var(--bg-color);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+        nav a { color: var(--accent-color); text-decoration: none; font-weight: 500; }
+        nav a:hover { text-decoration: underline; }
+        nav .breadcrumb { color: var(--text-muted); }
+
+        /* 主容器 */
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            flex-grow: 1; /* 讓內容區塊自動撐開空間 */
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .page-title {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        .page-title h1 { margin: 0; font-size: 2rem; color: var(--primary-color); }
+        .page-title p { color: var(--text-muted); margin-top: 8px; font-size: 1.05rem; }
+
+        /* 章節清單 */
+        .module-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .module-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .module-item:hover {
+            background-color: var(--bg-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .module-icon {
+            width: 40px;
+            height: 40px;
+            background: #f1f8ff;
+            color: var(--accent-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .module-content { flex-grow: 1; }
+        .module-title { font-weight: 600; font-size: 1.1rem; display: block; }
+        .module-desc { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; display: block; }
+    </style>
+    <script src="../layout.js"></script>
+</head>
+<body>
+
+    <nav>
+        <span class="breadcrumb"><a href="../index.html">🏠 課程首頁</a> / Python 基礎開發指南</span>
+    </nav>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>Python 基礎開發指南</h1>
+            <p>涵蓋從環境輸入輸出到核心控制流程的技術文件與視覺化模擬。</p>
+        </div>
+
+        <div class="module-list">
+            <a href="./BasicIO/index.html" class="module-item">
+                <div class="module-icon">01</div>
+                <div class="module-content">
+                    <span class="module-title">Basic Input / Output (基本輸入輸出)</span>
+                    <span class="module-desc">學習 print() 與 input()，掌握標準輸入輸出與 f-string 格式化。</span>
+                </div>
+            </a>
+
+            <a href="./ifelse/index.html" class="module-item">
+                <div class="module-icon">02</div>
+                <div class="module-content">
+                    <span class="module-title">Control Flow: If-Else (條件判斷)</span>
+                    <span class="module-desc">學習 if, elif, else 條件判斷式、邏輯運算子與程式的分岔處理。</span>
+                </div>
+            </a>
+
+            <a href="./forloop/index.html" class="module-item">
+                <div class="module-icon">03</div>
+                <div class="module-content">
+                    <span class="module-title">Iteration: For Loop (迴圈控制)</span>
+                    <span class="module-desc">利用 for 迴圈與 range() 函數，讓電腦自動幫你執行重複的任務。</span>
+                </div>
+            </a>
+
+            <a href="./string/index.html" class="module-item">
+                <div class="module-icon">04</div>
+                <div class="module-content">
+                    <span class="module-title">String Manipulation (字串處理)</span>
+                    <span class="module-desc">深入字串切片 (Slicing)、常用字串方法與進階文字處理技巧。</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    
+
+</body>
+</html>

@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C++ 基本資料型別與輸入輸出 | Data Types & Basic I/O</title>
+  <meta name="description" content="以互動式視覺化方式學習 C++ 基本資料型別、cin/cout 輸入輸出、格式化輸出與浮點數精確度。" />
+  <link rel="stylesheet" href="../../theme.css">
+  <script src="../../layout.js" defer></script>
+  <style>
+    /* ── Reset & Base ── */
+    body {
+      padding: 0;
+      margin: 0;
+    }
+
+    .container {
+      padding-top: 80px;
+      padding-bottom: 60px;
+      max-width: 960px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    /* ── Page Header ── */
+    .page-hero {
+      text-align: center;
+      padding: 40px 20px 20px;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      border-radius: 16px;
+      margin-bottom: 36px;
+      color: #fff;
+    }
+
+    .page-hero h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0 0 8px;
+      background: linear-gradient(90deg, #a78bfa, #38bdf8, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-hero p {
+      color: #94a3b8;
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 28px 28px 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin: 0 0 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title .badge {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .card-desc {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin: 0 0 20px;
+      line-height: 1.6;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.18s ease;
+      font-family: inherit;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      filter: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, #059669, #34d399);
+      color: #fff;
+    }
+
+    .btn-orange {
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      color: #fff;
+    }
+
+    .btn-red {
+      background: linear-gradient(135deg, #dc2626, #f87171);
+      color: #fff;
+    }
+
+    .btn-blue {
+      background: linear-gradient(135deg, #0369a1, #38bdf8);
+      color: #fff;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #94a3b8;
+      border: 1px solid #334155;
+    }
+
+    .btn-ghost:hover {
+      border-color: #6366f1;
+      color: #a78bfa;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Console box ── */
+    .console-box {
+      background: #0f172a;
+      border: 1px solid #1e3a5f;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      color: #a3e635;
+      white-space: pre-wrap;
+      min-height: 40px;
+      line-height: 1.6;
+    }
+
+    .console-box .err {
+      color: #f87171;
+    }
+
+    .console-box .dim {
+      color: #475569;
+    }
+
+    .console-box .hi {
+      color: #38bdf8;
+    }
+
+    .console-box .warn {
+      color: #fbbf24;
+    }
+
+    /* ═══════════════════════════
+       CARD 1 – Memory Grid
+    ═══════════════════════════ */
+    #mem-grid-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 16px;
+      background: #0f172a;
+      border: 1px solid #1e3a5f;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      min-height: 90px;
+    }
+
+    .mem-cell {
+      width: 38px;
+      height: 38px;
+      border: 1.5px solid #334155;
+      border-radius: 5px;
+      background: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: monospace;
+      font-size: 0.65rem;
+      color: #475569;
+      transition: all 0.35s cubic-bezier(.34, 1.56, .64, 1);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .mem-cell.used {
+      background: #312e81;
+      border-color: #6366f1;
+      color: #c7d2fe;
+    }
+
+    .mem-cell.used.first {
+      border-color: #a78bfa;
+    }
+
+    .mem-cell.used.garbage {
+      background: #450a0a;
+      border-color: #dc2626;
+      color: #fca5a5;
+    }
+
+    .mem-cell .var-label {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.6rem;
+      color: #a78bfa;
+      white-space: nowrap;
+      font-weight: 700;
+    }
+
+    .mem-legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .mem-legend span {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .mem-legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    /* ═══════════════════════════
+       CARD 2 – cin Buffer
+    ═══════════════════════════ */
+    .cin-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media(max-width:640px) {
+      .cin-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .cin-panel-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .cin-input-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px 10px;
+      width: 100%;
+      color: #e2e8f0;
+      font-family: monospace;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+    }
+
+    .cin-input-box:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    #cin-buffer-queue {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      min-height: 44px;
+      padding: 8px;
+      background: #0f172a;
+      border: 1px dashed #334155;
+      border-radius: 8px;
+      align-items: center;
+    }
+
+    .token-chip {
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+
+    .token-chip.num {
+      background: #1e3a5f;
+      color: #38bdf8;
+      border: 1px solid #0ea5e9;
+    }
+
+    .token-chip.sp {
+      background: #1c1917;
+      color: #78716c;
+      border: 1px dashed #44403c;
+      font-size: 0.7rem;
+    }
+
+    .token-chip.str {
+      background: #14532d;
+      color: #86efac;
+      border: 1px solid #22c55e;
+    }
+
+    .token-chip.fade-out {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.8);
+    }
+
+    .token-chip.fly-in {
+      animation: flyIn 0.4s ease;
+    }
+
+    @keyframes flyIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.8);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .var-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .var-slot {
+      background: #0f172a;
+      border: 1.5px solid #334155;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      transition: all 0.4s ease;
+      min-height: 34px;
+    }
+
+    .var-slot .var-name {
+      color: #a78bfa;
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
+    .var-slot.filled {
+      border-color: #22c55e;
+      background: #052e16;
+      color: #86efac;
+    }
+
+    .var-slot.pulse {
+      animation: slotPulse 0.55s ease;
+    }
+
+    @keyframes slotPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+      }
+
+      50% {
+        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+      }
+    }
+
+    /* ═══════════════════════════
+       CARD 3 – cout Conveyor
+    ═══════════════════════════ */
+    .conveyor-scene {
+      background: #0f172a;
+      border: 1px solid #1e3a5f;
+      border-radius: 12px;
+      padding: 20px 16px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .conveyor-track {
+      position: relative;
+      height: 60px;
+      background: linear-gradient(90deg, #1e3a5f, #0f172a);
+      border-radius: 8px;
+      border: 1.5px solid #334155;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .conveyor-belt-lines {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      gap: 0;
+      align-items: center;
+    }
+
+    .belt-stripe {
+      height: 100%;
+      width: 24px;
+      background: repeating-linear-gradient(90deg,
+          transparent 0px,
+          transparent 10px,
+          rgba(99, 102, 241, 0.08) 10px,
+          rgba(99, 102, 241, 0.08) 24px);
+    }
+
+    .conveyor-tokens-area {
+      position: relative;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 0 12px;
+      height: 100%;
+    }
+
+    .cout-token {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateX(-30px);
+      transition: all 0.5s ease;
+      flex-shrink: 0;
+    }
+
+    .cout-token.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .cout-token.traveling {
+      animation: travel 0.9s ease forwards;
+    }
+
+    @keyframes travel {
+      from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+
+      to {
+        opacity: 0;
+        transform: translateX(250px) scale(0.8);
+      }
+    }
+
+    .cout-token.str-tok {
+      background: #14532d;
+      color: #86efac;
+      border: 1px solid #22c55e;
+    }
+
+    .cout-token.var-tok {
+      background: #1e3a5f;
+      color: #38bdf8;
+      border: 1px solid #0ea5e9;
+    }
+
+    .cout-token.endl-tok {
+      background: #451a03;
+      color: #fcd34d;
+      border: 1px solid #f59e0b;
+    }
+
+    .screen-box {
+      background: #000;
+      border: 2px solid #22d3ee;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: #22d3ee;
+      min-height: 54px;
+      white-space: pre-wrap;
+      box-shadow: 0 0 18px rgba(34, 211, 238, 0.25);
+    }
+
+    .cout-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #475569;
+      margin-top: 4px;
+    }
+
+    /* ═══════════════════════════
+       CARD 4 – setw / setfill
+    ═══════════════════════════ */
+    .ctrl-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .ctrl-row label {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ctrl-row input[type=range] {
+      accent-color: #8b5cf6;
+      width: 130px;
+    }
+
+    .ctrl-row input[type=text] {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 5px 8px;
+      color: #e2e8f0;
+      font-family: monospace;
+      width: 46px;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .ctrl-row input[type=text]:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    .ctrl-val-badge {
+      display: inline-block;
+      background: #312e81;
+      color: #c7d2fe;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      min-width: 28px;
+      text-align: center;
+    }
+
+    .setw-visual {
+      margin-top: 8px;
+    }
+
+    .setw-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 0;
+      margin-bottom: 6px;
+      font-family: monospace;
+      font-size: 0.82rem;
+    }
+
+    .setw-cell {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 34px;
+      min-width: 18px;
+      padding: 0 2px;
+      border: 1px solid #334155;
+      border-right: none;
+      background: #1e293b;
+      color: #475569;
+    }
+
+    .setw-cell:last-child {
+      border-right: 1px solid #334155;
+    }
+
+    .setw-cell.fill-ch {
+      background: #1e3a5f;
+      color: #38bdf8;
+    }
+
+    .setw-cell.data-ch {
+      background: #14532d;
+      color: #86efac;
+    }
+
+    .setw-cell.data2-ch {
+      background: #451a03;
+      color: #fcd34d;
+    }
+
+    /* ═══════════════════════════
+       CARD 5 – setprecision
+    ═══════════════════════════ */
+    .prec-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .prec-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .prec-group label {
+      font-size: 0.82rem;
+      color: #94a3b8;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.865rem;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+
+    .radio-label input[type=radio] {
+      accent-color: #8b5cf6;
+    }
+
+    .prec-input {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: #e2e8f0;
+      font-family: monospace;
+      width: 140px;
+      font-size: 0.9rem;
+    }
+
+    .prec-input:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    /* ── Step indicator ── */
+    .step-indicator {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+
+    .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #334155;
+      transition: background 0.3s;
+    }
+
+    .step-dot.active {
+      background: #818cf8;
+    }
+
+    .step-dot.done {
+      background: #34d399;
+    }
+
+    /* ── Info chips ── */
+    .info-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      margin: 3px;
+    }
+
+    .info-chip .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .info-chip.blue-chip {
+      border-color: #0ea5e9;
+    }
+
+    .info-chip.blue-chip .dot {
+      background: #38bdf8;
+    }
+
+    .info-chip.green-chip {
+      border-color: #22c55e;
+    }
+
+    .info-chip.green-chip .dot {
+      background: #34d399;
+    }
+
+    /* ── Toggle Switch ── */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #0f172a;
+      border: 1.5px solid #334155;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .toggle-wrap.danger {
+      border-color: #dc2626;
+      background: #1c0a0a;
+    }
+
+    .toggle-label {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      flex: 1;
+    }
+
+    .toggle-label.danger-label {
+      color: #f87171;
+      font-weight: 700;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #334155;
+      border-radius: 24px;
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+
+    .toggle-switch input:checked+.toggle-slider {
+      background: #dc2626;
+    }
+
+    .toggle-switch input:checked+.toggle-slider::before {
+      transform: translateX(20px);
+    }
+
+    /* Code block syntax highlight */
+    .code-block {
+      background: #0f172a;
+      border: 1px solid #1e3a5f;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.83rem;
+      white-space: pre-wrap;
+      line-height: 1.75;
+      margin-bottom: 14px;
+      color: #94a3b8;
+    }
+
+    .hl-include {
+      color: #c084fc;
+    }
+
+    .hl-iomanip {
+      color: #facc15;
+      background: #3b2f00;
+      border-radius: 3px;
+      padding: 0 3px;
+      box-shadow: 0 0 8px rgba(250, 204, 21, 0.4);
+      font-weight: 700;
+    }
+
+    .hl-keyword {
+      color: #38bdf8;
+    }
+
+    .hl-fn {
+      color: #fbbf24;
+    }
+
+    .hl-str {
+      color: #86efac;
+    }
+
+    .hl-num {
+      color: #f97316;
+    }
+
+    .hl-comment {
+      color: #475569;
+      font-style: italic;
+    }
+
+    .hl-struck {
+      text-decoration: line-through;
+      opacity: 0.45;
+    }
+
+    .hl-err-line {
+      color: #f87171;
+      background: #1c0505;
+      border-left: 3px solid #dc2626;
+      padding-left: 6px;
+      display: block;
+      border-radius: 2px;
+    }
+
+    /* animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .fade-in {
+      animation: fadeInUp 0.4s ease;
+    }
+
+    @keyframes shakeX {
+
+      0%,
+      100% {
+        transform: translateX(0)
+      }
+
+      20% {
+        transform: translateX(-6px)
+      }
+
+      40% {
+        transform: translateX(6px)
+      }
+
+      60% {
+        transform: translateX(-4px)
+      }
+
+      80% {
+        transform: translateX(4px)
+      }
+    }
+
+    .shake {
+      animation: shakeX 0.45s ease;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <!-- Hero -->
+    <div class="page-hero">
+      <h1>C++ 基本資料型別與輸入輸出</h1>
+      <p>Data Types &amp; Basic I/O — 互動式視覺化教學</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+       CARD 1 – Variable Declaration & Memory
+  ═══════════════════════════════════════════════ -->
+    <div class="card" id="card-memory">
+      <div class="section-title">
+        🧠 變數宣告與記憶體配置
+        <span class="badge">Data Types & Memory</span>
+      </div>
+      <p class="card-desc">
+        點擊下方按鈕，觀察不同型別佔用的 RAM 格數，以及<strong style="color:#f87171">未初始化</strong>時記憶體中殘留的垃圾值。
+      </p>
+
+      <div class="btn-group" id="mem-btns">
+        <button class="btn btn-primary" onclick="declareVar('int','myInt',4,'42')">int myInt = 42</button>
+        <button class="btn btn-blue" onclick="declareVar('double','pi',8,'3.14159')">double pi = 3.14159</button>
+        <button class="btn btn-green" onclick="declareVar('char','ch',1,&quot;'A'&quot;)">char ch = 'A'</button>
+        <button class="btn btn-orange" onclick="declareVar('bool','flag',1,'true')">bool flag = true</button>
+        <button class="btn btn-red" onclick="declareVar('int','x',4,null)">int x; ⚠️ 未初始化</button>
+        <button class="btn btn-ghost" onclick="resetMemory()">↺ 重置</button>
+      </div>
+
+      <!-- RAM grid label -->
+      <div style="font-size:0.78rem;color:#475569;margin-bottom:6px;">📦 RAM 記憶體示意圖 (每格 = 1 Byte)</div>
+      <div id="mem-grid-wrap"></div>
+
+      <div class="mem-legend">
+        <span><i class="mem-legend-dot" style="background:#312e81;border:1.5px solid #6366f1;"></i>已配置的記憶體</span>
+        <span><i class="mem-legend-dot" style="background:#450a0a;border:1.5px solid #dc2626;"></i>垃圾值 (未初始化)</span>
+      </div>
+
+      <div id="mem-log" class="console-box" style="margin-top:12px;"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+       CARD 2 – cin Input Buffer
+  ═══════════════════════════════════════════════ -->
+    <div class="card" id="card-cin">
+      <div class="section-title">
+        ⌨️ cin 輸入與緩衝區
+        <span class="badge">Input Buffer</span>
+      </div>
+      <p class="card-desc">
+        在輸入框中打入數值（如 <code>10 20</code>），按「送入 Buffer」後逐步模擬 <code>cin &gt;&gt; a &gt;&gt; b;</code> 讀取過程，觀察 Buffer
+        佇列如何被消耗。
+      </p>
+
+      <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <input id="cin-input-field" class="cin-input-box" type="text" placeholder="例如: 10 20" value="10 20"
+          style="width:160px;" />
+        <button class="btn btn-blue" onclick="cinSendToBuffer()">📥 送入 Buffer</button>
+        <button class="btn btn-green" id="cin-read-btn" onclick="cinReadStep()" disabled>▶ cin &gt;&gt; a &gt;&gt;
+          b;</button>
+        <button class="btn btn-ghost" onclick="cinReset()">↺ 重置</button>
+      </div>
+
+      <!-- Step indicator -->
+      <div class="step-indicator" id="cin-steps">
+        <div class="step-dot" id="cs0"></div><span>輸入</span>
+        <div class="step-dot" id="cs1"></div><span>Buffer</span>
+        <div class="step-dot" id="cs2"></div><span>讀 a</span>
+        <div class="step-dot" id="cs3"></div><span>讀 b</span>
+        <div class="step-dot" id="cs4"></div><span>完成</span>
+      </div>
+
+      <div class="cin-layout">
+        <!-- Buffer Queue -->
+        <div>
+          <div class="cin-panel-title">📬 Input Buffer</div>
+          <div id="cin-buffer-queue"></div>
+        </div>
+        <!-- Arrow -->
+        <div
+          style="display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#6366f1;padding-top:24px;">
+          ➔</div>
+        <!-- Variables -->
+        <div>
+          <div class="cin-panel-title">📦 變數記憶體</div>
+          <div class="var-box">
+            <div class="var-slot" id="cin-var-a"><span class="var-name">a</span><span id="cin-val-a"
+                style="color:#475569">= ?</span></div>
+            <div class="var-slot" id="cin-var-b"><span class="var-name">b</span><span id="cin-val-b"
+                style="color:#475569">= ?</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="cin-log" class="console-box" style="margin-top:14px;"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+       CARD 3 – cout Output Conveyor
+  ═══════════════════════════════════════════════ -->
+    <div class="card" id="card-cout">
+      <div class="section-title">
+        🖥️ cout 輸出輸送帶
+        <span class="badge">Output Stream</span>
+      </div>
+      <p class="card-desc">
+        觀察 <code>cout &lt;&lt; "Score: " &lt;&lt; score &lt;&lt; endl;</code> 如何將資料依序送往螢幕。設定 score 的值後點擊「執行」。
+      </p>
+
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+        <label style="font-size:0.88rem;color:#94a3b8;">score 值：
+          <input id="cout-score-val" type="number" value="98" min="0" max="9999"
+            style="width:72px;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:5px 8px;color:#e2e8f0;font-size:0.9rem;margin-left:6px;" />
+        </label>
+        <button class="btn btn-primary" id="cout-run-btn" onclick="coutRun()">▶ 執行輸送帶</button>
+        <button class="btn btn-ghost" onclick="coutReset()">↺ 重置</button>
+      </div>
+
+      <!-- Conveyor Scene -->
+      <div class="conveyor-scene">
+        <div style="font-size:0.75rem;color:#475569;margin-bottom:6px;">📤 operator <code
+            style="color:#6366f1;">&lt;&lt;</code> 輸送帶</div>
+        <div class="conveyor-track">
+          <div class="conveyor-belt-lines"></div>
+          <div class="conveyor-tokens-area" id="cout-tokens-area">
+            <div class="cout-token str-tok" id="ct-str">"Score: "</div>
+            <div class="cout-token var-tok" id="ct-var">score</div>
+            <div class="cout-token endl-tok" id="ct-endl">endl</div>
+          </div>
+        </div>
+        <div class="cout-labels">
+          <span>← 程式碼端</span>
+          <span>螢幕端 →</span>
+        </div>
+      </div>
+
+      <!-- Screen -->
+      <div style="font-size:0.78rem;color:#475569;margin-bottom:6px;">📟 Console 螢幕</div>
+      <div class="screen-box" id="cout-screen"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+       CARD 4 – setw & setfill + iomanip trap
+  ═══════════════════════════════════════════════ -->
+    <div class="card" id="card-setw">
+      <div class="section-title">
+        📐 版面編排格式化
+        <span class="badge">setw &amp; setfill</span>
+      </div>
+      <p class="card-desc">
+        使用 <code>setw()</code> 與 <code>setfill()</code> 控制輸出寬度與填充字元。<strong style="color:#facc15">⚠️ 必須
+          <code>#include &lt;iomanip&gt;</code>！</strong>試試忘記寫會怎樣👇
+      </p>
+
+      <!-- Static code display -->
+      <div class="code-block" id="setw-code-block"></div>
+
+      <!-- iomanip toggle -->
+      <div class="toggle-wrap" id="setw-toggle-wrap">
+        <label class="toggle-label" id="setw-toggle-label" for="setw-iomanip-toggle">
+          <span id="setw-toggle-text">✅ #include &lt;iomanip&gt; 已載入</span>
+        </label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="setw-iomanip-toggle" onchange="setwToggle()" />
+          <span class="toggle-slider"></span>
+        </label>
+        <span style="font-size:0.8rem;color:#475569;">← 開啟以「忘記」載入</span>
+      </div>
+
+      <!-- Controls (shown when header OK) -->
+      <div id="setw-controls">
+        <div class="ctrl-row">
+          <label>
+            寬度 W：
+            <input type="range" id="setw-range" min="4" max="16" value="8" oninput="setwUpdate()" />
+            <span class="ctrl-val-badge" id="setw-badge">8</span>
+          </label>
+          <label>
+            填充字 C：
+            <input type="text" id="setfill-char" maxlength="1" value="." oninput="setwUpdate()" />
+          </label>
+        </div>
+        <!-- Visual cell grid -->
+        <div class="setw-visual" id="setw-visual"></div>
+      </div>
+
+      <!-- Execute button -->
+      <button class="btn btn-primary" style="margin-bottom:10px;" onclick="setwRun()">▶ 執行</button>
+
+      <!-- Console output -->
+      <div style="font-size:0.78rem;color:#475569;margin-bottom:4px;">📟 Console 輸出</div>
+      <div class="console-box" id="setw-console"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+       CARD 5 – setprecision & fixed
+  ═══════════════════════════════════════════════ -->
+    <div class="card" id="card-prec">
+      <div class="section-title">
+        🔢 浮點數精確度
+        <span class="badge">setprecision &amp; fixed</span>
+      </div>
+      <p class="card-desc">
+        輸入浮點數，調整精度滑桿並切換模式，即時觀察 <code>std::setprecision()</code> 的輸出差異。<br />
+        <span style="color:#facc15;font-weight:600;">⚠️ setprecision() 也屬於 &lt;iomanip&gt;，別忘了 include！</span>
+      </p>
+
+      <!-- Static code block with iomanip highlighted -->
+      <div class="code-block" id="prec-code-block"></div>
+
+      <div class="prec-controls">
+        <div class="prec-group">
+          <label>浮點數值</label>
+          <input class="prec-input" id="prec-number" type="number" value="123.456789" step="any"
+            oninput="precUpdate()" />
+        </div>
+        <div class="prec-group">
+          <label>精度 precision：<span class="ctrl-val-badge" id="prec-badge">6</span></label>
+          <input type="range" id="prec-range" min="0" max="10" value="6" oninput="precUpdate()"
+            style="accent-color:#8b5cf6;width:180px;" />
+        </div>
+        <div class="prec-group">
+          <label>輸出模式</label>
+          <div class="radio-group">
+            <label class="radio-label"><input type="radio" name="prec-mode" value="default" checked
+                onchange="precUpdate()" /> default</label>
+            <label class="radio-label"><input type="radio" name="prec-mode" value="fixed" onchange="precUpdate()" />
+              fixed</label>
+            <label class="radio-label"><input type="radio" name="prec-mode" value="scientific"
+                onchange="precUpdate()" /> scientific</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic code preview (updates with mode/precision) -->
+      <div class="console-box" style="margin-bottom:12px;color:#94a3b8;" id="prec-code"></div>
+
+      <!-- Comparison table -->
+      <div id="prec-comparison" style="margin-bottom:12px;"></div>
+
+      <!-- Output -->
+      <div style="font-size:0.78rem;color:#475569;margin-bottom:4px;">📟 Console 輸出</div>
+      <div class="console-box" id="prec-console"></div>
+    </div>
+
+  </div><!-- /.container -->
+
+  <script>
+    /* ══════════════════════════════════════════════
+       UTILITIES
+    ══════════════════════════════════════════════ */
+    const delay = ms => new Promise(r => setTimeout(r, ms));
+
+    function setHTML(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
+    function setText(id, txt) { const el = document.getElementById(id); if (el) el.textContent = txt; }
+    function addClass(id, cls) { const el = document.getElementById(id); if (el) el.classList.add(cls); }
+    function removeClass(id, cls) { const el = document.getElementById(id); if (el) el.classList.remove(cls); }
+
+    /* ══════════════════════════════════════════════
+       CARD 1 – Memory Grid
+    ══════════════════════════════════════════════ */
+    (function () {
+      const TOTAL_CELLS = 32;
+      let usedCells = 0;
+      let memState = new Array(TOTAL_CELLS).fill(null);
+      const typeColors = {
+        int: { bg: '#312e81', border: '#6366f1', text: '#c7d2fe' },
+        double: { bg: '#0f3460', border: '#38bdf8', text: '#bae6fd' },
+        char: { bg: '#064e3b', border: '#34d399', text: '#a7f3d0' },
+        bool: { bg: '#451a03', border: '#f59e0b', text: '#fde68a' },
+      };
+
+      function renderMemGrid() {
+        const wrap = document.getElementById('mem-grid-wrap');
+        wrap.innerHTML = '';
+        for (let i = 0; i < TOTAL_CELLS; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'mem-cell';
+          cell.id = 'mc' + i;
+          if (memState[i]) {
+            const s = memState[i];
+            cell.classList.add('used');
+            if (s.garbage || s.isFirst) {
+              // style inline for individuality
+              if (s.garbage) {
+                cell.classList.add('garbage');
+                cell.textContent = (i === s.startIdx) ? s.value.substring(0, 7) : '';
+              } else {
+                const c = typeColors[s.type] || typeColors.int;
+                cell.style.background = c.bg;
+                cell.style.borderColor = c.border;
+                cell.style.color = c.text;
+                if (i === s.startIdx) cell.textContent = s.value;
+              }
+              // label on first cell
+              if (i === s.startIdx && s.name) {
+                const lbl = document.createElement('div');
+                lbl.className = 'var-label';
+                lbl.textContent = s.name;
+                cell.appendChild(lbl);
+              }
+            }
+            cell.classList.add('fade-in');
+          } else {
+            cell.textContent = String(i).padStart(2, '0');
+          }
+          wrap.appendChild(cell);
+        }
+      }
+
+      window.declareVar = function (type, name, size, value) {
+        const logEl = document.getElementById('mem-log');
+        const isGarbage = (value === null);
+        const displayVal = isGarbage
+          ? Math.floor(Math.random() * 4000000000 - 2000000000).toString()
+          : value;
+
+        if (usedCells + size > TOTAL_CELLS) {
+          logEl.innerHTML = '<span class="err">❌ 記憶體不足！請先重置。</span>';
+          return;
+        }
+        const startIdx = usedCells;
+        for (let i = 0; i < size; i++) {
+          memState[startIdx + i] = {
+            type, name, value: displayVal,
+            startIdx, size,
+            garbage: isGarbage,
+            isFirst: (i === 0)
+          };
+        }
+        usedCells += size;
+        renderMemGrid();
+
+        // Log
+        const sizeStr = `${size} Byte${size > 1 ? 's' : ''}`;
+        if (isGarbage) {
+          logEl.innerHTML =
+            `<span class="warn">⚠️ int ${name}; — 未初始化！</span>\n` +
+            `   佔用 ${sizeStr}，記憶體中的垃圾值：<span class="err">${displayVal}</span>\n` +
+            `   → 永遠不要使用未初始化的變數！`;
+        } else {
+          const c = typeColors[type] || typeColors.int;
+          logEl.innerHTML =
+            `<span style="color:${c.border}">✔ ${type} ${name} = ${value};</span>\n` +
+            `   佔用 ${sizeStr}，從位址 0x${startIdx.toString(16).padStart(4, '0')} 開始\n` +
+            `   初始值：${displayVal}`;
+        }
+      };
+
+      window.resetMemory = function () {
+        usedCells = 0;
+        memState = new Array(TOTAL_CELLS).fill(null);
+        renderMemGrid();
+        setText('mem-log', '');
+      };
+
+      renderMemGrid();
+    })();
+
+    /* ══════════════════════════════════════════════
+       CARD 2 – cin Buffer
+    ══════════════════════════════════════════════ */
+    (function () {
+      let bufferTokens = [];
+      let cinStep = 0;
+      let animating = false;
+
+      function updateStepDots(active) {
+        for (let i = 0; i <= 4; i++) {
+          const d = document.getElementById('cs' + i);
+          if (!d) continue;
+          d.classList.remove('active', 'done');
+          if (i < active) d.classList.add('done');
+          else if (i === active) d.classList.add('active');
+        }
+      }
+
+      function renderBuffer() {
+        const q = document.getElementById('cin-buffer-queue');
+        q.innerHTML = '';
+        if (bufferTokens.length === 0) {
+          q.innerHTML = '<span style="color:#475569;font-size:0.78rem;padding:4px;">（空）</span>';
+          return;
+        }
+        bufferTokens.forEach((t, i) => {
+          const chip = document.createElement('span');
+          chip.className = 'token-chip fly-in ' + (t.type === 'space' ? 'sp' : (isNaN(t.val) ? 'str' : 'num'));
+          chip.textContent = t.type === 'space' ? '⎵' : t.val;
+          chip.id = 'buf-tok-' + i;
+          q.appendChild(chip);
+        });
+      }
+
+      window.cinSendToBuffer = function () {
+        const raw = document.getElementById('cin-input-field').value;
+        bufferTokens = [];
+        for (let i = 0; i < raw.length; i++) {
+          if (raw[i] === ' ' || raw[i] === '\t') {
+            bufferTokens.push({ type: 'space', val: ' ' });
+          } else {
+            // accumulate word
+            let word = '';
+            while (i < raw.length && raw[i] !== ' ' && raw[i] !== '\t') word += raw[i++];
+            i--;
+            bufferTokens.push({ type: 'val', val: word });
+          }
+        }
+        cinStep = 0;
+        // reset vars
+        const va = document.getElementById('cin-var-a');
+        const vb = document.getElementById('cin-var-b');
+        va.className = 'var-slot'; va.innerHTML = '<span class="var-name">a</span><span id="cin-val-a" style="color:#475569">= ?</span>';
+        vb.className = 'var-slot'; vb.innerHTML = '<span class="var-name">b</span><span id="cin-val-b" style="color:#475569">= ?</span>';
+        document.getElementById('cin-log').textContent = '';
+        renderBuffer();
+        updateStepDots(1);
+        document.getElementById('cin-read-btn').disabled = false;
+        setHTML('cin-log', '<span class="hi">📬 資料已送入 Buffer，點擊「cin >> a >> b;」開始讀取。</span>');
+        cinStep = 1;
+      };
+
+      window.cinReadStep = async function () {
+        if (animating) return;
+        animating = true;
+        document.getElementById('cin-read-btn').disabled = true;
+        const log = document.getElementById('cin-log');
+
+        // Skip spaces, read first value token
+        async function consumeNextVal(varId, valId, varName) {
+          // skip spaces/tabs
+          while (bufferTokens.length > 0 && bufferTokens[0].type === 'space') {
+            bufferTokens.shift();
+            renderBuffer();
+            log.innerHTML = `<span class="dim">   ... 略過空白字元 ...</span>`;
+            await delay(500);
+          }
+          if (bufferTokens.length === 0) {
+            log.innerHTML = '<span class="err">❌ Buffer 已空，cin 等待更多輸入。</span>';
+            return false;
+          }
+          const tok = bufferTokens.shift();
+          renderBuffer();
+          log.innerHTML = `<span class="hi">✔ cin >> ${varName}：從 Buffer 取出 "${tok.val}"</span>`;
+          await delay(400);
+          const slot = document.getElementById(varId);
+          slot.innerHTML = `<span class="var-name">${varName}</span><span id="${valId}" style="color:#86efac">= ${tok.val}</span>`;
+          slot.classList.add('filled', 'pulse');
+          await delay(600);
+          return true;
+        }
+
+        updateStepDots(2);
+        log.innerHTML = '<span class="dim">⏳ 讀取 a...</span>';
+        await delay(300);
+        const okA = await consumeNextVal('cin-var-a', 'cin-val-a', 'a');
+        if (!okA) { animating = false; return; }
+
+        updateStepDots(3);
+        await delay(300);
+        log.innerHTML = '<span class="dim">⏳ 讀取 b...</span>';
+        await delay(300);
+        const okB = await consumeNextVal('cin-var-b', 'cin-val-b', 'b');
+        if (!okB) { animating = false; return; }
+
+        updateStepDots(4);
+        const aV = document.getElementById('cin-val-a').textContent.replace('= ', '');
+        const bV = document.getElementById('cin-val-b').textContent.replace('= ', '');
+        log.innerHTML =
+          `<span style="color:#34d399">✅ cin 完成！</span>\n` +
+          `   a = ${aV}\n` +
+          `   b = ${bV}\n` +
+          `   Buffer 剩餘：${bufferTokens.filter(t => t.type !== 'space').length} 個 token`;
+        renderBuffer();
+        animating = false;
+      };
+
+      window.cinReset = function () {
+        bufferTokens = [];
+        cinStep = 0;
+        animating = false;
+        document.getElementById('cin-buffer-queue').innerHTML = '';
+        const va = document.getElementById('cin-var-a');
+        const vb = document.getElementById('cin-var-b');
+        va.className = 'var-slot'; va.innerHTML = '<span class="var-name">a</span><span id="cin-val-a" style="color:#475569">= ?</span>';
+        vb.className = 'var-slot'; vb.innerHTML = '<span class="var-name">b</span><span id="cin-val-b" style="color:#475569">= ?</span>';
+        document.getElementById('cin-log').textContent = '';
+        document.getElementById('cin-read-btn').disabled = true;
+        updateStepDots(0);
+      };
+
+      cinReset();
+    })();
+
+    /* ══════════════════════════════════════════════
+       CARD 3 – cout Conveyor
+    ══════════════════════════════════════════════ */
+    (function () {
+      let coutRunning = false;
+
+      window.coutReset = function () {
+        coutRunning = false;
+        ['ct-str', 'ct-var', 'ct-endl'].forEach(id => {
+          const el = document.getElementById(id);
+          el.className = el.className.split(' ').filter(c => !['visible', 'traveling'].includes(c)).join(' ');
+        });
+        document.getElementById('cout-screen').textContent = '';
+        document.getElementById('cout-run-btn').disabled = false;
+      };
+
+      window.coutRun = async function () {
+        if (coutRunning) return;
+        coutRunning = true;
+        document.getElementById('cout-run-btn').disabled = true;
+        ['ct-str', 'ct-var', 'ct-endl'].forEach(id => {
+          const el = document.getElementById(id);
+          el.classList.remove('visible', 'traveling');
+        });
+        const screen = document.getElementById('cout-screen');
+        screen.textContent = '';
+        const score = parseInt(document.getElementById('cout-score-val').value) || 0;
+
+        // Update score token display
+        document.getElementById('ct-var').textContent = String(score);
+
+        const tokens = [
+          { id: 'ct-str', text: '"Score: "', out: 'Score: ' },
+          { id: 'ct-var', text: String(score), out: String(score) },
+          { id: 'ct-endl', text: 'endl', out: '\n' },
+        ];
+
+        for (const tok of tokens) {
+          const el = document.getElementById(tok.id);
+          el.classList.add('visible');
+          await delay(500);
+          el.classList.add('traveling');
+          await delay(900);
+          // append to screen
+          if (tok.out === '\n') {
+            screen.textContent += '\n';
+            // flash endl indicator
+            screen.innerHTML += '<span style="color:#fbbf24;font-size:0.75rem;">↵ (newline)</span>';
+          } else {
+            screen.textContent += tok.out;
+          }
+          el.classList.remove('visible', 'traveling');
+          await delay(200);
+        }
+        document.getElementById('cout-run-btn').disabled = false;
+        coutRunning = false;
+      };
+    })();
+
+    /* ══════════════════════════════════════════════
+       CARD 4 – setw & setfill + iomanip trap
+    ══════════════════════════════════════════════ */
+    (function () {
+      let forgotHeader = false;
+
+      // Render static code block
+      function renderCodeBlock(forgot) {
+        const block = document.getElementById('setw-code-block');
+        const W = parseInt(document.getElementById('setw-range').value) || 8;
+        const rawC = document.getElementById('setfill-char').value;
+        const C = rawC.length > 0 ? rawC[0] : ' ';
+        block.innerHTML =
+          `<span class="hl-include">#include</span> <span class="hl-str">&lt;iostream&gt;</span>\n` +
+          (forgot
+            ? `<span class="hl-include hl-struck">#include</span> <span class="hl-str hl-struck">&lt;iomanip&gt;</span>  <span class="hl-comment">// ← 這行被刪掉了！</span>\n`
+            : `<span class="hl-include">#include</span> <span class="hl-iomanip">&lt;iomanip&gt;</span>   <span class="hl-comment">// ← setw, setfill 都需要它！</span>\n`) +
+          `<span class="hl-keyword">using namespace</span> std;\n\n` +
+          `<span class="hl-keyword">int</span> <span class="hl-fn">main</span>() {\n` +
+          `  cout &lt;&lt; <span class="hl-fn">setw</span>(${W}) &lt;&lt; <span class="hl-fn">setfill</span>(<span class="hl-str">'${C}'</span>) &lt;&lt; <span class="hl-str">"Apple"</span>\n` +
+          `       &lt;&lt; <span class="hl-fn">setw</span>(${W}) &lt;&lt; <span class="hl-num">50</span>;\n` +
+          `}`;
+      }
+
+      function buildVisual() {
+        const W = parseInt(document.getElementById('setw-range').value) || 8;
+        const rawC = document.getElementById('setfill-char').value;
+        const C = rawC.length > 0 ? rawC[0] : ' ';
+        document.getElementById('setw-badge').textContent = W;
+        const s1 = 'Apple', s2 = '50';
+        const visual = document.getElementById('setw-visual');
+        visual.innerHTML = '';
+
+        function buildRow(label, data, cls) {
+          const rowWrap = document.createElement('div');
+          rowWrap.style.cssText = 'margin-bottom:10px;';
+          const rowLabel = document.createElement('div');
+          rowLabel.style.cssText = 'font-size:0.75rem;color:#475569;margin-bottom:3px;font-family:monospace;';
+          rowLabel.textContent = label;
+          rowWrap.appendChild(rowLabel);
+          const row = document.createElement('div');
+          row.className = 'setw-row';
+          const safePad = Math.max(0, W - data.length);
+          for (let i = 0; i < safePad; i++) {
+            const cell = document.createElement('span');
+            cell.className = 'setw-cell fill-ch';
+            cell.textContent = C;
+            row.appendChild(cell);
+          }
+          for (let i = 0; i < data.length; i++) {
+            const cell = document.createElement('span');
+            cell.className = 'setw-cell ' + cls;
+            cell.textContent = data[i];
+            row.appendChild(cell);
+          }
+          rowWrap.appendChild(row);
+          return rowWrap;
+        }
+        visual.appendChild(buildRow('setw(' + W + ') << "' + s1 + '"', s1, 'data-ch'));
+        visual.appendChild(buildRow('setw(' + W + ') << ' + s2, s2, 'data2-ch'));
+      }
+
+      window.setwUpdate = function () {
+        renderCodeBlock(forgotHeader);
+        if (!forgotHeader) buildVisual();
+      };
+
+      window.setwToggle = function () {
+        forgotHeader = document.getElementById('setw-iomanip-toggle').checked;
+        const wrap = document.getElementById('setw-toggle-wrap');
+        const lbl = document.getElementById('setw-toggle-label');
+        const txt = document.getElementById('setw-toggle-text');
+        const ctrl = document.getElementById('setw-controls');
+
+        if (forgotHeader) {
+          wrap.classList.add('danger');
+          lbl.classList.add('danger-label');
+          txt.innerHTML = '❌ #include &lt;iomanip&gt; 已被刪除！';
+          ctrl.style.display = 'none';
+        } else {
+          wrap.classList.remove('danger');
+          lbl.classList.remove('danger-label');
+          txt.innerHTML = '✅ #include &lt;iomanip&gt; 已載入';
+          ctrl.style.display = '';
+          document.getElementById('setw-console').textContent = '';
+        }
+        renderCodeBlock(forgotHeader);
+        if (!forgotHeader) buildVisual();
+      };
+
+      window.setwRun = function () {
+        const W = parseInt(document.getElementById('setw-range').value) || 8;
+        const rawC = document.getElementById('setfill-char').value;
+        const C = rawC.length > 0 ? rawC[0] : ' ';
+        const consoleEl = document.getElementById('setw-console');
+
+        if (forgotHeader) {
+          consoleEl.innerHTML =
+            `<span class="hl-err-line">error: 'setw' was not declared in this scope</span>` +
+            `<span class="hl-err-line">error: 'setfill' was not declared in this scope</span>` +
+            `<span style="color:#f87171;font-size:0.8rem;">\n💡 提示：需要 #include &lt;iomanip&gt; 才能使用 setw() / setfill()</span>`;
+          consoleEl.classList.add('shake');
+          setTimeout(() => consoleEl.classList.remove('shake'), 500);
+        } else {
+          const out1 = 'Apple'.padStart(W, C);
+          const out2 = '50'.padStart(W, C);
+          consoleEl.textContent = out1 + out2;
+        }
+      };
+
+      // Init
+      renderCodeBlock(false);
+      buildVisual();
+    })();
+
+    /* ══════════════════════════════════════════════
+       CARD 5 – setprecision
+    ══════════════════════════════════════════════ */
+    (function () {
+      function formatNum(num, prec, mode) {
+        if (isNaN(num)) return 'NaN';
+        if (mode === 'fixed') {
+          return num.toFixed(prec);
+        } else if (mode === 'scientific') {
+          return num.toExponential(prec);
+        } else {
+          // default: toPrecision but trim trailing zeros
+          if (prec === 0) return Math.round(num).toString();
+          const s = num.toPrecision(prec);
+          // trim trailing zeros after decimal like C++ does
+          return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+        }
+      }
+
+      function buildPrec() {
+        const numRaw = parseFloat(document.getElementById('prec-number').value);
+        const prec = parseInt(document.getElementById('prec-range').value) || 0;
+        const mode = document.querySelector('input[name="prec-mode"]:checked').value;
+        document.getElementById('prec-badge').textContent = prec;
+
+        // Static code block with glowing iomanip highlight
+        const modeFlag = mode === 'default' ? '' :
+          mode === 'fixed' ? '\n  cout &lt;&lt; <span class="hl-keyword">fixed</span>;' :
+            '\n  cout &lt;&lt; <span class="hl-keyword">scientific</span>;';
+        document.getElementById('prec-code-block').innerHTML =
+          `<span class="hl-include">#include</span> <span class="hl-str">&lt;iostream&gt;</span>\n` +
+          `<span class="hl-include">#include</span> <span class="hl-iomanip">&lt;iomanip&gt;</span>   <span class="hl-comment">// ← setprecision() 需要此標頭！</span>\n` +
+          `<span class="hl-keyword">using namespace</span> std;\n\n` +
+          `<span class="hl-keyword">int</span> <span class="hl-fn">main</span>() {${modeFlag}\n` +
+          `  cout &lt;&lt; <span class="hl-fn">setprecision</span>(<span class="hl-num">${prec}</span>) &lt;&lt; <span class="hl-num">${isNaN(numRaw) ? '…' : numRaw}</span>;\n` +
+          `}`;
+
+        // Dynamic live preview line (console-box row)
+        const modeCode = mode === 'default' ? '' :
+          mode === 'fixed' ? '\n<span style="color:#fbbf24">cout &lt;&lt; fixed;</span>' :
+            '\n<span style="color:#fbbf24">cout &lt;&lt; scientific;</span>';
+
+        document.getElementById('prec-code').innerHTML =
+          `<span style="color:#a78bfa">cout</span>${modeCode} &lt;&lt; ` +
+          `<span style="color:#fbbf24">setprecision(${prec})</span> &lt;&lt; ` +
+          `<span style="color:#38bdf8">${isNaN(numRaw) ? '…' : numRaw}</span>;`;
+
+        // Comparison table – show all three modes
+        const modes = ['default', 'fixed', 'scientific'];
+        let tableHtml = `<table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:0.85rem;">
+      <tr style="color:#64748b;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;">
+        <th style="text-align:left;padding:5px 10px;border-bottom:1px solid #334155;">模式</th>
+        <th style="text-align:left;padding:5px 10px;border-bottom:1px solid #334155;">輸出結果</th>
+        <th style="text-align:left;padding:5px 10px;border-bottom:1px solid #334155;">說明</th>
+      </tr>`;
+        const modeDescs = {
+          default: '有效位數，自動去掉尾零',
+          fixed: '小數點後固定位數，補零',
+          scientific: '科學記號，固定有效位數'
+        };
+        modes.forEach(m => {
+          const out = formatNum(numRaw, prec, m);
+          const isActive = (m === mode);
+          tableHtml += `<tr style="${isActive ? 'background:#1e293b;' : ''}" >
+        <td style="padding:6px 10px;color:${isActive ? '#a78bfa' : '#64748b'};font-weight:${isActive ? '700' : '400'};">
+          ${isActive ? '▶ ' : ''}<code>${m}</code>
+        </td>
+        <td style="padding:6px 10px;color:${isActive ? '#34d399' : '#94a3b8'};">${out}</td>
+        <td style="padding:6px 10px;color:#475569;font-size:0.78rem;">${modeDescs[m]}</td>
+      </tr>`;
+        });
+        tableHtml += '</table>';
+        document.getElementById('prec-comparison').innerHTML = tableHtml;
+
+        // Console
+        const result = formatNum(numRaw, prec, mode);
+        document.getElementById('prec-console').textContent = result;
+      }
+
+      window.precUpdate = buildPrec;
+      buildPrec();
+    })();
+  </script>
+</body>
+
+</html>

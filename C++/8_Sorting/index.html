@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C++ 排序演算法 - Sorting Algorithms</title>
+  <link rel="stylesheet" href="../../theme.css" />
+  <script src="../../layout.js" defer></script>
+  <style>
+    body { padding: 0; margin: 0; }
+
+    .container { padding-top: 80px; padding-bottom: 60px; }
+
+    /* ── Shared visualizer styles ── */
+    .viz-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bar-area {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 4px;
+      height: 180px;
+      width: 100%;
+      background: rgba(0,0,0,.25);
+      border-radius: 10px;
+      padding: 10px 10px 0 10px;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .bar-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      flex: 1;
+      min-width: 0;
+      transition: all .15s ease;
+    }
+
+    .bar-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 2px;
+      line-height: 1;
+    }
+
+    .bar-rect {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      transition: height .2s ease, background .2s ease;
+      min-height: 4px;
+    }
+
+    /* colours */
+    .bar-rect.default  { background: linear-gradient(180deg,#60a5fa,#3b82f6); }
+    .bar-rect.compare  { background: linear-gradient(180deg,#fbbf24,#f59e0b); }
+    .bar-rect.swap     { background: linear-gradient(180deg,#f87171,#ef4444); }
+    .bar-rect.pivot    { background: linear-gradient(180deg,#c084fc,#a855f7); }
+    .bar-rect.sorted   { background: linear-gradient(180deg,#4ade80,#22c55e); }
+    .bar-rect.min-bar  { background: linear-gradient(180deg,#38bdf8,#0ea5e9); }
+    .bar-rect.inserting{ background: linear-gradient(180deg,#fb923c,#f97316); }
+    .bar-rect.temp     { background: linear-gradient(180deg,#a78bfa,#8b5cf6); }
+    .bar-rect.radix-hi { background: linear-gradient(180deg,#f0abfc,#e879f9); }
+
+    .ctrl-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn-new  { background: #334155; color: #cbd5e1; }
+    .btn-sort { background: linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; }
+    .btn-race { background: linear-gradient(135deg,#f59e0b,#ef4444); color:#fff; }
+
+    button { border:none; padding:8px 18px; border-radius:8px; cursor:pointer;
+             font-weight:600; font-size:13px; transition: opacity .2s, transform .1s; }
+    button:hover { opacity:.85; transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+
+    .status-line {
+      font-size: 12px;
+      color: #94a3b8;
+      min-height: 18px;
+      text-align: center;
+      font-style: italic;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+
+    /* ── Radix buckets ── */
+    .bucket-area {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+      justify-content: center;
+    }
+    .bucket {
+      flex: 1;
+      min-width: 0;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      padding: 4px 2px;
+      gap: 2px;
+      min-height: 80px;
+      font-size: 9px;
+    }
+    .bucket-label {
+      font-size: 10px;
+      font-weight:700;
+      color:#94a3b8;
+      margin-top:4px;
+    }
+    .bucket-item {
+      background: linear-gradient(135deg,#6366f1,#8b5cf6);
+      border-radius: 4px;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 4px;
+      width: 90%;
+      text-align: center;
+    }
+
+    /* ── Big-O table ── */
+    .bigo-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      overflow-x: auto;
+    }
+    .bigo-table th, .bigo-table td {
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 8px 12px;
+      text-align: center;
+    }
+    .bigo-table thead tr { background: rgba(99,102,241,.35); }
+    .bigo-table tbody tr:nth-child(even) { background: rgba(255,255,255,.04); }
+    .bigo-table .good  { color:#4ade80; font-weight:700; }
+    .bigo-table .mid   { color:#fbbf24; font-weight:700; }
+    .bigo-table .bad   { color:#f87171; font-weight:700; }
+
+    /* ── Race section ── */
+    .race-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      width: 100%;
+    }
+    @media(max-width:700px){ .race-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:460px){ .race-grid { grid-template-columns: 1fr; } }
+
+    .race-card {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .race-card h4 {
+      text-align:center; font-size:12px; margin:0 0 6px;
+      color: #a5b4fc;
+    }
+    .race-bar-area {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 2px;
+      height: 80px;
+      background: rgba(0,0,0,.2);
+      border-radius: 6px;
+      padding: 4px 4px 0;
+      box-sizing: border-box;
+    }
+    .race-bar-rect {
+      flex:1;
+      border-radius: 2px 2px 0 0;
+      min-height: 2px;
+    }
+
+    /* merge temp area */
+    .merge-temp-area {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 4px;
+      height: 80px;
+      width: 100%;
+      background: rgba(0,0,0,.15);
+      border: 1px dashed rgba(255,255,255,.15);
+      border-radius: 10px;
+      padding: 4px 10px 0;
+      box-sizing: border-box;
+    }
+    .merge-temp-label {
+      font-size:11px; color:#94a3b8; text-align:center; font-style:italic;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ════════════════════════════════════════════
+       PAGE HEADER
+  ════════════════════════════════════════════ -->
+  <div class="section-title">
+    🔢 C++ 一維陣列：排序演算法
+    <div style="font-size:14px;font-weight:400;color:#94a3b8;margin-top:6px;">
+      Sorting Algorithms — 互動視覺化學習
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       MODULE 1 — BUBBLE SORT
+  ════════════════════════════════════════════ -->
+  <div class="card" id="bubble-card">
+    <h2 style="margin-top:0">🫧 Module 1：氣泡排序 (Bubble Sort)</h2>
+    <p>每輪掃描時比較<strong>相鄰兩個元素</strong>，若左 &gt; 右則交換，最大值像泡泡一樣浮到最右端。時間複雜度 <code>O(N²)</code>。</p>
+    <div class="viz-wrapper">
+      <div class="bar-area" id="bubble-bars"></div>
+      <div class="status-line" id="bubble-status">點擊「開始排序」觀看動畫</div>
+      <div class="ctrl-row">
+        <button class="btn-new" onclick="bubbleNew()">🎲 產生新陣列</button>
+        <button class="btn-sort" id="bubble-btn" onclick="bubbleStart()">▶ 開始排序</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       MODULE 2 — SELECTION SORT
+  ════════════════════════════════════════════ -->
+  <div class="card" id="selection-card">
+    <h2 style="margin-top:0">🔍 Module 2：選擇排序 (Selection Sort)</h2>
+    <p>每輪在未排序區間<strong>找最小值</strong>，再與未排序區最左端交換。共需 N-1 輪。時間複雜度 <code>O(N²)</code>。</p>
+    <div class="viz-wrapper">
+      <div class="bar-area" id="selection-bars"></div>
+      <div class="status-line" id="selection-status">點擊「開始排序」觀看動畫</div>
+      <div class="ctrl-row">
+        <button class="btn-new" onclick="selectionNew()">🎲 產生新陣列</button>
+        <button class="btn-sort" id="selection-btn" onclick="selectionStart()">▶ 開始排序</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       MODULE 3 — INSERTION SORT
+  ════════════════════════════════════════════ -->
+  <div class="card" id="insertion-card">
+    <h2 style="margin-top:0">📌 Module 3：插入排序 (Insertion Sort)</h2>
+    <p>把第 i 個元素「抽出」，<strong>從左側已排序序列</strong>由右往左找到合適位置插入。就像整理撲克牌。時間複雜度 <code>O(N²)</code>。</p>
+    <div class="viz-wrapper">
+      <div class="bar-area" id="insertion-bars"></div>
+      <div class="status-line" id="insertion-status">點擊「開始排序」觀看動畫</div>
+      <div class="ctrl-row">
+        <button class="btn-new" onclick="insertionNew()">🎲 產生新陣列</button>
+        <button class="btn-sort" id="insertion-btn" onclick="insertionStart()">▶ 開始排序</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       MODULE 4 — QUICK SORT
+  ════════════════════════════════════════════ -->
+  <div class="card" id="quick-card">
+    <h2 style="margin-top:0">⚡ Module 4：快速排序 (Quick Sort)</h2>
+    <p>選定<strong>基準 (Pivot)</strong>，左右分區後遞迴。平均 <code>O(N log N)</code>，最壞 <code>O(N²)</code>。實務上速度最快之一。</p>
+    <div class="viz-wrapper">
+      <div class="bar-area" id="quick-bars"></div>
+      <div class="status-line" id="quick-status">點擊「開始排序」觀看動畫</div>
+      <div class="ctrl-row">
+        <button class="btn-new" onclick="quickNew()">🎲 產生新陣列</button>
+        <button class="btn-sort" id="quick-btn" onclick="quickStart()">▶ 開始排序</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       MODULE 5 — MERGE SORT
+  ════════════════════════════════════════════ -->
+  <div class="card" id="merge-card">
+    <h2 style="margin-top:0">🔀 Module 5：合併排序 (Merge Sort)</h2>
+    <p>遞迴地<strong>切半直到剩 1 個</strong>，再合併。需要暫存空間。時間複雜度穩定 <code>O(N log N)</code>。</p>
+    <div class="viz-wrapper">
+      <div class="bar-area" id="merge-bars"></div>
+      <div class="merge-temp-label">Temp Buffer（暫存區）</div>
+      <div class="merge-temp-area" id="merge-temp"></div>
+      <div class="status-line" id="merge-status">點擊「開始排序」觀看動畫</div>
+      <div class="ctrl-row">
+        <button class="btn-new" onclick="mergeNew()">🎲 產生新陣列</button>
+        <button class="btn-sort" id="merge-btn" onclick="mergeStart()">▶ 開始排序</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       MODULE 6 — RADIX SORT
+  ════════════════════════════════════════════ -->
+  <div class="card" id="radix-card">
+    <h2 style="margin-top:0">🪣 Module 6：基數排序 (Radix Sort)</h2>
+    <p><strong>非比較型排序</strong>，按位數（個位 → 十位 → 百位）放入對應桶子再取出。時間複雜度 <code>O(d·N)</code>。</p>
+    <div class="viz-wrapper">
+      <div class="bar-area" id="radix-bars"></div>
+      <div style="font-size:11px;color:#94a3b8;font-style:italic;text-align:center;">Buckets 0 ~ 9</div>
+      <div class="bucket-area" id="radix-buckets"></div>
+      <div class="status-line" id="radix-status">點擊「開始排序」觀看動畫</div>
+      <div class="ctrl-row">
+        <button class="btn-new" onclick="radixNew()">🎲 產生新陣列</button>
+        <button class="btn-sort" id="radix-btn" onclick="radixStart()">▶ 開始排序</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       MODULE 7 — RACE & BIG O
+  ════════════════════════════════════════════ -->
+  <div class="card" id="race-card">
+    <h2 style="margin-top:0">🏁 Module 7：終極對決與複雜度 (Sorting Race & Big O)</h2>
+
+    <h3 style="color:#a5b4fc;">📊 時間 / 空間複雜度比較表</h3>
+    <div style="overflow-x:auto;">
+      <table class="bigo-table">
+        <thead>
+          <tr>
+            <th>排序法</th>
+            <th>Best</th>
+            <th>Average</th>
+            <th>Worst</th>
+            <th>空間</th>
+            <th>穩定性</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>🫧 Bubble Sort</td>
+            <td class="good">O(N)</td>
+            <td class="bad">O(N²)</td>
+            <td class="bad">O(N²)</td>
+            <td class="good">O(1)</td>
+            <td>✅ 穩定</td>
+          </tr>
+          <tr>
+            <td>🔍 Selection Sort</td>
+            <td class="bad">O(N²)</td>
+            <td class="bad">O(N²)</td>
+            <td class="bad">O(N²)</td>
+            <td class="good">O(1)</td>
+            <td>❌ 不穩定</td>
+          </tr>
+          <tr>
+            <td>📌 Insertion Sort</td>
+            <td class="good">O(N)</td>
+            <td class="bad">O(N²)</td>
+            <td class="bad">O(N²)</td>
+            <td class="good">O(1)</td>
+            <td>✅ 穩定</td>
+          </tr>
+          <tr>
+            <td>⚡ Quick Sort</td>
+            <td class="good">O(N log N)</td>
+            <td class="good">O(N log N)</td>
+            <td class="bad">O(N²)</td>
+            <td class="mid">O(log N)</td>
+            <td>❌ 不穩定</td>
+          </tr>
+          <tr>
+            <td>🔀 Merge Sort</td>
+            <td class="good">O(N log N)</td>
+            <td class="good">O(N log N)</td>
+            <td class="good">O(N log N)</td>
+            <td class="mid">O(N)</td>
+            <td>✅ 穩定</td>
+          </tr>
+          <tr>
+            <td>🪣 Radix Sort</td>
+            <td class="good">O(d·N)</td>
+            <td class="good">O(d·N)</td>
+            <td class="good">O(d·N)</td>
+            <td class="mid">O(N+k)</td>
+            <td>✅ 穩定</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="color:#a5b4fc;margin-top:24px;">🏎️ 終極競速 (N = 30)</h3>
+    <p style="font-size:13px;color:#94a3b8;">同樣的亂序陣列，讓六種排序同時出發，親眼看速度差異！</p>
+    <div class="race-grid" id="race-grid"></div>
+    <div style="margin-top:14px;text-align:center;">
+      <button class="btn-race" id="race-btn" onclick="raceStart()">🚀 Start Race！</button>
+    </div>
+    <div class="status-line" id="race-status" style="margin-top:8px;">準備就緒，點擊 Start Race！</div>
+  </div>
+
+</div><!-- /.container -->
+
+<script>
+// ═══════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════
+const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+function randArray(n = 14, min = 5, max = 95) {
+  return Array.from({ length: n }, () => Math.floor(Math.random() * (max - min + 1)) + min);
+}
+
+function buildBars(containerId, arr, states = {}) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  const maxVal = Math.max(...arr, 1);
+  arr.forEach((v, i) => {
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    const lbl = document.createElement('div');
+    lbl.className = 'bar-label';
+    lbl.textContent = v;
+    const rect = document.createElement('div');
+    rect.className = 'bar-rect ' + (states[i] || 'default');
+    rect.style.height = Math.max(4, (v / maxVal) * 155) + 'px';
+    col.appendChild(lbl);
+    col.appendChild(rect);
+    container.appendChild(col);
+  });
+}
+
+function setStatus(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = msg;
+}
+
+function disableBtn(id, disabled) {
+  const btn = document.getElementById(id);
+  if (btn) btn.disabled = disabled;
+}
+
+// ═══════════════════════════════════════════════════
+//  MODULE 1 — BUBBLE SORT
+// ═══════════════════════════════════════════════════
+let bubbleArr = [];
+let bubbleRunning = false;
+
+function bubbleNew() {
+  if (bubbleRunning) return;
+  bubbleArr = randArray(14);
+  buildBars('bubble-bars', bubbleArr);
+  setStatus('bubble-status', '點擊「開始排序」觀看動畫');
+}
+
+async function bubbleStart() {
+  if (bubbleRunning) return;
+  bubbleRunning = true;
+  disableBtn('bubble-btn', true);
+  const arr = [...bubbleArr];
+  const n = arr.length;
+  const states = {};
+
+  for (let i = 0; i < n - 1; i++) {
+    for (let j = 0; j < n - i - 1; j++) {
+      // highlight comparing pair
+      const s = {};
+      for (let k = 0; k < n; k++) s[k] = k >= n - i ? 'sorted' : 'default';
+      s[j] = 'compare'; s[j + 1] = 'compare';
+      buildBars('bubble-bars', arr, s);
+      setStatus('bubble-status', `比較 arr[${j}]=${arr[j]} 與 arr[${j+1}]=${arr[j+1]}`);
+      await delay(320);
+
+      if (arr[j] > arr[j + 1]) {
+        s[j] = 'swap'; s[j + 1] = 'swap';
+        buildBars('bubble-bars', arr, s);
+        setStatus('bubble-status', `☑️ 交換！${arr[j]} > ${arr[j+1]}`);
+        await delay(320);
+        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+        buildBars('bubble-bars', arr, s);
+        await delay(200);
+      }
+    }
+    // lock rightmost
+    const s2 = {};
+    for (let k = 0; k < n; k++) s2[k] = k >= n - i - 1 ? 'sorted' : 'default';
+    buildBars('bubble-bars', arr, s2);
+    setStatus('bubble-status', `第 ${i + 1} 輪結束，已鎖定最右 ${i + 1} 個`);
+    await delay(300);
+  }
+
+  buildBars('bubble-bars', arr, Object.fromEntries(arr.map((_, i) => [i, 'sorted'])));
+  setStatus('bubble-status', '✅ 排序完成！');
+  bubbleArr = arr;
+  bubbleRunning = false;
+  disableBtn('bubble-btn', false);
+}
+
+bubbleNew();
+
+// ═══════════════════════════════════════════════════
+//  MODULE 2 — SELECTION SORT
+// ═══════════════════════════════════════════════════
+let selectionArr = [];
+let selectionRunning = false;
+
+function selectionNew() {
+  if (selectionRunning) return;
+  selectionArr = randArray(14);
+  buildBars('selection-bars', selectionArr);
+  setStatus('selection-status', '點擊「開始排序」觀看動畫');
+}
+
+async function selectionStart() {
+  if (selectionRunning) return;
+  selectionRunning = true;
+  disableBtn('selection-btn', true);
+  const arr = [...selectionArr];
+  const n = arr.length;
+
+  for (let i = 0; i < n - 1; i++) {
+    let minIdx = i;
+    // scan
+    for (let j = i + 1; j < n; j++) {
+      const s = {};
+      for (let k = 0; k < n; k++) {
+        if (k < i) s[k] = 'sorted';
+        else if (k === minIdx) s[k] = 'min-bar';
+        else if (k === j) s[k] = 'compare';
+        else s[k] = 'default';
+      }
+      buildBars('selection-bars', arr, s);
+      setStatus('selection-status', `掃描 arr[${j}]=${arr[j]}，目前最小 arr[${minIdx}]=${arr[minIdx]}`);
+      await delay(260);
+      if (arr[j] < arr[minIdx]) {
+        minIdx = j;
+      }
+    }
+    // swap
+    if (minIdx !== i) {
+      const sw = {};
+      for (let k = 0; k < n; k++) sw[k] = k < i ? 'sorted' : 'default';
+      sw[i] = 'swap'; sw[minIdx] = 'swap';
+      buildBars('selection-bars', arr, sw);
+      setStatus('selection-status', `交換 arr[${i}]=${arr[i]} ↔ arr[${minIdx}]=${arr[minIdx]}`);
+      await delay(400);
+      [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+    }
+    const s2 = {};
+    for (let k = 0; k < n; k++) s2[k] = k <= i ? 'sorted' : 'default';
+    buildBars('selection-bars', arr, s2);
+    setStatus('selection-status', `第 ${i + 1} 輪：arr[${i}]=${arr[i]} 已就位`);
+    await delay(300);
+  }
+
+  buildBars('selection-bars', arr, Object.fromEntries(arr.map((_, i) => [i, 'sorted'])));
+  setStatus('selection-status', '✅ 排序完成！');
+  selectionArr = arr;
+  selectionRunning = false;
+  disableBtn('selection-btn', false);
+}
+
+selectionNew();
+
+// ═══════════════════════════════════════════════════
+//  MODULE 3 — INSERTION SORT
+// ═══════════════════════════════════════════════════
+let insertionArr = [];
+let insertionRunning = false;
+
+function insertionNew() {
+  if (insertionRunning) return;
+  insertionArr = randArray(14);
+  buildBars('insertion-bars', insertionArr);
+  setStatus('insertion-status', '點擊「開始排序」觀看動畫');
+}
+
+async function insertionStart() {
+  if (insertionRunning) return;
+  insertionRunning = true;
+  disableBtn('insertion-btn', true);
+  const arr = [...insertionArr];
+  const n = arr.length;
+
+  for (let i = 1; i < n; i++) {
+    const key = arr[i];
+    // "lift" animation: mark inserting
+    {
+      const s = {};
+      for (let k = 0; k < n; k++) s[k] = k < i ? 'sorted' : 'default';
+      s[i] = 'inserting';
+      buildBars('insertion-bars', arr, s);
+      setStatus('insertion-status', `抽出 arr[${i}]=${key}，準備插入左側`);
+      await delay(350);
+    }
+
+    let j = i - 1;
+    while (j >= 0 && arr[j] > key) {
+      arr[j + 1] = arr[j];
+      {
+        const s = {};
+        for (let k = 0; k < n; k++) s[k] = k <= i ? (k === j + 1 ? 'inserting' : 'sorted') : 'default';
+        buildBars('insertion-bars', arr, s);
+        setStatus('insertion-status', `arr[${j}]=${arr[j]} 右移`);
+        await delay(260);
+      }
+      j--;
+    }
+    arr[j + 1] = key;
+    {
+      const s = {};
+      for (let k = 0; k < n; k++) s[k] = k <= i ? 'sorted' : 'default';
+      s[j + 1] = 'inserting';
+      buildBars('insertion-bars', arr, s);
+      setStatus('insertion-status', `插入 ${key} 到位置 ${j + 1}`);
+      await delay(350);
+    }
+    {
+      const s = {};
+      for (let k = 0; k < n; k++) s[k] = k <= i ? 'sorted' : 'default';
+      buildBars('insertion-bars', arr, s);
+      await delay(200);
+    }
+  }
+
+  buildBars('insertion-bars', arr, Object.fromEntries(arr.map((_, i) => [i, 'sorted'])));
+  setStatus('insertion-status', '✅ 排序完成！');
+  insertionArr = arr;
+  insertionRunning = false;
+  disableBtn('insertion-btn', false);
+}
+
+insertionNew();
+
+// ═══════════════════════════════════════════════════
+//  MODULE 4 — QUICK SORT
+// ═══════════════════════════════════════════════════
+let quickArr = [];
+let quickRunning = false;
+let quickSortedSet = new Set();
+
+function quickNew() {
+  if (quickRunning) return;
+  quickArr = randArray(14);
+  quickSortedSet = new Set();
+  buildBars('quick-bars', quickArr);
+  setStatus('quick-status', '點擊「開始排序」觀看動畫');
+}
+
+async function quickStart() {
+  if (quickRunning) return;
+  quickRunning = true;
+  disableBtn('quick-btn', true);
+  const arr = [...quickArr];
+  quickSortedSet = new Set();
+  await quickSortViz(arr, 0, arr.length - 1);
+  buildBars('quick-bars', arr, Object.fromEntries(arr.map((_, i) => [i, 'sorted'])));
+  setStatus('quick-status', '✅ 排序完成！');
+  quickArr = arr;
+  quickRunning = false;
+  disableBtn('quick-btn', false);
+}
+
+async function quickSortViz(arr, lo, hi) {
+  if (lo >= hi) {
+    if (lo === hi) quickSortedSet.add(lo);
+    return;
+  }
+  const pivotIdx = await quickPartition(arr, lo, hi);
+  quickSortedSet.add(pivotIdx);
+  buildQuickBars(arr, -1, -1, pivotIdx);
+  await delay(300);
+  await quickSortViz(arr, lo, pivotIdx - 1);
+  await quickSortViz(arr, pivotIdx + 1, hi);
+}
+
+async function quickPartition(arr, lo, hi) {
+  const pivotVal = arr[hi];
+  let i = lo - 1;
+
+  buildQuickBars(arr, -1, -1, hi);
+  setStatus('quick-status', `Pivot = arr[${hi}] = ${pivotVal}`);
+  await delay(350);
+
+  for (let j = lo; j < hi; j++) {
+    buildQuickBars(arr, i + 1, j, hi);
+    setStatus('quick-status', `比較 arr[${j}]=${arr[j]} 與 pivot=${pivotVal}`);
+    await delay(280);
+
+    if (arr[j] <= pivotVal) {
+      i++;
+      if (i !== j) {
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        buildQuickBars(arr, i, j, hi);
+        setStatus('quick-status', `交換 arr[${i}]=${arr[i]} ↔ arr[${j}]=${arr[j]}`);
+        await delay(300);
+      }
+    }
+  }
+  [arr[i + 1], arr[hi]] = [arr[hi], arr[i + 1]];
+  buildQuickBars(arr, i + 1, -1, i + 1);
+  setStatus('quick-status', `Pivot ${pivotVal} 就位 → 位置 ${i + 1}`);
+  await delay(350);
+  return i + 1;
+}
+
+function buildQuickBars(arr, left, right, pivotIdx) {
+  const s = {};
+  arr.forEach((_, i) => {
+    if (quickSortedSet.has(i)) s[i] = 'sorted';
+    else if (i === pivotIdx) s[i] = 'pivot';
+    else if (i === left) s[i] = 'swap';
+    else if (i === right) s[i] = 'compare';
+    else s[i] = 'default';
+  });
+  buildBars('quick-bars', arr, s);
+}
+
+quickNew();
+
+// ═══════════════════════════════════════════════════
+//  MODULE 5 — MERGE SORT
+// ═══════════════════════════════════════════════════
+let mergeArr = [];
+let mergeRunning = false;
+
+function mergeNew() {
+  if (mergeRunning) return;
+  mergeArr = randArray(12);
+  buildBars('merge-bars', mergeArr);
+  buildMergeTemp([]);
+  setStatus('merge-status', '點擊「開始排序」觀看動畫');
+}
+
+function buildMergeTemp(tempArr) {
+  const container = document.getElementById('merge-temp');
+  container.innerHTML = '';
+  if (!tempArr || tempArr.length === 0) { return; }
+  const maxVal = Math.max(...tempArr, 1);
+  tempArr.forEach(v => {
+    const rect = document.createElement('div');
+    rect.className = 'bar-rect temp';
+    rect.style.height = Math.max(4, (v / maxVal) * 68) + 'px';
+    rect.style.flex = '1';
+    rect.style.minWidth = '0';
+    rect.style.borderRadius = '3px 3px 0 0';
+    rect.style.position = 'relative';
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'font-size:9px;font-weight:700;color:#fff;text-align:center;margin-bottom:2px;';
+    lbl.textContent = v;
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:1;min-width:0;';
+    wrapper.appendChild(lbl);
+    wrapper.appendChild(rect);
+    container.appendChild(wrapper);
+  });
+}
+
+async function mergeStart() {
+  if (mergeRunning) return;
+  mergeRunning = true;
+  disableBtn('merge-btn', true);
+  const arr = [...mergeArr];
+  await mergeSortViz(arr, 0, arr.length - 1);
+  buildBars('merge-bars', arr, Object.fromEntries(arr.map((_, i) => [i, 'sorted'])));
+  buildMergeTemp([]);
+  setStatus('merge-status', '✅ 排序完成！');
+  mergeArr = arr;
+  mergeRunning = false;
+  disableBtn('merge-btn', false);
+}
+
+async function mergeSortViz(arr, lo, hi) {
+  if (lo >= hi) return;
+  const mid = Math.floor((lo + hi) / 2);
+  await mergeSortViz(arr, lo, mid);
+  await mergeSortViz(arr, mid + 1, hi);
+  await mergeViz(arr, lo, mid, hi);
+}
+
+async function mergeViz(arr, lo, mid, hi) {
+  const left = arr.slice(lo, mid + 1);
+  const right = arr.slice(mid + 1, hi + 1);
+  const temp = [];
+  let i = 0, j = 0;
+
+  setStatus('merge-status', `合併 [${lo}..${mid}] 與 [${mid+1}..${hi}]`);
+
+  while (i < left.length && j < right.length) {
+    const s = {};
+    arr.forEach((_, k) => {
+      if (k >= lo && k <= hi) s[k] = 'compare';
+      else s[k] = 'default';
+    });
+    buildBars('merge-bars', arr, s);
+
+    if (left[i] <= right[j]) {
+      temp.push(left[i++]);
+    } else {
+      temp.push(right[j++]);
+    }
+    buildMergeTemp(temp);
+    await delay(280);
+  }
+
+  while (i < left.length) { temp.push(left[i++]); buildMergeTemp(temp); await delay(200); }
+  while (j < right.length) { temp.push(right[j++]); buildMergeTemp(temp); await delay(200); }
+
+  // write back
+  for (let k = 0; k < temp.length; k++) {
+    arr[lo + k] = temp[k];
+    const s = {};
+    arr.forEach((_, idx) => {
+      if (idx >= lo && idx <= hi) s[idx] = idx <= lo + k ? 'sorted' : 'compare';
+      else s[idx] = 'default';
+    });
+    buildBars('merge-bars', arr, s);
+    buildMergeTemp(temp.slice(k + 1));
+    await delay(240);
+  }
+  setStatus('merge-status', `✓ [${lo}..${hi}] 合併完畢`);
+  await delay(200);
+}
+
+mergeNew();
+
+// ═══════════════════════════════════════════════════
+//  MODULE 6 — RADIX SORT
+// ═══════════════════════════════════════════════════
+let radixArr = [];
+let radixRunning = false;
+
+function radixNew() {
+  if (radixRunning) return;
+  radixArr = randArray(12, 10, 99);
+  buildBars('radix-bars', radixArr);
+  buildRadixBuckets(Array.from({ length: 10 }, () => []));
+  setStatus('radix-status', '點擊「開始排序」觀看動畫');
+}
+
+function buildRadixBuckets(buckets) {
+  const container = document.getElementById('radix-buckets');
+  container.innerHTML = '';
+  buckets.forEach((items, i) => {
+    const b = document.createElement('div');
+    b.className = 'bucket';
+    items.forEach(v => {
+      const el = document.createElement('div');
+      el.className = 'bucket-item';
+      el.textContent = v;
+      b.appendChild(el);
+    });
+    const lbl = document.createElement('div');
+    lbl.className = 'bucket-label';
+    lbl.textContent = i;
+    b.appendChild(lbl);
+    container.appendChild(b);
+  });
+}
+
+async function radixStart() {
+  if (radixRunning) return;
+  radixRunning = true;
+  disableBtn('radix-btn', true);
+  const arr = [...radixArr];
+  const maxVal = Math.max(...arr);
+  let exp = 1;
+  const digitNames = ['個位數', '十位數', '百位數'];
+  let round = 0;
+
+  while (Math.floor(maxVal / exp) > 0) {
+    const name = digitNames[round] || `${exp} 位數`;
+    setStatus('radix-status', `📍 按「${name}」分桶中...`);
+    await delay(300);
+
+    // highlight digit
+    const s = {};
+    arr.forEach((_, i) => s[i] = 'radix-hi');
+    buildBars('radix-bars', arr, s);
+    await delay(400);
+
+    // distribute
+    const buckets = Array.from({ length: 10 }, () => []);
+    for (let k = 0; k < arr.length; k++) {
+      const digit = Math.floor(arr[k] / exp) % 10;
+      const sv = {};
+      arr.forEach((_, i) => sv[i] = i === k ? 'swap' : (i < k ? 'sorted' : 'radix-hi'));
+      buildBars('radix-bars', arr, sv);
+      buckets[digit].push(arr[k]);
+      buildRadixBuckets(buckets);
+      setStatus('radix-status', `arr[${k}]=${arr[k]} → 桶子 ${digit} (${name})`);
+      await delay(320);
+    }
+
+    // collect
+    let idx = 0;
+    for (let b = 0; b < 10; b++) {
+      for (const v of buckets[b]) {
+        arr[idx++] = v;
+        const sc = {};
+        arr.forEach((_, i) => sc[i] = i < idx ? 'sorted' : 'default');
+        buildBars('radix-bars', arr, sc);
+        const nb = Array.from({ length: 10 }, (_, bi) => bi > b ? buckets[bi] : bi === b ? buckets[b].slice(buckets[b].indexOf(v) + 1) : []);
+        buildRadixBuckets(nb);
+        await delay(260);
+      }
+    }
+
+    setStatus('radix-status', `✅ ${name} 完成 → ${arr.join(', ')}`);
+    buildBars('radix-bars', arr, Object.fromEntries(arr.map((_, i) => [i, 'sorted'])));
+    buildRadixBuckets(Array.from({ length: 10 }, () => []));
+    await delay(500);
+
+    exp *= 10;
+    round++;
+  }
+
+  buildBars('radix-bars', arr, Object.fromEntries(arr.map((_, i) => [i, 'sorted'])));
+  setStatus('radix-status', '✅ 基數排序完成！');
+  radixArr = arr;
+  radixRunning = false;
+  disableBtn('radix-btn', false);
+}
+
+radixNew();
+
+// ═══════════════════════════════════════════════════
+//  MODULE 7 — SORTING RACE (N = 30)
+// ═══════════════════════════════════════════════════
+const RACE_ALGOS = [
+  { id: 'race-bubble',    label: '🫧 Bubble',    color: '#60a5fa' },
+  { id: 'race-selection', label: '🔍 Selection',  color: '#38bdf8' },
+  { id: 'race-insertion', label: '📌 Insertion',  color: '#fb923c' },
+  { id: 'race-quick',    label: '⚡ Quick',      color: '#a855f7' },
+  { id: 'race-merge',    label: '🔀 Merge',      color: '#22d3ee' },
+  { id: 'race-radix',    label: '🪣 Radix',      color: '#f0abfc' },
+];
+
+let raceBase = [];
+let raceRunning = false;
+
+function initRaceGrid() {
+  const grid = document.getElementById('race-grid');
+  grid.innerHTML = '';
+  raceBase = randArray(30, 2, 99);
+
+  RACE_ALGOS.forEach(algo => {
+    const card = document.createElement('div');
+    card.className = 'race-card';
+    card.innerHTML = `<h4>${algo.label}</h4><div class="race-bar-area" id="${algo.id}"></div>`;
+    grid.appendChild(card);
+  });
+
+  RACE_ALGOS.forEach(algo => buildRaceBars(algo.id, [...raceBase], {}, algo.color));
+}
+
+function buildRaceBars(containerId, arr, states, defaultColor) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  const maxVal = Math.max(...arr, 1);
+  arr.forEach((v, i) => {
+    const rect = document.createElement('div');
+    rect.className = 'race-bar-rect';
+    rect.style.height = Math.max(2, (v / maxVal) * 72) + 'px';
+    rect.style.background = states[i] === 'sorted' ? '#4ade80'
+      : states[i] === 'swap' ? '#f87171'
+      : states[i] === 'compare' ? '#fbbf24'
+      : defaultColor;
+    container.appendChild(rect);
+  });
+}
+
+async function raceStart() {
+  if (raceRunning) return;
+  raceRunning = true;
+  disableBtn('race-btn', true);
+  initRaceGrid();
+  setStatus('race-status', '🏁 比賽開始！');
+
+  const shared = [...raceBase];
+
+  const runs = [
+    raceBubble(shared),
+    raceSelection(shared),
+    raceInsertion(shared),
+    raceQuick(shared),
+    raceMerge(shared),
+    raceRadix(shared),
+  ];
+
+  const results = await Promise.allSettled(runs);
+  setStatus('race-status', '🏆 所有排序完成！O(N log N) 的排序明顯更快！');
+  raceRunning = false;
+  disableBtn('race-btn', false);
+}
+
+// ─── Race: Bubble ─────────────────────────
+async function raceBubble(source) {
+  const arr = [...source];
+  const n = arr.length;
+  const color = '#60a5fa';
+  for (let i = 0; i < n - 1; i++) {
+    for (let j = 0; j < n - i - 1; j++) {
+      const s = {};
+      s[j] = 'compare'; s[j+1] = 'compare';
+      for (let k = n - i; k < n; k++) s[k] = 'sorted';
+      buildRaceBars('race-bubble', arr, s, color);
+      await delay(35);
+      if (arr[j] > arr[j+1]) { [arr[j],arr[j+1]]=[arr[j+1],arr[j]]; }
+    }
+  }
+  buildRaceBars('race-bubble', arr, Object.fromEntries(arr.map((_,i)=>[i,'sorted'])), color);
+}
+
+// ─── Race: Selection ──────────────────────
+async function raceSelection(source) {
+  const arr = [...source];
+  const n = arr.length;
+  const color = '#38bdf8';
+  for (let i = 0; i < n - 1; i++) {
+    let minIdx = i;
+    for (let j = i + 1; j < n; j++) {
+      if (arr[j] < arr[minIdx]) minIdx = j;
+    }
+    [arr[i],arr[minIdx]]=[arr[minIdx],arr[i]];
+    const s = {};
+    for (let k=0;k<=i;k++) s[k]='sorted';
+    buildRaceBars('race-selection', arr, s, color);
+    await delay(40);
+  }
+  buildRaceBars('race-selection', arr, Object.fromEntries(arr.map((_,i)=>[i,'sorted'])), color);
+}
+
+// ─── Race: Insertion ──────────────────────
+async function raceInsertion(source) {
+  const arr = [...source];
+  const n = arr.length;
+  const color = '#fb923c';
+  for (let i = 1; i < n; i++) {
+    const key = arr[i];
+    let j = i - 1;
+    while (j >= 0 && arr[j] > key) { arr[j+1]=arr[j]; j--; }
+    arr[j+1]=key;
+    const s = {};
+    for (let k=0;k<=i;k++) s[k]='sorted';
+    buildRaceBars('race-insertion', arr, s, color);
+    await delay(30);
+  }
+  buildRaceBars('race-insertion', arr, Object.fromEntries(arr.map((_,i)=>[i,'sorted'])), color);
+}
+
+// ─── Race: Quick ──────────────────────────
+async function raceQuick(source) {
+  const arr = [...source];
+  const color = '#a855f7';
+  async function qs(lo, hi) {
+    if (lo >= hi) return;
+    const pivotVal = arr[hi];
+    let i = lo - 1;
+    for (let j = lo; j < hi; j++) {
+      if (arr[j] <= pivotVal) { i++; [arr[i],arr[j]]=[arr[j],arr[i]]; }
+    }
+    [arr[i+1],arr[hi]]=[arr[hi],arr[i+1]];
+    buildRaceBars('race-quick', arr, {}, color);
+    await delay(20);
+    await qs(lo, i);
+    await qs(i+2, hi);
+  }
+  await qs(0, arr.length - 1);
+  buildRaceBars('race-quick', arr, Object.fromEntries(arr.map((_,i)=>[i,'sorted'])), color);
+}
+
+// ─── Race: Merge ──────────────────────────
+async function raceMerge(source) {
+  const arr = [...source];
+  const color = '#22d3ee';
+  async function ms(lo, hi) {
+    if (lo >= hi) return;
+    const mid = Math.floor((lo+hi)/2);
+    await ms(lo, mid);
+    await ms(mid+1, hi);
+    const l = arr.slice(lo,mid+1), r = arr.slice(mid+1,hi+1);
+    let i=0,j=0,k=lo;
+    while(i<l.length&&j<r.length) arr[k++]=l[i]<=r[j]?l[i++]:r[j++];
+    while(i<l.length) arr[k++]=l[i++];
+    while(j<r.length) arr[k++]=r[j++];
+    buildRaceBars('race-merge', arr, {}, color);
+    await delay(15);
+  }
+  await ms(0, arr.length-1);
+  buildRaceBars('race-merge', arr, Object.fromEntries(arr.map((_,i)=>[i,'sorted'])), color);
+}
+
+// ─── Race: Radix ──────────────────────────
+async function raceRadix(source) {
+  const arr = [...source];
+  const color = '#f0abfc';
+  const maxVal = Math.max(...arr);
+  let exp = 1;
+  while (Math.floor(maxVal/exp) > 0) {
+    const buckets = Array.from({length:10},()=>[]);
+    arr.forEach(v => buckets[Math.floor(v/exp)%10].push(v));
+    let k = 0;
+    buckets.forEach(b => b.forEach(v => arr[k++]=v));
+    buildRaceBars('race-radix', arr, {}, color);
+    await delay(25);
+    exp*=10;
+  }
+  buildRaceBars('race-radix', arr, Object.fromEntries(arr.map((_,i)=>[i,'sorted'])), color);
+}
+
+// Init race on page load
+initRaceGrid();
+</script>
+</body>
+</html>

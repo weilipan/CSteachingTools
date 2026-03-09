@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ setprecision & fixed 視覺化教學</title>
+    
+    <link rel="stylesheet" href="../../theme.css">
+    <script src="../../layout.js" defer></script>
+
+    <style>
+        /* ── 本頁專用的元件與互動樣式 (配合 theme.css 的明亮風格) ── */
+        :root {
+            --surface: #f6f8fa;
+            --code-bg: #1e293b;
+            --code-header: #0f172a;
+        }
+        code, .mono { font-family: 'Courier New', Courier, monospace; }
+
+        /* ── 佈局 Helpers ── */
+        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 15px; }
+        @media(max-width: 768px) { .grid2 { grid-template-columns: 1fr; } }
+        
+        .panel-title { font-size: 1.25rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; color: var(--accent-color); font-weight: bold; }
+        
+        /* ── 控制面板 Inputs ── */
+        .input-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.2rem; }
+        .input-group label { font-size: 0.95rem; font-weight: 600; color: var(--text-main); }
+        input[type="number"], input[type="range"] {
+            background: #fff; border: 1px solid var(--border-color); color: var(--text-main);
+            padding: 0.6rem; border-radius: 6px; font-family: monospace; font-size: 1rem; outline: none;
+            transition: border-color 0.2s; width: 100%; box-sizing: border-box;
+        }
+        input[type="number"]:focus { border-color: var(--accent-color); }
+        input[type="range"] { cursor: pointer; accent-color: var(--accent-color); padding: 0; height: 6px; }
+
+        /* ── 切換按鈕 ── */
+        .toggle-group { display: flex; background: var(--surface); padding: 4px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .toggle-btn {
+            flex: 1; background: transparent; border: none; color: var(--text-muted);
+            padding: 0.6rem 0.5rem; border-radius: 6px; cursor: pointer; font-weight: 600;
+            transition: all 0.2s; font-family: monospace; font-size: 0.9rem; text-align: center;
+        }
+        .toggle-btn.active { background: var(--accent-color); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        /* ── 程式碼與 Console 區塊 ── */
+        .code-block { background: var(--code-bg); border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); margin-bottom: 1.5rem; }
+        .code-header { background: var(--code-header); padding: 10px 15px; display: flex; align-items: center; gap: 6px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background: #ff5f56; } .yellow { background: #ffbd2e; } .green { background: #27c93f; }
+        .code-header .title { margin-left: 10px; font-size: 0.85rem; color: #94a3b8; font-family: monospace; }
+        pre { margin: 0; padding: 1.2rem; overflow-x: auto; color: #e2e8f0; font-size: 0.95rem; line-height: 1.5; }
+        
+        .output-header { font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .console {
+            background: #000; color: #10b981; font-family: monospace; padding: 1.2rem;
+            border-radius: 8px; border: 1px solid var(--border-color); font-size: 1.2rem; font-weight: bold;
+        }
+
+        /* ── 說明卡片 ── */
+        .explain-card {
+            background: #fff; border-radius: 8px; padding: 1.2rem; border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-color); margin-bottom: 1rem;
+        }
+        .explain-card.hidden { display: none; }
+        .explain-card h3 { color: var(--accent-color); font-size: 1.1rem; margin: 0 0 0.8rem 0; }
+        .explain-card ul { margin: 0; padding-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        .explain-card li { margin-bottom: 0.5rem; }
+        .code-sm { font-family: monospace; background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: var(--accent-color); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 class="section-title" style="border-bottom: none; margin-bottom: 5px; font-size: 2rem;">C++ IO Manipulators</h1>
+        <p style="color: var(--text-muted);">探索 <code>std::fixed</code> 與 <code>std::setprecision</code> 的運作機制</p>
+    </div>
+
+    <div class="grid2">
+        <div class="card">
+            <div class="panel-title">⚙️ 設定面板 (Settings)</div>
+            
+            <div class="input-group">
+                <label for="numberInput">輸入數值 (Input Number)</label>
+                <input type="number" id="numberInput" value="123.456789" step="any">
+            </div>
+
+            <div class="input-group">
+                <label>格式標記 (Format Flags)</label>
+                <div class="toggle-group">
+                    <button class="toggle-btn active" data-mode="default">default</button>
+                    <button class="toggle-btn" data-mode="fixed">std::fixed</button>
+                    <button class="toggle-btn" data-mode="scientific">std::scientific</button>
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-top: 20px;">
+                <label for="precisionInput">精確度 (Precision) : <span id="precisionValue" style="color:var(--accent-color);font-size:1.2rem;">6</span></label>
+                <input type="range" id="precisionInput" min="0" max="20" value="6">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="panel-title">💻 輸出預覽 (Visualization)</div>
+            
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                    <span class="title">main.cpp</span>
+                </div>
+                <pre><code id="cppCode"></code></pre>
+            </div>
+
+            <div>
+                <div class="output-header">🖥️ Console Output</div>
+                <div class="console" id="consoleOutput">123.457</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 15px;">
+        <div class="panel-title">📚 運作原理解析</div>
+        
+        <div class="explain-card" id="defaultCard">
+            <h3>預設模式 (Default)</h3>
+            <p>當沒有設定 <code class="code-sm">fixed</code> 或 <code class="code-sm">scientific</code> 時，<code class="code-sm">setprecision(n)</code> 設定的是<strong>最大有效位數 (Significant Digits)</strong>。</p>
+            <ul>
+                <li>如果整數部分的位數超過 n，可能會自動切換成科學記號。</li>
+                <li>會自動移除末尾無意義的 0。</li>
+            </ul>
+        </div>
+
+        <div class="explain-card hidden" id="fixedCard">
+            <h3>std::fixed 模式</h3>
+            <p>使用 <code class="code-sm">std::fixed</code> 後，<code class="code-sm">setprecision(n)</code> 設定的是<strong>小數點後的位數</strong>。</p>
+            <ul>
+                <li>無論數值大小，都會強制以定點數形式顯示。</li>
+                <li>若小數位數不足，會自動補 0。</li>
+            </ul>
+        </div>
+
+        <div class="explain-card hidden" id="scientificCard">
+            <h3>std::scientific 模式</h3>
+            <p>使用 <code class="code-sm">std::scientific</code> 後，<code class="code-sm">setprecision(n)</code> 設定的是<strong>科學記號中小數點後的位數</strong>。</p>
+            <ul>
+                <li>數值總是顯示為科學記號形式 (例如：1.23e+02)。</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const numberInput = document.getElementById('numberInput');
+    const precisionInput = document.getElementById('precisionInput');
+    const precisionValue = document.getElementById('precisionValue');
+    const toggleBtns = document.querySelectorAll('.toggle-btn');
+    const consoleOutput = document.getElementById('consoleOutput');
+    const cppCode = document.getElementById('cppCode');
+    
+    // Explanation Cards
+    const cards = {
+        default: document.getElementById('defaultCard'),
+        fixed: document.getElementById('fixedCard'),
+        scientific: document.getElementById('scientificCard')
+    };
+
+    let state = {
+        number: 123.456789,
+        mode: 'default', 
+        precision: 6
+    };
+
+    function updateUI() {
+        // 更新 Precision 顯示
+        precisionValue.textContent = state.precision;
+
+        // 更新 Toggle Buttons 樣式
+        toggleBtns.forEach(btn => {
+            if (btn.dataset.mode === state.mode) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // 更新下方說明卡片
+        Object.keys(cards).forEach(key => {
+            if (key === state.mode) {
+                cards[key].classList.remove('hidden');
+            } else {
+                cards[key].classList.add('hidden');
+            }
+        });
+
+        // 計算輸出結果
+        let output = '';
+        const num = parseFloat(state.number);
+
+        if (isNaN(num)) {
+            output = 'nan';
+        } else {
+            if (state.mode === 'default') {
+                const absNum = Math.abs(num);
+                let exponent = 0;
+                if (absNum !== 0) {
+                    exponent = Math.floor(Math.log10(absNum));
+                }
+
+                if (exponent >= -4 && exponent < state.precision) {
+                    output = parseFloat(num.toPrecision(state.precision)).toString();
+                } else {
+                    let p = state.precision - 1;
+                    if (p < 0) p = 0;
+                    output = num.toExponential(p);
+                    output = output.replace(/e([+-])(\d)$/, 'e$10$2');
+                }
+            } else if (state.mode === 'fixed') {
+                output = num.toFixed(state.precision);
+            } else if (state.mode === 'scientific') {
+                output = num.toExponential(state.precision);
+                output = output.replace(/e([+-])(\d)$/, 'e$10$2');
+            }
+        }
+
+        consoleOutput.textContent = output;
+
+        // 更新 C++ 程式碼區塊
+        let code = `#include <iostream>
+#include <iomanip>
+using namespace std;
+int main() {
+    double num = ${state.number};
+    cout`;
+
+        if (state.mode === 'fixed') {
+            code += ` << fixed`;
+        } else if (state.mode === 'scientific') {
+            code += ` << scientific`;
+        }
+
+        code += ` << setprecision(${state.precision}) << num;
+    return 0;
+}`;
+        cppCode.textContent = code;
+        highlightCode();
+    }
+
+    // 簡易語法高亮 (適應暗色背景)
+// 簡易語法高亮 (適應暗色背景)
+    function highlightCode() {
+        // 1. 取得純文字內容
+        let html = cppCode.textContent;
+        
+        // 2. 【關鍵修復】先把所有的 < 和 > 轉義成安全符號，防止被瀏覽器當成標籤吃掉
+        html = html.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        
+        // 3. 接著再進行語法高亮的替換
+        html = html.replace(/#include &lt;(.*?)&gt;/g, '<span style="color: #c678dd;">#include &lt;$1&gt;</span>');
+        html = html.replace(/\b(int|double|return)\b/g, '<span style="color: #c678dd;">$1</span>');
+        html = html.replace(/\b(std::cout|std::fixed|std::scientific|std::setprecision)\b/g, '<span style="color: #61afef;">$1</span>');
+        html = html.replace(/\b(\d+(\.\d+)?)\b/g, '<span style="color: #d19a66;">$1</span>');
+        
+        // 4. 寫回網頁中
+        cppCode.innerHTML = html;
+    }
+
+    // 綁定事件
+    numberInput.addEventListener('input', (e) => {
+        state.number = e.target.value;
+        updateUI();
+    });
+
+    precisionInput.addEventListener('input', (e) => {
+        state.precision = parseInt(e.target.value);
+        updateUI();
+    });
+
+    toggleBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.mode = btn.dataset.mode;
+            updateUI();
+        });
+    });
+
+    // 初始化畫面
+    updateUI();
+});
+</script>
+</body>
+</html>

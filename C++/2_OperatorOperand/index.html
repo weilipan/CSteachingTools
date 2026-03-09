@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ 運算元與運算子 - 互動式視覺化教學</title>
+
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../layout.js" defer></script>
+
+<style>
+/* ── 本頁專用的元件與互動樣式 ── */
+:root {
+  /* 配合 theme.css 增設的輔助色彩 (明亮模式) */
+  --surface: #f6f8fa;       /* 淺灰底色，用於輸入框或次要區塊 */
+  --accent2: #005cc5;       /* 輔助藍色 */
+  --accent3: #e36209;       /* 輔助橘色 */
+  --green: #28a745;         /* 成功/True 的綠色 */
+  --red: #d73a49;           /* 失敗/False 的紅色 */
+}
+
+code, .mono { font-family: 'Courier New', Courier, monospace; }
+
+/* ── Inputs & Buttons ── */
+input[type="number"], input[type="range"], input[type="text"], select {
+  background: #fff; border: 1px solid var(--border-color); color: var(--text-main);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-family: monospace; font-size: 0.95rem; outline: none;
+  transition: border-color .2s;
+}
+input[type="number"]:focus, input[type="text"]:focus { border-color: var(--accent-color); }
+input[type="number"] { width: 80px; }
+input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
+
+.btn { 
+  padding: .45rem 1rem; border: none; border-radius: 6px; font-size: .85rem; font-weight: 600; cursor: pointer;
+  transition: all .2s; 
+}
+.btn:active { transform: scale(.96); }
+.btn-primary { background: var(--accent-color); color: #fff; }
+.btn-primary:hover { opacity: .85; }
+.btn-info { background: var(--accent2); color: #fff; }
+.btn-info:hover { opacity: .85; }
+.btn-warn { background: var(--accent3); color: #fff; }
+.btn-warn:hover { opacity: .85; }
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-outline { background: #fff; border: 1px solid var(--border-color); color: var(--text-main); }
+.btn-outline:hover { border-color: var(--accent-color); color: var(--accent-color); }
+.btn-sm { padding: .3rem .7rem; font-size: .8rem; }
+
+/* ── Result Box & Layout Helpers ── */
+.result-box { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; font-family: monospace; font-size: .95rem; min-height: 54px; line-height: 1.8; }
+.row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.row.gap-sm { gap: .5rem; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media(max-width:640px) { .grid2 { grid-template-columns: 1fr; } }
+
+/* ── Highlights ── */
+.highlight { background: #cce5ff; border-radius: 4px; padding: 1px 4px; color: var(--accent2); font-weight: bold; }
+.hi-green { background: #d4edda; color: var(--green); border-radius: 4px; padding: 1px 4px; font-weight: bold; }
+.hi-red { background: #f8d7da; color: var(--red); border-radius: 4px; padding: 1px 4px; font-weight: bold; }
+
+/* ── Module Specifics ── */
+#arith-results .arith-row { display: grid; grid-template-columns: 60px 1fr; gap: .5rem; align-items: center; padding: .35rem 0; border-bottom: 1px solid var(--border-color); }
+#arith-results .arith-row:last-child { border-bottom: none; }
+#arith-results .op { color: var(--accent3); font-weight: 700; font-size: 1rem; }
+
+.inc-demo { background: var(--surface); border-radius: 8px; padding: 1.2rem; border: 1px solid var(--border-color); }
+.inc-vars { display: flex; gap: 2rem; justify-content: center; margin: 1rem 0; }
+.var-box { text-align: center; background: #fff; border: 2px solid var(--border-color); border-radius: 8px; padding: .8rem 1.4rem; transition: border-color .4s; }
+.var-box.active { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(3,102,214,0.3); }
+.var-box .var-name { font-size: .85rem; color: var(--text-muted); font-weight: bold; }
+.var-box .var-val { font-size: 1.8rem; font-weight: 700; font-family: monospace; color: var(--accent2); }
+.step-log { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: .8rem; margin-top: .8rem; font-family: monospace; font-size: .85rem; min-height: 48px; border-left: 4px solid var(--accent-color); }
+
+.toggle-btn { width: 70px; padding: .4rem; text-align: center; border-radius: 20px; border: 2px solid var(--border-color); cursor: pointer; font-weight: 700; transition: all .2s; background: var(--surface); color: var(--text-muted); }
+.toggle-btn.on { background: var(--green); border-color: var(--green); color: #fff; }
+.toggle-btn.off { background: var(--red); border-color: var(--red); color: #fff; }
+.logic-results { display: grid; grid-template-columns: repeat(3,1fr); gap: .8rem; margin-top: 1rem; }
+.logic-cell { background: var(--surface); border-radius: 8px; padding: .8rem; text-align: center; border: 2px solid transparent; transition: all .25s; }
+.logic-cell .lc-op { font-size: .9rem; color: var(--accent3); font-family: monospace; font-weight: bold; }
+.logic-cell .lc-val { font-size: 1.5rem; font-weight: 700; margin-top: .25rem; }
+.logic-cell.true-cell { border-color: var(--green); background: #d4edda; }
+.logic-cell.false-cell { border-color: var(--red); background: #f8d7da; }
+
+.bit-grid { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+.bit-cell { width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: 700; font-size: .9rem; border: 1px solid var(--border-color); transition: all .3s; }
+.bit-cell.one { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
+.bit-cell.zero { background: #fff; color: var(--text-muted); }
+.bit-cell.result-one { background: var(--green); color: #fff; border-color: var(--green); }
+.bit-cell.result-zero { background: var(--surface); color: var(--text-muted); }
+.bit-row { display: flex; align-items: center; gap:.5rem; margin: .5rem 0; }
+.bit-label { width: 30px; color: var(--text-main); font-size: .85rem; font-family: monospace; font-weight: bold; text-align: right; }
+.bit-op-row { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem 0; }
+.bit-op-btn { padding: .35rem .75rem; border-radius: 6px; border: 1px solid var(--border-color); background: #fff; color: var(--accent3); font-family: monospace; font-weight: 700; cursor: pointer; transition: all .2s; }
+.bit-op-btn:hover, .bit-op-btn.active { background: var(--accent3); color: #fff; border-color: var(--accent3); }
+
+.ternary-visual { background: var(--surface); border-radius: 8px; padding: 1.2rem; text-align: center; font-family: monospace; font-size: 1.1rem; border: 1px solid var(--border-color); }
+.ternary-true-part { color: var(--green); transition: all .3s; }
+.ternary-false-part { color: var(--red); transition: all .3s; }
+.ternary-true-part.active-branch { background: #d4edda; border-radius: 4px; padding: 2px 8px; font-weight: 700; }
+.ternary-false-part.active-branch { background: #f8d7da; border-radius: 4px; padding: 2px 8px; font-weight: 700; }
+.score-display { font-size: 2.5rem; font-weight: 700; text-align: center; font-family: monospace; margin: .5rem 0; }
+.result-label { text-align: center; font-size: 1.2rem; font-weight: 700; border-radius: 6px; padding: .5rem 1rem; }
+
+.compound-xbox { background: #fff; border: 2px solid var(--accent-color); border-radius: 8px; padding: 1rem 1.5rem; text-align: center; min-width: 100px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.compound-xbox .cx-val { font-size: 2rem; font-weight: 700; font-family: monospace; color: var(--accent-color); }
+.expand-box { flex: 1; background: var(--surface); border-radius: 8px; padding: 1rem 1.2rem; font-family: monospace; font-size: .95rem; min-height: 80px; border-left: 4px solid var(--accent3); border: 1px solid var(--border-color); }
+.expand-step { color: var(--text-muted); transition: color .4s; }
+.expand-step.active-step { color: var(--text-main); font-weight: bold; }
+
+.prec-expr { font-family: monospace; font-size: 1.3rem; text-align: center; padding: 1rem; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; line-height: 2.2; word-break: break-all; margin-top: 10px; }
+.prec-token { padding: 3px 6px; border-radius: 5px; transition: all .3s; cursor: default; }
+.prec-token.focused { background: #cce5ff; color: var(--accent-color); box-shadow: 0 0 0 2px var(--accent-color); font-weight: 700; }
+.prec-step-info { margin-top: 1rem; padding: 1rem; background: #fff; border: 1px solid var(--border-color); border-radius: 8px; border-left: 4px solid var(--accent3); font-size: .95rem; }
+.prec-step-info .step-desc { margin-top: .3rem; font-family: monospace; }
+
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.fade-in { animation: fadeIn .35s ease; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  
+  <div style="text-align: center; margin-bottom: 40px;">
+    <h1 class="section-title" style="border-bottom: none; margin-bottom: 5px; font-size: 2rem;">C++ 運算元與運算子</h1>
+    <p style="color: var(--text-muted);">七大運算子主題 · 全互動式視覺化教學</p>
+  </div>
+
+  <div class="card">
+    <h2>➕ 1. 算術運算子</h2>
+    <p>+, -, *, /, % &nbsp;|&nbsp; 整數除法與餘數特別說明</p>
+    <div class="row" style="margin-top: 15px;">
+      <label>a = <input type="number" id="a1" value="17" step="1"></label>
+      <label>b = <input type="number" id="b1" value="5" step="1"></label>
+      <button class="btn btn-primary" onclick="calcArith()">計算全部</button>
+    </div>
+    <div id="arith-results" class="result-box"></div>
+  </div>
+
+  <div class="card">
+    <h2>🔢 2. 遞增 / 遞減運算子</h2>
+    <p>前置 (Prefix) vs 後置 (Postfix) 兩步驟拆解動畫</p>
+    <div class="grid2" style="margin-top: 15px;">
+      <div class="inc-demo">
+        <div style="text-align:center;font-family:monospace;color:var(--accent3);font-size:.95rem;margin-bottom:.5rem;font-weight:bold;">
+          x = ++y &nbsp;<span style="color:var(--text-muted);font-weight:normal;">(前置：先遞增再賦值)</span>
+        </div>
+        <div class="inc-vars">
+          <div class="var-box" id="pre-ybox"><div class="var-name">y</div><div class="var-val" id="pre-y">5</div></div>
+          <div class="var-box" id="pre-xbox"><div class="var-name">x</div><div class="var-val" id="pre-x">?</div></div>
+        </div>
+        <div class="step-log" id="pre-log">按下按鈕查看步驟</div>
+        <div class="row" style="margin-top:.75rem;justify-content:center;gap:.5rem">
+          <button class="btn btn-info btn-sm" onclick="runPrefix()">▶ 執行 x = ++y</button>
+          <button class="btn btn-outline btn-sm" onclick="resetInc('pre')">重設</button>
+        </div>
+      </div>
+      <div class="inc-demo">
+        <div style="text-align:center;font-family:monospace;color:var(--accent3);font-size:.95rem;margin-bottom:.5rem;font-weight:bold;">
+          x = y++ &nbsp;<span style="color:var(--text-muted);font-weight:normal;">(後置：先賦值再遞增)</span>
+        </div>
+        <div class="inc-vars">
+          <div class="var-box" id="post-ybox"><div class="var-name">y</div><div class="var-val" id="post-y">5</div></div>
+          <div class="var-box" id="post-xbox"><div class="var-name">x</div><div class="var-val" id="post-x">?</div></div>
+        </div>
+        <div class="step-log" id="post-log">按下按鈕查看步驟</div>
+        <div class="row" style="margin-top:.75rem;justify-content:center;gap:.5rem">
+          <button class="btn btn-info btn-sm" onclick="runPostfix()">▶ 執行 x = y++</button>
+          <button class="btn btn-outline btn-sm" onclick="resetInc('post')">重設</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔀 3. 邏輯運算子</h2>
+    <p>&amp;&amp;, ||, ! &nbsp;|&nbsp; 切換 A / B 即時觀察結果</p>
+    <div class="row" style="gap:1.5rem; margin-top: 15px;">
+      <div>
+        <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:.4rem;font-weight:bold;">變數 A</div>
+        <button class="toggle-btn on" id="togA" onclick="toggleLogic('A')">true</button>
+      </div>
+      <div>
+        <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:.4rem;font-weight:bold;">變數 B</div>
+        <button class="toggle-btn off" id="togB" onclick="toggleLogic('B')">false</button>
+      </div>
+    </div>
+    <div class="logic-results" id="logic-results"></div>
+  </div>
+
+  <div class="card">
+    <h2>⚙️ 4. 位元運算子</h2>
+    <p>&amp;, |, ^, ~, &lt;&lt;, &gt;&gt; &nbsp;|&nbsp; 8-bit 方塊可視化</p>
+    <div class="row" style="margin-top: 15px;">
+      <label>A = <input type="number" id="bw-a" value="60" min="0" max="255" oninput="updateBitwise()"></label>
+      <label>B = <input type="number" id="bw-b" value="35" min="0" max="255" oninput="updateBitwise()"></label>
+    </div>
+    <div style="margin-top:1rem; padding: 15px; background: var(--surface); border-radius: 8px; border: 1px solid var(--border-color);">
+      <div class="bit-row"><div class="bit-label">A</div><div class="bit-grid" id="bw-bits-a"></div><div style="margin-left:.6rem;font-size:.85rem;color:var(--accent2);font-family:monospace;" id="bw-dec-a"></div></div>
+      <div class="bit-row"><div class="bit-label">B</div><div class="bit-grid" id="bw-bits-b"></div><div style="margin-left:.6rem;font-size:.85rem;color:var(--accent2);font-family:monospace;" id="bw-dec-b"></div></div>
+      <hr style="border:0; border-top:1px dashed var(--border-color); margin: 10px 0;">
+      <div class="bit-row"><div class="bit-label">=</div><div class="bit-grid" id="bw-bits-r"></div><div style="margin-left:.6rem;font-size:.85rem;color:var(--green);font-family:monospace;font-weight:bold;" id="bw-dec-r"></div></div>
+    </div>
+    <div class="bit-op-row" id="bw-ops">
+      <button class="bit-op-btn active" data-op="&amp;" onclick="setBwOp(this,'&amp;')">&amp; (AND)</button>
+      <button class="bit-op-btn" data-op="|" onclick="setBwOp(this,'|')">| (OR)</button>
+      <button class="bit-op-btn" data-op="^" onclick="setBwOp(this,'^')">^ (XOR)</button>
+      <button class="bit-op-btn" data-op="~" onclick="setBwOp(this,'~')">~A (NOT)</button>
+      <button class="bit-op-btn" data-op="<<" onclick="setBwOp(this,'<<')">A &lt;&lt; 1 (左移)</button>
+      <button class="bit-op-btn" data-op=">>" onclick="setBwOp(this,'>>')">A &gt;&gt; 1 (右移)</button>
+    </div>
+    <div id="bw-explain" style="font-size:.9rem;color:var(--text-main);padding:.8rem;background:#e1f5fe;border-radius:6px; border-left: 4px solid var(--accent2);"></div>
+  </div>
+
+  <div class="card">
+    <h2>❓ 5. 條件運算子（三元運算子）</h2>
+    <p>condition ? value_if_true : value_if_false</p>
+    <div class="ternary-visual" style="margin-top: 15px;">
+      <span style="color:var(--accent2); font-weight:bold;">score &gt;= 60</span>
+      <span style="color:var(--accent-color); font-weight:bold;"> ? </span>
+      <span class="ternary-true-part" id="t-true">"及格"</span>
+      <span style="color:var(--accent-color); font-weight:bold;"> : </span>
+      <span class="ternary-false-part" id="t-false">"不及格"</span>
+    </div>
+    <div style="margin-top:1.5rem">
+      <div class="row" style="gap:1rem">
+        <label style="flex:1; font-weight:bold;">score = <input type="range" id="score-range" min="0" max="100" value="75" oninput="updateTernary()" style="width:100%; margin-top: 5px;"></label>
+      </div>
+      <div class="score-display" id="score-display">75</div>
+      <div class="result-label" id="ternary-result"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📝 6. 複合指派運算子</h2>
+    <p>+=, -=, *=, /=, %= &nbsp;|&nbsp; 展開語法視覺化</p>
+    <div class="row" style="align-items: flex-start; margin-top: 15px;">
+      <div>
+        <div class="compound-xbox">
+          <div style="font-size:.85rem; color:var(--text-muted); font-weight:bold;">x（當前值）</div>
+          <div class="cx-val" id="cx-val">10</div>
+        </div>
+        <div style="margin-top:.8rem; text-align:center;">
+          <button class="btn btn-outline btn-sm" onclick="resetCompound()">重設為 10</button>
+        </div>
+      </div>
+      <div style="flex:1">
+        <div class="row gap-sm" style="flex-wrap:wrap; margin-bottom:1rem; padding: 10px; background: var(--surface); border-radius: 8px;">
+          <label style="font-weight:bold;">y = <input type="number" id="cy-val" value="3" style="width:70px"></label>
+          <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 10px;"></div>
+          <button class="btn btn-primary btn-sm" onclick="doCompound('+=')">x += y</button>
+          <button class="btn btn-danger btn-sm" onclick="doCompound('-=')">x -= y</button>
+          <button class="btn btn-warn btn-sm" onclick="doCompound('*=')">x *= y</button>
+          <button class="btn btn-info btn-sm" onclick="doCompound('/=')">x /= y</button>
+          <button class="btn btn-outline btn-sm" onclick="doCompound('%=')">x %= y</button>
+        </div>
+        <div class="expand-box" id="expand-box">
+          <div style="color:var(--text-muted);font-size:.9rem;">選擇上方一個運算子查看展開步驟</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📊 7. 運算子優先順序</h2>
+    <p>逐步高亮解析複雜運算式</p>
+    <div style="margin-top: 15px; margin-bottom:1rem; background: var(--surface); padding: 15px; border-radius: 8px;">
+      <label style="font-size:.9rem; font-weight:bold;">選擇情境：</label>
+      <select id="prec-select" onchange="loadPrecExpr()">
+        <option value="0">a + b * c &gt; d &amp;&amp; e</option>
+        <option value="1">!a || b &amp;&amp; c</option>
+        <option value="2">(a + b) * c - d / e</option>
+      </select>
+      
+      <div style="margin-top: 15px; margin-bottom:.5rem; font-size:.85rem; font-weight:bold;">設定變數值：</div>
+      <div class="row gap-sm" id="prec-vars" style="flex-wrap:wrap;"></div>
+    </div>
+    
+    <div class="prec-expr" id="prec-expr"></div>
+    <div class="prec-step-info" id="prec-step-info"><div style="font-size:.85rem; color:var(--text-muted); font-weight:bold;">步驟 0 / N</div><div class="step-desc">按「下一步」開始解析</div></div>
+    <div class="row" style="margin-top:1.5rem; justify-content: center; gap: 1rem;">
+      <button class="btn btn-primary" style="padding: 0.6rem 2rem; font-size: 1rem;" onclick="precNext()">下一步 ▶</button>
+      <button class="btn btn-outline" style="padding: 0.6rem 2rem; font-size: 1rem;" onclick="loadPrecExpr()">重設</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════ Module 1: Arithmetic ═══════════════════
+function calcArith() {
+  const a = parseInt(document.getElementById('a1').value) || 0;
+  const b = parseInt(document.getElementById('b1').value) || 0;
+  const ops = [
+    { op: 'a + b', val: a + b, note: '' },
+    { op: 'a - b', val: a - b, note: '' },
+    { op: 'a * b', val: a * b, note: '' },
+    { op: 'a / b', val: b !== 0 ? Math.trunc(a / b) : '除數不得為0',
+      note: b !== 0 ? `⚠️ 整數除法：${a} ÷ ${b} = <span class="highlight">${Math.trunc(a/b)}</span>（捨去小數，實際 = ${(a/b).toFixed(4)}）` : ''},
+    { op: 'a % b', val: b !== 0 ? ((a % b + Math.abs(b)) % Math.abs(b)) : '除數不得為0',
+      note: b !== 0 ? `餘數：${a} = ${b} × ${Math.trunc(a/b)} + <span class="hi-green">${((a%b)+Math.abs(b))%Math.abs(b)}</span>` : '' }
+  ];
+  let html = '';
+  ops.forEach(o => {
+    html += `<div class="arith-row"><span class="op mono">${o.op}</span><span class="mono"> = <strong style="color:var(--accent-color); font-size:1.1rem;">${o.val}</strong>${o.note ? '<br><small style="color:var(--text-muted); font-family:sans-serif;">' + o.note + '</small>' : ''}</span></div>`;
+  });
+  document.getElementById('arith-results').innerHTML = html;
+}
+calcArith();
+
+// ═══════════════════ Module 2: Inc/Dec ═══════════════════
+let preY = 5, preX = null, postY = 5, postX = null;
+function resetInc(mode) {
+  if (mode === 'pre') {
+    preY = 5; preX = null;
+    document.getElementById('pre-y').textContent = 5;
+    document.getElementById('pre-x').textContent = '?';
+    document.getElementById('pre-ybox').classList.remove('active');
+    document.getElementById('pre-xbox').classList.remove('active');
+    document.getElementById('pre-log').textContent = '按下按鈕查看步驟';
+  } else {
+    postY = 5; postX = null;
+    document.getElementById('post-y').textContent = 5;
+    document.getElementById('post-x').textContent = '?';
+    document.getElementById('post-ybox').classList.remove('active');
+    document.getElementById('post-xbox').classList.remove('active');
+    document.getElementById('post-log').textContent = '按下按鈕查看步驟';
+  }
+}
+function runPrefix() {
+  resetInc('pre');
+  const yEl = document.getElementById('pre-y'), xEl = document.getElementById('pre-x');
+  const yBox = document.getElementById('pre-ybox'), xBox = document.getElementById('pre-xbox');
+  const log = document.getElementById('pre-log');
+  setTimeout(() => {
+    yBox.classList.add('active'); preY++; yEl.textContent = preY;
+    log.innerHTML = `<span class="hi-green">步驟 1：</span> 先將 y 遞增 → y = <strong>${preY}</strong>`;
+  }, 200);
+  setTimeout(() => {
+    xBox.classList.add('active'); yBox.classList.remove('active'); preX = preY; xEl.textContent = preX;
+    log.innerHTML = `<span class="hi-green">步驟 2：</span> 再將 y (${preY}) 賦值給 x → x = <strong>${preX}</strong>`;
+  }, 1400);
+  setTimeout(() => { log.innerHTML += `<br><span style="color:var(--accent3); font-weight:bold; margin-top:5px; display:inline-block;">✅ 結果：x = ${preX}，y = ${preY}</span>`; }, 2200);
+}
+function runPostfix() {
+  resetInc('post');
+  const yEl = document.getElementById('post-y'), xEl = document.getElementById('post-x');
+  const yBox = document.getElementById('post-ybox'), xBox = document.getElementById('post-xbox');
+  const log = document.getElementById('post-log');
+  const oldY = postY;
+  setTimeout(() => {
+    xBox.classList.add('active'); postX = oldY; xEl.textContent = postX;
+    log.innerHTML = `<span class="hi-red">步驟 1：</span> 先將 y 的舊值 (${oldY}) 賦值給 x → x = <strong>${postX}</strong>`;
+  }, 200);
+  setTimeout(() => {
+    yBox.classList.add('active'); xBox.classList.remove('active'); postY++; yEl.textContent = postY;
+    log.innerHTML = `<span class="hi-red">步驟 2：</span> 再將 y 遞增 → y = <strong>${postY}</strong>`;
+  }, 1400);
+  setTimeout(() => { log.innerHTML += `<br><span style="color:var(--accent3); font-weight:bold; margin-top:5px; display:inline-block;">✅ 結果：x = ${postX}（舊值），y = ${postY}</span>`; }, 2200);
+}
+
+// ═══════════════════ Module 3: Logic ═══════════════════
+let logicA = true, logicB = false;
+function toggleLogic(v) {
+  if (v === 'A') { logicA = !logicA; const b = document.getElementById('togA'); b.textContent = logicA ? 'true' : 'false'; b.className = 'toggle-btn ' + (logicA ? 'on' : 'off'); }
+  else { logicB = !logicB; const b = document.getElementById('togB'); b.textContent = logicB ? 'true' : 'false'; b.className = 'toggle-btn ' + (logicB ? 'on' : 'off'); }
+  renderLogic();
+}
+function renderLogic() {
+  const cells = [
+    { op: 'A &amp;&amp; B', val: logicA && logicB, desc: `${logicA} && ${logicB}` },
+    { op: 'A || B',   val: logicA || logicB, desc: `${logicA} || ${logicB}` },
+    { op: '!A',       val: !logicA,           desc: `!${logicA}` },
+  ];
+  document.getElementById('logic-results').innerHTML = cells.map(c => `
+    <div class="logic-cell ${c.val ? 'true-cell' : 'false-cell'} fade-in">
+      <div class="lc-op">${c.op}</div>
+      <div class="lc-val" style="color:${c.val ? 'var(--green)' : 'var(--red)'}">${c.val}</div>
+      <div style="font-size:.8rem;color:var(--text-main);margin-top:.2rem;font-family:monospace;">${c.desc}</div>
+    </div>`).join('');
+}
+renderLogic();
+
+// ═══════════════════ Module 4: Bitwise ═══════════════════
+let bwOp = '&';
+function toBits(n, bits=8) { return (((n % 256) + 256) % 256).toString(2).padStart(bits, '0').split(''); }
+function renderBits(elId, bits, cls) {
+  document.getElementById(elId).innerHTML = bits.map(b => `<div class="bit-cell ${b==='1' ? cls+'one' : cls+'zero'}">${b}</div>`).join('');
+}
+function updateBitwise() {
+  const a = Math.max(0, Math.min(255, parseInt(document.getElementById('bw-a').value)||0));
+  const b = Math.max(0, Math.min(255, parseInt(document.getElementById('bw-b').value)||0));
+  renderBits('bw-bits-a', toBits(a), ''); renderBits('bw-bits-b', toBits(b), '');
+  document.getElementById('bw-dec-a').textContent = `= ${a} (0x${a.toString(16).toUpperCase().padStart(2,'0')})`;
+  document.getElementById('bw-dec-b').textContent = `= ${b} (0x${b.toString(16).toUpperCase().padStart(2,'0')})`;
+  applyBwOp(a, b);
+}
+const bwExplains = {
+  '&':  (a,b,r) => `<strong>AND (交集)：</strong> 兩個位元都是 1 時結果才是 1。<br> <span class="mono">${a} & ${b} = ${r}</span>`,
+  '|':  (a,b,r) => `<strong>OR (聯集)：</strong> 任何一個位元是 1 結果就是 1。<br> <span class="mono">${a} | ${b} = ${r}</span>`,
+  '^':  (a,b,r) => `<strong>XOR (互斥或)：</strong> 兩個位元不同時結果是 1。<br> <span class="mono">${a} ^ ${b} = ${r}</span>`,
+  '~':  (a,b,r) => `<strong>NOT (反相)：</strong> 將 A 的每個位元 0→1, 1→0。<br> <span class="mono">~${a} = ${r}</span> (以 8-bit 無符號視角)`,
+  '<<': (a,b,r) => `<strong>左移：</strong> A 的所有位元向左移 1 位，效果等同乘 2。<br> <span class="mono">${a} << 1 = ${r}</span>`,
+  '>>': (a,b,r) => `<strong>右移：</strong> A 的所有位元向右移 1 位，效果等同除 2。<br> <span class="mono">${a} >> 1 = ${r}</span>`,
+};
+function applyBwOp(a, b) {
+  let r;
+  if (bwOp === '&') r = a & b; else if (bwOp === '|') r = a | b; else if (bwOp === '^') r = a ^ b;
+  else if (bwOp === '~') r = (~a) & 0xFF; else if (bwOp === '<<') r = (a << 1) & 0xFF; else if (bwOp === '>>') r = (a >> 1) & 0xFF;
+  renderBits('bw-bits-r', toBits(r), 'result-');
+  document.getElementById('bw-dec-r').textContent = `= ${r} (0x${r.toString(16).toUpperCase().padStart(2,'0')})`;
+  document.getElementById('bw-explain').innerHTML = bwExplains[bwOp](a, b, r);
+}
+function setBwOp(btn, op) {
+  bwOp = op; document.querySelectorAll('.bit-op-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); updateBitwise();
+}
+updateBitwise();
+
+// ═══════════════════ Module 5: Ternary ═══════════════════
+function updateTernary() {
+  const s = parseInt(document.getElementById('score-range').value);
+  const disp = document.getElementById('score-display');
+  const res = document.getElementById('ternary-result');
+  const tT = document.getElementById('t-true'), tF = document.getElementById('t-false');
+  disp.textContent = s;
+  if (s >= 60) {
+    disp.style.color = 'var(--green)';
+    res.innerHTML = '✅ <span style="color:var(--green)">及格</span>'; res.style.background = '#d4edda'; 
+    tT.className = 'ternary-true-part active-branch'; tF.className = 'ternary-false-part';
+  } else {
+    disp.style.color = 'var(--red)';
+    res.innerHTML = '❌ <span style="color:var(--red)">不及格</span>'; res.style.background = '#f8d7da'; 
+    tT.className = 'ternary-true-part'; tF.className = 'ternary-false-part active-branch';
+  }
+}
+updateTernary();
+
+// ═══════════════════ Module 6: Compound Assignment ═══════════════════
+let cxVal = 10;
+function resetCompound() { cxVal = 10; document.getElementById('cx-val').textContent = cxVal; document.getElementById('expand-box').innerHTML = '<div style="color:var(--text-muted);font-size:.9rem;">選擇上方一個運算子查看展開步驟</div>'; }
+function doCompound(op) {
+  const y = parseFloat(document.getElementById('cy-val').value) || 0;
+  const plainOp = op[0]; 
+  let result;
+  if (plainOp === '+') result = cxVal + y; else if (plainOp === '-') result = cxVal - y;
+  else if (plainOp === '*') result = cxVal * y; else if (plainOp === '/') result = y !== 0 ? Math.trunc(cxVal / y) : NaN;
+  else result = y !== 0 ? ((cxVal % y) + Math.abs(y)) % Math.abs(y) : NaN;
+  const prevX = cxVal;
+  document.getElementById('expand-box').innerHTML = `
+    <div class="expand-step" id="es1">① 原始語法：<span class="highlight mono">x ${op} y</span></div>
+    <div class="expand-step" id="es2" style="margin-top:.5rem">② 展開為：<span class="mono" style="color:var(--accent2); font-weight:bold;">x = x ${plainOp} y</span></div>
+    <div class="expand-step" id="es3" style="margin-top:.5rem">③ 代入數值：<span class="mono">x = ${prevX} ${plainOp} ${y}</span></div>
+    <div class="expand-step" id="es4" style="margin-top:.5rem">④ 計算結果：<span class="mono hi-green">x = ${isNaN(result) ? '錯誤（除數為0）' : result}</span></div>`;
+  ['es1','es2','es3','es4'].forEach((id,i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('active-step','fade-in');
+      if (i === 3 && !isNaN(result)) { cxVal = result; document.getElementById('cx-val').textContent = cxVal; }
+    }, i * 400);
+  });
+}
+
+// ═══════════════════ Module 7: Operator Precedence ═══════════════════
+const precScenarios = [
+  {
+    label: 'a + b * c > d && e',
+    vars: { a:2, b:3, c:4, d:10, e:true },
+    steps: [
+      { focus:[3,4,5], desc:'① 先算 b * c（乘法優先）', eval: s => `b * c = ${s.b} × ${s.c} = <strong>${s.b*s.c}</strong>`, update: s => ({...s, _bc: s.b*s.c}) },
+      { focus:[1,2], desc:'② 再算 a + (b*c)（加法）', eval: s => `a + ${s._bc} = ${s.a} + ${s._bc} = <strong>${s.a+s._bc}</strong>`, update: s => ({...s, _left: s.a+s._bc}) },
+      { focus:[6], desc:'③ 比較 > d（關係運算子）', eval: s => `${s._left} > d → ${s._left} > ${s.d} = <strong>${s._left > s.d}</strong>`, update: s => ({...s, _cmp: s._left > s.d}) },
+      { focus:[7,8], desc:'④ && e（邏輯 AND）', eval: s => `${s._cmp} && e → ${s._cmp} && ${s.e} = <strong>${s._cmp && s.e}</strong>`, update: s => ({...s, _final: s._cmp && s.e}) },
+      { focus:[], desc:'✅ 最終結果', eval: s => `整體運算式 = <strong style="color:var(--green)">${s._final}</strong>` }
+    ]
+  },
+  {
+    label: '!a || b && c',
+    vars: { a:false, b:true, c:false },
+    steps: [
+      { desc:'① 先算 !a（NOT 優先度最高）', eval: s => `!a = !${s.a} = <strong>${!s.a}</strong>`, update: s => ({...s, _na: !s.a}) },
+      { desc:'② 再算 b && c（AND 優先於 OR）', eval: s => `b && c = ${s.b} && ${s.c} = <strong>${s.b && s.c}</strong>`, update: s => ({...s, _bc: s.b && s.c}) },
+      { desc:'③ 最後算 (!a) || (b&&c)', eval: s => `${s._na} || ${s._bc} = <strong>${s._na || s._bc}</strong>`, update: s => ({...s, _final: s._na || s._bc}) },
+      { desc:'✅ 最終結果', eval: s => `整體運算式 = <strong style="color:var(--green)">${s._final}</strong>` }
+    ]
+  },
+  {
+    label: '(a + b) * c - d / e',
+    vars: { a:3, b:5, c:4, d:8, e:2 },
+    steps: [
+      { desc:'① 先算括號內 a + b', eval: s => `(a + b) = ${s.a} + ${s.b} = <strong>${s.a+s.b}</strong>`, update: s => ({...s, _ab: s.a+s.b}) },
+      { desc:'② 算 (a+b) * c（乘法）', eval: s => `${s._ab} × c = ${s._ab} × ${s.c} = <strong>${s._ab*s.c}</strong>`, update: s => ({...s, _left:s._ab*s.c}) },
+      { desc:'③ 算 d / e（除法，與乘法同優先）', eval: s => `d / e = ${s.d} / ${s.e} = <strong>${Math.trunc(s.d/s.e)}</strong>`, update: s => ({...s, _de: Math.trunc(s.d/s.e)}) },
+      { desc:'④ 最後算減法', eval: s => `${s._left} - ${s._de} = <strong>${s._left - s._de}</strong>`, update: s => ({...s, _final: s._left - s._de}) },
+      { desc:'✅ 最終結果', eval: s => `整體運算式 = <strong style="color:var(--green)">${s._final}</strong>` }
+    ]
+  }
+];
+let precIdx = 0, precStep = 0, precState = {};
+function loadPrecExpr() {
+  precIdx = parseInt(document.getElementById('prec-select').value);
+  precStep = 0; const sc = precScenarios[precIdx]; precState = { ...sc.vars };
+  document.getElementById('prec-vars').innerHTML = Object.entries(sc.vars).map(([k,v]) =>
+    `<label style="font-size:.9rem; font-family:monospace; font-weight:bold;">${k} = <input type="${typeof v === 'boolean' ? 'text' : 'number'}" id="pv-${k}" value="${v}" style="width:70px" onchange="precVarChange('${k}', this.value)"></label>`
+  ).join('');
+  document.getElementById('prec-expr').innerHTML = `<span class="mono">${sc.label}</span>`;
+  document.getElementById('prec-step-info').innerHTML = `<div style="font-size:.85rem; color:var(--text-muted); font-weight:bold;">步驟 0 / ${sc.steps.length}</div><div class="step-desc">按「下一步」開始逐步解析</div>`;
+  document.querySelector('.card:last-of-type .btn-primary').textContent = '下一步 ▶';
+}
+function precVarChange(k, v) {
+  precState[k] = precScenarios[precIdx].vars[k] === true || precScenarios[precIdx].vars[k] === false ? (v === 'true') : parseFloat(v)||0;
+  precStep = 0; document.getElementById('prec-expr').innerHTML = `<span class="mono">${precScenarios[precIdx].label}</span>`;
+}
+function precNext() {
+  const sc = precScenarios[precIdx];
+  if (precStep >= sc.steps.length) { loadPrecExpr(); return; }
+  const step = sc.steps[precStep];
+  if (step.update) precState = step.update(precState);
+  const info = document.getElementById('prec-step-info');
+  info.innerHTML = `<div style="font-size:.85rem; color:var(--text-muted); font-weight:bold;">步驟 ${precStep+1} / ${sc.steps.length}</div><div class="step-desc mono" style="margin-top:.5rem; font-size:1.05rem;">${step.desc}<br><span style="color:var(--accent2); margin-top:5px; display:block;">➔ ${step.eval(precState)}</span></div>`;
+  info.classList.add('fade-in'); setTimeout(() => info.classList.remove('fade-in'), 400);
+  
+  const exprEl = document.getElementById('prec-expr');
+  exprEl.innerHTML = `<span class="mono" style="color:var(--text-muted);font-size:1.1rem">${sc.label}</span>`;
+  const overlay = document.createElement('div');
+  overlay.style.marginTop = '.8rem'; overlay.style.fontFamily = "monospace"; overlay.style.fontSize = '1.1rem'; overlay.style.fontWeight = 'bold';
+  overlay.innerHTML = `<span style="color:var(--accent3)">👉 正在執行: ${step.desc.split('（')[0].replace(/① |② |③ |④ /g, '')}</span>`;
+  exprEl.appendChild(overlay);
+  
+  precStep++;
+  if (precStep >= sc.steps.length) document.querySelector('.card:last-of-type .btn-primary').textContent = '重新開始 ↺';
+}
+loadPrecExpr();
+</script>
+</body>
+</html>

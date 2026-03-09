@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>C++ 重複結構 (Loops) 互動式教學</title>
+  <meta name="description" content="透過動畫與互動，學習 C++ 重複結構：for、while、do-while、無窮迴圈、break/continue、決策樹與巢狀迴圈。"/>
+  <link rel="stylesheet" href="../../theme.css">
+  <script src="../../layout.js" defer></script>
+  <style>
+    /* ── Code blocks ── */
+    .code-block {
+      font-family: 'Courier New', monospace; font-size: .88rem;
+      background: #0d1117; color: #c9d1d9; border-radius: 10px;
+      padding: 14px 18px; line-height: 1.75; margin: 10px 0;
+      border: 1px solid #30363d; overflow-x: auto;
+    }
+    .code-line {
+      display: block; padding: 2px 6px; border-radius: 4px;
+      transition: background .3s, color .3s;
+    }
+    .hl-green  { background:#1a4a1e; color:#56d364; font-weight:700; }
+    .hl-red    { background:#4a1a1a; color:#f85149; font-weight:700; }
+    .hl-blue   { background:#0d2a4a; color:#58a6ff; font-weight:700; }
+    .hl-yellow { background:#3a2f00; color:#e3b341; font-weight:700; }
+    .hl-purple { background:#2a1a4a; color:#d2a8ff; font-weight:700; }
+    .hl-gray   { color:#484f58; text-decoration:line-through; }
+
+    /* ── Controls ── */
+    .ctrl-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:10px 0; }
+    input[type=range] { flex:1; min-width:120px; accent-color:var(--accent-color,#4f8ef7); }
+    .num-input {
+      width:80px; padding:6px 10px; border-radius:8px;
+      border:1px solid #30363d; background:#0d1117; color:#c9d1d9;
+      font-size:1rem; font-family:inherit;
+    }
+    .btn {
+      padding:8px 20px; border-radius:8px; border:none; cursor:pointer;
+      background:var(--accent-color,#4f8ef7); color:#fff;
+      font-size:.9rem; font-weight:700; transition:opacity .2s, transform .1s;
+    }
+    .btn:hover { opacity:.85; } .btn:active { transform:scale(.97); }
+    .btn:disabled { opacity:.45; cursor:not-allowed; }
+    .btn-red  { background:#c0392b; }
+    .btn-green{ background:#1a6b2e; }
+
+    /* ── Output / info boxes ── */
+    .out-box {
+      background:#161b22; border:1px solid #30363d; border-radius:8px;
+      padding:10px 14px; min-height:40px; font-family:monospace;
+      font-size:.9rem; color:#c9d1d9; margin-top:8px;
+    }
+    .var-box {
+      display:inline-flex; align-items:center; gap:8px;
+      background:#1c2128; border:2px solid #30363d; border-radius:10px;
+      padding:8px 16px; font-family:monospace; font-size:1.1rem;
+      transition: border-color .3s;
+    }
+    .var-box.active { border-color:var(--accent-color,#4f8ef7); }
+    .var-val { font-size:1.5rem; font-weight:700; color:#e3b341; min-width:30px; text-align:center; }
+
+    .sec-desc { color:#8b949e; font-size:.92rem; margin:4px 0 12px; line-height:1.6; }
+    h2.mod-title { font-size:1.15rem; margin:0 0 4px; display:flex; align-items:center; gap:8px; }
+
+    /* ── Module 2: HP bar ── */
+    .hp-bar-wrap { background:#21262d; border-radius:20px; height:22px; margin:8px 0; overflow:hidden; }
+    .hp-bar { height:100%; border-radius:20px; transition:width .5s, background .5s; background:#56d364; }
+
+    /* ── Module 3: Infinite Loop ── */
+    #inf-output {
+      background:#0d1117; border:2px solid #30363d; border-radius:8px;
+      padding:10px 14px; max-height:160px; overflow-y:auto;
+      font-family:monospace; font-size:.85rem; color:#c9d1d9; margin-top:8px;
+      transition: border-color .3s;
+    }
+    #inf-output.danger { border-color:#f85149; animation: shake .3s; }
+    .inf-alert {
+      background:#4a1a1a; border:1px solid #f85149; border-radius:8px;
+      padding:10px 14px; color:#f85149; font-weight:700; display:none; margin-top:8px;
+    }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)}
+    }
+
+    /* ── Module 4: do-while card draw ── */
+    .card-draw-area {
+      display:flex; gap:12px; flex-wrap:wrap; margin:10px 0; min-height:80px;
+      align-items:center;
+    }
+    .draw-card {
+      width:58px; height:80px; border-radius:8px; display:flex;
+      align-items:center; justify-content:center; font-size:1.6rem;
+      border:2px solid #30363d; background:#1c2128;
+      transition: all .4s; flex-shrink:0;
+    }
+    .draw-card.revealed { border-color:#56d364; background:#0d1f12; }
+    .draw-card.winner   { border-color:#e3b341; background:#3a2f00; animation:bounce .4s; }
+    @keyframes bounce {
+      0%,100%{transform:scale(1)} 50%{transform:scale(1.2)}
+    }
+    .phase-arrow {
+      font-size:1.4rem; color:#58a6ff; font-weight:700;
+      transition:color .3s;
+    }
+    .phase-arrow.active { color:#56d364; }
+
+    /* ── Module 5: break/continue ── */
+    .loop-steps {
+      display:flex; gap:8px; flex-wrap:wrap; margin:10px 0;
+    }
+    .step-box {
+      width:52px; height:52px; border-radius:10px; display:flex;
+      align-items:center; justify-content:center; font-size:1.2rem;
+      font-weight:700; border:2px solid #30363d; background:#1c2128;
+      transition:all .4s; font-family:monospace;
+    }
+    .step-box.active  { border-color:#58a6ff; background:#0d2a4a; color:#58a6ff; }
+    .step-box.printed { border-color:#56d364; background:#1a4a1e; color:#56d364; }
+    .step-box.skipped { border-color:#e3b341; background:#3a2f00; color:#e3b341; font-size:.85rem; }
+    .step-box.stopped { border-color:#f85149; background:#4a1a1a; color:#f85149; font-size:.85rem; }
+
+    /* ── Module 6: Decision Tree ── */
+    .dtree { display:flex; flex-direction:column; align-items:center; gap:0; }
+    .dt-node {
+      background:#1c2128; border:2px solid #30363d; border-radius:12px;
+      padding:12px 20px; text-align:center; font-size:.95rem; color:#FFFFFF;
+      transition:all .3s; cursor:default; max-width:340px; width:100%;
+    }
+    .dt-node.active { border-color:var(--accent-color,#4f8ef7); background:#0d2a4a; }
+    .dt-node.result-for     { border-color:#56d364; background:#1a4a1e; color:#56d364; }
+    .dt-node.result-dwhile  { border-color:#d2a8ff; background:#2a1a4a; color:#d2a8ff; }
+    .dt-node.result-while   { border-color:#58a6ff; background:#0d2a4a; color:#58a6ff; }
+    .dt-connector { font-size:1.4rem; color:#484f58; line-height:1.2; }
+    .dt-branch-row { display:flex; align-items:flex-start; gap:16px; width:100%; justify-content:center; }
+    .dt-branch { display:flex; flex-direction:column; align-items:center; gap:0; flex:1; max-width:200px; }
+    .dt-btn {
+      padding:6px 18px; border-radius:20px; border:2px solid #30363d;
+      background:#21262d; color:#c9d1d9; cursor:pointer; font-size:.85rem;
+      transition:all .2s; margin:4px 0;
+    }
+    .dt-btn:hover { border-color:var(--accent-color,#4f8ef7); background:#0d2a4a; }
+    .dt-btn.chosen { border-color:#56d364; background:#1a4a1e; color:#56d364; }
+
+    /* ── Module 7: Star Printer ── */
+    #star-output {
+      font-family:'Courier New', monospace; font-size:1rem; line-height:1.6;
+      background:#0d1117; border:1px solid #30363d; border-radius:8px;
+      padding:10px 14px; min-height:48px; color:#e3b341; margin-top:8px;
+      white-space: pre-wrap;
+    }
+    .loop-state {
+      display:flex; gap:16px; flex-wrap:wrap; margin:8px 0;
+    }
+    .loop-state .var-box { font-size:.95rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1 class="section-title">🔁 C++ 重複結構 (Loops) 互動式教學</h1>
+  <p style="color:#8b949e; margin-bottom:28px; font-size:.95rem;">
+    透過動畫與互動，掌握 for、while、do-while、無窮迴圈、break/continue 與巢狀迴圈的核心觀念。
+  </p>
+
+  <!-- ═══ MODULE 1: for loop ═══ -->
+  <div class="card">
+    <h2 class="mod-title">🔢 1. 經典 <code>for</code> 迴圈（計次迴圈）</h2>
+    <p class="sec-desc">點擊「下一步」，觀察游標在四個執行區塊間跳轉：<strong>初始化 → 條件 → 執行區塊 → 更新步進</strong>。注意 <code>i++</code> 是大括號執行完後才發生的！</p>
+    <div class="ctrl-row">
+      <button class="btn" id="for-next-btn" onclick="forNext()">▶ 下一步</button>
+      <button class="btn" style="background:#555;" onclick="forReset()">↺ 重置</button>
+      <div class="var-box" id="for-varbox">
+        <span>i =</span><span class="var-val" id="for-i-val">—</span>
+      </div>
+      <span id="for-phase-label" style="color:#8b949e; font-size:.9rem;">尚未開始</span>
+    </div>
+    <div class="code-block">
+      <span class="code-line" id="f0"><span style="color:#6e7681;">// 初始化</span></span>
+      <span class="code-line" id="f1">for (<span id="f-init" style="transition:color .3s;">int i = 0</span>; <span id="f-cond" style="transition:color .3s;">i &lt; 3</span>; <span id="f-upd" style="transition:color .3s;">i++</span>) {</span>
+      <span class="code-line" id="f2">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "第 " &lt;&lt; i &lt;&lt; " 圈執行！" &lt;&lt; endl;</span>
+      <span class="code-line" id="f3">}</span>
+      <span class="code-line" id="f4" style="color:#6e7681;">&nbsp;&nbsp;// ← i++ 在此發生，回去判斷條件</span>
+    </div>
+    <div class="out-box" id="for-out">— 點擊「下一步」開始 —</div>
+  </div>
+
+  <!-- ═══ MODULE 2: while loop ═══ -->
+  <div class="card">
+    <h2 class="mod-title">❤️ 2. <code>while</code> 迴圈（條件迴圈）—— HP 扣血機制</h2>
+    <p class="sec-desc">設定初始 HP，點擊「執行」。<strong>若 HP = 0，迴圈一次都不執行！</strong>觀察條件判斷先於一切。</p>
+    <div class="ctrl-row">
+      <span style="color:#8b949e; font-size:.9rem;">初始 HP：</span>
+      <input type="range" id="hp-slider" min="0" max="5" value="3" oninput="hpSliderUpdate()">
+      <span id="hp-slider-val" style="font-family:monospace; color:#58a6ff; min-width:20px;">3</span>
+      <button class="btn" id="while-run-btn" onclick="whileRun()">▶ 執行</button>
+      <button class="btn" style="background:#555;" onclick="whileReset()">↺ 重置</button>
+    </div>
+    <div class="hp-bar-wrap"><div class="hp-bar" id="hp-bar" style="width:60%;"></div></div>
+    <div class="code-block">
+      <span class="code-line" id="w0">int hp = <span id="w-hp-inline">3</span>;</span>
+      <span class="code-line" id="w1">while (hp &gt; 0) {</span>
+      <span class="code-line" id="w2">&nbsp;&nbsp;&nbsp;&nbsp;hp--;  <span style="color:#6e7681;">// 扣血</span></span>
+      <span class="code-line" id="w3">}</span>
+      <span class="code-line" id="w4">cout &lt;&lt; "Game Over!" &lt;&lt; endl;</span>
+    </div>
+    <div class="out-box" id="while-out">— 設定 HP 並按執行 —</div>
+  </div>
+
+  <!-- ═══ MODULE 3: Infinite Loop ═══ -->
+  <div class="card">
+    <h2 class="mod-title">💥 3. 無窮迴圈大魔王（Infinite Loop）</h2>
+    <p class="sec-desc">漏寫 <code>i++</code> 的慘烈後果！按下「執行」體驗失控感，再用「強制停止」解除危機。（本頁使用 <code>setInterval</code> 安全模擬，不會真的當機）</p>
+    <div class="ctrl-row">
+      <button class="btn btn-red" id="inf-run-btn" onclick="infRun()">💣 執行（危險！）</button>
+      <button class="btn btn-green" id="inf-stop-btn" onclick="infStop()" disabled>🛑 強制停止</button>
+    </div>
+    <div class="code-block">
+      <span class="code-line" id="inf-c0">int i = 0;</span>
+      <span class="code-line" id="inf-c1">while (i &lt; 5) {</span>
+      <span class="code-line" id="inf-c2">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; i &lt;&lt; endl;</span>
+      <span class="code-line" id="inf-c3">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#f85149; text-decoration:line-through;">// i++;  ← 忘記寫了！</span></span>
+      <span class="code-line" id="inf-c4">}</span>
+    </div>
+    <div id="inf-alert" class="inf-alert">⚠️ 無窮迴圈偵測！CPU 使用率飆升中…程式永不停止！</div>
+    <div id="inf-output">— 等待執行 —</div>
+  </div>
+
+  <!-- ═══ MODULE 4: do-while ═══ -->
+  <div class="card">
+    <h2 class="mod-title">🎁 4. <code>do-while</code> 迴圈（保證執行一次）—— 盲盒抽卡機</h2>
+    <p class="sec-desc"><strong>先做再說！</strong>無論條件如何，至少抽一次。觀察執行順序：先抽卡 → 再判斷條件，與 while 形成強烈對比。</p>
+    <div class="ctrl-row">
+      <button class="btn" id="draw-btn" onclick="doWhileRun()">🎰 開始抽卡</button>
+      <button class="btn" style="background:#555;" onclick="doWhileReset()">↺ 重置</button>
+      <span id="draw-status" style="color:#8b949e; font-size:.9rem;">等待開始…</span>
+    </div>
+    <div class="code-block">
+      <span class="code-line" id="dw0">do {</span>
+      <span class="code-line" id="dw1">&nbsp;&nbsp;&nbsp;&nbsp;card = 抽卡();  <span style="color:#6e7681;">// ← 先執行！</span></span>
+      <span class="code-line" id="dw2">} while (card != "🌟");  <span style="color:#6e7681;">// ← 後判斷</span></span>
+    </div>
+    <div class="card-draw-area" id="card-draw-area">
+      <span style="color:#484f58; font-size:.9rem;">抽到的卡片會出現在這裡…</span>
+    </div>
+    <div class="out-box" id="dw-out">— 等待開始 —</div>
+  </div>
+
+  <!-- ═══ MODULE 5: break vs continue ═══ -->
+  <div class="card">
+    <h2 class="mod-title">🚦 5. <code>break</code> vs <code>continue</code>（迴圈控制）</h2>
+    <p class="sec-desc">迴圈跑 1~5，第 3 回合遇到障礙。<code>continue</code> = 跳過這回合繼續；<code>break</code> = 砸碎整個迴圈逃跑！</p>
+    <div class="ctrl-row">
+      <button class="btn" id="bc-cont-btn" onclick="bcRun('continue')">⏩ 使用 continue</button>
+      <button class="btn btn-red" id="bc-break-btn" onclick="bcRun('break')">💥 使用 break</button>
+      <button class="btn" style="background:#555;" onclick="bcReset()">↺ 重置</button>
+    </div>
+    <div class="code-block">
+      <span class="code-line">for (int i = 1; i &lt;= 5; i++) {</span>
+      <span class="code-line" id="bc-cond">&nbsp;&nbsp;&nbsp;&nbsp;if (i == 3) {</span>
+      <span class="code-line" id="bc-action">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/* break 或 continue */</span>
+      <span class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;}</span>
+      <span class="code-line" id="bc-print">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; i &lt;&lt; endl;</span>
+      <span class="code-line">}</span>
+    </div>
+    <div class="loop-steps" id="bc-steps">
+      <div class="step-box" id="bc-s1">1</div>
+      <div class="step-box" id="bc-s2">2</div>
+      <div class="step-box" id="bc-s3">3</div>
+      <div class="step-box" id="bc-s4">4</div>
+      <div class="step-box" id="bc-s5">5</div>
+    </div>
+    <div class="out-box" id="bc-out">— 選擇操作 —</div>
+  </div>
+
+  <!-- ═══ MODULE 6: Decision Tree ═══ -->
+  <div class="card">
+    <h2 class="mod-title">🤔 6. 迴圈怎麼選？（互動決策樹）</h2>
+    <p class="sec-desc">回答以下問題，讓決策樹引導你選出最適合的迴圈！</p>
+    <div class="dtree" id="dtree">
+      <div class="dt-node active" id="dt-q1">❓ 你知道確切的執行次數嗎？</div>
+      <div class="dt-connector">↓</div>
+      <div class="dt-branch-row">
+        <div class="dt-branch">
+          <button class="dt-btn" onclick="dtChoose(1,'yes')">✅ 知道</button>
+          <div class="dt-node" id="dt-for" style="display:none;">
+            ✅ 使用 <code>for</code> 迴圈<br>
+            <small style="color:#8b949e;">執行次數固定，最直覺！</small>
+          </div>
+        </div>
+        <div class="dt-branch">
+          <button class="dt-btn" onclick="dtChoose(1,'no')">❌ 不知道</button>
+          <div class="dt-node" id="dt-q2" style="display:none;">
+            ❓ 至少必須執行一次嗎？
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+              <button class="dt-btn" onclick="dtChoose(2,'yes')">✅ 是</button>
+              <button class="dt-btn" onclick="dtChoose(2,'no')">❌ 否</button>
+            </div>
+          </div>
+          <div class="dt-node result-dwhile" id="dt-dowhile" style="display:none;">
+            🎁 使用 <code>do-while</code><br>
+            <small>先做再判斷，保證至少執行一次。</small>
+          </div>
+          <div class="dt-node result-while" id="dt-while" style="display:none;">
+            🔵 使用 <code>while</code><br>
+            <small>先判斷，可能一次都不執行。</small>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <button class="dt-btn" onclick="dtReset()">↺ 重新選擇</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODULE 7: Nested Loops ═══ -->
+  <div class="card">
+    <h2 class="mod-title">⭐ 7. 綜合應用：巢狀迴圈 —— 星星印表機</h2>
+    <p class="sec-desc">設定行數與列數，點擊「模擬執行」。觀察內層 <code>j</code> 迴圈跑完一整行後，外層 <code>i</code> 才前進並換行！</p>
+    <div class="ctrl-row">
+      <label style="color:#8b949e; font-size:.9rem;">行數 (rows)：</label>
+      <input class="num-input" type="number" id="star-rows" min="1" max="8" value="3">
+      <label style="color:#8b949e; font-size:.9rem;">列數 (cols)：</label>
+      <input class="num-input" type="number" id="star-cols" min="1" max="12" value="5">
+      <button class="btn" id="star-btn" onclick="starRun()">▶ 模擬執行</button>
+      <button class="btn" style="background:#555;" onclick="starReset()">↺ 重置</button>
+    </div>
+    <div class="code-block">
+      <span class="code-line" id="sc0">for (int i = 0; i &lt; rows; i++) {  <span style="color:#6e7681;">// 外層控制行</span></span>
+      <span class="code-line" id="sc1">&nbsp;&nbsp;&nbsp;&nbsp;for (int j = 0; j &lt; cols; j++) {  <span style="color:#6e7681;">// 內層控制列</span></span>
+      <span class="code-line" id="sc2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "*";</span>
+      <span class="code-line" id="sc3">&nbsp;&nbsp;&nbsp;&nbsp;}</span>
+      <span class="code-line" id="sc4">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; endl;  <span style="color:#6e7681;">// ← 內層跑完才換行</span></span>
+      <span class="code-line" id="sc5">}</span>
+    </div>
+    <div class="loop-state">
+      <div class="var-box"><span>i =</span><span class="var-val" id="star-i">—</span></div>
+      <div class="var-box"><span>j =</span><span class="var-val" id="star-j">—</span></div>
+    </div>
+    <div id="star-output">— 等待執行 —</div>
+  </div>
+
+</div><!-- /.container -->
+
+<script>
+// ═══════════════════════════════════════
+//  UTILITY
+// ═══════════════════════════════════════
+function hl(id, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'code-line' + (cls ? ' ' + cls : '');
+}
+function clr(...ids) { ids.forEach(id => hl(id, '')); }
+
+// ═══════════════════════════════════════
+//  MODULE 1 — for loop stepper
+// ═══════════════════════════════════════
+const FOR_PHASES = [
+  { label:'🟡 初始化：int i = 0', part:'init', lineId:'f1', outMsg:'初始化 → i 設為 0', iVal:0 },
+  { label:'🔵 條件判斷：i < 3？', part:'cond', lineId:'f1', outMsg:'判斷 0 < 3 → ✅ 成立，進入迴圈', iVal:0 },
+  { label:'🟢 執行區塊：印出 i', part:'body', lineId:'f2', outMsg:'執行：第 0 圈執行！', iVal:0 },
+  { label:'🟠 步進更新：i++', part:'upd',  lineId:'f1', outMsg:'i++ → i 變為 1', iVal:1 },
+  { label:'🔵 條件判斷：i < 3？', part:'cond', lineId:'f1', outMsg:'判斷 1 < 3 → ✅ 成立', iVal:1 },
+  { label:'🟢 執行區塊：印出 i', part:'body', lineId:'f2', outMsg:'執行：第 1 圈執行！', iVal:1 },
+  { label:'🟠 步進更新：i++', part:'upd',  lineId:'f1', outMsg:'i++ → i 變為 2', iVal:2 },
+  { label:'🔵 條件判斷：i < 3？', part:'cond', lineId:'f1', outMsg:'判斷 2 < 3 → ✅ 成立', iVal:2 },
+  { label:'🟢 執行區塊：印出 i', part:'body', lineId:'f2', outMsg:'執行：第 2 圈執行！', iVal:2 },
+  { label:'🟠 步進更新：i++', part:'upd',  lineId:'f1', outMsg:'i++ → i 變為 3', iVal:3 },
+  { label:'🔵 條件判斷：i < 3？', part:'cond', lineId:'f1', outMsg:'判斷 3 < 3 → ❌ 不成立，跳出迴圈！', iVal:3 },
+  { label:'✅ 迴圈結束', part:'end', lineId:'f3', outMsg:'迴圈完成！共執行 3 次。', iVal:3 },
+];
+let forStep = -1;
+const partCls = { init:'hl-yellow', cond:'hl-blue', body:'hl-green', upd:'hl-purple', end:'hl-green' };
+
+function forNext() {
+  forStep++;
+  if (forStep >= FOR_PHASES.length) { forReset(); return; }
+  const p = FOR_PHASES[forStep];
+  clr('f1','f2','f3','f4');
+  hl(p.lineId, partCls[p.part]);
+  if (p.part === 'body') hl('f4','hl-gray');
+  document.getElementById('for-i-val').textContent = p.iVal;
+  document.getElementById('for-varbox').classList.toggle('active', true);
+  document.getElementById('for-phase-label').textContent = p.label;
+  document.getElementById('for-out').textContent = p.outMsg;
+  if (forStep === FOR_PHASES.length - 1) {
+    document.getElementById('for-next-btn').textContent = '↺ 再來一次';
+  }
+}
+function forReset() {
+  forStep = -1;
+  clr('f1','f2','f3','f4');
+  document.getElementById('for-i-val').textContent = '—';
+  document.getElementById('for-varbox').classList.remove('active');
+  document.getElementById('for-phase-label').textContent = '尚未開始';
+  document.getElementById('for-out').textContent = '— 點擊「下一步」開始 —';
+  document.getElementById('for-next-btn').textContent = '▶ 下一步';
+}
+
+// ═══════════════════════════════════════
+//  MODULE 2 — while / HP
+// ═══════════════════════════════════════
+let whileTimer = null;
+let whileRunning = false;
+
+function hpSliderUpdate() {
+  const v = document.getElementById('hp-slider').value;
+  document.getElementById('hp-slider-val').textContent = v;
+  document.getElementById('w-hp-inline').textContent = v;
+  const pct = (parseInt(v) / 5 * 100);
+  const bar = document.getElementById('hp-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = pct === 0 ? '#f85149' : pct <= 40 ? '#e3b341' : '#56d364';
+}
+hpSliderUpdate();
+
+function whileReset() {
+  if (whileTimer) clearTimeout(whileTimer);
+  whileRunning = false;
+  clr('w0','w1','w2','w3','w4');
+  document.getElementById('while-out').textContent = '— 設定 HP 並按執行 —';
+  document.getElementById('while-run-btn').disabled = false;
+  hpSliderUpdate();
+}
+
+function whileRun() {
+  if (whileRunning) return;
+  whileRunning = true;
+  document.getElementById('while-run-btn').disabled = true;
+  const initHp = parseInt(document.getElementById('hp-slider').value);
+  let hp = initHp;
+  const outEl = document.getElementById('while-out');
+  const barEl = document.getElementById('hp-bar');
+  clr('w0','w1','w2','w3','w4');
+  hl('w0','hl-blue');
+  outEl.textContent = `初始化 hp = ${hp}`;
+
+  function step() {
+    clr('w0','w1','w2','w3','w4');
+    hl('w1', hp > 0 ? 'hl-green' : 'hl-red');
+    if (hp <= 0) {
+      outEl.innerHTML = hp === 0 && hp === initHp
+        ? '❌ hp = 0，條件 hp > 0 不成立！迴圈一次都沒執行！直接跳出。'
+        : '條件 hp > 0 → ❌ 不成立，跳出迴圈！';
+      whileTimer = setTimeout(() => {
+        hl('w4','hl-green');
+        outEl.textContent += ' → Game Over!';
+        whileRunning = false;
+        document.getElementById('while-run-btn').disabled = false;
+      }, 700);
+      return;
+    }
+    outEl.textContent = `條件 hp > 0 (${hp}) → ✅ 成立，執行 hp--`;
+    whileTimer = setTimeout(() => {
+      hl('w2','hl-yellow');
+      hp--;
+      const pct = hp / 5 * 100;
+      barEl.style.width = pct + '%';
+      barEl.style.background = pct === 0 ? '#f85149' : pct <= 40 ? '#e3b341' : '#56d364';
+      outEl.textContent = `hp-- → hp 現在是 ${hp}`;
+      whileTimer = setTimeout(step, 600);
+    }, 500);
+  }
+  setTimeout(step, 400);
+}
+
+// ═══════════════════════════════════════
+//  MODULE 3 — Infinite Loop simulator
+// ═══════════════════════════════════════
+let infInterval = null;
+let infCount = 0;
+
+function infRun() {
+  if (infInterval) return;
+  document.getElementById('inf-run-btn').disabled = true;
+  document.getElementById('inf-stop-btn').disabled = false;
+  const outEl = document.getElementById('inf-output');
+  const alertEl = document.getElementById('inf-alert');
+  outEl.textContent = '';
+  outEl.className = '';
+  alertEl.style.display = 'none';
+  infCount = 0;
+  hl('inf-c1','hl-green');
+  hl('inf-c2','hl-green');
+  hl('inf-c3','hl-red');
+
+  let tick = 0;
+  infInterval = setInterval(() => {
+    tick++;
+    const line = document.createElement('span');
+    line.style.display = 'block';
+    line.textContent = `輸出: ${infCount}  (第 ${tick} 次循環…i 永遠是 0！)`;
+    outEl.appendChild(line);
+    outEl.scrollTop = outEl.scrollHeight;
+    if (tick === 5) { outEl.className = 'danger'; alertEl.style.display = 'block'; }
+  }, 300);
+}
+
+function infStop() {
+  if (infInterval) { clearInterval(infInterval); infInterval = null; }
+  document.getElementById('inf-run-btn').disabled = false;
+  document.getElementById('inf-stop-btn').disabled = true;
+  clr('inf-c0','inf-c1','inf-c2','inf-c3','inf-c4');
+  const outEl = document.getElementById('inf-output');
+  const stopLine = document.createElement('span');
+  stopLine.style.cssText = 'display:block; color:#56d364; font-weight:700;';
+  stopLine.textContent = '🛑 已強制停止！真實程式中必須手動結束程序（Ctrl+C）！';
+  outEl.appendChild(stopLine);
+}
+
+// ═══════════════════════════════════════
+//  MODULE 4 — do-while / card draw
+// ═══════════════════════════════════════
+const POOL = ['🃏','🃏','🃏','🃏','🌟']; // 1/5 chance
+let dwRunning = false;
+let dwCards = [];
+
+function doWhileReset() {
+  dwRunning = false;
+  dwCards = [];
+  clr('dw0','dw1','dw2');
+  document.getElementById('card-draw-area').innerHTML = '<span style="color:#484f58; font-size:.9rem;">抽到的卡片會出現在這裡…</span>';
+  document.getElementById('dw-out').textContent = '— 等待開始 —';
+  document.getElementById('draw-status').textContent = '等待開始…';
+  document.getElementById('draw-btn').disabled = false;
+}
+
+function doWhileRun() {
+  if (dwRunning) return;
+  dwRunning = true;
+  document.getElementById('draw-btn').disabled = true;
+  document.getElementById('card-draw-area').innerHTML = '';
+  const outEl = document.getElementById('dw-out');
+  const statusEl = document.getElementById('draw-status');
+  let round = 0;
+
+  function drawStep() {
+    // Phase A: do { — highlight body
+    hl('dw0','hl-green'); clr('dw1','dw2');
+    statusEl.textContent = '先執行 do { ... }';
+    setTimeout(() => {
+      hl('dw1','hl-yellow');
+      const card = POOL[Math.floor(Math.random() * POOL.length)];
+      dwCards.push(card);
+      round++;
+      // render card
+      const area = document.getElementById('card-draw-area');
+      const div = document.createElement('div');
+      div.className = 'draw-card revealed';
+      div.textContent = '❓';
+      area.appendChild(div);
+      setTimeout(() => {
+        div.textContent = card;
+        if (card === '🌟') div.classList.add('winner');
+      }, 250);
+      outEl.textContent = `第 ${round} 次抽卡 → 抽到：${card}`;
+
+      // Phase B: check while condition
+      setTimeout(() => {
+        clr('dw0','dw1');
+        hl('dw2', card === '🌟' ? 'hl-red' : 'hl-green');
+        if (card === '🌟') {
+          statusEl.textContent = 'while (card != "🌟") → ❌ 中獎了！迴圈結束！';
+          outEl.textContent = `🌟 中獎！共抽了 ${round} 次。`;
+          dwRunning = false;
+          document.getElementById('draw-btn').disabled = false;
+        } else {
+          statusEl.textContent = `while (card != "🌟") → ✅ 沒中獎，繼續抽！`;
+          setTimeout(drawStep, 700);
+        }
+      }, 700);
+    }, 500);
+  }
+  drawStep();
+}
+
+// ═══════════════════════════════════════
+//  MODULE 5 — break vs continue
+// ═══════════════════════════════════════
+let bcRunning = false;
+
+function bcReset() {
+  bcRunning = false;
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('bc-s' + i);
+    el.className = 'step-box';
+    el.textContent = i;
+  }
+  clr('bc-cond','bc-action','bc-print');
+  document.getElementById('bc-out').textContent = '— 選擇操作 —';
+  document.getElementById('bc-cont-btn').disabled = false;
+  document.getElementById('bc-break-btn').disabled = false;
+}
+
+function bcRun(mode) {
+  if (bcRunning) return;
+  bcRunning = true;
+  bcReset();
+  bcRunning = true;
+  document.getElementById('bc-cont-btn').disabled = true;
+  document.getElementById('bc-break-btn').disabled = true;
+  const outEl = document.getElementById('bc-out');
+  const actEl = document.getElementById('bc-action');
+  actEl.textContent = '　　　　　　' + (mode === 'break' ? 'break;' : 'continue;');
+
+  let output = [];
+  let delay = 0;
+
+  for (let i = 1; i <= 5; i++) {
+    ((i, d) => {
+      setTimeout(() => {
+        // highlight active step
+        document.getElementById('bc-s' + i).className = 'step-box active';
+        hl('bc-cond', i === 3 ? 'hl-yellow' : '');
+        hl('bc-action', '');
+        hl('bc-print', '');
+      }, d);
+
+      if (i === 3) {
+        setTimeout(() => {
+          hl('bc-cond','hl-red');
+          hl('bc-action', mode === 'break' ? 'hl-red' : 'hl-yellow');
+          if (mode === 'break') {
+            document.getElementById('bc-s' + i).className = 'step-box stopped';
+            document.getElementById('bc-s' + i).textContent = '💥';
+            for (let k = 4; k <= 5; k++) {
+              document.getElementById('bc-s' + k).className = 'step-box';
+              document.getElementById('bc-s' + k).style.opacity = '.25';
+            }
+            output.push('終止💥');
+            outEl.textContent = '輸出：' + output.join(', ');
+          } else {
+            document.getElementById('bc-s' + i).className = 'step-box skipped';
+            document.getElementById('bc-s' + i).textContent = '⏩';
+            output.push('跳過3⏩');
+            outEl.textContent = '輸出：' + output.join(', ');
+          }
+        }, d + 500);
+      } else if (!(mode === 'break' && i > 3)) {
+        setTimeout(() => {
+          hl('bc-print','hl-green');
+          document.getElementById('bc-s' + i).className = 'step-box printed';
+          output.push(i);
+          outEl.textContent = '輸出：' + output.join(', ');
+        }, d + 500);
+      }
+    })(i, delay);
+    delay += (mode === 'break' && i >= 3) ? 800 : 800;
+    if (mode === 'break' && i === 3) break; // no more iterations visually
+  }
+
+  setTimeout(() => {
+    bcRunning = false;
+    document.getElementById('bc-cont-btn').disabled = false;
+    document.getElementById('bc-break-btn').disabled = false;
+    for (let k = 1; k <= 5; k++) {
+      document.getElementById('bc-s' + k).style.opacity = '1';
+    }
+  }, delay + 500);
+}
+
+// ═══════════════════════════════════════
+//  MODULE 6 — Decision Tree
+// ═══════════════════════════════════════
+function dtChoose(q, ans) {
+  if (q === 1) {
+    document.getElementById('dt-q1').classList.remove('active');
+    if (ans === 'yes') {
+      const n = document.getElementById('dt-for');
+      n.style.display = 'block';
+      n.className = 'dt-node result-for';
+    } else {
+      const n = document.getElementById('dt-q2');
+      n.style.display = 'block';
+      n.className = 'dt-node active';
+    }
+  } else {
+    document.getElementById('dt-q2').classList.remove('active');
+    if (ans === 'yes') {
+      const n = document.getElementById('dt-dowhile');
+      n.style.display = 'block';
+    } else {
+      const n = document.getElementById('dt-while');
+      n.style.display = 'block';
+    }
+  }
+}
+function dtReset() {
+  ['dt-for','dt-q2','dt-dowhile','dt-while'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.display = 'none'; el.className = 'dt-node';
+  });
+  document.getElementById('dt-q1').className = 'dt-node active';
+  document.querySelectorAll('.dt-btn').forEach(b => b.classList.remove('chosen'));
+}
+
+// ═══════════════════════════════════════
+//  MODULE 7 — Nested loop star printer
+// ═══════════════════════════════════════
+let starRunning = false;
+let starTimer = null;
+
+function starReset() {
+  starRunning = false;
+  if (starTimer) clearTimeout(starTimer);
+  clr('sc0','sc1','sc2','sc3','sc4','sc5');
+  document.getElementById('star-i').textContent = '—';
+  document.getElementById('star-j').textContent = '—';
+  document.getElementById('star-output').textContent = '— 等待執行 —';
+  document.getElementById('star-btn').disabled = false;
+}
+
+function starRun() {
+  if (starRunning) return;
+  const rows = Math.min(8, Math.max(1, parseInt(document.getElementById('star-rows').value) || 3));
+  const cols = Math.min(12, Math.max(1, parseInt(document.getElementById('star-cols').value) || 5));
+  starRunning = true;
+  document.getElementById('star-btn').disabled = true;
+  document.getElementById('star-output').textContent = '';
+  clr('sc0','sc1','sc2','sc3','sc4','sc5');
+
+  const iEl = document.getElementById('star-i');
+  const jEl = document.getElementById('star-j');
+  const outEl = document.getElementById('star-output');
+
+  let steps = [];
+  for (let i = 0; i < rows; i++) {
+    steps.push({ type:'outer-check', i, j:null });
+    for (let j = 0; j < cols; j++) {
+      steps.push({ type:'inner-check', i, j });
+      steps.push({ type:'print-star', i, j });
+    }
+    steps.push({ type:'inner-done', i, j:cols });
+    steps.push({ type:'newline', i, j:null });
+  }
+  steps.push({ type:'outer-done' });
+
+  let si = 0;
+  let lines = Array(rows).fill('');
+
+  function tick() {
+    if (si >= steps.length) {
+      clr('sc0','sc1','sc2','sc3','sc4','sc5');
+      iEl.textContent = '✅';
+      jEl.textContent = '✅';
+      starRunning = false;
+      document.getElementById('star-btn').disabled = false;
+      return;
+    }
+    const s = steps[si++];
+    clr('sc0','sc1','sc2','sc3','sc4','sc5');
+    switch(s.type) {
+      case 'outer-check':
+        hl('sc0','hl-blue'); iEl.textContent = s.i; jEl.textContent = '—'; break;
+      case 'inner-check':
+        hl('sc1','hl-yellow'); iEl.textContent = s.i; jEl.textContent = s.j; break;
+      case 'print-star':
+        hl('sc2','hl-green');
+        lines[s.i] += '⭐';
+        outEl.textContent = lines.filter(Boolean).join('\n'); break;
+      case 'inner-done':
+        hl('sc3','hl-red'); jEl.textContent = `${s.j}(完)`;
+        break;
+      case 'newline':
+        hl('sc4','hl-purple');
+        outEl.textContent = lines.filter(Boolean).join('\n') + '\n[換行 ↵]';
+        setTimeout(() => { outEl.textContent = lines.filter(Boolean).join('\n'); }, 200);
+        break;
+      case 'outer-done':
+        hl('sc5','hl-green'); break;
+    }
+    const delay = ['print-star','inner-check'].includes(s.type) ? 180 : 350;
+    starTimer = setTimeout(tick, delay);
+  }
+  tick();
+}
+</script>
+</body>
+</html>

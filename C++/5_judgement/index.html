@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>C++ 判斷結構 互動式教學</title>
+  <meta name="description" content="透過動畫與互動，學習 C++ 判斷結構：if、if-else、else-if、switch、巢狀判斷與綜合應用。"/>
+  <link rel="stylesheet" href="../../theme.css">
+  <script src="../../layout.js" defer></script>
+  <style>
+    /* ── Layout helpers ── */
+    .mod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media(max-width:700px){ .mod-grid{ grid-template-columns:1fr; } }
+
+    /* ── Code block base ── */
+    .code-block {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.88rem;
+      background: #0d1117;
+      color: #c9d1d9;
+      border-radius: 10px;
+      padding: 14px 18px;
+      line-height: 1.75;
+      margin: 10px 0;
+      border: 1px solid #30363d;
+      transition: all .3s;
+      overflow-x: auto;
+    }
+    .code-line {
+      display: block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: background .3s, color .3s;
+    }
+    .code-line.active-green {
+      background: #1a4a1e;
+      color: #56d364;
+      font-weight: bold;
+    }
+    .code-line.active-red {
+      background: #4a1a1a;
+      color: #f85149;
+      font-weight: bold;
+    }
+    .code-line.active-blue {
+      background: #0d2a4a;
+      color: #58a6ff;
+      font-weight: bold;
+    }
+    .code-line.active-yellow {
+      background: #3a2f00;
+      color: #e3b341;
+      font-weight: bold;
+    }
+    .code-line.skipped {
+      color: #484f58;
+      text-decoration: line-through;
+    }
+    .code-line.cursor {
+      background: #1f2937;
+      outline: 2px solid #58a6ff;
+    }
+
+    /* ── Controls ── */
+    .ctrl-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:10px 0; }
+    input[type=range] { flex:1; min-width:120px; accent-color: var(--accent-color, #4f8ef7); }
+    .num-input {
+      width: 90px; padding: 6px 10px; border-radius: 8px;
+      border: 1px solid #30363d; background:#0d1117; color:#c9d1d9;
+      font-size:1rem; font-family:inherit;
+    }
+    .badge {
+      display:inline-block; padding:4px 14px; border-radius:20px;
+      font-size:0.85rem; font-weight:700; transition: all .3s;
+    }
+    .badge.green { background:#1a4a1e; color:#56d364; }
+    .badge.red   { background:#4a1a1a; color:#f85149; }
+    .badge.blue  { background:#0d2a4a; color:#58a6ff; }
+    .badge.gray  { background:#21262d; color:#8b949e; }
+    .badge.yellow{ background:#3a2f00; color:#e3b341; }
+
+    /* ── Run button ── */
+    .btn-run {
+      padding: 8px 22px; border-radius: 8px; border: none; cursor: pointer;
+      background: var(--accent-color, #4f8ef7); color: #fff;
+      font-size: 0.9rem; font-weight: 700; letter-spacing:.5px;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn-run:hover { opacity:.85; }
+    .btn-run:active { transform: scale(.97); }
+    .btn-run:disabled { opacity:.45; cursor:not-allowed; }
+
+    /* ── Output box ── */
+    .out-box {
+      background:#161b22; border:1px solid #30363d; border-radius:8px;
+      padding:10px 14px; min-height:42px; font-family:monospace;
+      font-size:0.9rem; color:#c9d1d9; margin-top:8px;
+      transition: all .3s;
+    }
+    .out-line { display:block; padding:1px 0; }
+
+    /* ── Module 1: Boiling ── */
+    #boil-visual {
+      font-size:3rem; text-align:center; padding:14px;
+      transition: all .4s;
+      border-radius:12px; background:#1c2128; margin:8px 0;
+    }
+    #boil-label {
+      text-align:center; font-size:1.1rem; font-weight:700;
+      transition: color .4s;
+    }
+
+    /* ── Module 2: odd/even branch arrows ── */
+    .branch-viz {
+      display:flex; justify-content:space-around; gap:10px;
+      margin:10px 0;
+    }
+    .branch-box {
+      flex:1; padding:10px; border-radius:8px; text-align:center;
+      border: 2px solid transparent; font-family:monospace; font-size:.85rem;
+      transition: border-color .3s, background .3s, color .3s;
+      background:#1c2128; color:#8b949e;
+    }
+    .branch-box.taken { border-color: #56d364; background:#1a4a1e; color:#56d364; }
+    .branch-box.not-taken { border-color: #30363d; opacity:.5; }
+    .branch-arrow { text-align:center; font-size:1.5rem; color:#58a6ff; }
+
+    /* ── Module 3: grid comparison ── */
+    .label-tag {
+      font-weight:700; font-size:.8rem; padding:3px 10px; border-radius:12px;
+      display:inline-block; margin-bottom:6px;
+    }
+    .label-correct { background:#1a4a1e; color:#56d364; }
+    .label-wrong   { background:#4a1a1a; color:#f85149; }
+
+    /* ── Module 4: switch ── */
+    .vend-btn {
+      padding:8px 16px; border-radius:8px; border: 2px solid #30363d;
+      background:#21262d; color:#c9d1d9; cursor:pointer; font-size:.9rem;
+      transition: border-color .2s, background .2s;
+    }
+    .vend-btn:hover { border-color: var(--accent-color,#4f8ef7); background:#1c2128; }
+    .toggle-row { display:flex; align-items:center; gap:10px; margin:10px 0; }
+    /* toggle switch */
+    .toggle-switch { position:relative; width:44px; height:24px; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .toggle-track {
+      position:absolute; cursor:pointer; inset:0;
+      background:#30363d; border-radius:24px; transition:.3s;
+    }
+    .toggle-track:before {
+      content:""; position:absolute; width:18px; height:18px;
+      left:3px; top:3px; background:#fff; border-radius:50%; transition:.3s;
+    }
+    .toggle-switch input:checked + .toggle-track { background: #f85149; }
+    .toggle-switch input:checked + .toggle-track:before { transform:translateX(20px); }
+
+    /* ── Module 5: Nested gates ── */
+    .gate-wrap { display:flex; flex-direction:column; gap:6px; }
+    .gate-outer {
+      border:3px solid #30363d; border-radius:14px; padding:12px 16px;
+      transition: border-color .3s, background .3s;
+      background:#1c2128;
+    }
+    .gate-outer.open { border-color:#56d364; background:#0d1f12; }
+    .gate-outer.closed { border-color:#f85149; background:#200d0d; }
+    .gate-inner {
+      border:2px dashed #30363d; border-radius:10px; padding:10px 14px;
+      margin-top:10px; opacity:.4;
+      transition: opacity .3s, border-color .3s, background .3s, color .3s;
+      background:#0d1117;
+    }
+    .gate-inner.open { border-color:#58a6ff; opacity:1; background:#0d1f35; }
+    .gate-inner.closed { border-color:#f85149; opacity:1; background:#200d0d; }
+    .gate-label {
+      font-size:.8rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:.08em; margin-bottom:6px;
+    }
+    .select-ctrl {
+      padding:5px 10px; border-radius:7px; border:1px solid #30363d;
+      background:#0d1117; color:#c9d1d9; font-size:.9rem;
+    }
+
+    /* ── Module 6: RPG ── */
+    .rpg-controls { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0; }
+    .rpg-label { font-size:.85rem; color:#8b949e; margin-bottom:3px; }
+    .rpg-result {
+      padding:14px; border-radius:10px; text-align:center;
+      font-size:1.2rem; font-weight:700; margin-top:10px;
+      background:#1c2128; transition: all .4s;
+    }
+    .rpg-result.hit { background:#1a4a1e; color:#56d364; }
+    .rpg-result.blocked { background:#4a1a1a; color:#f85149; }
+    .rpg-result.miss { background:#3a2f00; color:#e3b341; }
+
+    /* ── Section description ── */
+    .sec-desc { color:#8b949e; font-size:.92rem; margin:4px 0 12px; line-height:1.6; }
+    h2.mod-title { font-size:1.15rem; margin:0 0 4px; display:flex; align-items:center; gap:8px; }
+
+    /* ── Boiling steam animation ── */
+    @keyframes steam {
+      0%  { transform: translateY(0)   scale(1);   opacity:.8; }
+      100%{ transform: translateY(-18px) scale(1.3); opacity:0; }
+    }
+    .steam-particle {
+      display:inline-block;
+      animation: steam 1s ease-out infinite;
+    }
+    .steam-particle:nth-child(2){ animation-delay:.3s; }
+    .steam-particle:nth-child(3){ animation-delay:.6s; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1 class="section-title">⚙️ C++ 判斷結構 互動式教學</h1>
+  <p style="color:#8b949e; margin-bottom:28px; font-size:.95rem;">
+    透過互動動畫，深入理解 if、if-else、else-if ladder、switch、巢狀判斷與綜合應用。
+  </p>
+
+  <!-- ═══════════════════════════════════════════
+       MODULE 1 — Basic if
+  ══════════════════════════════════════════════ -->
+  <div class="card">
+    <h2 class="mod-title">🌡️ 1. 基本 <code>if</code> 語句（單向判斷）</h2>
+    <p class="sec-desc">情境：沸水測試器。拖動溫度拉桿，觀察程式碼何時被執行。</p>
+    <div class="ctrl-row">
+      <span style="font-size:.9rem; color:#8b949e;">溫度：</span>
+      <input type="range" id="temp-slider" min="0" max="120" value="25" oninput="updateBoil()">
+      <span id="temp-val" style="font-family:monospace; font-size:1.1rem; color:#58a6ff; min-width:50px;">25°C</span>
+    </div>
+    <div class="code-block">
+      <span class="code-line" id="b-l0" style="color:#6e7681;">// temp = <span id="b-temp-inline">25</span></span>
+      <span class="code-line" id="b-l1">if (temp &gt;= 100) {</span>
+      <span class="code-line" id="b-l2">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "沸騰！" &lt;&lt; endl;</span>
+      <span class="code-line" id="b-l3">}</span>
+      <span class="code-line" id="b-skip" style="display:none; font-size:.8rem; margin-left:8px;">⬆ 條件不成立，跳過不執行</span>
+    </div>
+    <div id="boil-visual">🪣</div>
+    <div id="boil-label" style="color:#8b949e;">溫度尚未達到沸點（100°C）</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODULE 2 — if-else
+  ══════════════════════════════════════════════ -->
+  <div class="card">
+    <h2 class="mod-title">🔀 2. <code>if-else</code> 語句（雙向分支）</h2>
+    <p class="sec-desc">情境：奇偶數判斷。輸入整數，程式只走其中一條分支。</p>
+    <div class="ctrl-row">
+      <label style="color:#8b949e; font-size:.9rem;">輸入整數：</label>
+      <input class="num-input" type="number" id="oe-num" value="4" oninput="updateOddEven()">
+      <span id="oe-badge" class="badge blue">輸入中…</span>
+    </div>
+    <div class="code-block">
+      <span class="code-line" id="oe-l0" style="color:#6e7681;">// num = <span id="oe-inline">4</span></span>
+      <span class="code-line" id="oe-l1">if (num % 2 == 0) {</span>
+      <span class="code-line" id="oe-l2">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "偶數" &lt;&lt; endl;</span>
+      <span class="code-line" id="oe-l3">} else {</span>
+      <span class="code-line" id="oe-l4">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "奇數" &lt;&lt; endl;</span>
+      <span class="code-line" id="oe-l5">}</span>
+    </div>
+    <div class="branch-viz">
+      <div>
+        <div class="branch-arrow">↓</div>
+        <div class="branch-box" id="br-even">✅ if 分支<br><em>偶數路徑</em></div>
+      </div>
+      <div>
+        <div class="branch-arrow">↓</div>
+        <div class="branch-box" id="br-odd">🔁 else 分支<br><em>奇數路徑</em></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODULE 3 — else-if vs multiple if
+  ══════════════════════════════════════════════ -->
+  <div class="card">
+    <h2 class="mod-title">🌟 3. <code>else-if</code> 階梯 vs 全部用 <code>if</code>（致命差異）</h2>
+    <p class="sec-desc">輸入分數後點擊「▶ 模擬執行」，觀察兩種寫法的執行路徑有何不同。</p>
+    <div class="ctrl-row">
+      <label style="color:#8b949e; font-size:.9rem;">分數（0–100）：</label>
+      <input class="num-input" type="number" id="grade-num" min="0" max="100" value="95">
+      <button class="btn-run" id="grade-btn" onclick="runGrade()">▶ 模擬執行</button>
+    </div>
+    <div class="mod-grid">
+      <!-- LEFT: correct -->
+      <div>
+        <span class="label-tag label-correct">✅ 正確：else-if 寫法</span>
+        <div class="code-block" id="ei-code">
+          <span class="code-line" id="ei-0">if (score &gt;= 90) {</span>
+          <span class="code-line" id="ei-1">&nbsp;&nbsp;cout &lt;&lt; "A";</span>
+          <span class="code-line" id="ei-2">} else if (score &gt;= 80) {</span>
+          <span class="code-line" id="ei-3">&nbsp;&nbsp;cout &lt;&lt; "B";</span>
+          <span class="code-line" id="ei-4">} else if (score &gt;= 70) {</span>
+          <span class="code-line" id="ei-5">&nbsp;&nbsp;cout &lt;&lt; "C";</span>
+          <span class="code-line" id="ei-6">} else {</span>
+          <span class="code-line" id="ei-7">&nbsp;&nbsp;cout &lt;&lt; "F";</span>
+          <span class="code-line" id="ei-8">}</span>
+          <span class="code-line" id="ei-skip" style="display:none; color:#56d364; font-size:.8rem;">⚡ 條件已滿足，直接跳出！</span>
+        </div>
+        <div class="out-box" id="ei-out">— 等待執行 —</div>
+      </div>
+      <!-- RIGHT: wrong -->
+      <div>
+        <span class="label-tag label-wrong">❌ 錯誤：全部獨立 if 寫法</span>
+        <div class="code-block" id="ai-code">
+          <span class="code-line" id="ai-0">if (score &gt;= 90) {</span>
+          <span class="code-line" id="ai-1">&nbsp;&nbsp;cout &lt;&lt; "A";</span>
+          <span class="code-line" id="ai-2">}</span>
+          <span class="code-line" id="ai-3">if (score &gt;= 80) {</span>
+          <span class="code-line" id="ai-4">&nbsp;&nbsp;cout &lt;&lt; "B";</span>
+          <span class="code-line" id="ai-5">}</span>
+          <span class="code-line" id="ai-6">if (score &gt;= 70) {</span>
+          <span class="code-line" id="ai-7">&nbsp;&nbsp;cout &lt;&lt; "C";</span>
+          <span class="code-line" id="ai-8">}</span>
+          <span class="code-line" id="ai-9">if (score &lt; 70) {</span>
+          <span class="code-line" id="ai-10">&nbsp;&nbsp;cout &lt;&lt; "F";</span>
+          <span class="code-line" id="ai-11">}</span>
+        </div>
+        <div class="out-box" id="ai-out">— 等待執行 —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODULE 4 — switch + fall-through
+  ══════════════════════════════════════════════ -->
+  <div class="card">
+    <h2 class="mod-title">🎰 4. <code>switch</code> 語句與 Fall-through 瀑布警告</h2>
+    <p class="sec-desc">情境：自動販賣機。選擇商品，並用開關模擬「忘記寫 break」的後果。</p>
+    <div class="toggle-row">
+      <span style="color:#8b949e; font-size:.9rem;">😱 忘記寫 <code>break</code>（開啟 Fall-through）：</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="ft-toggle">
+        <span class="toggle-track"></span>
+      </label>
+      <span id="ft-label" style="font-size:.85rem; color:#8b949e;">關閉（正常）</span>
+    </div>
+    <div class="ctrl-row">
+      <button class="vend-btn" onclick="runSwitch(1)">1️⃣ 可樂</button>
+      <button class="vend-btn" onclick="runSwitch(2)">2️⃣ 綠茶</button>
+      <button class="vend-btn" onclick="runSwitch(3)">3️⃣ 礦泉水</button>
+    </div>
+    <div class="code-block" id="sw-code">
+      <span class="code-line" id="sw-h">switch (choice) {</span>
+      <span class="code-line" id="sw-c1a">&nbsp;&nbsp;case 1:</span>
+      <span class="code-line" id="sw-c1b">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "🥤 可樂";</span>
+      <span class="code-line" id="sw-c1c">&nbsp;&nbsp;&nbsp;&nbsp;break;</span>
+      <span class="code-line" id="sw-c2a">&nbsp;&nbsp;case 2:</span>
+      <span class="code-line" id="sw-c2b">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "🍵 綠茶";</span>
+      <span class="code-line" id="sw-c2c">&nbsp;&nbsp;&nbsp;&nbsp;break;</span>
+      <span class="code-line" id="sw-c3a">&nbsp;&nbsp;case 3:</span>
+      <span class="code-line" id="sw-c3b">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "💧 礦泉水";</span>
+      <span class="code-line" id="sw-c3c">&nbsp;&nbsp;&nbsp;&nbsp;break;</span>
+      <span class="code-line" id="sw-def">&nbsp;&nbsp;default:</span>
+      <span class="code-line" id="sw-defb">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "無效選項";</span>
+      <span class="code-line" id="sw-end">}</span>
+    </div>
+    <div class="out-box" id="sw-out">— 請點擊按鈕選擇商品 —</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODULE 5 — Nested if
+  ══════════════════════════════════════════════ -->
+  <div class="card">
+    <h2 class="mod-title">🔒 5. 巢狀判斷（Nested Conditionals）</h2>
+    <p class="sec-desc">情境：登入驗證。觀察兩道門的開啟邏輯：帳號通過才能驗證密碼。</p>
+    <div class="ctrl-row">
+      <label style="color:#8b949e; font-size:.9rem;">帳號：</label>
+      <select class="select-ctrl" id="acc-sel" onchange="updateNested()">
+        <option value="1">✅ 正確</option>
+        <option value="0">❌ 錯誤</option>
+      </select>
+      <label style="color:#8b949e; font-size:.9rem;">密碼：</label>
+      <select class="select-ctrl" id="pwd-sel" onchange="updateNested()">
+        <option value="1">✅ 正確</option>
+        <option value="0">❌ 錯誤</option>
+      </select>
+    </div>
+    <div class="code-block">
+      <span class="code-line" id="n-l0">if (accountOK) {</span>
+      <span class="code-line" style="padding-left:16px;">
+        <span class="code-line" id="n-l1">&nbsp;&nbsp;if (passwordOK) {</span>
+        <span class="code-line" id="n-l2">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "✅ 登入成功";</span>
+        <span class="code-line" id="n-l3">&nbsp;&nbsp;} else {</span>
+        <span class="code-line" id="n-l4">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "❌ 密碼錯誤";</span>
+        <span class="code-line" id="n-l5">&nbsp;&nbsp;}</span>
+      </span>
+      <span class="code-line" id="n-l6">} else {</span>
+      <span class="code-line" id="n-l7">&nbsp;&nbsp;cout &lt;&lt; "❌ 帳號不存在";</span>
+      <span class="code-line" id="n-l8">}</span>
+    </div>
+    <div class="gate-wrap">
+      <div class="gate-outer" id="gate-outer">
+        <div class="gate-label" id="gate-outer-label">🚪 第一道門（帳號驗證）</div>
+        <div class="gate-inner" id="gate-inner">
+          <div class="gate-label" id="gate-inner-label">🔐 第二道門（密碼驗證）</div>
+          <div id="gate-inner-msg" style="font-size:.9rem; margin-top:4px; color:#c9d1d9;">…</div>
+        </div>
+        <div id="gate-outer-msg" style="font-size:.9rem; margin-top:6px; color:#c9d1d9; display:none;">…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODULE 6 — RPG Sandbox
+  ══════════════════════════════════════════════ -->
+  <div class="card">
+    <h2 class="mod-title">⚔️ 6. 綜合應用：RPG 戰鬥判定 Sandbox</h2>
+    <p class="sec-desc">設定各項變數，系統即時高亮成立的判斷路徑並結算傷害。</p>
+    <div class="rpg-controls">
+      <div>
+        <div class="rpg-label">玩家攻擊力 (1–100)</div>
+        <div class="ctrl-row" style="gap:8px;">
+          <input type="range" id="rpg-atk" min="1" max="100" value="60" oninput="updateRPG()">
+          <span id="rpg-atk-val" style="font-family:monospace; color:#58a6ff; min-width:30px;">60</span>
+        </div>
+      </div>
+      <div>
+        <div class="rpg-label">敵人防禦？</div>
+        <select class="select-ctrl" id="rpg-def" onchange="updateRPG()">
+          <option value="0">❌ 沒有防禦</option>
+          <option value="1">🛡️ 有防禦</option>
+        </select>
+      </div>
+      <div>
+        <div class="rpg-label">敵人閃避？</div>
+        <select class="select-ctrl" id="rpg-eva" onchange="updateRPG()">
+          <option value="0">❌ 沒有閃避</option>
+          <option value="1">💨 閃避！</option>
+        </select>
+      </div>
+      <div>
+        <div class="rpg-label">暴擊倍率</div>
+        <select class="select-ctrl" id="rpg-crit" onchange="updateRPG()">
+          <option value="1">✖1 普通</option>
+          <option value="2">✖2 暴擊！</option>
+        </select>
+      </div>
+    </div>
+    <div class="code-block">
+      <span class="code-line" id="rpg-c0">if (enemy.isEvading) {</span>
+      <span class="code-line" id="rpg-c1">&nbsp;&nbsp;damage = 0;  // 閃避，完全無傷</span>
+      <span class="code-line" id="rpg-c2">} else if (enemy.isDefending &amp;&amp; attack &lt; 50) {</span>
+      <span class="code-line" id="rpg-c3">&nbsp;&nbsp;damage = 0;  // 被格擋，攻擊力不足</span>
+      <span class="code-line" id="rpg-c4">} else if (enemy.isDefending) {</span>
+      <span class="code-line" id="rpg-c5">&nbsp;&nbsp;damage = (attack - 20) * critMult;  // 穿盾</span>
+      <span class="code-line" id="rpg-c6">} else {</span>
+      <span class="code-line" id="rpg-c7">&nbsp;&nbsp;damage = attack * critMult;  // 完整傷害</span>
+      <span class="code-line" id="rpg-c8">}</span>
+    </div>
+    <div class="rpg-result" id="rpg-result">⚔️ 調整變數查看結果</div>
+  </div>
+
+</div><!-- /.container -->
+
+<script>
+// ════════════════════════════════════════════════════════
+//  UTILITY
+// ════════════════════════════════════════════════════════
+function clearHighlight(...ids) {
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = 'code-line';
+  });
+}
+function highlight(id, cls) {
+  const el = document.getElementById(id);
+  if (el) { el.className = 'code-line ' + cls; }
+}
+
+// ════════════════════════════════════════════════════════
+//  MODULE 1 — Boiling
+// ════════════════════════════════════════════════════════
+function updateBoil() {
+  const temp = parseInt(document.getElementById('temp-slider').value);
+  document.getElementById('temp-val').textContent = temp + '°C';
+  document.getElementById('b-temp-inline').textContent = temp;
+
+  const isBoiling = temp >= 100;
+  const lines = ['b-l1','b-l2','b-l3'];
+  lines.forEach(id => highlight(id, isBoiling ? 'active-green' : ''));
+
+  const skip = document.getElementById('b-skip');
+  skip.style.display = isBoiling ? 'none' : 'block';
+
+  const vis = document.getElementById('boil-visual');
+  const lbl = document.getElementById('boil-label');
+  if (isBoiling) {
+    vis.innerHTML = '<span class="steam-particle">💨</span><span class="steam-particle">💨</span><span class="steam-particle">💨</span><br>♨️';
+    vis.style.background = '#1a4a1e';
+    lbl.textContent = '沸騰！条件成立，程式進入 if 區塊執行！';
+    lbl.style.color = '#56d364';
+  } else {
+    vis.innerHTML = '🪣';
+    vis.style.background = '#1c2128';
+    lbl.textContent = `溫度尚未達到沸點（100°C），條件不成立，跳過不執行。`;
+    lbl.style.color = '#8b949e';
+  }
+}
+updateBoil();
+
+// ════════════════════════════════════════════════════════
+//  MODULE 2 — Odd / Even
+// ════════════════════════════════════════════════════════
+function updateOddEven() {
+  const raw = document.getElementById('oe-num').value;
+  const num = parseInt(raw);
+  document.getElementById('oe-inline').textContent = isNaN(num) ? '?' : num;
+
+  const badge = document.getElementById('oe-badge');
+  const brEven = document.getElementById('br-even');
+  const brOdd  = document.getElementById('br-odd');
+
+  clearHighlight('oe-l1','oe-l2','oe-l3','oe-l4','oe-l5');
+  brEven.className = 'branch-box';
+  brOdd.className  = 'branch-box';
+
+  if (isNaN(num)) {
+    badge.className = 'badge gray'; badge.textContent = '輸入有效數字';
+    return;
+  }
+  if (num % 2 === 0) {
+    highlight('oe-l1','active-green'); highlight('oe-l2','active-green');
+    highlight('oe-l3',''); highlight('oe-l4','skipped'); highlight('oe-l5','');
+    badge.className = 'badge green'; badge.textContent = `${num} 是偶數 ✅`;
+    brEven.className = 'branch-box taken';
+    brOdd.className  = 'branch-box not-taken';
+  } else {
+    highlight('oe-l1',''); highlight('oe-l2','skipped');
+    highlight('oe-l3','active-red'); highlight('oe-l4','active-red'); highlight('oe-l5','');
+    badge.className = 'badge red'; badge.textContent = `${num} 是奇數 🔁`;
+    brEven.className = 'branch-box not-taken';
+    brOdd.className  = 'branch-box taken';
+  }
+}
+updateOddEven();
+
+// ════════════════════════════════════════════════════════
+//  MODULE 3 — else-if vs all-if
+// ════════════════════════════════════════════════════════
+let gradeRunning = false;
+
+function resetGradeCodes() {
+  for(let i=0;i<=8;i++) clearHighlight('ei-'+i);
+  for(let i=0;i<=11;i++) clearHighlight('ai-'+i);
+  document.getElementById('ei-skip').style.display = 'none';
+  document.getElementById('ei-out').textContent = '— 等待執行 —';
+  document.getElementById('ai-out').textContent = '— 等待執行 —';
+}
+
+function runGrade() {
+  if (gradeRunning) return;
+  const score = parseInt(document.getElementById('grade-num').value);
+  if (isNaN(score) || score < 0 || score > 100) { alert('請輸入 0-100 之間的分數'); return; }
+  gradeRunning = true;
+  const btn = document.getElementById('grade-btn');
+  btn.disabled = true;
+  resetGradeCodes();
+
+  // figure out grade thresholds
+  const thresholds = [
+    { cond: score>=90, label:'A', eiPair:[0,1], aiPair:[0,1,2] },
+    { cond: score>=80, label:'B', eiPair:[2,3], aiPair:[3,4,5] },
+    { cond: score>=70, label:'C', eiPair:[4,5], aiPair:[6,7,8] },
+    { cond: true,      label:'F', eiPair:[6,7], aiPair:[9,10,11] },
+  ];
+
+  // ── LEFT: else-if animation ──
+  let eiDelay = 0;
+  let eiDone = false;
+  for (let t of thresholds) {
+    ((t, d) => {
+      setTimeout(() => {
+        highlight('ei-'+t.eiPair[0], 'cursor');
+      }, d);
+      setTimeout(() => {
+        if (!eiDone) {
+          if (t.cond) {
+            highlight('ei-'+t.eiPair[0], 'active-green');
+            highlight('ei-'+t.eiPair[1], 'active-green');
+            document.getElementById('ei-out').textContent = `輸出：「${t.label}」`;
+            document.getElementById('ei-skip').style.display = 'block';
+            eiDone = true;
+          } else {
+            highlight('ei-'+t.eiPair[0], 'skipped');
+            highlight('ei-'+t.eiPair[1], 'skipped');
+          }
+        }
+      }, d + 500);
+    })(t, eiDelay);
+    if (!eiDone) eiDelay += 700;
+    if (thresholds.indexOf(t) === 0 && score >= 90) break;
+  }
+  // compute actual total delay for ei
+  let eiTotal = 0;
+  for (let t of thresholds) {
+    eiTotal += 700;
+    if (t.cond) { eiTotal += 500; break; }
+  }
+
+  // ── RIGHT: all-if animation ──
+  const aiGroups = [
+    { cond: score>=90, label:'A', lines:[0,1,2] },
+    { cond: score>=80, label:'B', lines:[3,4,5] },
+    { cond: score>=70, label:'C', lines:[6,7,8] },
+    { cond: score<70,  label:'F', lines:[9,10,11] },
+  ];
+  let aiDelay = 0;
+  let aiOutput = '';
+  for (let g of aiGroups) {
+    ((g, d) => {
+      setTimeout(() => {
+        highlight('ai-'+g.lines[0], 'cursor');
+      }, d);
+      setTimeout(() => {
+        if (g.cond) {
+          g.lines.forEach(l => highlight('ai-'+l, 'active-red'));
+          aiOutput += g.label;
+          document.getElementById('ai-out').textContent = `輸出：「${aiOutput}」 ⚠️ Bug！`;
+        } else {
+          g.lines.forEach(l => highlight('ai-'+l, 'skipped'));
+        }
+      }, d + 500);
+    })(g, aiDelay);
+    aiDelay += 800;
+  }
+
+  const totalDelay = Math.max(eiTotal, aiDelay + 800);
+  setTimeout(() => {
+    gradeRunning = false;
+    btn.disabled = false;
+  }, totalDelay + 500);
+}
+
+// ════════════════════════════════════════════════════════
+//  MODULE 4 — Switch + Fall-through
+// ════════════════════════════════════════════════════════
+document.getElementById('ft-toggle').addEventListener('change', function() {
+  document.getElementById('ft-label').textContent = this.checked ? '😱 開啟（Fall-through 瀑布）' : '關閉（正常）';
+  const c1c = document.getElementById('sw-c1c');
+  const c2c = document.getElementById('sw-c2c');
+  const c3c = document.getElementById('sw-c3c');
+  if (this.checked) {
+    c1c.classList.add('active-red'); c2c.classList.add('active-red'); c3c.classList.add('active-red');
+    c1c.style.textDecoration = 'line-through'; c2c.style.textDecoration = 'line-through'; c3c.style.textDecoration = 'line-through';
+  } else {
+    ['sw-c1c','sw-c2c','sw-c3c'].forEach(id => {
+      const el = document.getElementById(id);
+      el.className = 'code-line'; el.style.textDecoration = '';
+    });
+    clearHighlight('sw-h','sw-c1a','sw-c1b','sw-c1c','sw-c2a','sw-c2b','sw-c2c','sw-c3a','sw-c3b','sw-c3c','sw-def','sw-defb','sw-end');
+    document.getElementById('sw-out').textContent = '— 請點擊按鈕選擇商品 —';
+  }
+});
+
+let swRunning = false;
+function runSwitch(choice) {
+  if (swRunning) return;
+  swRunning = true;
+  const fallThrough = document.getElementById('ft-toggle').checked;
+
+  const allLines = ['sw-h','sw-c1a','sw-c1b','sw-c1c','sw-c2a','sw-c2b','sw-c2c','sw-c3a','sw-c3b','sw-c3c','sw-def','sw-defb','sw-end'];
+  clearHighlight(...allLines);
+  document.getElementById('sw-out').textContent = '';
+
+  const items = [
+    { caseLines:['sw-c1a','sw-c1b'], brkLine:'sw-c1c', label:'🥤 可樂' },
+    { caseLines:['sw-c2a','sw-c2b'], brkLine:'sw-c2c', label:'🍵 綠茶' },
+    { caseLines:['sw-c3a','sw-c3b'], brkLine:'sw-c3c', label:'💧 礦泉水' },
+  ];
+
+  highlight('sw-h','active-blue');
+  let delay = 300;
+  let output = '';
+
+  // Find start index
+  const start = choice - 1;
+  const toProcess = fallThrough ? items.slice(start) : [items[start]];
+
+  for (let i = 0; i < toProcess.length; i++) {
+    ((item, d, isFt) => {
+      setTimeout(() => {
+        item.caseLines.forEach(l => highlight(l, isFt && i > 0 ? 'active-red' : 'active-yellow'));
+        output += (output ? ' + ' : '') + item.label;
+        document.getElementById('sw-out').textContent = '輸出：' + output + (isFt && toProcess.length > 1 ? ' ⚠️ Fall-through!' : '');
+      }, d);
+      setTimeout(() => {
+        if (fallThrough) {
+          highlight(item.brkLine, 'active-red');
+          item.brkLine && (document.getElementById(item.brkLine).style.textDecoration = 'line-through');
+        } else {
+          highlight(item.brkLine, 'active-green');
+        }
+      }, d + 400);
+    })(toProcess[i], delay + i * 700, fallThrough);
+  }
+
+  setTimeout(() => {
+    swRunning = false;
+    if (!fallThrough) {
+      // reset break strikethrough
+      ['sw-c1c','sw-c2c','sw-c3c'].forEach(id => {
+        document.getElementById(id).style.textDecoration = '';
+      });
+    }
+  }, delay + toProcess.length * 700 + 500);
+}
+
+// ════════════════════════════════════════════════════════
+//  MODULE 5 — Nested
+// ════════════════════════════════════════════════════════
+function updateNested() {
+  const accOK = document.getElementById('acc-sel').value === '1';
+  const pwdOK = document.getElementById('pwd-sel').value === '1';
+
+  const allN = ['n-l0','n-l1','n-l2','n-l3','n-l4','n-l5','n-l6','n-l7','n-l8'];
+  clearHighlight(...allN);
+
+  const outer = document.getElementById('gate-outer');
+  const inner = document.getElementById('gate-inner');
+  const outerMsg = document.getElementById('gate-outer-msg');
+  const innerMsg = document.getElementById('gate-inner-msg');
+
+  if (accOK) {
+    highlight('n-l0','active-green');
+    outer.className = 'gate-outer open';
+    outerMsg.style.display = 'none';
+    inner.className = 'gate-inner ' + (pwdOK ? 'open' : 'closed');
+    if (pwdOK) {
+      highlight('n-l1','active-green'); highlight('n-l2','active-green');
+      innerMsg.textContent = '✅ 密碼正確 → 登入成功！';
+      innerMsg.style.color = '#56d364';
+    } else {
+      highlight('n-l3','active-red'); highlight('n-l4','active-red');
+      innerMsg.textContent = '❌ 密碼錯誤 → 拒絕登入。';
+      innerMsg.style.color = '#f85149';
+    }
+  } else {
+    highlight('n-l6','active-red'); highlight('n-l7','active-red');
+    outer.className = 'gate-outer closed';
+    outerMsg.style.display = 'block';
+    outerMsg.textContent = '❌ 帳號不存在，根本進不到密碼驗證！';
+    outerMsg.style.color = '#f85149';
+    inner.className = 'gate-inner';
+    innerMsg.textContent = '（無法到達）';
+    innerMsg.style.color = '#484f58';
+  }
+}
+updateNested();
+
+// ════════════════════════════════════════════════════════
+//  MODULE 6 — RPG
+// ════════════════════════════════════════════════════════
+function updateRPG() {
+  const atk   = parseInt(document.getElementById('rpg-atk').value);
+  const def   = document.getElementById('rpg-def').value === '1';
+  const eva   = document.getElementById('rpg-eva').value === '1';
+  const crit  = parseInt(document.getElementById('rpg-crit').value);
+  document.getElementById('rpg-atk-val').textContent = atk;
+
+  const allC = ['rpg-c0','rpg-c1','rpg-c2','rpg-c3','rpg-c4','rpg-c5','rpg-c6','rpg-c7','rpg-c8'];
+  clearHighlight(...allC);
+
+  let damage = 0;
+  let pathCls = '';
+  const res = document.getElementById('rpg-result');
+
+  if (eva) {
+    damage = 0;
+    highlight('rpg-c0','active-yellow'); highlight('rpg-c1','active-yellow');
+    res.className = 'rpg-result miss';
+    res.textContent = '💨 敵人閃避！傷害 = 0。MISS！';
+  } else if (def && atk < 50) {
+    damage = 0;
+    highlight('rpg-c2','active-red'); highlight('rpg-c3','active-red');
+    res.className = 'rpg-result blocked';
+    res.textContent = `🛡️ 被格擋！攻擊力 ${atk} < 50，傷害 = 0。完全格擋！`;
+  } else if (def) {
+    damage = (atk - 20) * crit;
+    highlight('rpg-c4','active-blue'); highlight('rpg-c5','active-blue');
+    res.className = 'rpg-result hit';
+    res.textContent = `⚔️ 穿盾！傷害 = (${atk} - 20) × ${crit} = ${damage}${crit>1?' 🔥暴擊':''}`;
+  } else {
+    damage = atk * crit;
+    highlight('rpg-c6','active-green'); highlight('rpg-c7','active-green');
+    res.className = 'rpg-result hit';
+    res.textContent = `💥 完整傷害！${atk} × ${crit} = ${damage}${crit>1?' 🔥暴擊':''}`;
+  }
+}
+updateRPG();
+</script>
+</body>
+</html>

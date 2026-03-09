@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>C++ 字元型態 (char) 與 ASCII 互動教學</title>
+  <link rel="stylesheet" href="../../theme.css">
+  <script src="../../layout.js" defer></script>
+  <style>
+    body { padding: 0; margin: 0; }
+
+    .container {
+      padding-top: 80px;
+      padding-bottom: 60px;
+      max-width: 960px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    .page-hero {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .page-hero h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #f59e0b, #ef4444, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .page-hero p {
+      color: var(--text-secondary, #94a3b8);
+      font-size: 1rem;
+    }
+
+    /* ── Card & Section Title ── */
+    .card {
+      background: var(--card-bg, #1e293b);
+      border: 1px solid var(--border, #334155);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+      transition: box-shadow 0.3s;
+    }
+    .card:hover { box-shadow: 0 8px 40px rgba(0,0,0,0.45); }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-primary, #f1f5f9);
+    }
+    .section-title .icon {
+      font-size: 1.5rem;
+    }
+    .section-title .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      background: linear-gradient(135deg,#f59e0b,#ef4444);
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Module 1: ASCII X-Ray ── */
+    .ascii-xray-layout {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .ascii-converter {
+      flex: 1;
+      min-width: 240px;
+    }
+    .convert-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .convert-row label {
+      font-size: 0.85rem;
+      color: var(--text-secondary, #94a3b8);
+      width: 90px;
+      flex-shrink: 0;
+    }
+    .convert-row input {
+      flex: 1;
+      min-width: 80px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border, #475569);
+      background: var(--input-bg, #0f172a);
+      color: var(--text-primary, #f1f5f9);
+      font-size: 1rem;
+      font-family: monospace;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .convert-row input:focus { border-color: #f59e0b; }
+    .convert-arrow { font-size: 1.4rem; color: #f59e0b; }
+    .convert-result {
+      font-size: 1.6rem;
+      font-family: monospace;
+      font-weight: 700;
+      color: #34d399;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    /* ASCII Code Table */
+    .ascii-code-table {
+      flex: 0 0 280px;
+    }
+    .ascii-code-table h4 {
+      font-size: 0.85rem;
+      color: var(--text-secondary, #94a3b8);
+      margin-bottom: 10px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+    .code-block {
+      border-radius: 10px;
+      border: 2px solid transparent;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      transition: all 0.35s cubic-bezier(.4,2,.55,.95);
+      cursor: default;
+    }
+    .code-block.digits  { border-color: #3b82f6; background: rgba(59,130,246,0.1); }
+    .code-block.upper   { border-color: #f59e0b; background: rgba(245,158,11,0.1); }
+    .code-block.lower   { border-color: #34d399; background: rgba(52,211,153,0.1); }
+    .code-block.active.digits { background: rgba(59,130,246,0.45); box-shadow: 0 0 18px #3b82f688; transform: scale(1.04); }
+    .code-block.active.upper  { background: rgba(245,158,11,0.45); box-shadow: 0 0 18px #f59e0b88; transform: scale(1.04); }
+    .code-block.active.lower  { background: rgba(52,211,153,0.45); box-shadow: 0 0 18px #34d39988; transform: scale(1.04); }
+    .code-block .range-label {
+      font-size: 0.8rem;
+      font-family: monospace;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .code-block .range-sub {
+      font-size: 0.72rem;
+      color: var(--text-secondary, #94a3b8);
+      margin-top: 2px;
+    }
+
+    /* ── Module 2: Arithmetic ── */
+    .arith-display {
+      text-align: center;
+      font-size: 1.8rem;
+      font-family: monospace;
+      font-weight: 800;
+      color: #f1f5f9;
+      margin-bottom: 16px;
+    }
+    .arith-display span.char-val { color: #f59e0b; }
+    .arith-display span.num-val  { color: #60a5fa; }
+    .arith-display span.op-val   { color: #a78bfa; }
+    .arith-display span.result-val { color: #34d399; }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .slider-row label { color: var(--text-secondary,#94a3b8); font-size:0.85rem; white-space:nowrap; }
+    .slider-row input[type=range] { flex:1; accent-color:#a78bfa; }
+    .slider-val {
+      font-family: monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #a78bfa;
+      min-width: 36px;
+      text-align: center;
+    }
+    .arith-step-box {
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-family: monospace;
+      font-size: 1rem;
+      white-space: pre-wrap;
+      color: #cbd5e1;
+      border-left: 3px solid #a78bfa;
+      min-height: 64px;
+    }
+    .arith-char-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .arith-char-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1.5px solid #475569;
+      background: transparent;
+      color: #f1f5f9;
+      font-family: monospace;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .arith-char-btn:hover, .arith-char-btn.active {
+      border-color: #f59e0b;
+      background: rgba(245,158,11,0.15);
+      color: #f59e0b;
+    }
+
+    /* ── Module 3: Case Conversion ── */
+    .case-layout {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .case-interactive { flex: 1; min-width: 220px; }
+    .case-info { flex: 0 0 260px; }
+
+    .case-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .case-input-row input {
+      width: 80px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border,#475569);
+      background: var(--input-bg,#0f172a);
+      color: var(--text-primary,#f1f5f9);
+      font-size: 1.4rem;
+      font-family: monospace;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .case-input-row input:focus { border-color: #34d399; }
+
+    .case-btns { display: flex; gap: 10px; margin-bottom: 16px; }
+    .btn-case {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: monospace;
+      transition: all 0.2s;
+    }
+    .btn-lower { background: linear-gradient(135deg,#34d399,#059669); color:#fff; }
+    .btn-upper { background: linear-gradient(135deg,#f59e0b,#d97706); color:#fff; }
+    .btn-case:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+    .btn-case:active { transform: translateY(0); }
+
+    .case-anim-box {
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: monospace;
+      font-size: 1rem;
+      white-space: pre-wrap;
+      color: #cbd5e1;
+      border-left: 3px solid #34d399;
+      min-height: 56px;
+      transition: all 0.3s;
+    }
+    .case-info h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 10px;
+    }
+    .case-info .func-item {
+      background: rgba(139,92,246,0.12);
+      border: 1px solid #6d28d9;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #c4b5fd;
+    }
+    .case-info .func-item .func-name { color: #a78bfa; font-weight: 700; }
+    .case-info .func-item .func-desc { color: #94a3b8; font-size: 0.78rem; margin-top: 2px; }
+
+    /* ── Module 4: cctype Functions ── */
+    .cctype-chars {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .char-chip {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      border: 2px solid #475569;
+      background: rgba(255,255,255,0.04);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      cursor: default;
+      transition: all 0.4s cubic-bezier(.4,2,.55,.95);
+      position: relative;
+    }
+    .char-chip .chip-result {
+      font-size: 0.55rem;
+      font-family: sans-serif;
+      font-weight: 600;
+      margin-top: 2px;
+      letter-spacing: 0.5px;
+    }
+    .char-chip.state-true  { border-color: #34d399; background: rgba(52,211,153,0.2);  color: #34d399; box-shadow: 0 0 14px #34d39966; }
+    .char-chip.state-false { border-color: #ef4444; background: rgba(239,68,68,0.15); color: #ef4444; box-shadow: 0 0 10px #ef444466; }
+    .char-chip .chip-result.true-label  { color: #34d399; }
+    .char-chip .chip-result.false-label { color: #ef4444; }
+
+    .cctype-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .filter-btn {
+      padding: 7px 16px;
+      border-radius: 8px;
+      border: 1.5px solid #475569;
+      background: transparent;
+      color: #cbd5e1;
+      font-family: monospace;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover { border-color: #60a5fa; color: #60a5fa; background: rgba(96,165,250,0.1); }
+    .filter-btn.active { border-color: #60a5fa; background: rgba(96,165,250,0.18); color: #60a5fa; }
+
+    .cctype-result-text {
+      font-size: 0.88rem;
+      color: #94a3b8;
+      min-height: 22px;
+    }
+
+    /* ── Module 5: Escape Sequences ── */
+    .escape-layout { display: flex; gap: 20px; flex-direction: column; }
+    .escape-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .esc-btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1.5px solid #4b5563;
+      background: rgba(255,255,255,0.04);
+      color: #f1f5f9;
+      font-family: monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .esc-btn:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.15); color: #c4b5fd; transform: translateY(-2px); }
+    .esc-btn:active { transform: translateY(0); }
+    .esc-clear {
+      border-color: #ef4444;
+      color: #ef4444;
+    }
+    .esc-clear:hover { background: rgba(239,68,68,0.15); border-color: #ef4444; color: #ef4444; }
+
+    .escape-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media(max-width: 600px) { .escape-panels { grid-template-columns: 1fr; } }
+
+    .escape-panel {
+      border-radius: 10px;
+      padding: 14px 16px;
+      min-height: 90px;
+    }
+    .escape-panel h5 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .escape-panel.code-panel {
+      background: rgba(139,92,246,0.1);
+      border: 1px solid #6d28d9;
+    }
+    .escape-panel.code-panel h5 { color: #a78bfa; }
+    .escape-panel.output-panel {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid #374151;
+    }
+    .escape-panel.output-panel h5 { color: #34d399; }
+
+    .escape-code-display {
+      font-family: monospace;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      word-break: break-all;
+    }
+    .escape-code-display .esc-token { color: #f59e0b; }
+    .escape-code-display .text-token { color: #c4b5fd; }
+
+    .escape-output-display {
+      font-family: monospace;
+      font-size: 0.95rem;
+      color: #34d399;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* ── Module 6: Quote Memory ── */
+    .mem-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media(max-width: 560px) { .mem-layout { grid-template-columns: 1fr; } }
+
+    .mem-side {
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .mem-side.char-side { border: 2px solid #f59e0b; background: rgba(245,158,11,0.07); }
+    .mem-side.str-side  { border: 2px solid #60a5fa; background: rgba(96,165,250,0.07); }
+
+    .mem-side h4 {
+      font-family: monospace;
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+    .char-side h4 { color: #f59e0b; }
+    .str-side h4  { color: #60a5fa; }
+
+    .mem-code {
+      font-family: monospace;
+      font-size: 0.92rem;
+      color: #94a3b8;
+      margin-bottom: 16px;
+      text-align: left;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 8px 12px;
+    }
+    .mem-code span.kw   { color: #c084fc; }
+    .mem-code span.val  { color: #34d399; }
+    .mem-code span.sym  { color: #f59e0b; }
+
+    .mem-btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 16px;
+    }
+    .char-side .mem-btn { background: linear-gradient(135deg,#f59e0b,#d97706); color:#fff; }
+    .str-side  .mem-btn { background: linear-gradient(135deg,#3b82f6,#1d4ed8); color:#fff; }
+    .mem-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.4); }
+
+    .mem-cells {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex-wrap: wrap;
+      min-height: 52px;
+    }
+    .mem-cell {
+      width: 52px;
+      height: 52px;
+      border-radius: 8px;
+      border: 2px solid #475569;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      opacity: 0;
+      transform: scale(0.5) translateY(12px);
+      transition: all 0.4s cubic-bezier(.4,2,.55,.95);
+    }
+    .mem-cell.visible {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    .mem-cell.normal { border-color: #f59e0b; color: #f59e0b; }
+    .mem-cell.null   { border-color: #ef4444; background: rgba(239,68,68,0.15); color: #ef4444; }
+    .mem-cell .cell-label {
+      font-size: 0.58rem;
+      font-family: sans-serif;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .mem-size-info {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 8px;
+    }
+    .mem-size-info span { color: #94a3b8; font-weight: 600; }
+
+    .warning-banner {
+      background: rgba(239,68,68,0.12);
+      border: 1.5px solid #ef4444;
+      border-radius: 10px;
+      padding: 12px 18px;
+      margin-top: 20px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: #fca5a5;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .warning-banner .warn-icon { font-size: 1.3rem; }
+
+    /* ── Utility ── */
+    .highlight-text { color: #f59e0b; font-weight: 700; }
+    .tip-note {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 8px;
+    }
+    .tip-note span { color: #94a3b8; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Hero -->
+  <div class="page-hero">
+    <h1>🔤 C++ 字元型態 (char) 與 ASCII</h1>
+    <p>六大互動模組，讓你徹底看懂字元的本質</p>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       Module 1: Character & ASCII X-Ray
+       ════════════════════════════════════════ -->
+  <div class="card" id="module-xray">
+    <div class="section-title">
+      <span class="icon">🔬</span>
+      字元與 ASCII X 光機
+      <span class="badge">Character &amp; ASCII</span>
+    </div>
+
+    <div class="ascii-xray-layout">
+      <!-- Converter -->
+      <div class="ascii-converter">
+        <p class="tip-note" style="margin-bottom:14px;">
+          <span>輸入字元</span>（例如 <code>A</code>）即可得到 ASCII 整數值，或輸入整數轉回字元。
+        </p>
+        <!-- Char → Int -->
+        <div class="convert-row">
+          <label>字元 char</label>
+          <input type="text" id="char-input" maxlength="1" placeholder="A" />
+          <span class="convert-arrow">→</span>
+          <div class="convert-result" id="char-to-int">65</div>
+          <span style="color:#94a3b8;font-size:0.82rem;">( int )</span>
+        </div>
+        <!-- Int → Char -->
+        <div class="convert-row">
+          <label>整數 int</label>
+          <input type="number" id="int-input" min="0" max="127" placeholder="65" />
+          <span class="convert-arrow">→</span>
+          <div class="convert-result" id="int-to-char">'A'</div>
+          <span style="color:#94a3b8;font-size:0.82rem;">( char )</span>
+        </div>
+        <div class="tip-note" id="xray-tip" style="margin-top:10px; font-size:0.82rem; color:#60a5fa;"></div>
+      </div>
+
+      <!-- Mini Code Table -->
+      <div class="ascii-code-table">
+        <h4>🏆 黃金區間密碼表</h4>
+        <div class="code-block digits" id="cb-digits">
+          <div class="range-label">'0' – '9'  →  48 – 57</div>
+          <div class="range-sub">數字字元區間</div>
+        </div>
+        <div class="code-block upper" id="cb-upper">
+          <div class="range-label">'A' – 'Z'  →  65 – 90</div>
+          <div class="range-sub">大寫英文字母區間</div>
+        </div>
+        <div class="code-block lower" id="cb-lower">
+          <div class="range-label">'a' – 'z'  →  97 – 122</div>
+          <div class="range-sub">小寫英文字母區間</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       Module 2: Character Arithmetic
+       ════════════════════════════════════════ -->
+  <div class="card" id="module-arith">
+    <div class="section-title">
+      <span class="icon">➕</span>
+      字元的數學運算
+      <span class="badge">Character Arithmetic</span>
+    </div>
+
+    <p class="tip-note" style="margin-bottom:14px;">
+      <span>字元的本質是整數，可以直接進行加減運算！</span>
+    </p>
+
+    <!-- Base Char Selector -->
+    <div class="arith-char-selector" id="arith-char-selector">
+      <!-- populated by JS -->
+    </div>
+
+    <!-- Main Display -->
+    <div class="arith-display" id="arith-display">
+      <!-- populated by JS -->
+    </div>
+
+    <!-- Slider -->
+    <div class="slider-row">
+      <label>偏移量</label>
+      <input type="range" id="arith-slider" min="-25" max="25" value="3" step="1" />
+      <div class="slider-val" id="arith-slider-val">+3</div>
+    </div>
+
+    <!-- Step Box -->
+    <div class="arith-step-box" id="arith-step-box"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       Module 3: Case Conversion
+       ════════════════════════════════════════ -->
+  <div class="card" id="module-case">
+    <div class="section-title">
+      <span class="icon">🔄</span>
+      大小寫轉換的秘密
+      <span class="badge">Case Conversion</span>
+    </div>
+
+    <div class="case-layout">
+      <div class="case-interactive">
+        <p class="tip-note" style="margin-bottom:14px;">
+          <span>大小寫的 ASCII 碼相差正好是 32！</span>
+        </p>
+        <div class="case-input-row">
+          <input type="text" id="case-input" maxlength="1" placeholder="A" value="A" />
+          <span style="color:#94a3b8;font-size:0.85rem;">← 輸入一個字母</span>
+        </div>
+        <div class="case-btns">
+          <button class="btn-case btn-lower" onclick="CaseModule.convert('lower')">+ 32 → 小寫</button>
+          <button class="btn-case btn-upper" onclick="CaseModule.convert('upper')">- 32 → 大寫</button>
+        </div>
+        <div class="case-anim-box" id="case-anim-box">
+          <span style="color:#64748b;">點擊上方按鈕觀察轉換過程...</span>
+        </div>
+      </div>
+
+      <div class="case-info">
+        <h4>📦 &lt;cctype&gt; 函式庫</h4>
+        <div class="func-item">
+          <div><span class="func-name">toupper</span>(char c)</div>
+          <div class="func-desc">將小寫字母轉為大寫；非字母直接返回原值</div>
+        </div>
+        <div class="func-item">
+          <div><span class="func-name">tolower</span>(char c)</div>
+          <div class="func-desc">將大寫字母轉為小寫；非字母直接返回原值</div>
+        </div>
+        <div class="func-item">
+          <span style="color:#94a3b8;font-size:0.78rem;">使用方式：</span><br/>
+          <span style="color:#34d399;">#include &lt;cctype&gt;</span><br/>
+          <span style="color:#e2e8f0;">char r = toupper('a'); // → 'A'</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       Module 4: cctype Functions
+       ════════════════════════════════════════ -->
+  <div class="card" id="module-cctype">
+    <div class="section-title">
+      <span class="icon">🔍</span>
+      字元判斷函式
+      <span class="badge">&lt;cctype&gt; Library</span>
+    </div>
+
+    <p class="tip-note" style="margin-bottom:14px;">
+      <span>選擇一個篩選函式，程式會逐一掃描下方字元，符合者亮綠色、不符合者亮紅色。</span>
+    </p>
+
+    <!-- Filter Buttons -->
+    <div class="cctype-filters" id="cctype-filters">
+      <button class="filter-btn active" data-fn="isdigit">isdigit</button>
+      <button class="filter-btn" data-fn="isalpha">isalpha</button>
+      <button class="filter-btn" data-fn="isupper">isupper</button>
+      <button class="filter-btn" data-fn="islower">islower</button>
+      <button class="filter-btn" data-fn="isalnum">isalnum</button>
+      <button class="filter-btn" data-fn="isspace">isspace</button>
+    </div>
+
+    <!-- Char Chips -->
+    <div class="cctype-chars" id="cctype-chars"></div>
+    <div class="cctype-result-text" id="cctype-result-text"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       Module 5: Escape Sequences
+       ════════════════════════════════════════ -->
+  <div class="card" id="module-escape">
+    <div class="section-title">
+      <span class="icon">⌨️</span>
+      跳脫字元
+      <span class="badge">Escape Sequences</span>
+    </div>
+
+    <p class="tip-note" style="margin-bottom:14px;">
+      <span>點擊下方按鈕組合字串，觀察 C++ 程式碼樣貌與實際 Console 輸出的差異。</span>
+    </p>
+
+    <!-- Escape Buttons -->
+    <div class="escape-btns">
+      <button class="esc-btn" onclick="EscapeModule.addText()">📝 文字</button>
+      <button class="esc-btn" onclick="EscapeModule.addEsc('\\n','\n')">\\n 換行</button>
+      <button class="esc-btn" onclick="EscapeModule.addEsc('\\t','\t')">\\t 定位</button>
+      <button class="esc-btn" onclick="EscapeModule.addEsc('\\\\','\\')">\\\ 反斜線</button>
+      <button class="esc-btn" onclick="EscapeModule.addEsc('\\&quot;','&quot;')">\\&quot; 引號</button>
+      <button class="esc-btn esc-clear" onclick="EscapeModule.clear()">🗑 清除</button>
+    </div>
+
+    <div class="escape-panels">
+      <div class="escape-panel code-panel">
+        <h5>C++ 程式碼字串</h5>
+        <div class="escape-code-display" id="escape-code-display">
+          <span style="color:#64748b;">點擊按鈕開始...</span>
+        </div>
+      </div>
+      <div class="escape-panel output-panel">
+        <h5>Console 實際輸出</h5>
+        <div class="escape-output-display" id="escape-output-display"> </div>
+      </div>
+    </div>
+
+    <!-- Reference table -->
+    <div style="margin-top:16px; overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:0.82rem;">
+        <thead>
+          <tr style="border-bottom:1px solid #334155;">
+            <th style="padding:6px 12px;text-align:left;color:#94a3b8;">跳脫字元</th>
+            <th style="padding:6px 12px;text-align:left;color:#94a3b8;">ASCII 碼</th>
+            <th style="padding:6px 12px;text-align:left;color:#94a3b8;">說明</th>
+          </tr>
+        </thead>
+        <tbody id="escape-table-body">
+          <!-- filled by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       Module 6: Single vs Double Quotes
+       ════════════════════════════════════════ -->
+  <div class="card" id="module-quotes">
+    <div class="section-title">
+      <span class="icon">⚠️</span>
+      初學者大坑：單引號 vs 雙引號
+      <span class="badge">'A' vs "A"</span>
+    </div>
+
+    <div class="mem-layout">
+      <!-- char 'A' -->
+      <div class="mem-side char-side">
+        <h4>char c = 'A';</h4>
+        <div class="mem-code">
+          <span class="kw">char</span> c = <span class="sym">'</span><span class="val">A</span><span class="sym">'</span>;
+        </div>
+        <button class="mem-btn" onclick="QuoteModule.reveal('char')">🔭 觀察記憶體</button>
+        <div class="mem-cells" id="mem-char-cells"></div>
+        <div class="mem-size-info" id="mem-char-info"></div>
+      </div>
+
+      <!-- string "A" -->
+      <div class="mem-side str-side">
+        <h4>char s[] = "A";</h4>
+        <div class="mem-code">
+          <span class="kw">char</span> s[] = <span class="sym">"</span><span class="val">A</span><span class="sym">"</span>;
+        </div>
+        <button class="mem-btn" onclick="QuoteModule.reveal('str')">🔭 觀察記憶體</button>
+        <div class="mem-cells" id="mem-str-cells"></div>
+        <div class="mem-size-info" id="mem-str-info"></div>
+      </div>
+    </div>
+
+    <div class="warning-banner">
+      <span class="warn-icon">🚨</span>
+      <div>
+        <strong>編譯錯誤警告：</strong><br/>
+        <code>char c = "A";</code>
+        &nbsp;← 型別不匹配！<code>"A"</code> 是 <code>const char*</code>（字串指標），
+        無法直接賦值給 <code>char</code>，<strong>會導致編譯錯誤或警告！</strong>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT — All modules in IIFE to avoid global conflicts
+     ══════════════════════════════════════════════════════════ -->
+<script>
+// ─────────────────────────────────────────────
+// Module 1: ASCII X-Ray
+// ─────────────────────────────────────────────
+(function XRayModule() {
+  const charInput  = document.getElementById('char-input');
+  const intInput   = document.getElementById('int-input');
+  const charToInt  = document.getElementById('char-to-int');
+  const intToChar  = document.getElementById('int-to-char');
+  const xrayTip    = document.getElementById('xray-tip');
+  const cbDigits   = document.getElementById('cb-digits');
+  const cbUpper    = document.getElementById('cb-upper');
+  const cbLower    = document.getElementById('cb-lower');
+
+  function highlightCodeBlock(code) {
+    cbDigits.classList.remove('active');
+    cbUpper.classList.remove('active');
+    cbLower.classList.remove('active');
+    xrayTip.textContent = '';
+
+    if (code >= 48 && code <= 57) {
+      cbDigits.classList.add('active');
+      xrayTip.textContent = `✅ '${String.fromCharCode(code)}' 是數字字元（isdigit 為 true）`;
+    } else if (code >= 65 && code <= 90) {
+      cbUpper.classList.add('active');
+      xrayTip.textContent = `✅ '${String.fromCharCode(code)}' 是大寫字母（isupper 為 true）`;
+    } else if (code >= 97 && code <= 122) {
+      cbLower.classList.add('active');
+      xrayTip.textContent = `✅ '${String.fromCharCode(code)}' 是小寫字母（islower 為 true）`;
+    } else if (code >= 0 && code <= 127) {
+      xrayTip.textContent = `ℹ️ ASCII ${code} 是特殊字元（非字母數字區間）`;
+    }
+  }
+
+  charInput.addEventListener('input', () => {
+    const ch = charInput.value;
+    if (ch.length === 1) {
+      const code = ch.charCodeAt(0);
+      charToInt.textContent = code;
+      highlightCodeBlock(code);
+    } else {
+      charToInt.textContent = '—';
+      cbDigits.classList.remove('active');
+      cbUpper.classList.remove('active');
+      cbLower.classList.remove('active');
+      xrayTip.textContent = '';
+    }
+  });
+
+  intInput.addEventListener('input', () => {
+    const n = parseInt(intInput.value);
+    if (!isNaN(n) && n >= 0 && n <= 127) {
+      intToChar.textContent = `'${String.fromCharCode(n)}'`;
+      highlightCodeBlock(n);
+    } else {
+      intToChar.textContent = '—';
+    }
+  });
+
+  // Initialize with 'A'
+  charInput.value = 'A';
+  charInput.dispatchEvent(new Event('input'));
+  intInput.value = 65;
+})();
+
+
+// ─────────────────────────────────────────────
+// Module 2: Character Arithmetic
+// ─────────────────────────────────────────────
+window.ArithModule = (function() {
+  const baseChars = ['A','M','Z','a','m','z','0','9'];
+  let selectedChar = 'A';
+
+  const selectorEl  = document.getElementById('arith-char-selector');
+  const displayEl   = document.getElementById('arith-display');
+  const slider      = document.getElementById('arith-slider');
+  const sliderVal   = document.getElementById('arith-slider-val');
+  const stepBox     = document.getElementById('arith-step-box');
+
+  function buildSelector() {
+    selectorEl.innerHTML = '';
+    baseChars.forEach(ch => {
+      const btn = document.createElement('button');
+      btn.className = 'arith-char-btn' + (ch === selectedChar ? ' active' : '');
+      btn.textContent = `'${ch}'`;
+      btn.addEventListener('click', () => {
+        selectedChar = ch;
+        selectorEl.querySelectorAll('.arith-char-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        update();
+      });
+      selectorEl.appendChild(btn);
+    });
+  }
+
+  function update() {
+    const offset  = parseInt(slider.value);
+    const baseCode = selectedChar.charCodeAt(0);
+    const resultCode = baseCode + offset;
+    const sign = offset >= 0 ? '+' : '';
+    sliderVal.textContent = sign + offset;
+
+    // Main formula display
+    displayEl.innerHTML =
+      `<span class="char-val">'${selectedChar}'</span> ` +
+      `<span class="op-val">${sign}${offset}</span> = ` +
+      `<span class="result-val">${resultCode >= 0 && resultCode <= 127 ? `'${String.fromCharCode(resultCode)}'` : '?'}</span>`;
+
+    // Step-by-step
+    let steps = '';
+    steps += `步驟 1：取得字元的 ASCII 值\n`;
+    steps += `        '${selectedChar}' → ${baseCode}\n\n`;
+    steps += `步驟 2：執行整數加法\n`;
+    steps += `        ${baseCode} ${sign}${offset} = ${resultCode}\n\n`;
+    if (resultCode >= 0 && resultCode <= 127) {
+      steps += `步驟 3：將結果轉回 char\n`;
+      steps += `        (char)${resultCode} = '${String.fromCharCode(resultCode)}'`;
+    } else {
+      steps += `步驟 3：結果 ${resultCode} 超出 ASCII 範圍 (0–127)`;
+    }
+    stepBox.textContent = steps;
+  }
+
+  buildSelector();
+  update();
+
+  slider.addEventListener('input', update);
+})();
+
+
+// ─────────────────────────────────────────────
+// Module 3: Case Conversion
+// ─────────────────────────────────────────────
+window.CaseModule = (function() {
+  const caseInput  = document.getElementById('case-input');
+  const animBox    = document.getElementById('case-anim-box');
+
+  function convert(direction) {
+    const ch = caseInput.value;
+    if (!ch || !/[a-zA-Z]/.test(ch)) {
+      animBox.innerHTML = '<span style="color:#ef4444;">⚠️ 請輸入一個英文字母！</span>';
+      return;
+    }
+
+    const code = ch.charCodeAt(0);
+    let newCode, action, colorClass, resultChar;
+
+    if (direction === 'lower') {
+      if (ch >= 'A' && ch <= 'Z') {
+        newCode = code + 32;
+        action = `+ 32`;
+        colorClass = '#34d399';
+        resultChar = String.fromCharCode(newCode);
+      } else {
+        animBox.innerHTML = `<span style="color:#f59e0b;">ℹ️ '${ch}' 已經是小寫字母了！</span>`;
+        return;
+      }
+    } else {
+      if (ch >= 'a' && ch <= 'z') {
+        newCode = code - 32;
+        action = `- 32`;
+        colorClass = '#f59e0b';
+        resultChar = String.fromCharCode(newCode);
+      } else {
+        animBox.innerHTML = `<span style="color:#f59e0b;">ℹ️ '${ch}' 已經是大寫字母了！</span>`;
+        return;
+      }
+    }
+
+    animBox.innerHTML = `步驟 1：取得 ASCII 碼 → '${ch}' = <b style="color:#60a5fa;">${code}</b>
+步驟 2：執行加減法  → ${code} <b style="color:#a78bfa;">${action}</b> = <b style="color:#60a5fa;">${newCode}</b>
+步驟 3：轉回字元   → (char)${newCode} = <b style="color:${colorClass};font-size:1.2em;">'${resultChar}'</b>`;
+    caseInput.value = resultChar;
+  }
+
+  return { convert };
+})();
+
+
+// ─────────────────────────────────────────────
+// Module 4: cctype Functions
+// ─────────────────────────────────────────────
+(function CctypeModule() {
+  const sampleChars = ['K', '7', '@', 'b', '!', '3', 'Z', ' ', 'p', '#', '9', 'a'];
+
+  const fns = {
+    isdigit: c => c >= '0' && c <= '9',
+    isalpha: c => (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'),
+    isupper: c => c >= 'A' && c <= 'Z',
+    islower: c => c >= 'a' && c <= 'z',
+    isalnum: c => fns.isdigit(c) || fns.isalpha(c),
+    isspace: c => c === ' ' || c === '\t' || c === '\n',
+  };
+
+  let currentFn = 'isdigit';
+  let scanning = false;
+
+  const chipsEl   = document.getElementById('cctype-chars');
+  const resultEl  = document.getElementById('cctype-result-text');
+  const filtersEl = document.getElementById('cctype-filters');
+
+  // Build chips
+  function buildChips() {
+    chipsEl.innerHTML = '';
+    sampleChars.forEach(ch => {
+      const chip = document.createElement('div');
+      chip.className = 'char-chip';
+      chip.dataset.char = ch;
+      chip.innerHTML = `<div>${ch === ' ' ? '␣' : ch}</div><div class="chip-result"></div>`;
+      chipsEl.appendChild(chip);
+    });
+  }
+
+  // Reset chips
+  function resetChips() {
+    chipsEl.querySelectorAll('.char-chip').forEach(chip => {
+      chip.classList.remove('state-true','state-false');
+      chip.querySelector('.chip-result').textContent = '';
+      chip.querySelector('.chip-result').className = 'chip-result';
+    });
+    resultEl.textContent = '';
+  }
+
+  // Animate scan
+  async function runScan(fnName) {
+    if (scanning) return;
+    scanning = true;
+    resetChips();
+
+    const fn = fns[fnName];
+    const chips = [...chipsEl.querySelectorAll('.char-chip')];
+    let trueCount = 0;
+
+    for (let i = 0; i < chips.length; i++) {
+      const chip = chips[i];
+      const ch = chip.dataset.char;
+      await new Promise(r => setTimeout(r, 140));
+      if (!scanning) break;
+
+      const result = fn(ch);
+      chip.classList.add(result ? 'state-true' : 'state-false');
+      const resEl = chip.querySelector('.chip-result');
+      resEl.textContent = result ? 'true' : 'false';
+      resEl.className = 'chip-result ' + (result ? 'true-label' : 'false-label');
+      if (result) trueCount++;
+    }
+
+    if (scanning) {
+      resultEl.innerHTML = `<span style="color:#94a3b8;">掃描完成：</span>
+        <span style="color:#34d399;font-weight:700;">${trueCount} 個符合</span>&ensp;/&ensp;
+        <span style="color:#ef4444;font-weight:700;">${chips.length - trueCount} 個不符合</span>`;
+    }
+    scanning = false;
+  }
+
+  // Filter btn events
+  filtersEl.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filtersEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFn = btn.dataset.fn;
+      scanning = false;
+      runScan(currentFn);
+    });
+  });
+
+  buildChips();
+  // Auto-run after short delay
+  setTimeout(() => runScan('isdigit'), 600);
+})();
+
+
+// ─────────────────────────────────────────────
+// Module 5: Escape Sequences
+// ─────────────────────────────────────────────
+window.EscapeModule = (function() {
+  // Internal data: array of {code: string, output: string}
+  let tokens = [];
+  const textOptions = ['Hello', 'World', 'C++', 'char', 'abc', '123'];
+  let textIdx = 0;
+
+  const codeEl   = document.getElementById('escape-code-display');
+  const outputEl = document.getElementById('escape-output-display');
+
+  // Escape table
+  const escRows = [
+    { esc: '\\n', code: '10',  desc: '換行（Newline）' },
+    { esc: '\\t', code: '9',   desc: '水平定位（Tab）' },
+    { esc: '\\\\',code: '92', desc: '反斜線（Backslash）' },
+    { esc: '\\"', code: '34',  desc: '雙引號（Double Quote）' },
+    { esc: '\\0', code: '0',   desc: '字串結尾（Null）' },
+    { esc: '\\r', code: '13',  desc: '歸位（Carriage Return）' },
+  ];
+  const tbody = document.getElementById('escape-table-body');
+  escRows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid #1e293b';
+    tr.innerHTML = `
+      <td style="padding:5px 12px;color:#f59e0b;">${r.esc}</td>
+      <td style="padding:5px 12px;color:#60a5fa;">${r.code}</td>
+      <td style="padding:5px 12px;color:#94a3b8;">${r.desc}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  function render() {
+    if (tokens.length === 0) {
+      codeEl.innerHTML = '<span style="color:#64748b;">點擊按鈕開始...</span>';
+      outputEl.textContent = ' ';
+      return;
+    }
+
+    // Code display
+    let codeHTML = 'cout &lt;&lt; "';
+    tokens.forEach(t => {
+      if (t.isEsc) {
+        codeHTML += `<span class="esc-token">${t.code.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>`;
+      } else {
+        codeHTML += `<span class="text-token">${t.code.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>`;
+      }
+    });
+    codeHTML += '";';
+    codeEl.innerHTML = codeHTML;
+
+    // Output display
+    outputEl.textContent = tokens.map(t => t.output).join('');
+  }
+
+  function addText() {
+    const txt = textOptions[textIdx % textOptions.length];
+    textIdx++;
+    tokens.push({ code: txt, output: txt, isEsc: false });
+    render();
+  }
+
+  function addEsc(code, output) {
+    tokens.push({ code, output, isEsc: true });
+    render();
+  }
+
+  function clear() {
+    tokens = [];
+    textIdx = 0;
+    render();
+  }
+
+  render();
+  return { addText, addEsc, clear };
+})();
+
+
+// ─────────────────────────────────────────────
+// Module 6: Single vs Double Quotes Memory
+// ─────────────────────────────────────────────
+window.QuoteModule = (function() {
+  function reveal(type) {
+    if (type === 'char') {
+      const cont = document.getElementById('mem-char-cells');
+      const info = document.getElementById('mem-char-info');
+      cont.innerHTML = '';
+
+      const cell = document.createElement('div');
+      cell.className = 'mem-cell normal';
+      cell.innerHTML = `<div>65</div><div class="cell-label">'A'</div>`;
+      cont.appendChild(cell);
+
+      setTimeout(() => cell.classList.add('visible'), 50);
+      info.innerHTML = `<span>記憶體佔用：</span> 1 byte`;
+
+    } else if (type === 'str') {
+      const cont = document.getElementById('mem-str-cells');
+      const info = document.getElementById('mem-str-info');
+      cont.innerHTML = '';
+
+      const cellA = document.createElement('div');
+      cellA.className = 'mem-cell normal';
+      cellA.innerHTML = `<div>65</div><div class="cell-label">'A'</div>`;
+
+      const cellNull = document.createElement('div');
+      cellNull.className = 'mem-cell null';
+      cellNull.innerHTML = `<div>'\\0'</div><div class="cell-label">結尾符號</div>`;
+
+      cont.appendChild(cellA);
+      cont.appendChild(cellNull);
+
+      setTimeout(() => cellA.classList.add('visible'), 50);
+      setTimeout(() => cellNull.classList.add('visible'), 280);
+      info.innerHTML = `<span>記憶體佔用：</span> 2 bytes（含隱藏的 \\0）`;
+    }
+  }
+
+  return { reveal };
+})();
+</script>
+</body>
+</html>
