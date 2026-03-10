@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python 判斷結構 if/elif/else 互動教學</title>
+  <link rel="stylesheet" href="../../theme.css">
+  <script src="../../layout.js" defer></script>
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+      background-color: #f8f9fa;
+    }
+
+    .container {
+      padding-top: 80px;
+      padding-bottom: 60px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      padding: 28px 32px;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1a237e;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-num {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .85rem;
+      flex-shrink: 0;
+    }
+
+    .console-output {
+      white-space: pre-wrap;
+      font-family: monospace;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 8px;
+      min-height: 42px;
+      font-size: .88rem;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: .9rem;
+      font-weight: 600;
+      transition: all .2s;
+    }
+
+    .btn-p {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+    }
+
+    .btn-p:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, .4);
+    }
+
+    .btn-p:disabled {
+      opacity: .5;
+      cursor: default;
+      transform: none;
+    }
+
+    .btn-r {
+      background: #f1f3f5;
+      color: #555;
+    }
+
+    .btn-r:hover {
+      background: #e2e6ea;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    /* M1 */
+    #m1-code {
+      font-family: monospace;
+      font-size: 1.05rem;
+      background: #f6f8ff;
+      border: 2px solid #c5cae9;
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .kw {
+      color: #7c4dff;
+      font-weight: 700;
+    }
+
+    .str {
+      color: #e65100;
+    }
+
+    .colon-slot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border: 2px dashed #9e9e9e;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all .3s;
+      font-size: 1.1rem;
+    }
+
+    .colon-slot.filled {
+      border-color: #43a047;
+      background: #e8f5e9;
+      color: #2e7d32;
+      font-weight: 700;
+    }
+
+    .key-btn {
+      background: linear-gradient(135deg, #ffcc02, #ff9800);
+      color: #fff;
+      font-size: 1.3rem;
+      font-weight: 700;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      transition: transform .2s;
+    }
+
+    .key-btn:hover {
+      transform: scale(1.12);
+    }
+
+    .gate {
+      font-size: 3.5rem;
+      text-align: center;
+      margin: 10px 0;
+      transition: all .6s;
+      display: block;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0) }
+      20%, 60% { transform: translateX(-8px) }
+      40%, 80% { transform: translateX(8px) }
+    }
+
+    .shake {
+      animation: shake .4s;
+    }
+
+    /* M2 */
+    .track-wrap {
+      position: relative;
+      height: 160px;
+      margin: 10px 0;
+    }
+
+    .track-svg {
+      width: 100%;
+      height: 160px;
+    }
+
+    #m2-train {
+      position: absolute;
+      font-size: 1.8rem;
+      top: 8px;
+      left: 0;
+      transition: all .7s ease;
+    }
+
+    /* M3 */
+    .funnel-area {
+      position: relative;
+      min-height: 230px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .filter-layer {
+      width: 240px;
+      text-align: center;
+      padding: 9px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: .9rem;
+      position: relative;
+      transition: all .4s;
+    }
+
+    .fl-a {
+      background: #e3f2fd;
+      border: 2px solid #1e88e5;
+      color: #0d47a1;
+    }
+
+    .fl-b {
+      background: #f3e5f5;
+      border: 2px solid #8e24aa;
+      color: #4a148c;
+      margin-top: 28px;
+    }
+
+    .fl-c {
+      background: #fff3e0;
+      border: 2px solid #fb8c00;
+      color: #e65100;
+      margin-top: 28px;
+    }
+
+    .filter-light {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #bdbdbd;
+      margin-left: 6px;
+      vertical-align: middle;
+      transition: background .3s;
+    }
+
+    .filter-light.g { background: #43a047; }
+    .filter-light.r { background: #e53935; }
+
+    .dimmed {
+      opacity: .25;
+      filter: grayscale(1);
+    }
+
+    .badge-pop {
+      position: absolute;
+      right: -42px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.4rem;
+      opacity: 0;
+      transition: opacity .4s;
+    }
+
+    /* M4 */
+    .indent-block {
+      display: inline-block;
+      width: 100%;
+      font-family: monospace;
+      font-size: .9rem;
+    }
+
+    .il {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 2px 0;
+    }
+
+    .ctext {
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #f6f8ff;
+      transition: all .3s;
+      font-family: monospace;
+    }
+
+    .ctext.dimmed { opacity: .2; }
+    .ctext.bright { background: #d4edda; color: #1b5e20; font-weight: 700; }
+
+    .tab-btn2 {
+      padding: 2px 7px;
+      font-size: .72rem;
+      background: #e8f5e9;
+      border: 1px solid #a5d6a7;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .scope-overlay {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(76, 175, 80, .12);
+      border-left: 4px solid #43a047;
+      border-radius: 0 8px 8px 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .5s;
+    }
+
+    /* M5 & M6 & M7 程式碼區塊共用設定 */
+    .dual {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 10px 0;
+    }
+
+    .track-col {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .track-col h4 {
+      margin: 0 0 8px;
+      font-size: .9rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .wrong h4 { color: #c62828; }
+    .right h4 { color: #2e7d32; }
+
+    .mini-code {
+      font-family: monospace;
+      font-size: .8rem;
+      background: #1e1e1e;
+      color: #ccc;
+      padding: 10px;
+      border-radius: 8px;
+      line-height: 1.6;
+    }
+
+    .cpanel {
+      font-family: monospace;
+      font-size: .82rem;
+      background: #1e1e1e;
+      color: #888;
+      padding: 12px;
+      border-radius: 10px;
+      min-width: 220px;
+      line-height: 1.7;
+    }
+
+    .m7-code-panel {
+      font-family: monospace;
+      font-size: .8rem;
+      background: #1e1e1e;
+      color: #aaa;
+      padding: 14px;
+      border-radius: 10px;
+      line-height: 1.75;
+    }
+
+    /* === 核心修正區：移除 white-space: pre，改用 nowrap 搭配 padding 縮排 === */
+    .mini-code span,
+    .cpanel span,
+    .m7-code-panel .ln {
+      display: block;
+      white-space: nowrap; /* 防止編輯器排版造成的斷行跑版 */
+      border-radius: 3px;
+      transition: background .3s;
+    }
+
+    .m7-code-panel .ln {
+      padding: 0 4px;
+    }
+
+    /* Python 安全縮排類別 */
+    .ind-1 { padding-left: 1.5rem !important; }
+    .ind-2 { padding-left: 3rem !important; }
+
+    /* M7 專用高亮狀態 */
+    .m7-code-panel .ln.active { background: rgba(255, 213, 79, .22); color: #ffd54f; }
+    .m7-code-panel .ln.done-t { background: rgba(67, 160, 71, .18); color: #a5d6a7; }
+    .m7-code-panel .ln.done-f { background: rgba(229, 57, 53, .12); color: #ef9a9a; }
+
+    /* M6 */
+    .m6-wrap {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .safe-box {
+      font-size: 4rem;
+      text-align: center;
+      transition: all .6s;
+    }
+
+    .lock-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .lock {
+      font-size: 1.8rem;
+      transition: all .4s;
+    }
+
+    .lock.open {
+      transform: rotate(20deg) scale(1.2);
+      filter: hue-rotate(120deg);
+    }
+
+    .io-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .io-row input {
+      padding: 7px 10px;
+      border: 2px solid #c5cae9;
+      border-radius: 7px;
+      font-size: .9rem;
+      width: 120px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .io-row input:focus { border-color: #667eea; }
+
+    /* M7 面板 */
+    .m7-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .vp {
+      background: #f6f8ff;
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .vrow {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid #e8eaf6;
+      font-size: .9rem;
+    }
+
+    .vval {
+      font-weight: 700;
+      color: #1a237e;
+      transition: color .3s;
+    }
+
+    @keyframes flashVar {
+      0%, 100% { color: #1a237e }
+      50% { color: #ff6d00 }
+    }
+
+    .vval.fl { animation: flashVar .5s 2; }
+
+    .char-cards {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 8px 0;
+    }
+
+    .cc {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 2px solid #c5cae9;
+      cursor: pointer;
+      background: #fff;
+      transition: all .2s;
+      font-size: .83rem;
+      line-height: 1.5;
+    }
+
+    .cc:hover,
+    .cc.active {
+      border-color: #667eea;
+      background: #eef0ff;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <h1 style="text-align:center;font-size:1.9rem;font-weight:800;color:#1a237e;margin-bottom:6px;">🐍 Python 判斷結構互動教學
+    </h1>
+    <p style="text-align:center;color:#888;margin-bottom:32px;">if / elif / else — 讓程式學會做決定</p>
+
+    <div class="card" id="card1">
+      <div class="section-title"><span class="badge-num">1</span>單行道與守門員 — <code>if</code> 與冒號的魔法</div>
+      <p style="color:#555;font-size:.93rem;margin-bottom:12px;"><code>if</code> 語句結尾必須有 <strong>冒號
+          <code>:</code></strong>，它是開啟程式碼區塊的鑰匙。</p>
+      <div class="row">
+        <div id="m1-code">
+          <span class="kw">if</span>&nbsp;password&nbsp;==&nbsp;<span class="str">"1234"</span>
+          <span class="colon-slot" id="m1-slot" title="點我放置冒號"></span>
+        </div>
+        <button class="key-btn" id="m1-key" title="點擊放置冒號">:</button>
+        <button class="btn btn-p" id="m1-run">▶ 執行</button>
+        <button class="btn btn-r" id="m1-reset">↺ 重置</button>
+      </div>
+      <div class="gate" id="m1-gate">🚪</div>
+      <div class="console-output" id="m1-console">-- 等待執行 --</div>
+    </div>
+
+    <div class="card" id="card2">
+      <div class="section-title"><span class="badge-num">2</span>命運的岔路口 — <code>if...else</code></div>
+      <p style="color:#555;font-size:.93rem;margin-bottom:10px;">調整分數，觀察火車如何選擇不同軌道。</p>
+      <div class="row">
+        <label style="font-weight:600;">分數：</label>
+        <input type="range" id="m2-slider" min="0" max="100" value="75" style="width:160px;">
+        <span id="m2-score" style="font-weight:700;font-size:1.3rem;color:#1a237e;min-width:36px;">75</span>
+        <button class="btn btn-p" id="m2-run">🚂 發車</button>
+        <button class="btn btn-r" id="m2-reset">↺ 重置</button>
+      </div>
+      <div class="track-wrap">
+        <svg class="track-svg" viewBox="0 0 520 150" id="m2-svg">
+          <line x1="20" y1="50" x2="200" y2="50" stroke="#666" stroke-width="4" />
+          <line x1="200" y1="50" x2="400" y2="20" stroke="#2e7d32" stroke-width="4" />
+          <text x="405" y="22" font-size="13" fill="#2e7d32" font-weight="bold">if ≥60 及格 ✅</text>
+          <line x1="200" y1="50" x2="400" y2="90" stroke="#c62828" stroke-width="4" />
+          <text x="405" y="93" font-size="13" fill="#c62828" font-weight="bold">else 重修 ❌</text>
+          <circle cx="200" cy="50" r="7" fill="#ff9800" id="m2-switch" />
+          <line x1="200" y1="50" x2="260" y2="35" stroke="#ff9800" stroke-width="3" id="m2-needle" />
+        </svg>
+        <div id="m2-train" style="position:absolute;font-size:1.7rem;top:24px;left:10px;transition:all .7s ease;">🚂
+        </div>
+      </div>
+      <div class="console-output" id="m2-console">-- 等待發車 --</div>
+    </div>
+
+    <div class="card" id="card3">
+      <div class="section-title"><span class="badge-num">3</span>分發帽的抉擇 — <code>if...elif...else</code></div>
+      <p style="color:#555;font-size:.93rem;margin-bottom:10px;">選擇一顆分數球，觀察它穿越篩網被分類的過程。</p>
+      <div class="row">
+        <button class="btn btn-p m3-btn" data-score="95">🎱 95分</button>
+        <button class="btn btn-p m3-btn" data-score="85">🎱 85分</button>
+        <button class="btn btn-p m3-btn" data-score="72">🎱 72分</button>
+        <button class="btn btn-r" id="m3-reset">↺ 重置</button>
+      </div>
+      <div class="funnel-area">
+        <div style="display:flex;flex-direction:column;align-items:center;padding-top:50px;position:relative;">
+          <div class="filter-layer fl-a" id="fl-a">score ≥ 90 → A 級 <span class="filter-light" id="fla-l"></span><span
+              class="badge-pop" id="bp-a">🥇</span></div>
+          <div class="filter-layer fl-b" id="fl-b">score ≥ 80 → B 級 <span class="filter-light" id="flb-l"></span><span
+              class="badge-pop" id="bp-b">🥈</span></div>
+          <div class="filter-layer fl-c" id="fl-c">else → C 級 <span class="badge-pop" id="bp-c">🥉</span></div>
+          <div id="m3-ball"
+            style="font-size:2rem;position:absolute;left:50%;transform:translateX(-50%);top:0;display:none;transition:top .55s ease;">
+            🎱</div>
+        </div>
+      </div>
+      <div class="console-output" id="m3-console">-- 點擊分數球開始 --</div>
+    </div>
+
+    <div class="card" id="card4">
+      <div class="section-title"><span class="badge-num">4</span>無形的牆 — 縮排 Indentation 視覺化</div>
+      <p style="color:#555;font-size:.93rem;margin-bottom:10px;">點擊「縮排」按鈕，讓程式碼往右推，觀察「作用域」如何被框選。</p>
+      <div style="position:relative;display:inline-block;width:100%;" id="m4-wrap">
+        <div class="scope-overlay" id="m4-scope"></div>
+        <div class="indent-block" id="m4-block">
+          <div class="il"><span class="ctext" id="m4-l0">if score &gt;= 60:</span></div>
+          <div class="il"><button class="tab-btn2" data-line="1">縮排 →</button><span class="ctext"
+              id="m4-l1">print("及格")</span></div>
+          <div class="il"><button class="tab-btn2" data-line="2">縮排 →</button><span class="ctext" id="m4-l2">grade =
+              "B"</span></div>
+          <div class="il"><span class="ctext" id="m4-l3">print("完成")</span></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn btn-p" id="m4-run">▶ 執行 (score=40)</button>
+        <button class="btn btn-r" id="m4-reset">↺ 重置</button>
+      </div>
+      <div class="console-output" id="m4-console">-- 先縮排，再執行 --</div>
+    </div>
+
+    <div class="card" id="card5">
+      <div class="section-title"><span class="badge-num">5</span>獨立 vs 互斥 — <code>if/if</code> vs <code>if/elif</code>
+        的陷阱</div>
+      <p style="color:#555;font-size:.93rem;margin-bottom:10px;">消費金額：<strong>$250</strong>。觀察兩種寫法的不同結果。</p>
+      <div class="row">
+        <button class="btn btn-p" id="m5-run">▶ 執行對比</button>
+        <button class="btn btn-r" id="m5-reset">↺ 重置</button>
+      </div>
+      <div class="dual">
+        <div class="track-col wrong">
+          <h4>❌ 兩個獨立 if（錯）</h4>
+          <div class="mini-code" id="m5-left-code">
+            <span id="m5-l1">if amount >= 100:</span>
+            <span id="m5-l2" class="ind-1">send_coupon(1)</span>
+            <span id="m5-l3">if amount >= 200:</span>
+            <span id="m5-l4" class="ind-1">send_coupon(2)</span>
+          </div>
+          <div style="margin-top:10px;font-size:.9rem;min-height:32px;" id="m5-left-result"></div>
+        </div>
+        <div class="track-col right">
+          <h4>✅ if + elif（正確）</h4>
+          <div class="mini-code" id="m5-right-code">
+            <span id="m5-r1">if amount >= 200:</span>
+            <span id="m5-r2" class="ind-1">send_coupon(2)</span>
+            <span id="m5-r3">elif amount >= 100:</span>
+            <span id="m5-r4" class="ind-1">send_coupon(1)</span>
+          </div>
+          <div style="margin-top:10px;font-size:.9rem;min-height:32px;" id="m5-right-result"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="card6">
+      <div class="section-title"><span class="badge-num">6</span>俄羅斯套娃 — 巢狀判斷 Nested if</div>
+      <p style="color:#555;font-size:.93rem;margin-bottom:10px;">輸入帳號與密碼，觀察雙重鎖如何逐層解鎖。</p>
+      <div class="m6-wrap">
+        <div>
+          <div class="io-row">
+            <input id="m6-user" type="text" placeholder="帳號 (admin)">
+            <input id="m6-pwd" type="password" placeholder="密碼 (123)">
+          </div>
+          <div class="row" style="margin-bottom:10px;">
+            <button class="btn btn-p" id="m6-run">🔓 解鎖</button>
+            <button class="btn btn-r" id="m6-reset">↺ 重置</button>
+          </div>
+          <div class="safe-box" id="m6-safe">🔒</div>
+          <div class="lock-row">
+            <span class="lock" id="m6-lock1">🔑</span>
+            <span class="lock" id="m6-lock2">🔐</span>
+          </div>
+        </div>
+        <div class="cpanel" id="m6-cpanel">
+          <span>if user == "admin":</span>
+          <span class="ind-1">if pwd == "123":</span>
+          <span class="ind-2">open_safe()</span>
+          <span class="ind-1">else:</span>
+          <span class="ind-2">print("密碼錯誤")</span>
+          <span>else:</span>
+          <span class="ind-1">print("帳號錯誤")</span>
+        </div>
+      </div>
+      <div class="console-output" id="m6-console">-- 輸入帳號密碼後執行 --</div>
+    </div>
+
+    <div class="card" id="card7">
+      <div class="section-title"><span class="badge-num">🏆</span>綜合實戰 — 遊樂園自動售票機</div>
+      <p style="color:#555;font-size:.93rem;margin-bottom:6px;"><strong>規則：</strong>成人 $500｜兒童 (≤12歲) $250｜VIP 再打 8 折
+      </p>
+      <div class="char-cards" id="m7-chars">
+        <div class="cc" data-age="10" data-vip="false">👧 10歲普通兒童<br><small>age=10, VIP=否</small></div>
+        <div class="cc" data-age="30" data-vip="true">👨‍💼 30歲VIP成人<br><small>age=30, VIP=是</small></div>
+        <div class="cc" data-age="8" data-vip="true">🧒 8歲VIP兒童<br><small>age=8, VIP=是</small></div>
+      </div>
+      <div class="m7-grid" id="m7-grid">
+        <div class="m7-code-panel" id="m7-code">
+          <span class="ln" id="m7-ln0">age = {age}</span>
+          <span class="ln" id="m7-ln1">is_vip = {vip}</span>
+          <span class="ln" id="m7-ln2">&nbsp;</span>
+          <span class="ln" id="m7-ln3">if age &lt;= 12:</span>
+          <span class="ln ind-1" id="m7-ln4">price = 250</span>
+          <span class="ln" id="m7-ln5">else:</span>
+          <span class="ln ind-1" id="m7-ln6">price = 500</span>
+          <span class="ln" id="m7-ln7">&nbsp;</span>
+          <span class="ln" id="m7-ln8">if is_vip:</span>
+          <span class="ln ind-1" id="m7-ln9">price = price * 0.8</span>
+          <span class="ln" id="m7-ln10">&nbsp;</span>
+          <span class="ln" id="m7-ln11">print(f"票價：${price}")</span>
+        </div>
+        <div>
+          <div class="vp" id="m7-vp">
+            <div style="font-weight:700;margin-bottom:8px;color:#1a237e;">📊 變數面板</div>
+            <div class="vrow"><span>age</span><span class="vval" id="v-age">—</span></div>
+            <div class="vrow"><span>is_vip</span><span class="vval" id="v-vip">—</span></div>
+            <div class="vrow"><span>price</span><span class="vval" id="v-price">—</span></div>
+          </div>
+          <div class="console-output" id="m7-console" style="margin-top:10px;">-- 選擇角色後逐步執行 --</div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn btn-p" id="m7-step">⏭ 下一步</button>
+        <button class="btn btn-r" id="m7-reset">↺ 重置</button>
+      </div>
+    </div>
+
+  </div><script>
+    const delay = ms => new Promise(r => setTimeout(r, ms));
+
+    // ─── Intersection Observer: fade-in each card ───
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity = 1; e.target.style.transform = 'translateY(0)'; observer.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.card').forEach(c => {
+      c.style.opacity = '0'; c.style.transform = 'translateY(30px)'; c.style.transition = 'opacity .6s, transform .6s';
+      observer.observe(c);
+    });
+
+    // ═══════════════ MODULE 1 ═══════════════
+    (function () {
+      const slot = document.getElementById('m1-slot'),
+        key = document.getElementById('m1-key'),
+        runBtn = document.getElementById('m1-run'),
+        resetBtn = document.getElementById('m1-reset'),
+        gate = document.getElementById('m1-gate'),
+        cons = document.getElementById('m1-console');
+      let filled = false, busy = false;
+
+      function setSlot(v) { filled = v; slot.textContent = v ? ':' : ''; slot.classList.toggle('filled', v); }
+
+      key.onclick = () => { if (!filled) setSlot(true); };
+      slot.onclick = () => { if (filled && !busy) setSlot(false); };
+
+      runBtn.onclick = async () => {
+        if (busy) return; busy = true;
+        if (!filled) {
+          cons.innerHTML = '<span style="color:#ff5252">SyntaxError: expected \':\' after \'if\' expression</span>';
+          document.getElementById('m1-code').classList.add('shake');
+          gate.textContent = '🚫'; gate.style.transform = '';
+          await delay(500); document.getElementById('m1-code').classList.remove('shake');
+        } else {
+          cons.innerHTML = '<span style="color:#69f0ae">✅ 歡迎光臨！密碼正確，城門開啟！</span>';
+          gate.style.transition = 'all .7s'; gate.style.transform = 'scaleY(0.2) translateY(-60px)'; gate.style.opacity = '.3';
+        }
+        busy = false;
+      };
+      resetBtn.onclick = () => { setSlot(false); gate.textContent = '🚪'; gate.style.transform = ''; gate.style.opacity = '1'; cons.textContent = '-- 等待執行 --'; busy = false; };
+    })();
+
+    // ═══════════════ MODULE 2 ═══════════════
+    (function () {
+      const slider = document.getElementById('m2-slider'),
+        scoreEl = document.getElementById('m2-score'),
+        runBtn = document.getElementById('m2-run'),
+        resetBtn = document.getElementById('m2-reset'),
+        train = document.getElementById('m2-train'),
+        needle = document.getElementById('m2-needle'),
+        cons = document.getElementById('m2-console');
+      let busy = false;
+
+      slider.oninput = () => scoreEl.textContent = slider.value;
+
+      function resetTrain() { train.style.transition = 'none'; train.style.left = '10px'; train.style.top = '24px'; setTimeout(() => train.style.transition = 'all .7s ease', 50); cons.textContent = '-- 等待發車 --'; needle.setAttribute('x2', '260'); needle.setAttribute('y2', '35'); }
+
+      runBtn.onclick = async () => {
+        if (busy) return; busy = true; runBtn.disabled = true;
+        const s = parseInt(slider.value), pass = s >= 60;
+        // train moves to fork
+        train.style.left = '175px'; train.style.top = '24px';
+        await delay(800);
+        // switch needle
+        if (pass) { needle.setAttribute('x2', '240'); needle.setAttribute('y2', '25'); }
+        else { needle.setAttribute('x2', '240'); needle.setAttribute('y2', '62'); }
+        await delay(400);
+        // train goes to branch
+        if (pass) { train.style.left = '380px'; train.style.top = '0px'; cons.innerHTML = `<span style="color:#69f0ae">score = ${s} ≥ 60 → ✅ 恭喜及格！</span>`; }
+        else { train.style.left = '380px'; train.style.top = '58px'; cons.innerHTML = `<span style="color:#ff5252">score = ${s} < 60 → ❌ 需要重修。</span>`; }
+        busy = false; runBtn.disabled = false;
+      };
+      resetBtn.onclick = () => { busy = false; runBtn.disabled = false; resetTrain(); };
+    })();
+
+    // ═══════════════ MODULE 3 ═══════════════
+    (function () {
+      const ball = document.getElementById('m3-ball'),
+        fla = document.getElementById('fl-a'), flb = document.getElementById('fl-b'), flc = document.getElementById('fl-c'),
+        lA = document.getElementById('fla-l'), lB = document.getElementById('flb-l'),
+        bA = document.getElementById('bp-a'), bB = document.getElementById('bp-b'), bC = document.getElementById('bp-c'),
+        cons = document.getElementById('m3-console');
+      let busy = false;
+
+      function reset3() { ball.style.display = 'none';[fla, flb, flc].forEach(f => f.classList.remove('dimmed'));[lA, lB].forEach(l => { l.className = 'filter-light'; });[bA, bB, bC].forEach(b => b.style.opacity = '0'); cons.textContent = '-- 點擊分數球開始 --'; busy = false; document.querySelectorAll('.m3-btn').forEach(b => b.disabled = false); }
+      document.getElementById('m3-reset').onclick = reset3;
+
+      document.querySelectorAll('.m3-btn').forEach(btn => {
+        btn.onclick = async () => {
+          if (busy) return; busy = true;
+          document.querySelectorAll('.m3-btn').forEach(b => b.disabled = true);
+          const score = parseInt(btn.dataset.score);
+          ball.style.display = 'block'; ball.style.top = '0px';
+          await delay(300);
+          cons.textContent = `▶ score = ${score}`;
+          // Layer A
+          await delay(400); ball.style.top = '46px';
+          await delay(600);
+          if (score >= 90) {
+            lA.className = 'filter-light g'; await delay(400);
+            bA.style.opacity = '1'; cons.innerHTML += `\n✅ score ≥ 90 → 🥇 A 級！`;
+            fla.style.boxShadow = '0 0 18px #1e88e5'; flb.classList.add('dimmed'); flc.classList.add('dimmed');
+          } else {
+            lA.className = 'filter-light r'; await delay(400);
+            cons.innerHTML += `\n❌ score < 90，穿透…`;
+            ball.style.top = '130px';
+            await delay(600);
+            if (score >= 80) {
+              lB.className = 'filter-light g'; await delay(400);
+              bB.style.opacity = '1'; cons.innerHTML += `\n✅ score ≥ 80 → 🥈 B 級！`;
+              flb.style.boxShadow = '0 0 18px #8e24aa'; flc.classList.add('dimmed');
+            } else {
+              lB.className = 'filter-light r'; await delay(400);
+              cons.innerHTML += `\nscore < 80，穿透…`;
+              ball.style.top = '210px'; await delay(600);
+              bC.style.opacity = '1'; cons.innerHTML += `\n→ 🥉 C 級（else）`;
+              flc.style.boxShadow = '0 0 18px #fb8c00';
+            }
+          }
+          busy = false;
+        };
+      });
+    })();
+
+    // ═══════════════ MODULE 4 ═══════════════
+    (function () {
+      const scope = document.getElementById('m4-scope'),
+        l1 = document.getElementById('m4-l1'), l2 = document.getElementById('m4-l2'),
+        l3 = document.getElementById('m4-l3'),
+        cons = document.getElementById('m4-console');
+      let indented = { 1: false, 2: false }, busy = false;
+
+      function updateScope() {
+        const both = indented[1] && indented[2];
+        scope.style.opacity = both ? '1' : '0';
+      }
+      document.querySelectorAll('.tab-btn2').forEach(btn => {
+        btn.onclick = () => {
+          const li = parseInt(btn.dataset.line), el = li === 1 ? l1 : l2;
+          if (!indented[li]) { indented[li] = true; el.style.paddingLeft = '32px'; btn.disabled = true; updateScope(); }
+        };
+      });
+
+      document.getElementById('m4-run').onclick = async () => {
+        if (busy) return; busy = true;
+        const score = 40;
+        const both = indented[1] && indented[2];
+        if (!both) { cons.innerHTML = '<span style="color:#ff5252">⚠️ 請先縮排兩行程式碼再執行！</span>'; busy = false; return; }
+        cons.textContent = `▶ score = ${score}, 執行中…`;
+        await delay(400);
+        document.getElementById('m4-l0').style.background = '#fff3cd';
+        cons.innerHTML += `\nif ${score} >= 60 → False`;
+        await delay(700);
+        document.getElementById('m4-l0').style.background = '';
+        // dimmed scope block
+        l1.classList.add('dimmed'); l2.classList.add('dimmed');
+        scope.style.background = 'rgba(229,57,53,.08)'; scope.style.borderColor = '#e53935';
+        await delay(600);
+        cons.innerHTML += `\n⤵ 跳過縮排區塊...`;
+        await delay(500);
+        l3.classList.add('bright');
+        cons.innerHTML += `\n✅ print("完成") ← if 外部，照常執行`;
+        busy = false;
+      };
+      document.getElementById('m4-reset').onclick = () => {
+        [1, 2].forEach(i => { indented[i] = false; });
+        l1.style.paddingLeft = ''; l2.style.paddingLeft = '';
+        document.querySelectorAll('.tab-btn2').forEach(b => b.disabled = false);
+        [l1, l2, l3].forEach(l => { l.classList.remove('dimmed', 'bright'); l.style.background = ''; });
+        scope.style.opacity = '0'; scope.style.background = 'rgba(76,175,80,.12)'; scope.style.borderColor = '#43a047';
+        cons.textContent = '-- 先縮排，再執行 --'; busy = false;
+      };
+    })();
+
+    // ═══════════════ MODULE 5 ═══════════════
+    (function () {
+      const runBtn = document.getElementById('m5-run'),
+        resetBtn = document.getElementById('m5-reset'),
+        lr = document.getElementById('m5-left-result'),
+        rr = document.getElementById('m5-right-result');
+      const ids = ['m5-l1', 'm5-l2', 'm5-l3', 'm5-l4', 'm5-r1', 'm5-r2', 'm5-r3', 'm5-r4'];
+      let busy = false;
+
+      function hl(id, on) {
+        const el = document.getElementById(id);
+        if (el) {
+          if (on) {
+            el.style.background = 'rgba(255,213,79,.25)';
+            el.style.color = '#ffd54f';
+          } else {
+            el.style.background = '';
+            el.style.color = '';
+          }
+        }
+      }
+      function resetVis() {
+        ids.forEach(id => hl(id, false));
+        lr.innerHTML = '';
+        rr.innerHTML = '';
+        const elifEl = document.getElementById('m5-r3');
+        if (elifEl) {
+          elifEl.style.color = '';
+          elifEl.style.textDecoration = '';
+        }
+        busy = false;
+      }
+      resetBtn.onclick = resetVis;
+
+      runBtn.onclick = async () => {
+        if (busy) return; busy = true; resetVis(); busy = true;
+        const amount = 250;
+        // LEFT — two independent ifs
+        await delay(300); hl('m5-l1', true); await delay(600);
+        lr.innerHTML = '✅ 250≥100 → <span style="font-size:1.2rem">🎫</span>';
+        hl('m5-l1', false); hl('m5-l2', true); await delay(600);
+        hl('m5-l2', false); hl('m5-l3', true); await delay(600);
+        lr.innerHTML += ' ✅ 250≥200 → <span style="font-size:1.2rem">🎫</span>';
+        hl('m5-l3', false); hl('m5-l4', true); await delay(600);
+        hl('m5-l4', false);
+        lr.innerHTML += '<br><strong style="color:#c62828">💥 兩張都拿到！邏輯錯誤！</strong>';
+        await delay(500);
+        // RIGHT — if/elif
+        hl('m5-r1', true); await delay(600);
+        // 250>=200? YES
+        rr.innerHTML = '✅ 250≥200 → <span style="font-size:1.2rem">🎫🎫</span>';
+        hl('m5-r1', false); hl('m5-r2', true); await delay(600);
+        hl('m5-r2', false);
+        // elif skipped
+        const elifEl = document.getElementById('m5-r3');
+        if (elifEl) {
+          elifEl.style.color = '#ef9a9a';
+          elifEl.style.textDecoration = 'line-through';
+        }
+        rr.innerHTML += '<br><span style="color:#e53935;font-size:1.1rem;font-weight:700;">✖ elif 被跳過（互斥）</span>';
+        await delay(400);
+        rr.innerHTML += '<br><strong style="color:#2e7d32">✅ 只發出一組，邏輯正確！</strong>';
+        busy = false;
+      };
+    })();
+
+    // ═══════════════ MODULE 6 ═══════════════
+    (function () {
+      const runBtn = document.getElementById('m6-run'),
+        resetBtn = document.getElementById('m6-reset'),
+        safe = document.getElementById('m6-safe'),
+        lock1 = document.getElementById('m6-lock1'), lock2 = document.getElementById('m6-lock2'),
+        cpanel = document.getElementById('m6-cpanel'),
+        cons = document.getElementById('m6-console');
+      const spans = cpanel.querySelectorAll('span');
+      let busy = false;
+
+      function hlPanel(i, on) {
+        spans.forEach((s, j) => {
+          if (j === i && on) {
+            s.style.background = 'rgba(255,213,79,.18)';
+            s.style.color = '#ffd54f';
+          } else {
+            s.style.background = '';
+            s.style.color = '';
+          }
+        });
+      }
+
+      runBtn.onclick = async () => {
+        if (busy) return; busy = true;
+        const u = document.getElementById('m6-user').value.trim();
+        const p = document.getElementById('m6-pwd').value.trim();
+        // Reset vis
+        [lock1, lock2].forEach(l => l.classList.remove('open')); safe.textContent = '🔒'; safe.style.transform = ''; cons.textContent = '';
+        hlPanel(-1, false);
+        await delay(300);
+        // outer if
+        hlPanel(0, true); cons.textContent = `▶ if user == "admin" → ${u === 'admin' ? 'True' : 'False'}`;
+        await delay(800);
+        if (u === 'admin') {
+          lock1.classList.add('open'); cons.innerHTML += '\n🔑 第一道鎖：開啟！';
+          await delay(600);
+          hlPanel(1, true); safe.textContent = '🔓'; cons.innerHTML += `\n    if pwd == "123" → ${p === '123' ? 'True' : 'False'}`;
+          await delay(800);
+          if (p === '123') {
+            lock2.classList.add('open'); safe.textContent = '📦'; safe.style.transform = 'scale(1.2)';
+            cons.innerHTML += '\n🔐 第二道鎖：開啟！\n🎉 保險箱完全打開！';
+          } else {
+            hlPanel(3, true); cons.innerHTML += '\n❌ 密碼錯誤，保險箱保持鎖定。';
+          }
+        } else {
+          hlPanel(5, true); cons.innerHTML += '\n❌ 帳號錯誤，無法進入。';
+        }
+        busy = false;
+      };
+      resetBtn.onclick = () => { [lock1, lock2].forEach(l => l.classList.remove('open')); safe.textContent = '🔒'; safe.style.transform = ''; cons.textContent = '-- 輸入帳號密碼後執行 --'; spans.forEach(s => { s.style.background = ''; s.style.color = ''; }); document.getElementById('m6-user').value = ''; document.getElementById('m6-pwd').value = ''; busy = false; };
+    })();
+
+    // ═══════════════ MODULE 7 ═══════════════
+    (function () {
+      const stepBtn = document.getElementById('m7-step'),
+        resetBtn = document.getElementById('m7-reset'),
+        cons = document.getElementById('m7-console');
+      const lns = Array.from({ length: 12 }, (_, i) => document.getElementById('m7-ln' + i));
+      const vAge = document.getElementById('v-age'), vVip = document.getElementById('v-vip'), vPrice = document.getElementById('v-price');
+      let stepIdx = 0, curAge = 10, curVip = false, curPrice = 0, busy = false, charLoaded = false;
+
+      function setVar(el, val) { el.textContent = val; el.classList.add('fl'); setTimeout(() => el.classList.remove('fl'), 1100); }
+      // 更新這支函式，避免蓋掉我們原本加上的 ind-1 類別
+      function hlLine(i, cls = 'active') {
+        lns.forEach((l, j) => {
+          l.classList.remove('active', 'done-t', 'done-f');
+          if (j === i && cls) l.classList.add(cls);
+        });
+      }
+      function reset7() {
+        stepIdx = 0; busy = false; curPrice = 0; charLoaded = false;
+        lns.forEach(l => l.classList.remove('active', 'done-t', 'done-f'));
+        [vAge, vVip, vPrice].forEach(v => v.textContent = '—');
+        cons.textContent = '-- 選擇角色後逐步執行 --';
+        stepBtn.disabled = false;
+        document.querySelectorAll('.cc').forEach(c => c.classList.remove('active'));
+      }
+
+      document.querySelectorAll('.cc').forEach(card => {
+        card.onclick = () => {
+          reset7();
+          curAge = parseInt(card.dataset.age); curVip = card.dataset.vip === 'true';
+          charLoaded = true;
+          document.querySelectorAll('.cc').forEach(c => c.classList.remove('active')); card.classList.add('active');
+          // fill code labels
+          lns[0].textContent = `age = ${curAge}`;
+          lns[1].textContent = `is_vip = ${curVip}`;
+          cons.textContent = `角色已載入：age=${curAge}, VIP=${curVip}\n點擊「下一步」開始追蹤！`;
+        };
+      });
+
+      const steps = [
+        async () => { hlLine(0, 'active'); setVar(vAge, curAge); cons.textContent = `age = ${curAge}`; },
+        async () => { hlLine(1, 'active'); setVar(vVip, curVip); cons.textContent += `\nis_vip = ${curVip}`; },
+        async () => { hlLine(3, 'active'); const r = curAge <= 12; cons.textContent += `\nif age(${curAge}) <= 12 → ${r ? 'True ✅' : 'False ❌'}`; hlLine(3, r ? 'done-t' : 'done-f'); },
+        async () => {
+          const r = curAge <= 12;
+          if (r) { curPrice = 250; hlLine(4, 'done-t'); setVar(vPrice, 250); cons.textContent += `\n  price = 250`; }
+          else { hlLine(5, 'active'); await delay(300); hlLine(6, 'done-t'); curPrice = 500; setVar(vPrice, 500); cons.textContent += `\n  price = 500 (else)`; }
+        },
+        async () => { hlLine(8, 'active'); const r = curVip; cons.textContent += `\nif is_vip(${curVip}) → ${r ? 'True ✅' : 'False ❌'}`; hlLine(8, r ? 'done-t' : 'done-f'); },
+        async () => {
+          if (curVip) { curPrice = Math.round(curPrice * 0.8); hlLine(9, 'done-t'); setVar(vPrice, curPrice); cons.textContent += `\n  price × 0.8 = ${curPrice} (VIP折扣)`; }
+          else { cons.textContent += `\n  ⤵ 無VIP折扣，跳過`; hlLine(9, 'done-f'); }
+        },
+        async () => { hlLine(11, 'active'); cons.textContent += `\n🎫 最終票價：$${curPrice}`; stepBtn.disabled = true; }
+      ];
+
+      stepBtn.onclick = async () => {
+        if (busy || stepIdx >= steps.length) return;
+        if (!charLoaded) { cons.textContent = '⚠️ 請先選擇一個角色！'; return; }
+        busy = true; await steps[stepIdx](); stepIdx++; busy = false;
+      };
+      resetBtn.onclick = reset7;
+    })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python 基本輸入輸出與字串格式化</title>
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../layout.js" defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== BASE ===== */
+body { padding: 0; margin: 0; background-color: #f8f9fa; font-family: 'Noto Sans TC', sans-serif; }
+.container { padding-top: 80px; padding-bottom: 60px; max-width: 1000px; margin: 0 auto; padding-left: 20px; padding-right: 20px; }
+
+/* ===== HERO ===== */
+.hero-banner {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-radius: 18px; padding: 40px 30px; margin-bottom: 32px;
+  text-align: center; position: relative; overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+}
+.hero-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 50%, rgba(55,118,171,0.3) 0%, transparent 60%),
+              radial-gradient(circle at 70% 50%, rgba(255,212,59,0.15) 0%, transparent 60%);
+}
+.hero-banner h1 { color: #fff; font-size: 2rem; margin: 0 0 8px; position: relative; z-index:1; letter-spacing:1px; }
+.hero-banner p { color: rgba(255,255,255,0.75); font-size: 1rem; margin: 0; position: relative; z-index:1; }
+.py-logo { font-size: 2.8rem; display: block; margin-bottom: 10px; position: relative; z-index:1; }
+
+/* ===== CARD ===== */
+.card {
+  background: #fff; border-radius: 16px; padding: 28px;
+  margin-bottom: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid #e8ecf0; opacity: 0; transform: translateY(24px);
+  transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.3s;
+}
+.card.visible { opacity: 1; transform: translateY(0); }
+.card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.13); }
+
+.section-title {
+  font-size: 1.15rem; font-weight: 700; color: #1a1a2e;
+  margin: 0 0 18px; display: flex; align-items: center; gap: 10px;
+  padding-bottom: 12px; border-bottom: 2px solid #e8ecf0;
+}
+.section-title .badge {
+  background: linear-gradient(135deg, #3776ab, #4b8bbe);
+  color: #fff; border-radius: 8px; padding: 3px 10px;
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;
+}
+
+/* ===== CODE DISPLAY ===== */
+.code-display {
+  background: #1e1e2e; border-radius: 10px; padding: 16px 20px;
+  font-family: 'Fira Code', monospace; font-size: 0.92rem;
+  color: #cdd6f4; margin-bottom: 14px; border-left: 4px solid #3776ab;
+  line-height: 1.7; white-space: pre-wrap;
+}
+.kw { color: #cba6f7; } /* keyword */
+.fn { color: #89b4fa; } /* function */
+.str-c { color: #a6e3a1; } /* string constant */
+.num-c { color: #fab387; } /* number */
+.param { color: #f38ba8; } /* param name */
+.cm { color: #6c7086; font-style: italic; } /* comment */
+
+/* ===== CONSOLE ===== */
+.console-output {
+  white-space: pre-wrap; font-family: 'Fira Code', monospace;
+  background: #1e1e1e; color: #d4d4d4; padding: 15px;
+  border-radius: 8px; min-height: 52px; font-size: 0.9rem;
+  border: 1px solid #333; line-height: 1.6;
+  position: relative;
+}
+.console-output::before {
+  content: '▶ OUTPUT'; position: absolute; top: 8px; right: 12px;
+  font-size: 0.65rem; color: #555; letter-spacing: 1px;
+}
+.console-label { font-size: 0.78rem; color: #888; margin-bottom: 6px; font-family: 'Fira Code', monospace; }
+
+/* ===== BUTTONS ===== */
+.run-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff; border: none; padding: 9px 22px; border-radius: 8px;
+  font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+.run-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(16,185,129,0.4); }
+.run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.ctrl-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.ctrl-select {
+  background: #f0f4f8; border: 1.5px solid #d1d9e0; border-radius: 7px;
+  padding: 7px 12px; font-size: 0.88rem; color: #1a1a2e;
+  font-family: 'Fira Code', monospace; cursor: pointer; outline: none;
+  transition: border-color 0.2s;
+}
+.ctrl-select:focus { border-color: #3776ab; }
+.ctrl-label { font-size: 0.82rem; color: #555; font-weight: 600; }
+
+/* ===== DATA TYPE CHIPS ===== */
+.type-str { color: #2563eb; font-weight: 700; font-family: 'Fira Code', monospace; }
+.type-int { color: #16a34a; font-weight: 700; font-family: 'Fira Code', monospace; }
+.type-float { color: #ea580c; font-weight: 700; font-family: 'Fira Code', monospace; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px; font-family: 'Fira Code', monospace;
+  font-size: 0.9rem; font-weight: 700; cursor: pointer;
+  transition: all 0.25s; user-select: none;
+}
+.chip-str { background: #dbeafe; color: #1d4ed8; border: 2px solid #93c5fd; }
+.chip-str:hover { background: #bfdbfe; transform: scale(1.05); }
+.chip-int { background: #dcfce7; color: #15803d; border: 2px solid #86efac; }
+.chip-int:hover { background: #bbf7d0; transform: scale(1.05); }
+.chip-float { background: #ffedd5; color: #c2410c; border: 2px solid #fdba74; }
+.chip-float:hover { background: #fed7aa; transform: scale(1.05); }
+
+/* ===== SEP HIGHLIGHT ===== */
+.sep-highlight { color: #f59e0b; font-weight: 700; animation: sepPop 0.4s ease; }
+@keyframes sepPop { 0%{transform:scale(0)} 60%{transform:scale(1.3)} 100%{transform:scale(1)} }
+
+/* ===== MODULE 2 ===== */
+.m2-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+@media(max-width:640px){ .m2-layout { grid-template-columns: 1fr; } }
+.mem-box {
+  border: 2px dashed #94a3b8; border-radius: 12px; padding: 20px;
+  text-align: center; min-height: 90px; background: #f8fafc;
+  transition: all 0.4s; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px;
+}
+.mem-box.filled { border-color: #2563eb; background: #eff6ff; }
+.mem-label { font-size: 0.75rem; color: #64748b; font-weight: 600; letter-spacing: 1px; }
+.mem-value { font-size: 1.5rem; font-weight: 700; color: #1d4ed8; font-family: 'Fira Code', monospace; }
+.console-input-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.console-inline-input {
+  background: transparent; border: none; border-bottom: 2px solid #4ade80;
+  color: #4ade80; font-family: 'Fira Code', monospace; font-size: 0.9rem;
+  outline: none; width: 120px; padding: 2px 4px;
+}
+
+/* ===== MODULE 3 ===== */
+.dual-track { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width:640px){ .dual-track { grid-template-columns: 1fr; } }
+.track { border-radius: 12px; padding: 18px; }
+.track-err { background: #fff1f2; border: 2px solid #fca5a5; }
+.track-ok  { background: #f0fdf4; border: 2px solid #86efac; }
+.track-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.track-err .track-title { color: #dc2626; }
+.track-ok  .track-title { color: #16a34a; }
+
+.type-bubble {
+  display: inline-block; padding: 5px 12px; border-radius: 20px;
+  font-family: 'Fira Code', monospace; font-weight: 700; font-size: 1rem;
+  transition: all 0.4s;
+}
+.bubble-str { background: #dbeafe; color: #1d4ed8; border: 2px solid #93c5fd; }
+.bubble-int { background: #dcfce7; color: #15803d; border: 2px solid #86efac; }
+
+.anim-area { min-height: 70px; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; padding: 12px; }
+.gear-factory {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #fef3c7; border: 2px solid #fbbf24; border-radius: 10px;
+  padding: 6px 14px; font-size: 0.85rem; color: #92400e; font-weight: 700;
+}
+.gear { animation: spin 1s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== MODULE 4 ===== */
+.fstring-vars { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+.fstring-template {
+  background: #1e1e2e; border-radius: 10px; padding: 16px 20px;
+  font-family: 'Fira Code', monospace; font-size: 0.9rem; color: #cdd6f4;
+  line-height: 1.8; margin-bottom: 14px;
+}
+.slot {
+  display: inline-block; min-width: 60px; border-bottom: 2px dashed #89b4fa;
+  padding: 2px 8px; border-radius: 4px; cursor: pointer;
+  background: rgba(137,180,250,0.1); color: #89b4fa; text-align: center;
+  transition: all 0.3s; vertical-align: middle; font-size: 0.85rem;
+}
+.slot.filled { background: rgba(166,227,161,0.15); color: #a6e3a1; border-color: #a6e3a1; cursor: default; }
+.slot.flip { animation: flip 0.5s ease; }
+@keyframes flip { 0%{transform:rotateY(0)} 50%{transform:rotateY(90deg)} 100%{transform:rotateY(0)} }
+
+.f-prefix { color: #f38ba8; font-weight: 700; font-size: 1.2rem; }
+.laser-line {
+  height: 2px; background: linear-gradient(90deg, transparent, #f38ba8, transparent);
+  width: 0; transition: width 0.6s ease; margin: 4px 0;
+}
+
+/* ===== MODULE 5 ===== */
+.m5-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
+@media(max-width:640px){ .m5-layout { grid-template-columns: 1fr; } }
+.range-wrap { display: flex; flex-direction: column; gap: 8px; }
+input[type=range] {
+  -webkit-appearance: none; width: 100%; height: 6px;
+  border-radius: 3px; background: #e2e8f0; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px;
+  border-radius: 50%; background: #ea580c; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(234,88,12,0.4);
+}
+.pi-display { font-family: 'Fira Code', monospace; font-size: 1.4rem; font-weight: 700; color: #ea580c; }
+.cut-char { color: #94a3b8; text-decoration: line-through; transition: all 0.3s; }
+.scissors { display: inline-block; animation: scissorCut 0.4s ease; }
+@keyframes scissorCut { 0%{transform:scale(0) rotate(-30deg)} 50%{transform:scale(1.3) rotate(0)} 100%{transform:scale(1)} }
+
+/* ===== MODULE 6 ===== */
+.grid-display { display: flex; gap: 3px; margin: 16px 0; flex-wrap: wrap; }
+.grid-cell {
+  width: 44px; height: 44px; border: 2px solid #e2e8f0; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fira Code', monospace; font-size: 1.1rem; font-weight: 700;
+  color: #1a1a2e; background: #f8fafc; transition: all 0.3s;
+}
+.grid-cell.char-cell { background: #dbeafe; border-color: #3b82f6; color: #1d4ed8; }
+.grid-cell.fill-cell { background: #fef3c7; border-color: #f59e0b; color: #92400e; animation: fillDrop 0.25s ease; }
+.grid-cell.sliding { animation: slideCell 0.4s ease; }
+@keyframes fillDrop { from{transform:translateY(-8px);opacity:0} to{transform:translateY(0);opacity:1} }
+@keyframes slideCell { from{transform:translateX(-10px)} to{transform:translateX(0)} }
+.align-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.align-btn {
+  padding: 8px 18px; border-radius: 8px; border: 2px solid #3776ab;
+  background: #fff; color: #3776ab; font-weight: 700; cursor: pointer;
+  font-family: 'Fira Code', monospace; font-size: 0.9rem; transition: all 0.2s;
+}
+.align-btn:hover, .align-btn.active { background: #3776ab; color: #fff; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero-banner">
+    <span class="py-logo">🐍</span>
+    <h1>Python 基本輸入輸出與字串格式化</h1>
+    <p>互動式教學 · 動畫演示 · 即時練習</p>
+  </div>
+
+  <!-- ══════════ MODULE 1: print() ══════════ -->
+  <div class="card" id="card1">
+    <div class="section-title">
+      <span class="badge">模組 1</span>
+      print() 的基礎與隱藏參數
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">sep =</span>
+      <select class="ctrl-select" id="m1-sep">
+        <option value=" ">' ' (空白)</option>
+        <option value=",">',' (逗號)</option>
+        <option value="_">'_' (底線)</option>
+      </select>
+      <span class="ctrl-label">end =</span>
+      <select class="ctrl-select" id="m1-end">
+        <option value="\n">'\n' (換行)</option>
+        <option value="!!!">'!!!' (感嘆號)</option>
+      </select>
+      <button class="run-btn" id="m1-btn" onclick="runM1()">▶ 執行</button>
+    </div>
+    <div class="code-display" id="m1-code"></div>
+    <div class="console-label">Console 輸出：</div>
+    <div class="console-output" id="m1-console"></div>
+  </div>
+
+  <!-- ══════════ MODULE 2: input() ══════════ -->
+  <div class="card" id="card2">
+    <div class="section-title"><span class="badge">模組 2</span>input() 資料收集器</div>
+    <div class="m2-layout">
+      <div>
+        <div class="code-display"><span class="kw">name</span> = <span class="fn">input</span>(<span class="str-c">"請輸入姓名："</span>)</div>
+        <button class="run-btn" id="m2-btn" onclick="runM2()">▶ 執行程式</button>
+        <div class="console-label" style="margin-top:14px">Console 輸出：</div>
+        <div class="console-output" id="m2-console" style="min-height:70px"></div>
+      </div>
+      <div>
+        <div class="mem-label" style="margin-bottom:6px; font-size:0.78rem; color:#64748b; letter-spacing:1px;">記憶體變數區</div>
+        <div class="mem-box" id="m2-membox">
+          <div class="mem-label">name</div>
+          <div style="font-size:0.85rem;color:#94a3b8;font-style:italic">( 等待輸入… )</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ MODULE 3: type trap ══════════ -->
+  <div class="card" id="card3">
+    <div class="section-title"><span class="badge">模組 3</span>⚠️ 陷阱警告！輸入與型態轉換</div>
+    <div class="dual-track">
+      <!-- LEFT -->
+      <div class="track track-err">
+        <div class="track-title">❌ 錯誤示範（字串相加）</div>
+        <div class="code-display" style="font-size:0.82rem; padding:12px;">
+<span class="cm"># a=input(), b=input()</span>
+<span class="fn">print</span>(<span class="kw">a</span> + <span class="kw">b</span>)
+        </div>
+        <div class="anim-area" id="m3-left-anim">
+          <span class="type-bubble bubble-str" id="m3-a">"5"</span>
+          <span style="font-size:1.2rem;color:#94a3b8">+</span>
+          <span class="type-bubble bubble-str" id="m3-b">"5"</span>
+        </div>
+        <div class="console-output" id="m3-left-console" style="min-height:44px;font-size:0.88rem;"></div>
+      </div>
+      <!-- RIGHT -->
+      <div class="track track-ok">
+        <div class="track-title">✅ 正確示範（int轉換）</div>
+        <div class="code-display" style="font-size:0.82rem; padding:12px;">
+<span class="fn">int</span>(<span class="fn">input</span>()) + <span class="fn">int</span>(<span class="fn">input</span>())
+        </div>
+        <div class="anim-area" id="m3-right-anim">
+          <span class="type-bubble bubble-str" id="m3-c">"5"</span>
+          <span class="gear-factory">⚙️ <span class="gear">⚙</span> int()</span>
+          <span class="type-bubble bubble-int" id="m3-d" style="opacity:0">5</span>
+        </div>
+        <div class="console-output" id="m3-right-console" style="min-height:44px;font-size:0.88rem;"></div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:16px">
+      <button class="run-btn" id="m3-btn" onclick="runM3()">▶ 執行動畫對照</button>
+    </div>
+  </div>
+
+  <!-- ══════════ MODULE 4: f-string ══════════ -->
+  <div class="card" id="card4">
+    <div class="section-title"><span class="badge">模組 4</span>f-string 變數填空術</div>
+    <div class="fstring-vars" id="m4-vars">
+      <span class="chip chip-str" onclick="selectVar(this,'item','咖啡','str')">item = <span class="type-str">"咖啡"</span></span>
+      <span class="chip chip-int" onclick="selectVar(this,'price','65','int')">price = <span class="type-int">65</span></span>
+      <span class="chip chip-int" onclick="selectVar(this,'qty','2','int')">qty = <span class="type-int">2</span></span>
+    </div>
+    <div style="font-size:0.82rem;color:#64748b;margin-bottom:10px">👆 點擊變數卡片，再點擊下方 { } 空格填入</div>
+    <div class="fstring-template">
+      <span class="kw">print</span>(<span class="f-prefix">f</span>"您點了 <span class="slot" id="slot-qty" onclick="fillSlot('slot-qty','qty')">{qty}</span> 杯 <span class="slot" id="slot-item" onclick="fillSlot('slot-item','item')">{item}</span>，共 <span class="slot filled" id="slot-calc">{price * qty}</span> 元")
+    </div>
+    <div id="m4-laser" class="laser-line"></div>
+    <button class="run-btn" id="m4-btn" onclick="runM4()">▶ 執行 f-string</button>
+    <div class="console-label" style="margin-top:12px">Console 輸出：</div>
+    <div class="console-output" id="m4-console"></div>
+  </div>
+
+  <!-- ══════════ MODULE 5: number format ══════════ -->
+  <div class="card" id="card5">
+    <div class="section-title"><span class="badge">模組 5</span>精準裁縫師（數字格式化）</div>
+    <div class="m5-layout">
+      <div class="range-wrap">
+        <div style="font-size:0.9rem;color:#555">保留小數位數：<strong id="m5-dec-display">2</strong> 位</div>
+        <input type="range" id="m5-range" min="0" max="5" value="2" oninput="updatePi(this.value)">
+        <div style="font-size:0.85rem;color:#888">0 位 ←───────────────→ 5 位</div>
+      </div>
+      <div>
+        <div style="font-size:0.82rem;color:#555;margin-bottom:8px">f-string 程式碼：</div>
+        <div class="code-display" id="m5-code" style="margin-bottom:12px; font-size:0.9rem;"></div>
+        <div class="console-label">輸出結果：</div>
+        <div class="console-output" id="m5-console"></div>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="font-size:0.85rem;color:#555;margin-bottom:8px">✂️ 視覺化截斷：</div>
+      <div id="m5-visual" style="font-family:'Fira Code',monospace;font-size:1.3rem;color:#1a1a2e;background:#fff8f0;border-radius:10px;padding:14px 18px;border:2px solid #fed7aa;"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ MODULE 6: alignment ══════════ -->
+  <div class="card" id="card6">
+    <div class="section-title"><span class="badge">模組 6</span>文字對齊與排版</div>
+    <div class="ctrl-row">
+      <div class="align-btns">
+        <button class="align-btn" id="btn-left"  onclick="doAlign('left')">:<10 靠左</button>
+        <button class="align-btn" id="btn-right" onclick="doAlign('right')">:>10 靠右</button>
+        <button class="align-btn" id="btn-center"onclick="doAlign('center')">:^10 置中</button>
+      </div>
+      <span class="ctrl-label">填充字元：</span>
+      <select class="ctrl-select" id="m6-fill">
+        <option value=" ">空白 (預設)</option>
+        <option value="*">* 星號</option>
+        <option value="-">- 破折號</option>
+        <option value="=">= 等號</option>
+      </select>
+    </div>
+    <div class="grid-display" id="m6-grid"></div>
+    <div class="code-display" id="m6-code" style="font-size:0.9rem;"></div>
+    <div class="console-label">Console 輸出：</div>
+    <div class="console-output" id="m6-console"></div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+const delay = ms => new Promise(res => setTimeout(res, ms));
+const TEXT = 'Python'; // module 6 string
+
+// ═══ Intersection Observer ═══
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.15 });
+document.querySelectorAll('.card').forEach(c => observer.observe(c));
+
+// ════════════════════════════
+// MODULE 1
+// ════════════════════════════
+function updateM1Code() {
+  const sep = document.getElementById('m1-sep').value;
+  const end = document.getElementById('m1-end').value;
+  const sepDisp = sep === ' ' ? "' '" : `'${sep}'`;
+  const endDisp = end === '\n' ? "'\\n'" : `'${end}'`;
+  document.getElementById('m1-code').innerHTML =
+    `<span class="fn">print</span>(<span class="str-c">"Apple"</span>, <span class="str-c">"Banana"</span>, <span class="param">sep</span>=<span class="str-c">${sepDisp}</span>, <span class="param">end</span>=<span class="str-c">${endDisp}</span>)`;
+}
+document.getElementById('m1-sep').addEventListener('change', updateM1Code);
+document.getElementById('m1-end').addEventListener('change', updateM1Code);
+updateM1Code();
+
+async function runM1() {
+  const btn = document.getElementById('m1-btn');
+  btn.disabled = true;
+  const sep = document.getElementById('m1-sep').value;
+  const end = document.getElementById('m1-end').value;
+  const con = document.getElementById('m1-console');
+  con.innerHTML = '';
+
+  await delay(300);
+  // Apple slides in
+  const a = document.createElement('span');
+  a.textContent = '"Apple"'; a.className = 'type-str';
+  a.style.cssText = 'display:inline-block;opacity:0;transform:translateX(-12px);transition:all 0.4s';
+  con.appendChild(a);
+  await delay(50); a.style.opacity='1'; a.style.transform='translateX(0)';
+
+  await delay(400);
+  if (sep.trim() !== '' || sep !== ' ') {
+    const s = document.createElement('span');
+    const dispSep = sep === ' ' ? ' ' : sep;
+    s.textContent = dispSep; s.className = 'sep-highlight';
+    con.appendChild(s);
+  } else {
+    con.appendChild(document.createTextNode(' '));
+  }
+
+  await delay(300);
+  const b = document.createElement('span');
+  b.textContent = '"Banana"'; b.className = 'type-str';
+  b.style.cssText = 'display:inline-block;opacity:0;transform:translateX(-12px);transition:all 0.4s';
+  con.appendChild(b);
+  await delay(50); b.style.opacity='1'; b.style.transform='translateX(0)';
+
+  await delay(400);
+  const e = document.createElement('span');
+  e.style.color = '#f59e0b'; e.style.fontWeight = '700';
+  e.textContent = end === '\n' ? '↵\n' : end;
+  con.appendChild(e);
+
+  btn.disabled = false;
+}
+
+// ════════════════════════════
+// MODULE 2
+// ════════════════════════════
+let m2Running = false;
+async function runM2() {
+  if (m2Running) return;
+  m2Running = true;
+  const btn = document.getElementById('m2-btn');
+  btn.disabled = true;
+  const con = document.getElementById('m2-console');
+  const membox = document.getElementById('m2-membox');
+  con.innerHTML = '';
+  membox.innerHTML = '<div class="mem-label">name</div><div style="font-size:0.85rem;color:#94a3b8;font-style:italic">( 等待輸入… )</div>';
+  membox.classList.remove('filled');
+
+  // Typewriter: 請輸入姓名：
+  const prompt = '請輸入姓名：';
+  const promptEl = document.createElement('span');
+  promptEl.style.color = '#4ade80';
+  con.appendChild(promptEl);
+  for (const ch of prompt) {
+    promptEl.textContent += ch;
+    await delay(60);
+  }
+
+  // inline input
+  const row = document.createElement('div');
+  row.className = 'console-input-row';
+  const inp = document.createElement('input');
+  inp.className = 'console-inline-input';
+  inp.placeholder = '輸入後按 Enter';
+  row.appendChild(inp);
+  con.appendChild(row);
+  inp.focus();
+
+  await new Promise(resolve => {
+    inp.addEventListener('keydown', async e => {
+      if (e.key === 'Enter' && inp.value.trim()) {
+        const val = inp.value.trim();
+        row.remove();
+        // show value
+        const valEl = document.createElement('span');
+        valEl.className = 'type-str';
+        valEl.textContent = `"${val}"`;
+        valEl.style.cssText = 'display:inline-block;transform:scale(0);transition:transform 0.4s';
+        con.appendChild(valEl);
+        await delay(50); valEl.style.transform = 'scale(1)';
+
+        await delay(500);
+        // fly to membox
+        membox.innerHTML = `<div class="mem-label">name</div><div class="mem-value">"${val}"</div>`;
+        membox.classList.add('filled');
+        membox.style.animation = 'none';
+        membox.offsetHeight; // reflow
+        membox.style.animation = 'sepPop 0.5s ease';
+        resolve();
+      }
+    });
+  });
+
+  btn.disabled = false; m2Running = false;
+}
+
+// ════════════════════════════
+// MODULE 3
+// ════════════════════════════
+async function runM3() {
+  const btn = document.getElementById('m3-btn');
+  btn.disabled = true;
+
+  // reset
+  const la = document.getElementById('m3-left-anim');
+  const ra = document.getElementById('m3-right-anim');
+  const lc = document.getElementById('m3-left-console');
+  const rc = document.getElementById('m3-right-console');
+  lc.innerHTML = ''; rc.innerHTML = '';
+
+  const aEl = document.getElementById('m3-a');
+  const bEl = document.getElementById('m3-b');
+  const cEl = document.getElementById('m3-c');
+  const dEl = document.getElementById('m3-d');
+  aEl.style.cssText = ''; bEl.style.cssText = '';
+  cEl.style.cssText = ''; dEl.style.cssText = 'opacity:0;transition:all 0.4s';
+
+  await delay(400);
+
+  // LEFT: magnet effect
+  aEl.style.transition = 'transform 0.5s ease';
+  bEl.style.transition = 'transform 0.5s ease';
+  aEl.style.transform = 'translateX(28px)';
+  bEl.style.transform = 'translateX(-28px)';
+  await delay(600);
+  lc.innerHTML = '<span class="type-str">"55"</span><span style="color:#f87171;font-size:0.8rem;margin-left:8px">← 字串串接，不是相加！</span>';
+
+  // RIGHT: conversion
+  await delay(200);
+  cEl.style.cssText = 'transition:all 0.5s;filter:blur(2px);transform:scale(0.8)';
+  await delay(500);
+  cEl.style.cssText = '';
+  cEl.className = 'type-bubble bubble-int';
+  cEl.textContent = '5';
+  dEl.style.opacity = '0';
+  await delay(400);
+  dEl.style.opacity = '1';
+  await delay(300);
+  rc.innerHTML = '<span class="type-int">10</span><span style="color:#4ade80;font-size:0.8rem;margin-left:8px">← 整數運算，正確！</span>';
+
+  btn.disabled = false;
+}
+
+// ════════════════════════════
+// MODULE 4
+// ════════════════════════════
+const m4Vars = { item: { val: '咖啡', type: 'str' }, price: { val: '65', type: 'int' }, qty: { val: '2', type: 'int' } };
+const m4Slots = { 'slot-qty': null, 'slot-item': null };
+let m4Selected = null;
+
+function selectVar(el, name, val, type) {
+  document.querySelectorAll('#m4-vars .chip').forEach(c => c.style.outline = '');
+  el.style.outline = '3px solid #3776ab';
+  m4Selected = { name, val, type };
+}
+
+function fillSlot(slotId, expected) {
+  if (!m4Selected) { alert('請先點擊上方的變數卡片！'); return; }
+  const slot = document.getElementById(slotId);
+  if (slot.classList.contains('filled')) return;
+  m4Slots[slotId] = m4Selected;
+  slot.classList.add('filled', 'flip');
+  if (m4Selected.type === 'str') slot.innerHTML = `<span class="type-str">"${m4Selected.val}"</span>`;
+  else slot.innerHTML = `<span class="type-int">${m4Selected.val}</span>`;
+  setTimeout(() => slot.classList.remove('flip'), 500);
+  m4Selected = null;
+  document.querySelectorAll('#m4-vars .chip').forEach(c => c.style.outline = '');
+}
+
+async function runM4() {
+  const btn = document.getElementById('m4-btn');
+  btn.disabled = true;
+  const laser = document.getElementById('m4-laser');
+  const con = document.getElementById('m4-console');
+
+  // Check all slots filled
+  const qty  = m4Slots['slot-qty']  ? m4Slots['slot-qty'].val  : '2';
+  const item = m4Slots['slot-item'] ? m4Slots['slot-item'].val  : '咖啡';
+
+  // Laser effect
+  laser.style.width = '0';
+  await delay(100);
+  laser.style.width = '100%';
+  await delay(700);
+
+  // flip calc slot
+  const calcSlot = document.getElementById('slot-calc');
+  calcSlot.classList.add('flip');
+  calcSlot.innerHTML = '<span class="type-int">130</span>';
+  setTimeout(()=>calcSlot.classList.remove('flip'),500);
+
+  await delay(500);
+  con.innerHTML = '';
+  const msg = `您點了 ${qty} 杯 ${item}，共 130 元`;
+  const msgEl = document.createElement('span');
+  msgEl.style.cssText = 'display:inline-block;opacity:0;transform:translateY(8px);transition:all 0.5s;color:#d4d4d4';
+  msgEl.textContent = msg;
+  con.appendChild(msgEl);
+  await delay(50); msgEl.style.opacity='1'; msgEl.style.transform='translateY(0)';
+
+  btn.disabled = false;
+}
+
+// ════════════════════════════
+// MODULE 5
+// ════════════════════════════
+const PI_FULL = '3.14159265';
+function updatePi(n) {
+  n = parseInt(n);
+  document.getElementById('m5-dec-display').textContent = n;
+  const fmt = n === 0 ? ':.0f' : `:.${n}f`;
+  const result = parseFloat(PI_FULL).toFixed(n);
+  document.getElementById('m5-code').innerHTML =
+    `<span class="kw">pi</span> = <span class="type-float">3.14159265</span>\n<span class="fn">print</span>(<span class="f-prefix">f</span>"<span class="str-c">{pi${fmt}}</span>")`;
+  document.getElementById('m5-console').innerHTML = `<span class="type-float">${result}</span>`;
+
+  // visual: highlight kept digits, strike cut ones
+  const kept = PI_FULL.substring(0, result.length);
+  const cut  = PI_FULL.substring(result.length);
+  const vis = document.getElementById('m5-visual');
+  let html = `<span class="type-float">${kept}</span>`;
+  if (cut) html += `<span class="scissors">✂️</span><span class="cut-char">${cut}</span>`;
+  vis.innerHTML = html + `<span style="color:#94a3b8;font-size:0.85rem;margin-left:12px">→ ${result}</span>`;
+}
+updatePi(2);
+
+// ════════════════════════════
+// MODULE 6
+// ════════════════════════════
+function buildGrid(text, align, fill, width) {
+  const grid = document.getElementById('m6-grid');
+  grid.innerHTML = '';
+  let padded;
+  if (align === 'left')   padded = text.padEnd(width, fill);
+  else if (align === 'right')  padded = text.padStart(width, fill);
+  else { // center
+    const total = width - text.length;
+    const lp = Math.floor(total / 2), rp = total - lp;
+    padded = fill.repeat(lp) + text + fill.repeat(rp);
+  }
+  for (let i = 0; i < width; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'grid-cell';
+    cell.textContent = padded[i] === ' ' ? '\u00a0' : padded[i];
+    if (TEXT.includes(padded[i]) && TEXT.indexOf(padded[i]) === i - (align==='left'?0:align==='right'?width-TEXT.length:Math.floor((width-TEXT.length)/2))) {
+      cell.classList.add('char-cell');
+    } else if (padded[i] !== ' ') {
+      cell.classList.add('fill-cell');
+    }
+    grid.appendChild(cell);
+  }
+  return padded;
+}
+
+async function doAlign(align) {
+  ['btn-left','btn-right','btn-center'].forEach(id=>{
+    document.getElementById(id).classList.remove('active');
+  });
+  document.getElementById(`btn-${align}`).classList.add('active');
+
+  const fill = document.getElementById('m6-fill').value;
+  const fillDisp = fill === ' ' ? "' '" : `'${fill}'`;
+  const fmtChar = align==='left'?'<':align==='right'?'>':'^';
+  const fmtDisp = fill === ' ' ? `{TEXT:${fmtChar}10}` : `{TEXT:${fill}${fmtChar}10}`;
+
+  document.getElementById('m6-code').innerHTML =
+    `<span class="kw">TEXT</span> = <span class="str-c">"Python"</span>\n<span class="fn">print</span>(<span class="f-prefix">f</span>"<span class="str-c">${fmtDisp}</span>")`;
+
+  // Animate grid cells one by one
+  const grid = document.getElementById('m6-grid');
+  grid.innerHTML = '';
+  let padded;
+  if (align === 'left')   padded = TEXT.padEnd(10, fill);
+  else if (align === 'right')  padded = TEXT.padStart(10, fill);
+  else {
+    const total = 10 - TEXT.length; const lp = Math.floor(total/2);
+    padded = fill.repeat(lp) + TEXT + fill.repeat(total-lp);
+  }
+  // First render text chars
+  const textStart = padded.indexOf(TEXT[0]);
+  for (let i = 0; i < 10; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'grid-cell';
+    cell.style.opacity = '0';
+    grid.appendChild(cell);
+  }
+  // Slide text into position
+  const cells = grid.querySelectorAll('.grid-cell');
+  await delay(100);
+  for (let i = textStart; i < textStart + TEXT.length; i++) {
+    cells[i].textContent = padded[i];
+    cells[i].classList.add('char-cell', 'sliding');
+    cells[i].style.opacity = '1';
+    await delay(80);
+  }
+  // Fill remaining
+  for (let i = 0; i < 10; i++) {
+    if (i >= textStart && i < textStart + TEXT.length) continue;
+    cells[i].textContent = fill === ' ' ? '\u00a0' : fill;
+    if (fill !== ' ') cells[i].classList.add('fill-cell');
+    cells[i].style.opacity = '1';
+    await delay(60);
+  }
+
+  document.getElementById('m6-console').innerHTML =
+    `<span style="color:#d4d4d4">|</span><span style="color:#89dceb">${padded.replace(/ /g,'\u00a0')}</span><span style="color:#d4d4d4">|</span>`;
+}
+
+// Init module 6
+doAlign('left');
+
+// Init module 4 code display
+document.getElementById('slot-calc').innerHTML = '<span class="type-int">130</span>';
+</script>
+</body>
+</html>

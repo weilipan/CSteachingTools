@@ -1,0 +1,773 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python 串列與二維串列 (List &amp; 2D List)</title>
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../layout.js" defer></script>
+<style>
+body{padding:0;margin:0;background-color:#f8f9fa;font-family:'Segoe UI',sans-serif;}
+.container{padding-top:80px;padding-bottom:60px;max-width:1000px;margin:0 auto;}
+.card{background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);margin-bottom:36px;padding:32px;opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease;}
+.card.visible{opacity:1;transform:translateY(0);}
+.section-title{font-size:1.4rem;font-weight:700;color:#2d3748;margin-bottom:6px;display:flex;align-items:center;gap:10px;}
+.section-title .icon{font-size:1.6rem;}
+.section-sub{color:#718096;font-size:.9rem;margin-bottom:20px;}
+/* Code display */
+.code-block{background:#1e1e1e;border-radius:10px;padding:16px;margin-bottom:12px;font-size:.88rem;}
+.ln{display:block;white-space:nowrap;color:#d4d4d4;font-family:'Consolas',monospace;padding:2px 4px;border-radius:4px;transition:background .3s;}
+.ln.active{background:#264f78;color:#fff;}
+.ln.kw{color:#569cd6;}.ln.str{color:#ce9178;}.ln.cmt{color:#6a9955;}
+.ind-1{padding-left:1.5rem!important;}
+.ind-2{padding-left:3rem!important;}
+/* Console */
+.console-output{white-space:pre-wrap;font-family:monospace;background:#1e1e1e;color:#d4d4d4;padding:15px;border-radius:8px;min-height:48px;font-size:.85rem;margin-top:12px;}
+/* Buttons */
+.btn{padding:9px 22px;border:none;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600;transition:all .2s;}
+.btn-primary{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(102,126,234,.4);}
+.btn-secondary{background:#e2e8f0;color:#4a5568;}
+.btn-secondary:hover{background:#cbd5e0;}
+.btn-green{background:linear-gradient(135deg,#48bb78,#38a169);color:#fff;}
+.btn-green:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(72,187,120,.4);}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+
+/* ===== MODULE 1: TRAIN ===== */
+.train-scene{position:relative;padding:60px 10px 50px;overflow-x:auto;min-height:180px;}
+.train-track{display:flex;gap:8px;justify-content:center;align-items:center;}
+.wagon{position:relative;width:80px;text-align:center;cursor:default;}
+.wagon-body{background:linear-gradient(180deg,#ffd89b,#f6a623);border:3px solid #c0892a;border-radius:10px;padding:10px 0;font-size:1.6rem;transition:all .3s;box-shadow:0 4px 8px rgba(0,0,0,.15);}
+.wagon.highlight .wagon-body{background:linear-gradient(180deg,#fff176,#ffd600);border-color:#f57f17;box-shadow:0 0 20px #ffd600,0 4px 8px rgba(0,0,0,.15);}
+.wagon-wheels{display:flex;justify-content:space-around;margin-top:4px;}
+.wheel{width:14px;height:14px;background:#555;border-radius:50%;border:2px solid #333;}
+.idx-top,.idx-bot{font-size:.75rem;font-weight:700;text-align:center;padding:2px 0;border-radius:4px;}
+.idx-top{color:#3182ce;background:#ebf8ff;margin-bottom:4px;}
+.idx-bot{color:#e53e3e;background:#fff5f5;margin-top:4px;}
+/* Arm */
+#arm-container{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+.arm{position:absolute;top:5px;width:50px;font-size:1.5rem;text-align:center;transition:left .5s cubic-bezier(.4,0,.2,1),top .4s ease;display:none;}
+.arm-grip{font-size:1rem;}
+.train-input{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+.train-input input{width:80px;padding:8px;border:2px solid #e2e8f0;border-radius:8px;font-size:1rem;text-align:center;}
+
+/* ===== MODULE 2: SLICER ===== */
+.blocks-scene{position:relative;padding:40px 10px 20px;overflow-x:auto;}
+.blocks-track{display:flex;gap:4px;justify-content:center;position:relative;}
+.block{width:64px;height:56px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;border-radius:8px;border:3px solid;transition:all .4s;position:relative;}
+.block.block-default{background:#bee3f8;border-color:#4299e1;color:#2b6cb0;}
+.block.block-cut{background:#c6f6d5;border-color:#48bb78;color:#276749;transform:translateY(-12px);box-shadow:0 8px 20px rgba(72,187,120,.4);}
+.block.block-fade{background:#e2e8f0;border-color:#a0aec0;color:#a0aec0;opacity:.45;}
+.laser{position:absolute;top:0;width:3px;height:100%;background:red;opacity:0;transition:left .4s ease;box-shadow:0 0 8px red;}
+.slider-row{display:flex;gap:16px;align-items:center;margin:16px 0;flex-wrap:wrap;}
+.slider-group{display:flex;flex-direction:column;gap:4px;}
+.slider-label{font-size:.8rem;color:#718096;font-weight:600;}
+.slider-group input[type=range]{width:180px;accent-color:#667eea;}
+.slice-display{font-size:1rem;font-weight:700;color:#667eea;font-family:monospace;background:#f0f4ff;padding:6px 14px;border-radius:8px;}
+
+/* ===== MODULE 3: SHELF ===== */
+.shelf-scene{padding:20px 0;min-height:100px;}
+.shelf{display:flex;gap:6px;align-items:flex-end;padding:10px 10px 0;border-bottom:4px solid #8b6914;min-height:80px;flex-wrap:wrap;background:linear-gradient(180deg,#fffdf0 80%,#f6e9c8 100%);border-radius:8px 8px 0 0;}
+.container-box{width:56px;height:56px;background:linear-gradient(135deg,#4299e1,#3182ce);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.9rem;position:relative;transition:all .4s;flex-shrink:0;}
+.container-box .box-idx{font-size:.6rem;opacity:.7;position:absolute;bottom:3px;}
+.container-box.highlight{background:linear-gradient(135deg,#ffd89b,#f6a623);animation:boxPop .4s ease;}
+.container-box.incoming{opacity:0;transform:translateY(-60px) scale(.8);}
+@keyframes boxPop{0%{transform:scale(1.3)}100%{transform:scale(1)}}
+.shelf-methods{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+
+/* ===== MODULE 4: DRAWER ===== */
+.drawer-cabinet{display:flex;flex-direction:column;gap:6px;margin:20px auto;max-width:440px;}
+.drawer{border:2px solid #9f7aea;border-radius:10px;overflow:hidden;cursor:default;transition:box-shadow .3s;}
+.drawer-header{background:linear-gradient(135deg,#805ad5,#6b46c1);color:#fff;padding:10px 16px;font-weight:600;font-size:.9rem;display:flex;align-items:center;gap:10px;}
+.drawer-body{display:flex;gap:6px;padding:10px;background:#faf5ff;transition:max-height .5s ease,padding .4s;max-height:0;padding:0 10px;overflow:hidden;}
+.drawer.open .drawer-body{max-height:80px;padding:10px;}
+.drawer.glow{box-shadow:0 0 20px #9f7aea,0 4px 12px rgba(159,122,234,.4);}
+.cell{width:60px;height:52px;background:#e9d8fd;border:2px solid #b794f4;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:#553c9a;transition:all .3s;}
+.cell.active{background:#ffd89b;border-color:#f6a623;color:#744210;transform:scale(1.15);box-shadow:0 4px 12px rgba(246,166,35,.4);}
+.matrix-input{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px;}
+.matrix-input input{width:160px;padding:8px;border:2px solid #e2e8f0;border-radius:8px;font-family:monospace;font-size:1rem;}
+
+/* ===== MODULE 5: RADAR ===== */
+.radar-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+@media(max-width:600px){.radar-layout{grid-template-columns:1fr;}}
+.grid-3x3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:200px;}
+.grid-cell{aspect-ratio:1;background:#e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#4a5568;transition:all .3s;position:relative;}
+.grid-cell.row-lit{background:#bee3f8;color:#2b6cb0;}
+.grid-cell.scanning{background:#ffd89b;color:#744210;transform:scale(1.12);box-shadow:0 0 12px #ffd600;}
+.grid-cell.scanned{background:#c6f6d5;color:#276749;}
+
+/* ===== MODULE 6: CINEMA ===== */
+.cinema-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+@media(max-width:640px){.cinema-layout{grid-template-columns:1fr;}}
+.seat-grid{display:flex;flex-direction:column;gap:8px;}
+.seat-row{display:flex;gap:8px;align-items:center;}
+.row-label{font-size:.75rem;font-weight:700;color:#718096;width:50px;}
+.seat{width:48px;height:42px;border-radius:8px 8px 4px 4px;border:2px solid;cursor:pointer;font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .3s;perspective:200px;}
+.seat.empty{background:linear-gradient(180deg,#9ae6b4,#68d391);border-color:#38a169;color:#276749;}
+.seat.empty:hover{transform:scale(1.1);}
+.seat.taken{background:linear-gradient(180deg,#fc8181,#f56565);border-color:#e53e3e;color:#fff;cursor:not-allowed;}
+.seat.selected{box-shadow:0 0 0 3px #ffd600,0 0 16px #ffd600;}
+.seat.flip{animation:seatFlip .6s ease forwards;}
+@keyframes seatFlip{0%{transform:rotateY(0)}50%{transform:rotateY(90deg);background:#ffd89b;}100%{transform:rotateY(0)}}
+.screen-bar{background:linear-gradient(90deg,#667eea,#764ba2);color:#fff;text-align:center;padding:6px;border-radius:6px;font-size:.8rem;font-weight:600;margin-bottom:10px;letter-spacing:2px;}
+</style>
+</head>
+<body>
+<div class="container">
+<!-- ===== PAGE HEADER ===== -->
+<div class="card visible" style="text-align:center;padding:28px;">
+<div style="font-size:3rem;margin-bottom:8px;">📋</div>
+<h1 style="font-size:1.8rem;font-weight:800;color:#2d3748;margin:0 0 8px;">Python 串列與二維串列</h1>
+<p style="color:#718096;margin:0;">List &amp; 2D List — 互動式動畫教學</p>
+</div>
+
+<!-- ===== MODULE 1: INDEXING ===== -->
+<div class="card" id="card1">
+<div class="section-title"><span class="icon">🚂</span>模組一：零的領域與雙向索引</div>
+<div class="section-sub">正數索引從左讀取，負數索引從右讀取。輸入索引值讓機械手臂抓取水果！</div>
+<div class="code-block">
+<span class="ln">fruits = <span style="color:#ce9178">['🍎','🍋','🍇','🍊','🍓']</span></span>
+<span class="ln">print(fruits[<span style="color:#b5cea8">2</span>])  <span style="color:#6a9955"># 抓取索引 2 的水果</span></span>
+</div>
+<div class="train-input">
+<label style="font-weight:600;color:#4a5568;">輸入索引值：</label>
+<input type="number" id="trainIdx" value="2" min="-5" max="4">
+<button class="btn btn-primary" onclick="grabFruit()">🦾 抓取</button>
+</div>
+<div class="train-scene" id="trainScene">
+<div id="arm-container"><div class="arm" id="arm">🦾<div class="arm-grip">▼</div></div></div>
+<div class="train-track" id="trainTrack"></div>
+</div>
+<div class="console-output" id="trainConsole">>>> 等待抓取指令...</div>
+</div>
+
+<!-- ===== MODULE 2: SLICING ===== -->
+<div class="card" id="card2">
+<div class="section-title"><span class="icon">⚡</span>模組二：雷射切片機 [start:stop]</div>
+<div class="section-sub">切片取出子串列。注意：包含 start 索引，但「不」包含 stop 索引（包頭不包尾）！</div>
+<div class="code-block">
+<span class="ln">blocks = <span style="color:#ce9178">['A','B','C','D','E','F']</span></span>
+<span class="ln" id="sliceCodeLine">result = blocks[<span id="sliceCodeVal">1:4</span>]</span>
+</div>
+<div class="blocks-scene" id="blocksScene">
+<div class="blocks-track" id="blocksTrack"></div>
+</div>
+<div class="slider-row">
+<div class="slider-group">
+<span class="slider-label">start: <span id="startVal">1</span></span>
+<input type="range" id="startSlider" min="0" max="5" value="1" oninput="updateSlice()">
+</div>
+<div class="slider-group">
+<span class="slider-label">stop: <span id="stopVal">4</span></span>
+<input type="range" id="stopSlider" min="0" max="6" value="4" oninput="updateSlice()">
+</div>
+<span class="slice-display" id="sliceDisplay">blocks[1:4]</span>
+</div>
+<div class="btn-row">
+<button class="btn btn-primary" onclick="runSlice()">⚡ 切片執行</button>
+<button class="btn btn-secondary" onclick="resetSlice()">↩ 重置</button>
+</div>
+<div class="console-output" id="sliceConsole">>>> 調整滑桿後點擊切片執行</div>
+</div>
+
+<!-- ===== MODULE 3: SHELF ===== -->
+<div class="card" id="card3">
+<div class="section-title"><span class="icon">🏗️</span>模組三：貨櫃調度場（串列方法）</div>
+<div class="section-sub">用動畫理解 append、extend、insert、pop 的運作差異！</div>
+<div class="shelf-scene">
+<div class="shelf" id="shelf"></div>
+</div>
+<div class="shelf-methods">
+<button class="btn btn-green" onclick="shelfAppend()">📦 .append("A")</button>
+<button class="btn btn-primary" onclick="shelfExtend()">🚂 .extend(["B","C"])</button>
+<button class="btn" style="background:linear-gradient(135deg,#ed8936,#dd6b20);color:#fff;" onclick="shelfInsert()">➡️ .insert(1,"X")</button>
+<button class="btn" style="background:linear-gradient(135deg,#e53e3e,#c53030);color:#fff;" onclick="shelfPop()">🦾 .pop()</button>
+<button class="btn btn-secondary" onclick="resetShelf()">↩ 重置</button>
+</div>
+<div class="console-output" id="shelfConsole">>>> 點擊方法按鈕觀察貨架變化</div>
+</div>
+
+<!-- ===== MODULE 4: 2D DRAWER ===== -->
+<div class="card" id="card4">
+<div class="section-title"><span class="icon">🗄️</span>模組四：俄羅斯套娃 — 二維串列解密</div>
+<div class="section-sub">先找「大抽屜」(row)，再找「小格子」(column)。輸入 matrix[row][col] 觀察動畫！</div>
+<div class="code-block" id="drawer-code">
+<span class="ln" id="dc0">matrix = [</span>
+<span class="ln ind-1" id="dc1">[<span style="color:#ce9178">'🍎','🍋','🍇'</span>],  <span style="color:#6a9955"># row 0</span></span>
+<span class="ln ind-1" id="dc2">[<span style="color:#ce9178">'🚀','💎','🌟'</span>],  <span style="color:#6a9955"># row 1</span></span>
+<span class="ln ind-1" id="dc3">[<span style="color:#ce9178">'🐉','🏆','🎯'</span>],  <span style="color:#6a9955"># row 2</span></span>
+<span class="ln">]</span>
+<span class="ln" id="dc4">result = matrix<span id="dc4-part2"></span></span>
+</div>
+<div class="drawer-cabinet" id="drawerCabinet"></div>
+<div class="matrix-input">
+<label style="font-weight:600;color:#4a5568;">存取：matrix[</label>
+<input type="number" id="matRow" value="1" min="0" max="2" style="width:60px;">
+<label style="font-weight:600;color:#4a5568;">][</label>
+<input type="number" id="matCol" value="2" min="0" max="2" style="width:60px;">
+<label style="font-weight:600;color:#4a5568;">]</label>
+<button class="btn btn-primary" onclick="runMatrix()">🔍 執行</button>
+<button class="btn btn-secondary" onclick="resetMatrix()">↩ 重置</button>
+</div>
+<div class="console-output" id="matrixConsole">>>> 等待指令...</div>
+</div>
+
+<!-- ===== MODULE 5: RADAR ===== -->
+<div class="card" id="card5">
+<div class="section-title"><span class="icon">📡</span>模組五：雷達掃描器 — 走訪二維矩陣</div>
+<div class="section-sub">巢狀迴圈：外層選「整橫列 (Row)」，內層「逐格掃描」取值。</div>
+<div class="radar-layout">
+<div>
+<div class="code-block">
+<span class="ln" id="rl0">matrix = [[1,2,3],[4,5,6],[7,8,9]]</span>
+<span class="ln" id="rl1">for row in matrix:</span>
+<span class="ln ind-1" id="rl2">for item in row:</span>
+<span class="ln ind-2" id="rl3">print(item)</span>
+</div>
+<div class="btn-row">
+<button class="btn btn-primary" onclick="runRadar()">📡 啟動掃描</button>
+<button class="btn btn-secondary" onclick="resetRadar()">↩ 重置</button>
+</div>
+</div>
+<div>
+<div class="grid-3x3" id="radarGrid"></div>
+</div>
+</div>
+<div class="console-output" id="radarConsole">>>> 等待掃描指令...</div>
+</div>
+
+<!-- ===== MODULE 6: CINEMA ===== -->
+<div class="card" id="card6">
+<div class="section-title"><span class="icon">🎬</span>模組六：綜合實戰 — 電影院自動劃位系統</div>
+<div class="section-sub">點擊座位圖上的空座位，再按「下一步」逐行追蹤劃位程式碼的執行！</div>
+<div class="cinema-layout">
+<div>
+<div class="code-block" style="font-size:.82rem;">
+<span class="ln" id="ci0">seats = [</span>
+<span class="ln ind-1" id="ci1">[0,0,0],  <span style="color:#6a9955"># Row 0</span></span>
+<span class="ln ind-1" id="ci2">[0,1,0],  <span style="color:#6a9955"># Row 1</span></span>
+<span class="ln ind-1" id="ci3">[0,0,0],  <span style="color:#6a9955"># Row 2</span></span>
+<span class="ln ind-1" id="ci4">[1,0,0],  <span style="color:#6a9955"># Row 3</span></span>
+<span class="ln ind-1" id="ci5">[0,0,1],  <span style="color:#6a9955"># Row 4</span></span>
+<span class="ln" id="ci6">]</span>
+<span class="ln" id="ci7">r, c = <span id="ci7-val" style="color:#b5cea8">?, ?</span></span>
+<span class="ln" id="ci8">if seats[r][c] == 0:</span>
+<span class="ln ind-1" id="ci9">seats[r][c] = 1</span>
+<span class="ln ind-2" id="ci10">print("✅ 劃位成功！")</span>
+<span class="ln" id="ci11">else:</span>
+<span class="ln ind-1" id="ci12">print("❌ 此座位已售出！")</span>
+</div>
+<div class="btn-row">
+<button class="btn btn-primary" id="cinemaStepBtn" onclick="cinemaStep()" disabled>▶ 下一步 (Step)</button>
+<button class="btn btn-secondary" onclick="resetCinema()">↩ 重置</button>
+</div>
+</div>
+<div>
+<div class="screen-bar">🎬 銀幕 SCREEN</div>
+<div class="seat-grid" id="seatGrid"></div>
+</div>
+</div>
+<div class="console-output" id="cinemaConsole">>>> 請先點擊一個綠色（空）座位...</div>
+</div>
+</div>
+<script>
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+/* ===== Intersection Observer ===== */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, {threshold: 0.1});
+document.querySelectorAll('.card').forEach(c => observer.observe(c));
+
+/* ============================================================
+   MODULE 1 — TRAIN INDEXING
+   ============================================================ */
+const fruits = ['🍎','🍋','🍇','🍊','🍓'];
+let grabBusy = false;
+
+function buildTrain() {
+  const track = document.getElementById('trainTrack');
+  track.innerHTML = '';
+  fruits.forEach((f, i) => {
+    const w = document.createElement('div');
+    w.className = 'wagon';
+    w.id = 'wagon' + i;
+    w.innerHTML = `
+      <div class="idx-top">[${i}]</div>
+      <div class="wagon-body">${f}</div>
+      <div class="wagon-wheels"><div class="wheel"></div><div class="wheel"></div></div>
+      <div class="idx-bot">[${i - 5}]</div>`;
+    track.appendChild(w);
+  });
+}
+buildTrain();
+
+async function grabFruit() {
+  if (grabBusy) return;
+  grabBusy = true;
+  const raw = parseInt(document.getElementById('trainIdx').value);
+  const con = document.getElementById('trainConsole');
+  const arm = document.getElementById('arm');
+
+  if (isNaN(raw) || raw < -5 || raw > 4) {
+    con.textContent = '>>> ❌ 索引超出範圍！有效範圍：-5 到 4';
+    grabBusy = false; return;
+  }
+  const idx = raw < 0 ? 5 + raw : raw;
+  document.querySelectorAll('.wagon').forEach(w => w.classList.remove('highlight'));
+
+  const scene = document.getElementById('trainScene');
+  const track = document.getElementById('trainTrack');
+  const wagon = document.getElementById('wagon' + idx);
+  const wagonRect = wagon.getBoundingClientRect();
+  const trackRect = track.getBoundingClientRect();
+  const offsetX = wagonRect.left - trackRect.left + wagonRect.width / 2 - 25;
+
+  arm.style.display = 'block';
+  arm.style.left = '0px';
+  arm.style.top = '5px';
+  con.textContent = `>>> 手臂移動中... 目標索引 [${raw}]`;
+  await delay(100);
+  arm.style.left = offsetX + 'px';
+  await delay(550);
+  wagon.classList.add('highlight');
+  arm.style.top = '55px';
+  await delay(450);
+  con.textContent = `>>> fruits[${raw}] = '${fruits[idx]}'\n>>> 抓取成功！ 🎉`;
+  await delay(500);
+  arm.style.top = '5px';
+  await delay(400);
+  arm.style.display = 'none';
+  wagon.classList.remove('highlight');
+  grabBusy = false;
+}
+
+/* ============================================================
+   MODULE 2 — SLICING
+   ============================================================ */
+const blockLetters = ['A','B','C','D','E','F'];
+let sliceBusy = false;
+
+function buildBlocks() {
+  const track = document.getElementById('blocksTrack');
+  track.innerHTML = '';
+  blockLetters.forEach((l, i) => {
+    const b = document.createElement('div');
+    b.className = 'block block-default';
+    b.id = 'block' + i;
+    b.innerHTML = `<span>${l}</span>`;
+    track.appendChild(b);
+  });
+}
+buildBlocks();
+
+function updateSlice() {
+  let s = parseInt(document.getElementById('startSlider').value);
+  let e = parseInt(document.getElementById('stopSlider').value);
+  if (e < s) { document.getElementById('stopSlider').value = s; e = s; }
+  document.getElementById('startVal').textContent = s;
+  document.getElementById('stopVal').textContent = e;
+  document.getElementById('sliceDisplay').textContent = `blocks[${s}:${e}]`;
+  document.getElementById('sliceCodeVal').textContent = `${s}:${e}`;
+  buildBlocks();
+}
+
+async function runSlice() {
+  if (sliceBusy) return;
+  sliceBusy = true;
+  buildBlocks();
+  const s = parseInt(document.getElementById('startSlider').value);
+  const e = parseInt(document.getElementById('stopSlider').value);
+  const con = document.getElementById('sliceConsole');
+  con.textContent = `>>> 切片 blocks[${s}:${e}]...`;
+  await delay(300);
+  for (let i = 0; i < blockLetters.length; i++) {
+    const b = document.getElementById('block' + i);
+    if (i >= s && i < e) { b.classList.remove('block-default'); b.classList.add('block-cut'); }
+    else if (i === e && e < blockLetters.length) { b.classList.remove('block-default'); b.classList.add('block-fade'); }
+    await delay(120);
+  }
+  const result = blockLetters.slice(s, e);
+  await delay(300);
+  con.textContent = `>>> result = blocks[${s}:${e}]\n>>> ${JSON.stringify(result)}\n\n[ 注意：stop=${e} 的積木變半透明 → 包頭不包尾！]`;
+  sliceBusy = false;
+}
+
+function resetSlice() {
+  document.getElementById('startSlider').value = 1;
+  document.getElementById('stopSlider').value = 4;
+  updateSlice();
+  document.getElementById('sliceConsole').textContent = '>>> 調整滑桿後點擊切片執行';
+  sliceBusy = false;
+}
+updateSlice();
+
+/* ============================================================
+   MODULE 3 — SHELF METHODS
+   ============================================================ */
+let shelfData = ['📦','📦','📦'];
+let shelfBusy = false;
+
+function renderShelf() {
+  const shelf = document.getElementById('shelf');
+  shelf.innerHTML = '';
+  shelfData.forEach((item, i) => {
+    const b = document.createElement('div');
+    b.className = 'container-box';
+    b.innerHTML = `${item}<div class="box-idx">[${i}]</div>`;
+    shelf.appendChild(b);
+  });
+}
+renderShelf();
+
+async function shelfAppend() {
+  if (shelfBusy) return; shelfBusy = true;
+  const con = document.getElementById('shelfConsole');
+  con.textContent = `>>> 無人機飛來，掛上新貨櫃 "A"...`;
+  shelfData.push('🅰️');
+  renderShelf();
+  const boxes = document.getElementById('shelf').children;
+  const newBox = boxes[boxes.length - 1];
+  newBox.classList.add('incoming');
+  await delay(80);
+  newBox.style.transition = 'all .5s ease';
+  newBox.classList.remove('incoming');
+  newBox.style.opacity = '1'; newBox.style.transform = 'translateY(0) scale(1)';
+  await delay(500);
+  con.textContent = `>>> list.append("A")\n>>> ${JSON.stringify(shelfData)}`;
+  shelfBusy = false;
+}
+
+async function shelfExtend() {
+  if (shelfBusy) return; shelfBusy = true;
+  const con = document.getElementById('shelfConsole');
+  con.textContent = `>>> 小火車載來 ["B","C"]，攤平拼接...`;
+  await delay(400);
+  const newItems = ['🅱️', '©️'];
+  for (const item of newItems) {
+    shelfData.push(item);
+    renderShelf();
+    const boxes = document.getElementById('shelf').children;
+    const nb = boxes[boxes.length - 1];
+    nb.classList.add('incoming');
+    await delay(80);
+    nb.style.transition = 'all .45s ease';
+    nb.classList.remove('incoming');
+    await delay(480);
+  }
+  con.textContent = `>>> list.extend(["B","C"])  ← 攤平，非巢狀！\n>>> ${JSON.stringify(shelfData)}`;
+  shelfBusy = false;
+}
+
+async function shelfInsert() {
+  if (shelfBusy) return; shelfBusy = true;
+  const con = document.getElementById('shelfConsole');
+  con.textContent = `>>> 在索引 1 插入 "X"，後方貨櫃推移...`;
+  shelfData.splice(1, 0, '❌');
+  renderShelf();
+  const boxes = Array.from(document.getElementById('shelf').children);
+  const newBox = boxes[1];
+  newBox.classList.add('incoming');
+  await delay(80);
+  newBox.style.transition = 'all .5s ease';
+  newBox.classList.remove('incoming');
+  await delay(500);
+  con.textContent = `>>> list.insert(1, "X")\n>>> ${JSON.stringify(shelfData)}`;
+  shelfBusy = false;
+}
+
+async function shelfPop() {
+  if (shelfBusy) return; shelfBusy = true;
+  if (shelfData.length === 0) { document.getElementById('shelfConsole').textContent = '>>> ❌ 串列已空！'; shelfBusy = false; return; }
+  const con = document.getElementById('shelfConsole');
+  con.textContent = `>>> 機械爪夾走最右邊的貨櫃...`;
+  const boxes = document.getElementById('shelf').children;
+  const last = boxes[boxes.length - 1];
+  last.style.transition = 'all .4s ease';
+  last.style.transform = 'translateY(-60px) scale(.7)';
+  last.style.opacity = '0';
+  await delay(420);
+  const popped = shelfData.pop();
+  renderShelf();
+  con.textContent = `>>> list.pop()  → 移除 "${popped}"\n>>> ${JSON.stringify(shelfData)}`;
+  shelfBusy = false;
+}
+
+function resetShelf() {
+  shelfData = ['📦','📦','📦'];
+  renderShelf();
+  document.getElementById('shelfConsole').textContent = '>>> 點擊方法按鈕觀察貨架變化';
+  shelfBusy = false;
+}
+</script>
+<script>
+/* ============================================================
+   MODULE 4 — 2D DRAWER
+   ============================================================ */
+const matrixData = [
+  ['🍎','🍋','🍇'],
+  ['🚀','💎','🌟'],
+  ['🐉','🏆','🎯']
+];
+let matBusy = false;
+
+function buildDrawers() {
+  const cab = document.getElementById('drawerCabinet');
+  cab.innerHTML = '';
+  matrixData.forEach((row, ri) => {
+    const d = document.createElement('div');
+    d.className = 'drawer';
+    d.id = 'drawer' + ri;
+    d.innerHTML = `
+      <div class="drawer-header">🗂️ matrix[${ri}] <span style="opacity:.6;font-size:.8rem;">(Row ${ri})</span></div>
+      <div class="drawer-body" id="dbody${ri}">
+        ${row.map((item, ci) => `<div class="cell" id="cell${ri}_${ci}">${item}<br><span style="font-size:.6rem;opacity:.6;">[${ci}]</span></div>`).join('')}
+      </div>`;
+    cab.appendChild(d);
+  });
+}
+buildDrawers();
+
+async function runMatrix() {
+  if (matBusy) return; matBusy = true;
+  const r = parseInt(document.getElementById('matRow').value);
+  const c = parseInt(document.getElementById('matCol').value);
+  const con = document.getElementById('matrixConsole');
+
+  if (r < 0 || r > 2 || c < 0 || c > 2) {
+    con.textContent = '>>> ❌ 索引超出範圍 (0-2)'; matBusy = false; return;
+  }
+
+  resetMatrix(false);
+  document.getElementById('dc4').classList.add('active');
+  document.getElementById('dc4-part2').textContent = '';
+  con.textContent = `>>> 步驟 1：找出 matrix[${r}]（第 ${r} 層大抽屜）`;
+  await delay(400);
+
+  const drawer = document.getElementById('drawer' + r);
+  drawer.classList.add('glow');
+  drawer.classList.add('open');
+  await delay(600);
+
+  document.getElementById('dc4-part2').textContent = `[${c}]`;
+  con.textContent = `>>> 步驟 2：再在第 ${r} 層中取出 [${c}]（第 ${c} 格）`;
+  await delay(500);
+
+  const cell = document.getElementById(`cell${r}_${c}`);
+  cell.classList.add('active');
+  await delay(400);
+
+  con.textContent = `>>> matrix[${r}][${c}] = '${matrixData[r][c]}'\n>>> ✨ 先鎖定大抽屜，再取小格子！`;
+  matBusy = false;
+}
+
+function resetMatrix(full = true) {
+  document.querySelectorAll('.drawer').forEach(d => { d.classList.remove('glow','open'); });
+  document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
+  document.getElementById('dc4').classList.remove('active');
+  document.getElementById('dc4-part2').textContent = '';
+  if (full) {
+    document.getElementById('matrixConsole').textContent = '>>> 等待指令...';
+    matBusy = false;
+  }
+}
+
+/* ============================================================
+   MODULE 5 — RADAR SCANNER
+   ============================================================ */
+const radarMatrix = [[1,2,3],[4,5,6],[7,8,9]];
+let radarBusy = false;
+
+function buildRadarGrid() {
+  const grid = document.getElementById('radarGrid');
+  grid.innerHTML = '';
+  radarMatrix.forEach((row, ri) => {
+    row.forEach((val, ci) => {
+      const cell = document.createElement('div');
+      cell.className = 'grid-cell';
+      cell.id = `rc${ri}_${ci}`;
+      cell.textContent = val;
+      grid.appendChild(cell);
+    });
+  });
+}
+buildRadarGrid();
+
+async function runRadar() {
+  if (radarBusy) return; radarBusy = true;
+  resetRadar(false);
+  const con = document.getElementById('radarConsole');
+  const codeLns = [document.getElementById('rl0'),document.getElementById('rl1'),
+                   document.getElementById('rl2'),document.getElementById('rl3')];
+  let output = ''; // 用來收集終端機的實際輸出
+
+  codeLns.forEach(l => l.classList.remove('active'));
+  codeLns[0].classList.add('active');
+  con.textContent = `>>> 初始化 matrix...`;
+  await delay(500);
+
+  for (let ri = 0; ri < 3; ri++) {
+    codeLns.forEach(l => l.classList.remove('active'));
+    codeLns[1].classList.add('active');
+    con.textContent = `>>> 外層迴圈：for row in matrix (row ${ri})`;
+    // 點亮整列 (Row)
+    for (let ci = 0; ci < 3; ci++) document.getElementById(`rc${ri}_${ci}`).classList.add('row-lit');
+    await delay(500);
+
+    for (let ci = 0; ci < 3; ci++) {
+      codeLns.forEach(l => l.classList.remove('active'));
+      codeLns[2].classList.add('active');
+      const cell = document.getElementById(`rc${ri}_${ci}`);
+      cell.classList.remove('row-lit');
+      cell.classList.add('scanning');
+      await delay(300);
+      
+      codeLns[2].classList.remove('active');
+      codeLns[3].classList.add('active');
+      const val = radarMatrix[ri][ci];
+      
+      // 【修正核心】模擬 Python print() 的預設換行行為
+      output += `${val}\n`; 
+      
+      // 更新 Console，將正在掃描的進度與實際輸出區分開來
+      con.textContent = `>>> 掃描 [${ri}][${ci}] = ${val}\n\n[終端機實際輸出]\n${output}`;
+      await delay(350);
+      
+      cell.classList.remove('scanning');
+      cell.classList.add('scanned');
+    }
+    await delay(200);
+  }
+  
+  codeLns.forEach(l => l.classList.remove('active'));
+  // 【修正核心】結束時，一樣顯示直向排列的真實輸出結果
+  con.textContent = `>>> 掃描完畢！共走訪 9 個元素：\n\n[終端機實際輸出]\n${output}`;
+  radarBusy = false;
+}
+
+function resetRadar(full = true) {
+  document.querySelectorAll('.grid-cell').forEach(c => { c.className = 'grid-cell'; });
+  document.querySelectorAll('#card5 .ln').forEach(l => l.classList.remove('active'));
+  if (full) { document.getElementById('radarConsole').textContent = '>>> 等待掃描指令...'; radarBusy = false; }
+}
+</script>
+<script>
+/* ============================================================
+   MODULE 6 — CINEMA SEAT BOOKING
+   ============================================================ */
+// seats: 5 rows x 3 cols. 1=taken, 0=empty
+let cinemaSeats = [
+  [0,0,0],
+  [0,1,0],
+  [0,0,0],
+  [1,0,0],
+  [0,0,1]
+];
+let selectedR = -1, selectedC = -1, cinemaPhase = 0, cinemaBusy = false;
+
+const ciLines = ['ci0','ci1','ci2','ci3','ci4','ci5','ci6','ci7','ci8','ci9','ci10','ci11','ci12'];
+
+function buildSeatGrid() {
+  const grid = document.getElementById('seatGrid');
+  grid.innerHTML = '';
+  cinemaSeats.forEach((row, ri) => {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'seat-row';
+    rowDiv.innerHTML = `<span class="row-label">Row ${ri}</span>`;
+    row.forEach((val, ci) => {
+      const seat = document.createElement('div');
+      seat.className = 'seat ' + (val === 1 ? 'taken' : 'empty');
+      seat.id = `seat_${ri}_${ci}`;
+      seat.textContent = val === 1 ? '✖' : `${ci}`;
+      if (val === 0) seat.onclick = () => selectSeat(ri, ci);
+      rowDiv.appendChild(seat);
+    });
+    grid.appendChild(rowDiv);
+  });
+}
+buildSeatGrid();
+
+function selectSeat(r, c) {
+  if (cinemaPhase !== 0 || cinemaBusy) return;
+  // deselect previous
+  document.querySelectorAll('.seat.selected').forEach(s => s.classList.remove('selected'));
+  selectedR = r; selectedC = c;
+  document.getElementById(`seat_${r}_${c}`).classList.add('selected');
+  document.getElementById('ci7-val').textContent = `${r}, ${c}`;
+  document.getElementById('cinemaConsole').textContent = `>>> 已選擇 Row ${r}, Col ${c}。現在點擊「下一步」開始逐行執行！`;
+  document.getElementById('cinemaStepBtn').disabled = false;
+  ciLines.forEach(id => document.getElementById(id).classList.remove('active'));
+  cinemaPhase = 1;
+}
+
+async function cinemaStep() {
+  if (cinemaBusy || selectedR < 0) return;
+  cinemaBusy = true;
+  const con = document.getElementById('cinemaConsole');
+  const r = selectedR, c = selectedC;
+  const isFree = cinemaSeats[r][c] === 0;
+
+  ciLines.forEach(id => document.getElementById(id).classList.remove('active'));
+
+  if (cinemaPhase === 1) {
+    // Highlight seats definition
+    ['ci0','ci1','ci2','ci3','ci4','ci5','ci6'].forEach(id => document.getElementById(id).classList.add('active'));
+    con.textContent = `>>> 步驟 1：定義 seats 二維陣列（5 排 × 3 位）`;
+    cinemaPhase = 2;
+  } else if (cinemaPhase === 2) {
+    document.getElementById('ci7').classList.add('active');
+    con.textContent = `>>> 步驟 2：r = ${r}, c = ${c}（目標座位）`;
+    cinemaPhase = 3;
+  } else if (cinemaPhase === 3) {
+    document.getElementById('ci8').classList.add('active');
+    con.textContent = `>>> 步驟 3：if seats[${r}][${c}] == 0 ？\n>>> seats[${r}][${c}] 目前是 ${cinemaSeats[r][c]}，結果：${isFree ? 'True ✅' : 'False ❌'}`;
+    cinemaPhase = 4;
+  } else if (cinemaPhase === 4) {
+    if (isFree) {
+      document.getElementById('ci9').classList.add('active');
+      con.textContent = `>>> 步驟 4：seats[${r}][${c}] = 1 → 執行劃位！\n>>> 座位正在翻轉...`;
+      cinemaSeats[r][c] = 1;
+      // Flip animation
+      const seatEl = document.getElementById(`seat_${r}_${c}`);
+      seatEl.classList.remove('selected');
+      seatEl.classList.add('flip');
+      await delay(350);
+      seatEl.classList.remove('empty');
+      seatEl.classList.add('taken');
+      seatEl.textContent = '✖';
+      seatEl.onclick = null;
+      await delay(300);
+      seatEl.classList.remove('flip');
+      cinemaPhase = 5;
+    } else {
+      document.getElementById('ci11').classList.add('active');
+      document.getElementById('ci12').classList.add('active');
+      con.textContent = `>>> 步驟 4：直接跳到 else 區塊！\n>>> ❌ 此座位已售出！`;
+      cinemaPhase = 6;
+    }
+  } else if (cinemaPhase === 5) {
+    document.getElementById('ci10').classList.add('active');
+    con.textContent = `>>> 步驟 5：print("✅ 劃位成功！")\n>>> Row ${r}, Col ${c} 劃位成功！座位已標記為紅色。\n>>> 🎉 完成！`;
+    document.getElementById('cinemaStepBtn').disabled = true;
+    cinemaPhase = 0;
+  } else if (cinemaPhase === 6) {
+    con.textContent = `>>> ❌ 此座位已售出，無法劃位。\n>>> 請點擊其他空座位！`;
+    document.getElementById('cinemaStepBtn').disabled = true;
+    cinemaPhase = 0;
+  }
+
+  cinemaBusy = false;
+}
+
+function resetCinema() {
+  cinemaSeats = [[0,0,0],[0,1,0],[0,0,0],[1,0,0],[0,0,1]];
+  selectedR = -1; selectedC = -1; cinemaPhase = 0; cinemaBusy = false;
+  buildSeatGrid();
+  ciLines.forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById('ci7-val').textContent = '?, ?';
+  document.getElementById('cinemaConsole').textContent = '>>> 請先點擊一個綠色（空）座位...';
+  document.getElementById('cinemaStepBtn').disabled = true;
+}
+</script>
+</body>
+</html>
