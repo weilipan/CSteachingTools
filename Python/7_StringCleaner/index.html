@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python 字串處理與資料清理實戰</title>
+  <link rel="stylesheet" href="../../theme.css">
+  <script src="../../layout.js" defer></script>
+  <style>
+    body { padding: 0; margin: 0; background-color: #f8f9fa; }
+    .container { padding-top: 80px; padding-bottom: 60px; max-width: 1000px; margin: 0 auto; }
+    .card {
+      background: #fff; border-radius: 16px; padding: 32px;
+      margin-bottom: 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      opacity: 0; transform: translateY(30px); transition: opacity 0.6s, transform 0.6s;
+    }
+    .card.visible { opacity: 1; transform: translateY(0); }
+    .section-title {
+      font-size: 1.3rem; font-weight: 700; color: #2d3748; margin-bottom: 20px;
+      padding-bottom: 10px; border-bottom: 3px solid #667eea;
+    }
+    .section-title span { color: #667eea; }
+    .btn {
+      display: inline-block; padding: 10px 20px; border-radius: 8px;
+      border: none; cursor: pointer; font-size: 0.95rem; font-weight: 600;
+      margin: 6px; transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .btn-primary { background: linear-gradient(135deg,#667eea,#764ba2); color:#fff; }
+    .btn-danger  { background: linear-gradient(135deg,#f56565,#c53030); color:#fff; }
+    .btn-success { background: linear-gradient(135deg,#48bb78,#276749); color:#fff; }
+    .btn-warning { background: linear-gradient(135deg,#ed8936,#c05621); color:#fff; }
+    .btn-reset   { background: #e2e8f0; color: #4a5568; }
+    .console-output {
+      white-space: pre-wrap; font-family: monospace; background: #1e1e1e;
+      color: #d4d4d4; padding: 15px; border-radius: 8px; margin-top: 14px;
+      min-height: 48px; font-size: 0.9rem;
+    }
+    /* Code block styles */
+    .code-block {
+      background: #1a1a2e; border-radius: 10px; padding: 16px;
+      font-family: monospace; font-size: 0.9rem; margin: 10px 0;
+    }
+    .code-line {
+      display: block; white-space: nowrap; color: #a8dadc;
+      padding: 3px 8px; border-radius: 4px; transition: background 0.3s;
+    }
+    .code-line.active { background: rgba(102,126,234,0.35); color: #fff; }
+    .ind-1 { padding-left: 1.5rem !important; }
+    .ind-2 { padding-left: 3rem !important; }
+    /* ── Module 1 ── */
+    .stone-arena { display:flex; gap:40px; align-items:center; justify-content:center; padding:30px 0; flex-wrap:wrap; }
+    .stone-tablet {
+      width:140px; height:100px; border-radius:12px; display:flex; align-items:center;
+      justify-content:center; font-size:1.5rem; font-weight:800; letter-spacing:4px;
+      position:relative; transition: transform 0.15s;
+      background: linear-gradient(135deg,#b0b7bf,#8c9198);
+      box-shadow: 4px 4px 0 #5a6070, 0 0 0 3px #d1d5db;
+      color:#fff;
+    }
+    .stone-tablet .var-label {
+      position:absolute; top:-28px; left:50%; transform:translateX(-50%);
+      background:#667eea; color:#fff; border-radius:6px; padding:2px 10px;
+      font-size:0.75rem; font-weight:700; white-space:nowrap;
+      transition: left 0.6s, transform 0.6s; pointer-events:none;
+    }
+    .stone-tablet.shake { animation: shake 0.5s; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
+    .hammer-icon { font-size:2.5rem; position:absolute; top:-40px; transition:top 0.3s; }
+    .copier-icon { font-size:2rem; margin:0 10px; }
+    .arrow-anim { font-size:2rem; animation: arrowPulse 1s infinite; }
+    @keyframes arrowPulse { 0%,100%{transform:translateX(0);opacity:1} 50%{transform:translateX(6px);opacity:0.5} }
+    /* ── Module 2 ── */
+    .dust-area { display:flex; align-items:center; justify-content:center; gap:8px; padding:20px 0; font-size:1rem; }
+    .dust-chip {
+      background:#e2e8f0; border-radius:6px; padding:4px 10px; font-family:monospace;
+      font-size:1rem; transition: opacity 0.5s, transform 0.5s;
+    }
+    .dust-chip.left-dust  { color:#f56565; }
+    .dust-chip.right-dust { color:#f56565; }
+    .dust-chip.vanish { opacity:0; transform:scale(0); }
+    .main-string-box {
+      background: linear-gradient(135deg,#667eea,#764ba2); color:#fff;
+      border-radius:10px; padding:8px 18px; font-family:monospace; font-size:1.1rem; font-weight:700;
+      transition: padding 0.4s;
+    }
+    .vacuum { font-size:1.5rem; display:inline-block; transition: transform 0.5s; }
+    .vacuum.suck-left  { animation: suckL 0.5s forwards; }
+    .vacuum.suck-right { animation: suckR 0.5s forwards; }
+    @keyframes suckL { 0%{transform:translateX(0)} 100%{transform:translateX(40px)} }
+    @keyframes suckR { 0%{transform:translateX(0)} 100%{transform:translateX(-40px)} }
+    /* ── Module 3 ── */
+    .sensor-layout { display:flex; gap:20px; flex-wrap:wrap; }
+    .sensor-code  { flex:1; min-width:260px; }
+    .sensor-vars  { flex:1; min-width:220px; display:flex; flex-direction:column; gap:10px; justify-content:center; }
+    .raw-data-display {
+      background:#1e3a5f; color:#93c5fd; font-family:monospace; font-size:1.2rem; font-weight:700;
+      border-radius:10px; padding:12px 20px; text-align:center; margin-bottom:14px;
+      border:2px solid #3b82f6; letter-spacing:1px;
+    }
+    .var-box {
+      background:#f0fdf4; border:2px solid #86efac; border-radius:10px;
+      padding:10px 16px; font-family:monospace; transition: background 0.4s, border-color 0.4s;
+    }
+    .var-box.highlight { background:#fef9c3; border-color:#f59e0b; }
+    .var-box .label { font-size:0.75rem; color:#6b7280; font-weight:700; }
+    .var-box .value { font-size:1.1rem; font-weight:800; color:#166534; min-height:24px; }
+    .var-box .value.float-val { color:#d97706; }
+    /* ── Module 4 ── */
+    .sentence-display {
+      background:#f8f9fa; border:2px solid #e2e8f0; border-radius:10px;
+      padding:16px; font-family:monospace; font-size:1.1rem; margin:16px 0;
+      min-height:56px; line-height:1.8;
+    }
+    .highlight-word { background:#fef08a; border-radius:4px; padding:2px 4px; }
+    .replace-word   { background:#bbf7d0; border-radius:4px; padding:2px 4px; color:#166534; font-weight:700; }
+    .magnifier { font-size:1.8rem; display:inline-block; transition:left 0.6s; }
+    .index-badge {
+      display:inline-block; background:#667eea; color:#fff; border-radius:6px;
+      padding:3px 12px; font-size:0.9rem; font-weight:700; margin:8px 0; opacity:0; transition:opacity 0.4s;
+    }
+    /* ── Module 5 ── */
+    .pipeline-display {
+      background:#1a1a2e; color:#a8dadc; border-radius:12px;
+      padding:20px; font-family:monospace; font-size:1.2rem; font-weight:700;
+      text-align:center; margin:16px 0; min-height:60px; letter-spacing:1px;
+      transition: color 0.4s;
+    }
+    .pipeline-steps { display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; }
+    .step-badge {
+      background:#e2e8f0; border-radius:20px; padding:5px 14px;
+      font-size:0.85rem; font-weight:600; transition: background 0.3s, color 0.3s;
+    }
+    .step-badge.done { background:#48bb78; color:#fff; }
+    .step-badge.active-step { background:#667eea; color:#fff; }
+    /* ── Module 6 ── */
+    .m6-layout { display:flex; gap:20px; flex-wrap:wrap; }
+    .m6-code  { flex:1; min-width:260px; }
+    .m6-right { flex:1; min-width:220px; }
+    .raw-csv-display {
+      background:#1e3a5f; color:#93c5fd; font-family:monospace; font-size:1.1rem; font-weight:700;
+      border-radius:10px; padding:12px 20px; text-align:center; margin-bottom:12px;
+      border:2px solid #3b82f6;
+    }
+    .monitor-panel { background:#f8faff; border:2px solid #c7d2fe; border-radius:10px; padding:16px; }
+    .monitor-panel .mp-row {
+      display:flex; gap:12px; align-items:center; margin-bottom:8px;
+      font-family:monospace;
+    }
+    .mp-label { font-weight:700; color:#4338ca; min-width:60px; }
+    .mp-value {
+      background:#eef2ff; border-radius:6px; padding:4px 14px;
+      font-weight:800; color:#312e81; min-width:80px; text-align:center;
+      transition: background 0.3s;
+    }
+    .mp-value.pulse { background: #c7d2fe; }
+    /* Gear icon animation */
+    .gear-spin { display:inline-block; font-size:1.4rem; animation:spin 2s linear infinite; }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    /* Fade in for magic effect */
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .fade-in-up { animation: fadeInUp 0.4s ease forwards; }
+    .text-red   { color:#f56565; }
+    .text-green { color:#48bb78; }
+    .text-orange{ color:#ed8936; }
+    .text-blue  { color:#63b3ed; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1 style="text-align:center;font-size:2rem;font-weight:800;color:#2d3748;margin-bottom:8px;">
+    🧹 Python 字串處理與資料清理實戰
+  </h1>
+  <p style="text-align:center;color:#718096;margin-bottom:40px;">String Processing &amp; Data Cleaning — 六大互動模組</p>
+
+  <!-- ══════════════════ MODULE 1 ══════════════════ -->
+  <div class="card" id="card1">
+    <div class="section-title">🪨 模組 1：<span>石板與影分身</span> — 字串不可變性 (Immutability)</div>
+    <p style="color:#4a5568;margin-bottom:16px;">字串一旦建立就像刻在石板上，無法直接修改。只能創造全新的字串！</p>
+    <div class="stone-arena" id="m1Arena">
+      <div class="stone-tablet" id="m1Stone1">
+        <span id="m1HammerSlot"></span>
+        <div class="var-label" id="m1Label">s</div>
+        <span id="m1Text">APPLE</span>
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:12px;">
+      <button class="btn btn-danger" onclick="m1Error()">❌ s[0] = 'B'（錯誤）</button>
+      <button class="btn btn-success" onclick="m1Correct()">✅ s = s.replace('A','B')（正確）</button>
+      <button class="btn btn-reset" onclick="m1Reset()">🔄 重置</button>
+    </div>
+    <div class="console-output" id="m1Console">👆 點擊按鈕查看結果</div>
+  </div>
+
+  <!-- ══════════════════ MODULE 2 ══════════════════ -->
+  <div class="card" id="card2">
+    <div class="section-title">🌀 模組 2：<span>資料吸塵器</span> — 清理雜質 (strip)</div>
+    <p style="color:#4a5568;margin-bottom:16px;">字串兩側的空白、Tab、換行都是「隱形雜質」，用 strip 系列方法清乾淨！</p>
+    <div class="dust-area" id="m2DustArea">
+      <div class="vacuum" id="m2VacL">🌀</div>
+      <div class="dust-chip left-dust" id="m2LeftDust">【&nbsp;&nbsp;\n&nbsp;】</div>
+      <div class="main-string-box" id="m2Box">Hello World</div>
+      <div class="dust-chip right-dust" id="m2RightDust">【&nbsp;\t&nbsp;&nbsp;】</div>
+      <div class="vacuum" id="m2VacR">🌀</div>
+    </div>
+    <div style="text-align:center;margin-bottom:12px;">
+      <button class="btn btn-primary" onclick="m2Strip('left')">.lstrip()</button>
+      <button class="btn btn-primary" onclick="m2Strip('right')">.rstrip()</button>
+      <button class="btn btn-success" onclick="m2Strip('both')">.strip()</button>
+      <button class="btn btn-reset" onclick="m2Reset()">🔄 重置</button>
+    </div>
+    <div class="console-output" id="m2Console">👆 選擇要清理哪一側的灰塵</div>
+  </div>
+
+  <!-- ══════════════════ MODULE 3 ══════════════════ -->
+  <div class="card" id="card3">
+    <div class="section-title">📡 模組 3：<span>感測器解碼站</span> — 切分、拔除單位與轉型 (split &amp; float)</div>
+    <p style="color:#4a5568;margin-bottom:12px;">感測器傳來混合格式的髒資料，逐步解析為純數字！</p>
+    <div class="raw-data-display">
+      <span style="color:#60a5fa;">"</span>30.5℃/70.2%<span style="color:#60a5fa;">"</span>
+    </div>
+    <div class="sensor-layout">
+      <div class="sensor-code">
+        <div class="code-block" id="m3Code">
+          <span class="code-line" id="m3L1">t_str, h_str = data.split('/')</span>
+          <span class="code-line" id="m3L2">temp = float(t_str.replace('℃', ''))</span>
+          <span class="code-line" id="m3L3">humid = float(h_str.replace('%', ''))</span>
+        </div>
+      </div>
+      <div class="sensor-vars">
+        <div class="var-box" id="m3B_tstr">
+          <div class="label">t_str</div>
+          <div class="value" id="m3V_tstr">—</div>
+        </div>
+        <div class="var-box" id="m3B_hstr">
+          <div class="label">h_str</div>
+          <div class="value" id="m3V_hstr">—</div>
+        </div>
+        <div class="var-box" id="m3B_temp">
+          <div class="label">temp</div>
+          <div class="value float-val" id="m3V_temp">—</div>
+        </div>
+        <div class="var-box" id="m3B_humid">
+          <div class="label">humid</div>
+          <div class="value float-val" id="m3V_humid">—</div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <button class="btn btn-primary" id="m3Btn" onclick="m3Next()">▶ 下一步 (Step)</button>
+      <button class="btn btn-reset" onclick="m3Reset()">🔄 重置</button>
+    </div>
+    <div class="console-output" id="m3Console">👆 按「下一步」逐行解碼</div>
+  </div>
+
+  <!-- ══════════════════ MODULE 4 ══════════════════ -->
+  <div class="card" id="card4">
+    <div class="section-title">🔍 模組 4：<span>尋找與替換</span> — find &amp; replace</div>
+    <p style="color:#4a5568;margin-bottom:12px;">用放大鏡找到目標，用魔法棒揮手替換！</p>
+    <div class="sentence-display" id="m4Sentence">data = "I hate bugs, bugs are bad"</div>
+    <div style="text-align:center;margin-bottom:6px;">
+      <span class="magnifier" id="m4Mag">🔍</span>
+      <span class="index-badge" id="m4Badge">index = 7</span>
+    </div>
+    <div style="text-align:center;margin-bottom:12px;">
+      <button class="btn btn-warning" onclick="m4Find()">🔍 .find("bugs")</button>
+      <button class="btn btn-success" onclick="m4Replace()">🪄 .replace("hate","love")</button>
+      <button class="btn btn-reset" onclick="m4Reset()">🔄 重置</button>
+    </div>
+    <div class="console-output" id="m4Console">👆 選擇要執行的字串操作</div>
+  </div>
+
+  <!-- ══════════════════ MODULE 5 ══════════════════ -->
+  <div class="card" id="card5">
+    <div class="section-title">⚙️ 模組 5：<span>扒開糖衣的連續技</span> — 實戰資料轉換 Pipeline</div>
+    <p style="color:#4a5568;margin-bottom:12px;">髒資料字串 <code style="background:#f0f4ff;padding:2px 6px;border-radius:4px;">"&nbsp;&nbsp;$1,200&nbsp;&nbsp;"</code> 透過四道關卡變成純整數！</p>
+    <div class="pipeline-display" id="m5Display">"&nbsp;&nbsp;$1,200&nbsp;&nbsp;"</div>
+    <div class="pipeline-steps">
+      <div class="step-badge" id="m5S1">① .strip()</div>
+      <div class="step-badge" id="m5S2">② .replace('$','')</div>
+      <div class="step-badge" id="m5S3">③ .replace(',','')</div>
+      <div class="step-badge" id="m5S4">④ int()</div>
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <button class="btn btn-primary" id="m5Btn" onclick="m5Next()">▶ 逐步清理 (Step)</button>
+      <button class="btn btn-reset" onclick="m5Reset()">🔄 重置</button>
+    </div>
+    <div class="console-output" id="m5Console">👆 按「逐步清理」觀看 Pipeline 執行</div>
+  </div>
+
+  <!-- ══════════════════ MODULE 6 ══════════════════ -->
+  <div class="card" id="card6">
+    <div class="section-title">🏆 模組 6：<span>綜合實戰</span> — 髒亂 CSV 資料列解析</div>
+    <p style="color:#4a5568;margin-bottom:14px;">真實的 CSV 資料充滿空白雜質，逐行解析、累加計算！</p>
+    <div class="m6-layout">
+      <div class="m6-code">
+        <div class="code-block" id="m6Code">
+          <span class="code-line" id="m6L1">raw = "  10, 20 , 30 \n"</span>
+          <span class="code-line" id="m6L2">items = raw.strip().split(',')</span>
+          <span class="code-line" id="m6L3">total = 0</span>
+          <span class="code-line" id="m6L4">for item in items:</span>
+          <span class="code-line ind-1" id="m6L5">n = int(item)</span>
+          <span class="code-line ind-2" id="m6L5b"></span>
+          <span class="code-line ind-1" id="m6L6">total += n</span>
+        </div>
+      </div>
+      <div class="m6-right">
+        <div class="raw-csv-display" id="m6RawDisplay">
+          <span style="color:#60a5fa;">"</span>&nbsp;&nbsp;10, 20 , 30 \n<span style="color:#60a5fa;">"</span>
+        </div>
+        <div class="monitor-panel">
+          <div class="mp-row">
+            <span class="mp-label">items</span>
+            <span class="mp-value" id="m6VItems">—</span>
+          </div>
+          <div class="mp-row">
+            <span class="mp-label">total</span>
+            <span class="mp-value" id="m6VTotal">—</span>
+          </div>
+          <div class="mp-row">
+            <span class="mp-label">item</span>
+            <span class="mp-value" id="m6VItem">—</span>
+          </div>
+          <div class="mp-row">
+            <span class="mp-label">n</span>
+            <span class="mp-value" id="m6VN">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:14px;">
+      <button class="btn btn-primary" id="m6Btn" onclick="m6Next()">▶ 下一步 (Step)</button>
+      <button class="btn btn-reset" onclick="m6Reset()">🔄 重置</button>
+    </div>
+    <div class="console-output" id="m6Console">👆 按「下一步」逐步執行 CSV 解析</div>
+  </div>
+
+</div><!-- /.container -->
+
+<script>
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+// ── Intersection Observer ──────────────────────────────
+const cards = document.querySelectorAll('.card');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.1 });
+cards.forEach(c => observer.observe(c));
+
+// ══════════════════════════════════════════════════════
+// MODULE 1 — Immutability
+// ══════════════════════════════════════════════════════
+let m1Busy = false;
+async function m1Error() {
+  if (m1Busy) return; m1Busy = true;
+  const stone = document.getElementById('m1Stone1');
+  const con   = document.getElementById('m1Console');
+  // hammer drop
+  const slot = document.getElementById('m1HammerSlot');
+  slot.textContent = '🔨';
+  slot.style.cssText = 'font-size:1.8rem;display:block;text-align:center;transition:transform 0.2s;';
+  await delay(300);
+  stone.classList.add('shake');
+  con.innerHTML = '<span style="color:#f87171;">TypeError: \'str\' object does not support item assignment\n字串是不可變的！你不能直接修改石板上的文字。</span>';
+  await delay(600);
+  stone.classList.remove('shake');
+  slot.textContent = '💥';
+  await delay(800);
+  slot.textContent = '';
+  m1Busy = false;
+}
+
+async function m1Correct() {
+  if (m1Busy) return; m1Busy = true;
+  const arena = document.getElementById('m1Arena');
+  const con   = document.getElementById('m1Console');
+  const label = document.getElementById('m1Label');
+
+  con.innerHTML = '<span style="color:#facc15;">🔮 魔法影印機啟動中...</span>';
+  await delay(700);
+
+  // Create new stone
+  const newStone = document.createElement('div');
+  newStone.className = 'stone-tablet';
+  newStone.style.opacity = '0';
+  newStone.style.transform = 'scale(0.6)';
+  newStone.style.transition = 'all 0.5s';
+  newStone.innerHTML = '<span>BPPLE</span>';
+  const arrow = document.createElement('div');
+  arrow.innerHTML = '<div class="arrow-anim" style="font-size:2rem;">➡️</div>';
+  arena.appendChild(arrow);
+  arena.appendChild(newStone);
+  await delay(100);
+  newStone.style.opacity = '1';
+  newStone.style.transform = 'scale(1)';
+  await delay(600);
+
+  // Move label
+  label.style.background = '#48bb78';
+  label.textContent = 's (new)';
+  label.style.left = '';
+  label.style.transform = '';
+  newStone.appendChild(label);
+  label.style.position = '';
+  label.style.top = '-28px';
+
+  con.innerHTML = '<span style="color:#86efac;">✅ s = s.replace(\'A\',\'B\')\n原始石板: "APPLE" (仍然存在，等待垃圾回收)\n新石板:    "BPPLE" ← 變數 s 現在指向這裡</span>';
+  m1Busy = false;
+}
+
+function m1Reset() {
+  const arena = document.getElementById('m1Arena');
+  arena.innerHTML = `
+    <div class="stone-tablet" id="m1Stone1">
+      <span id="m1HammerSlot"></span>
+      <div class="var-label" id="m1Label">s</div>
+      <span id="m1Text">APPLE</span>
+    </div>`;
+  document.getElementById('m1Console').textContent = '👆 點擊按鈕查看結果';
+  m1Busy = false;
+}
+
+// ══════════════════════════════════════════════════════
+// MODULE 2 — strip
+// ══════════════════════════════════════════════════════
+let m2State = { left: true, right: true };
+
+async function m2Strip(side) {
+  const con    = document.getElementById('m2Console');
+  const leftD  = document.getElementById('m2LeftDust');
+  const rightD = document.getElementById('m2RightDust');
+  const vacL   = document.getElementById('m2VacL');
+  const vacR   = document.getElementById('m2VacR');
+  const box    = document.getElementById('m2Box');
+
+  con.textContent = '';
+  if (side === 'left' || side === 'both') {
+    if (m2State.left) {
+      vacL.classList.add('suck-left');
+      await delay(500);
+      leftD.classList.add('vanish');
+      m2State.left = false;
+      vacL.classList.remove('suck-left');
+    }
+  }
+  if (side === 'right' || side === 'both') {
+    if (m2State.right) {
+      vacR.classList.add('suck-right');
+      await delay(500);
+      rightD.classList.add('vanish');
+      m2State.right = false;
+      vacR.classList.remove('suck-right');
+    }
+  }
+  let result = '"Hello World"';
+  if (!m2State.left && !m2State.right) result = '"Hello World"';
+  else if (!m2State.left) result = '"Hello World \\t  "';
+  else if (!m2State.right) result = '"  \\n Hello World"';
+
+  const fn = side === 'left' ? '.lstrip()' : side === 'right' ? '.rstrip()' : '.strip()';
+  con.innerHTML = `<span style="color:#86efac;">>>> s${fn}\n結果: ${result}</span>`;
+}
+
+function m2Reset() {
+  m2State = { left: true, right: true };
+  document.getElementById('m2LeftDust').classList.remove('vanish');
+  document.getElementById('m2RightDust').classList.remove('vanish');
+  document.getElementById('m2VacL').classList.remove('suck-left');
+  document.getElementById('m2VacR').classList.remove('suck-right');
+  document.getElementById('m2Console').textContent = '👆 選擇要清理哪一側的灰塵';
+}
+
+// ══════════════════════════════════════════════════════
+// MODULE 3 — split & float
+// ══════════════════════════════════════════════════════
+let m3Step = 0, m3Busy = false;
+const m3Lines = ['m3L1','m3L2','m3L3'];
+
+function m3Highlight(id) {
+  m3Lines.forEach(l => document.getElementById(l).classList.remove('active'));
+  if(id) document.getElementById(id).classList.add('active');
+}
+function m3BoxPulse(id) {
+  const b = document.getElementById(id);
+  b.classList.add('highlight');
+  setTimeout(()=>b.classList.remove('highlight'),800);
+}
+
+async function m3Next() {
+  if (m3Busy) return; m3Busy = true;
+  const con = document.getElementById('m3Console');
+  m3Step++;
+
+  if (m3Step === 1) {
+    m3Highlight('m3L1');
+    con.innerHTML = '<span style="color:#facc15;">⚡ 雷射斧頭對準 "/" 劈下！</span>';
+    await delay(600);
+    document.getElementById('m3V_tstr').textContent = '"30.5℃"';
+    document.getElementById('m3V_hstr').textContent = '"70.2%"';
+    m3BoxPulse('m3B_tstr'); m3BoxPulse('m3B_hstr');
+    con.innerHTML = '<span style="color:#86efac;">>>> t_str, h_str = data.split("/")\nt_str = "30.5℃"\nh_str = "70.2%"</span>';
+  } else if (m3Step === 2) {
+    m3Highlight('m3L2');
+    con.innerHTML = '<span style="color:#facc15;">🪄 魔法棒拔除 ℃ → 傳入 float() 齒輪...</span>';
+    await delay(700);
+    document.getElementById('m3V_tstr').textContent = '"30.5"';
+    m3BoxPulse('m3B_tstr');
+    await delay(500);
+    document.getElementById('m3V_temp').textContent = '30.5';
+    m3BoxPulse('m3B_temp');
+    con.innerHTML = '<span style="color:#86efac;">>>> temp = float(t_str.replace("℃",""))\n"30.5℃" → "30.5" → 30.5  ✅ 浮點數</span>';
+  } else if (m3Step === 3) {
+    m3Highlight('m3L3');
+    con.innerHTML = '<span style="color:#facc15;">🪄 魔法棒拔除 % → 傳入 float() 齒輪...</span>';
+    await delay(700);
+    document.getElementById('m3V_hstr').textContent = '"70.2"';
+    m3BoxPulse('m3B_hstr');
+    await delay(500);
+    document.getElementById('m3V_humid').textContent = '70.2';
+    m3BoxPulse('m3B_humid');
+    con.innerHTML = '<span style="color:#86efac;">>>> humid = float(h_str.replace("%",""))\n"70.2%" → "70.2" → 70.2  ✅ 浮點數\n\n🎉 解碼成功！\n  溫度: 30.5 (°C)\n  溼度: 70.2 (%)</span>';
+    document.getElementById('m3Btn').textContent = '✅ 完成';
+    document.getElementById('m3Btn').disabled = true;
+  }
+  m3Busy = false;
+}
+
+function m3Reset() {
+  m3Step = 0; m3Busy = false;
+  m3Highlight(null);
+  ['m3V_tstr','m3V_hstr','m3V_temp','m3V_humid'].forEach(id => document.getElementById(id).textContent = '—');
+  ['m3B_tstr','m3B_hstr','m3B_temp','m3B_humid'].forEach(id => document.getElementById(id).classList.remove('highlight'));
+  document.getElementById('m3Console').textContent = '👆 按「下一步」逐行解碼';
+  const btn = document.getElementById('m3Btn');
+  btn.textContent = '▶ 下一步 (Step)'; btn.disabled = false;
+}
+
+// ══════════════════════════════════════════════════════
+// MODULE 4 — find & replace
+// ══════════════════════════════════════════════════════
+let m4Busy = false, m4Found = false, m4Replaced = false;
+
+async function m4Find() {
+  if (m4Busy) return; m4Busy = true;
+  const sen = document.getElementById('m4Sentence');
+  const con = document.getElementById('m4Console');
+  const badge = document.getElementById('m4Badge');
+  const mag   = document.getElementById('m4Mag');
+  const origText = 'data = "I hate bugs, bugs are bad"';
+
+  con.innerHTML = '<span style="color:#facc15;">🔍 放大鏡從左掃描中...</span>';
+  mag.style.transition = 'margin-left 0.8s ease';
+  mag.style.marginLeft = '80px';
+  await delay(900);
+  mag.style.marginLeft = '0';
+
+  // Highlight first "bugs"
+  sen.innerHTML = 'data = "I hate <span class="highlight-word">bugs</span>, bugs are bad"';
+  badge.style.opacity = '1';
+  con.innerHTML = '<span style="color:#86efac;">>>> data.find("bugs")\n返回值: 7\n（從 data[7] 開始找到第一個 "bugs"）</span>';
+  m4Found = true;
+  m4Busy = false;
+}
+
+async function m4Replace() {
+  if (m4Busy) return; m4Busy = true;
+  const sen = document.getElementById('m4Sentence');
+  const con = document.getElementById('m4Console');
+
+  con.innerHTML = '<span style="color:#facc15;">🪄 魔法棒揮舞...「hate」爆出煙霧！💨</span>';
+  await delay(600);
+  if (!m4Replaced) {
+    const current = m4Found
+      ? 'data = "I <span class="replace-word">love ❤️</span> <span class="highlight-word">bugs</span>, bugs are bad"'
+      : 'data = "I <span class="replace-word">love ❤️</span> bugs, bugs are bad"';
+    sen.innerHTML = current;
+    m4Replaced = true;
+  }
+  con.innerHTML = '<span style="color:#86efac;">>>> data.replace("hate","love")\n返回: "I love bugs, bugs are bad"\n（所有符合的子字串都會被替換）</span>';
+  m4Busy = false;
+}
+
+function m4Reset() {
+  m4Busy = false; m4Found = false; m4Replaced = false;
+  document.getElementById('m4Sentence').textContent = 'data = "I hate bugs, bugs are bad"';
+  document.getElementById('m4Badge').style.opacity = '0';
+  document.getElementById('m4Mag').style.marginLeft = '0';
+  document.getElementById('m4Console').textContent = '👆 選擇要執行的字串操作';
+}
+
+// ══════════════════════════════════════════════════════
+// MODULE 5 — Pipeline
+// ══════════════════════════════════════════════════════
+let m5Step = 0, m5Busy = false;
+const m5Values = [
+  '"&nbsp;&nbsp;$1,200&nbsp;&nbsp;"',
+  '"$1,200"',
+  '"1,200"',
+  '"1200"',
+  '<span style="color:#48bb78;font-size:1.5rem;">1200</span>'
+];
+const m5Msgs = [
+  '👆 按「逐步清理」觀看 Pipeline 執行',
+  '<span style="color:#86efac;">Step 1: .strip()\n"  $1,200  " → "$1,200"\n吸塵器吸走外圍空白！</span>',
+  '<span style="color:#86efac;">Step 2: .replace(\'$\',\'\')\n"$1,200" → "1,200"\n魔法消滅了金錢符號！</span>',
+  '<span style="color:#86efac;">Step 3: .replace(\',\',\'\')\n"1,200" → "1200"\n魔法消滅了逗號！</span>',
+  '<span style="color:#86efac;">Step 4: int(...)\n"1200" → 1200\n字串外殼碎裂！變成純整數 ✅\n\n最終結果: 1200  (type: int)</span>'
+];
+const m5BadgeIds = ['m5S1','m5S2','m5S3','m5S4'];
+
+async function m5Next() {
+  if (m5Busy || m5Step >= 4) return; m5Busy = true;
+  m5Step++;
+  const disp = document.getElementById('m5Display');
+  const con  = document.getElementById('m5Console');
+  // badge
+  const bid = m5BadgeIds[m5Step-1];
+  document.getElementById(bid).classList.add('active-step');
+  await delay(300);
+  disp.innerHTML = m5Values[m5Step];
+  disp.classList.add('fade-in-up');
+  setTimeout(()=>disp.classList.remove('fade-in-up'),500);
+  document.getElementById(bid).classList.remove('active-step');
+  document.getElementById(bid).classList.add('done');
+  con.innerHTML = m5Msgs[m5Step];
+  if (m5Step >= 4) {
+    document.getElementById('m5Btn').textContent = '✅ Pipeline 完成！';
+    document.getElementById('m5Btn').disabled = true;
+  }
+  m5Busy = false;
+}
+
+function m5Reset() {
+  m5Step = 0; m5Busy = false;
+  document.getElementById('m5Display').innerHTML = '"&nbsp;&nbsp;$1,200&nbsp;&nbsp;"';
+  m5BadgeIds.forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('done','active-step');
+  });
+  document.getElementById('m5Console').textContent = '👆 按「逐步清理」觀看 Pipeline 執行';
+  const btn = document.getElementById('m5Btn');
+  btn.textContent = '▶ 逐步清理 (Step)'; btn.disabled = false;
+}
+
+// ══════════════════════════════════════════════════════
+// MODULE 6 — CSV parsing loop
+// ══════════════════════════════════════════════════════
+let m6Step = 0, m6Busy = false;
+// Loop steps: step 1 = L1, step 2 = L2+L3, step 3,4,5 = loop iter for item 0,1,2
+const m6LineIds = ['m6L1','m6L2','m6L3','m6L4','m6L5','m6L6'];
+const m6LoopItems = [['10',10],['  20 ',20],[' 30',30]];
+let m6LoopIdx = 0, m6Total = 0;
+
+function m6Highlight(...ids) {
+  m6LineIds.forEach(l => document.getElementById(l).classList.remove('active'));
+  ids.forEach(id => { const el=document.getElementById(id); if(el) el.classList.add('active'); });
+}
+function m6Pulse(id) {
+  const el = document.getElementById(id);
+  el.classList.add('pulse');
+  setTimeout(()=>el.classList.remove('pulse'),600);
+}
+
+async function m6Next() {
+  if (m6Busy) return; m6Busy = true;
+  const con = document.getElementById('m6Console');
+  m6Step++;
+
+  if (m6Step === 1) {
+    m6Highlight('m6L1');
+    con.innerHTML = '<span style="color:#facc15;">📦 載入原始 CSV 字串（含頭尾空白與換行）</span>';
+  } else if (m6Step === 2) {
+    m6Highlight('m6L2');
+    con.innerHTML = '<span style="color:#facc15;">🪚 strip() 清頭尾 → split(",") 斧頭切分！</span>';
+    await delay(700);
+    document.getElementById('m6VItems').textContent = "['10',' 20 ',' 30']";
+    m6Pulse('m6VItems');
+    con.innerHTML = '<span style="color:#86efac;">items = raw.strip().split(",")\n→ [\'10\', \' 20 \', \' 30\']</span>';
+  } else if (m6Step === 3) {
+    m6Highlight('m6L3');
+    m6Total = 0;
+    document.getElementById('m6VTotal').textContent = '0';
+    m6Pulse('m6VTotal');
+    con.innerHTML = '<span style="color:#86efac;">total = 0\n初始化累加變數</span>';
+  } else if (m6Step >= 4 && m6Step <= 6) {
+    const idx = m6Step - 4;
+    const [itemStr, numVal] = m6LoopItems[idx];
+    m6Highlight('m6L4','m6L5','m6L6');
+    document.getElementById('m6VItem').textContent = `"${itemStr}"`;
+    m6Pulse('m6VItem');
+    await delay(400);
+    m6Highlight('m6L5');
+    await delay(400);
+    document.getElementById('m6VN').textContent = String(numVal);
+    m6Pulse('m6VN');
+    await delay(400);
+    m6Highlight('m6L6');
+    m6Total += numVal;
+    await delay(400);
+    document.getElementById('m6VTotal').textContent = String(m6Total);
+    m6Pulse('m6VTotal');
+    con.innerHTML = `<span style="color:#86efac;">迭代 ${idx+1}: item="${itemStr}" → int() → n=${numVal}\ntotal += ${numVal}  →  total = ${m6Total}</span>`;
+    if (m6Step === 6) {
+      await delay(300);
+      con.innerHTML = `<span style="color:#86efac;">迭代 3 完成\n\n🎉 CSV 解析完畢！\nitems = ['10',' 20 ',' 30']\ntotal = 60\n\nint() 會自動忽略前後空白 ✅</span>`;
+      document.getElementById('m6Btn').textContent = '✅ 完成';
+      document.getElementById('m6Btn').disabled = true;
+    }
+  }
+  m6Busy = false;
+}
+
+function m6Reset() {
+  m6Step = 0; m6Busy = false; m6Total = 0; m6LoopIdx = 0;
+  m6LineIds.forEach(l => document.getElementById(l).classList.remove('active'));
+  ['m6VItems','m6VTotal','m6VItem','m6VN'].forEach(id=>{ document.getElementById(id).textContent='—'; });
+  document.getElementById('m6Console').textContent = '👆 按「下一步」逐步執行 CSV 解析';
+  const btn = document.getElementById('m6Btn');
+  btn.textContent = '▶ 下一步 (Step)'; btn.disabled = false;
+}
+</script>
+</body>
+</html>

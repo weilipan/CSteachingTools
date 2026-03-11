@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python 函式與 Lambda 互動教學</title>
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../layout.js" defer></script>
+<style>
+/* === 底層規範 === */
+body { padding: 0; margin: 0; background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+.container { padding-top: 80px; padding-bottom: 60px; max-width: 1000px; margin: 0 auto; }
+.card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.08); padding: 32px; margin-bottom: 36px; opacity: 0; transform: translateY(30px); transition: all 0.6s ease; overflow: hidden; }
+.card.visible { opacity: 1; transform: translateY(0); }
+.section-title { font-size: 1.4rem; font-weight: 700; color: #2d3748; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+.section-sub { color: #718096; font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5; }
+/* === Console === */
+.console-output { white-space: pre-wrap; font-family: 'Consolas', monospace; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; font-size: 0.9rem; min-height: 40px; margin-top: 15px; border-left: 4px solid #4a5568; line-height: 1.5; }
+/* === 程式碼排版保護機制 === */
+.code-block { background: #1e1e1e; border-radius: 8px; padding: 16px; font-family: 'Consolas', monospace; font-size: 0.9rem; color: #d4d4d4; line-height: 1.6; margin-bottom: 15px; }
+.ln { display: block; white-space: nowrap; transition: background 0.3s ease, color 0.3s ease; padding: 2px 6px; border-radius: 4px; }
+.ln.active { background: rgba(255, 213, 79, 0.2); color: #ffd54f; font-weight: bold; border-left: 3px solid #ffd54f; }
+.ind-1 { padding-left: 1.5rem !important; }
+.ind-2 { padding-left: 3rem !important; }
+.kw { color: #569cd6; } .str { color: #ce9178; } .num { color: #b5cea8; } .cmt { color: #6a9955; } .fn { color: #dcdcaa; }
+/* === 按鈕 === */
+.btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
+.btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-secondary { background: #e2e8f0; color: #4a5568; margin-left: 8px; }
+.btn-secondary:hover { background: #cbd5e0; }
+/* === M1: 工廠 === */
+.factory-scene { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 30px; background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.funnel-group { display: flex; gap: 20px; }
+.funnel-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.funnel-label { color: #a0aec0; font-family: monospace; font-size: 0.85rem; }
+.funnel { width: 60px; height: 60px; position: relative; }
+.funnel svg { width: 100%; height: 100%; }
+.num-ball { width: 36px; height: 36px; background: linear-gradient(135deg, #f6ad55, #ed8936); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 1rem; position: absolute; top: -45px; left: 50%; transform: translateX(-50%); opacity: 0; transition: top 0.5s ease, opacity 0.3s; box-shadow: 0 0 12px rgba(246,173,85,0.6); }
+.machine-body { background: linear-gradient(135deg, #2d3748, #4a5568); border: 3px solid #718096; border-radius: 16px; padding: 20px 24px; text-align: center; position: relative; min-width: 140px; }
+.machine-title { color: #a0aec0; font-family: monospace; font-size: 0.8rem; margin-bottom: 8px; }
+.gear { font-size: 2.5rem; display: inline-block; transition: filter 0.3s; }
+.gear.spin { animation: spinGear 0.4s linear infinite; filter: drop-shadow(0 0 8px #f6e05e); }
+@keyframes spinGear { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.calc-display { background: #1e1e1e; color: #68d391; font-family: monospace; padding: 6px 12px; border-radius: 6px; font-size: 1rem; margin-top: 8px; min-height: 28px; }
+.belt-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.belt-label { color: #a0aec0; font-family: monospace; font-size: 0.85rem; }
+.output-belt { width: 80px; height: 16px; background: #4a5568; border-radius: 8px; position: relative; overflow: hidden; }
+.output-belt::after { content:''; position:absolute; top:0; left:-100%; width:200%; height:100%; background: repeating-linear-gradient(90deg, transparent 0px, transparent 8px, #718096 8px, #718096 16px); }
+.output-ball { width: 40px; height: 40px; background: linear-gradient(135deg, #68d391, #38a169); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 1rem; opacity: 0; transition: all 0.5s; box-shadow: 0 0 15px rgba(104,211,145,0.7); }
+.input-row { display: flex; gap: 12px; align-items: center; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
+.input-row input { width: 70px; padding: 8px; border: 2px solid #cbd5e0; border-radius: 8px; font-size: 1.1rem; text-align: center; font-family: monospace; }
+/* === M2: print vs return === */
+.m2-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+@media(max-width:600px){.m2-layout{grid-template-columns:1fr;}}
+.m2-col { background: #f7fafc; border-radius: 12px; padding: 20px; border: 2px solid #e2e8f0; position: relative; }
+.m2-col h3 { margin-top: 0; font-size: 1.1rem; margin-bottom: 15px; }
+.hologram { position: absolute; top: 10px; right: 10px; font-size: 2.5rem; opacity: 0; transition: opacity 0.4s; filter: blur(1px) drop-shadow(0 0 8px #63b3ed); }
+.box-var { margin-top: 15px; border: 3px dashed #a0aec0; border-radius: 10px; padding: 10px; text-align: center; min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: all 0.4s; }
+.box-label { font-size: 0.75rem; color: #718096; font-family: monospace; }
+.box-value { font-size: 1.8rem; font-weight: bold; transition: all 0.5s; }
+.box-var.has-value { border-color: #38a169; border-style: solid; background: #f0fff4; }
+.none-value { color: #a0aec0; font-size: 1.1rem; font-style: italic; }
+.apple-solid { animation: dropIn 0.5s cubic-bezier(.17,.84,.44,1.275); }
+@keyframes dropIn { 0%{transform:translateY(-30px) scale(0.5);opacity:0;} 100%{transform:translateY(0) scale(1);opacity:1;} }
+/* === M3: Scope === */
+.scope-scene { position: relative; background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%); border-radius: 16px; padding: 30px 20px; min-height: 260px; margin-bottom: 20px; }
+.universe-label { color: #a0aec0; font-size: 0.8rem; font-family: monospace; position: absolute; top: 10px; left: 15px; }
+.global-vars { display: flex; gap: 15px; justify-content: center; margin-top: 10px; }
+.var-box { background: #2c5282; border: 2px solid #4299e1; border-radius: 10px; padding: 12px 20px; text-align: center; min-width: 80px; }
+.var-name { font-family: monospace; color: #90cdf4; font-size: 0.85rem; }
+.var-val { font-size: 1.6rem; font-weight: bold; color: #fff; margin-top: 4px; transition: all 0.4s; }
+.func-room { position: absolute; bottom: 0; left: 0; right: 0; margin: 0 20px 20px; background: rgba(159,122,234,0.15); border: 2px solid rgba(159,122,234,0.4); border-radius: 12px; padding: 20px; opacity: 0; transform: scaleY(0); transform-origin: bottom; transition: all 0.5s ease; }
+.func-room.active { opacity: 1; transform: scaleY(1); }
+.func-room-label { color: #b794f4; font-family: monospace; font-size: 0.8rem; margin-bottom: 10px; }
+.local-vars { display: flex; gap: 15px; justify-content: center; }
+.var-box.local { background: #44337a; border-color: #9f7aea; }
+.var-box.local .var-name { color: #d6bcfa; }
+/* === M4: Pizza === */
+.pizza-preview { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px; background: #fff5f5; border-radius: 12px; min-height: 100px; margin-bottom: 15px; transition: all 0.4s; }
+.pizza-emoji { font-size: 4rem; transition: all 0.5s; display: inline-block; }
+.pizza-spec { font-family: monospace; font-size: 1rem; color: #e53e3e; font-weight: bold; padding: 4px 12px; background: #fff; border-radius: 20px; border: 2px solid #fc8181; }
+.pizza-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 15px; }
+.laser-scan { position: relative; overflow: hidden; margin-bottom: 10px; }
+.laser-line { position: absolute; top: 0; left: -100%; width: 3px; height: 100%; background: linear-gradient(180deg, transparent, #ed64a6, transparent); box-shadow: 0 0 8px #ed64a6; transition: left 0.6s ease; }
+.laser-line.fire { left: 100%; }
+.highlight-param { transition: all 0.4s; display: inline; }
+.highlight-param.lit { color: #f6e05e; background: rgba(246,224,94,0.2); border-radius: 3px; padding: 0 2px; font-weight: bold; }
+/* === M5: Lambda === */
+.m5-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; }
+@media(max-width:600px){.m5-compare{grid-template-columns:1fr;}}
+.factory-col { background: #f7fafc; border-radius: 12px; padding: 16px; border: 2px solid #e2e8f0; text-align: center; }
+.factory-col h3 { margin-top: 0; font-size: 0.9rem; color: #718096; }
+.result-badge { display: inline-block; background: #c6f6d5; border: 2px solid #38a169; color: #276749; font-family: monospace; font-weight: bold; font-size: 1.3rem; padding: 6px 16px; border-radius: 8px; opacity: 0; transition: all 0.4s; margin-top: 10px; }
+.result-badge.show { opacity: 1; transform: scale(1.05); }
+.laser-gun-wrap { position: relative; background: linear-gradient(135deg, #2d3748, #4a5568); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 10px; overflow: hidden; }
+.laser-gun { font-size: 2rem; }
+.laser-target { font-family: monospace; font-size: 1.3rem; color: #d4d4d4; padding: 4px 12px; background: #1e1e1e; border-radius: 6px; transition: all 0.4s; }
+.laser-beam-h { position: absolute; left: 0; top: 50%; height: 3px; background: linear-gradient(90deg, transparent, #ed64a6, transparent); width: 0; transform: translateY(-50%); box-shadow: 0 0 8px #ed64a6; transition: width 0.3s ease; }
+/* === M6: Apply === */
+.m6-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width:600px){.m6-layout{grid-template-columns:1fr;}}
+.price-array { display: flex; gap: 10px; flex-direction: column; margin-top: 30px; position: relative; }
+.price-item { background: #edf2f7; border: 2px solid #cbd5e0; border-radius: 8px; padding: 10px 20px; text-align: center; font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #2d3748; transition: all 0.5s; position: relative; }
+.price-item.scanning { border-color: #ed64a6; box-shadow: 0 0 12px rgba(237,100,166,0.6); background: #fff0f6; }
+.price-item.done { background: linear-gradient(135deg, #c6f6d5, #9ae6b4); border-color: #38a169; color: #276749; transform: rotateY(360deg); }
+.scanner-gun { font-size: 1.8rem; position: absolute; left: -50px; top: 0; transition: top 0.5s ease; }
+.scanner-beam { position: absolute; left: -30px; top: 50%; height: 2px; width: 25px; background: #ed64a6; box-shadow: 0 0 6px #ed64a6; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; }
+.scanner-beam.active { opacity: 1; }
+@keyframes shake { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-6px);} 40%,80%{transform:translateX(6px);} }
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="text-align:center; margin-bottom:40px;">
+    <h1 style="font-size:2.2rem; color:#2d3748; margin-bottom:10px;">⚙️ Python 函式與 Lambda 互動教學</h1>
+    <p style="color:#718096; font-size:1.1rem;">從函式加工廠到口袋裡的瑞士刀，掌握函式的每一個核心概念</p>
+  </div>
+
+  <div class="card" id="m1">
+    <div class="section-title">🏭 模組 1：函式加工廠 (Function Anatomy)</div>
+    <div class="section-sub">輸入兩個數字，觀察 <code>add_numbers(a, b)</code> 工廠如何接收參數、運算，再從輸送帶吐出結果！</div>
+    <div class="input-row">
+      <label style="font-family:monospace; font-weight:bold;">a =</label>
+      <input type="number" id="m1-a" value="7">
+      <label style="font-family:monospace; font-weight:bold;">b =</label>
+      <input type="number" id="m1-b" value="5">
+      <button class="btn btn-primary" id="m1-btn" onclick="runFactory()">▶ 投入工廠</button>
+      <button class="btn btn-secondary" onclick="resetFactory()">↩ 重置</button>
+    </div>
+    <div class="factory-scene" id="m1-scene">
+      <div class="funnel-group">
+        <div class="funnel-wrap">
+          <div class="funnel-label">參數 a</div>
+          <div class="funnel" style="position:relative;">
+            <svg viewBox="0 0 60 60"><polygon points="0,0 60,0 40,40 20,40" fill="#4a5568"/><rect x="20" y="40" width="20" height="20" fill="#4a5568"/></svg>
+            <div class="num-ball" id="m1-ball-a">0</div>
+          </div>
+        </div>
+        <div class="funnel-wrap">
+          <div class="funnel-label">參數 b</div>
+          <div class="funnel" style="position:relative;">
+            <svg viewBox="0 0 60 60"><polygon points="0,0 60,0 40,40 20,40" fill="#4a5568"/><rect x="20" y="40" width="20" height="20" fill="#4a5568"/></svg>
+            <div class="num-ball" id="m1-ball-b">0</div>
+          </div>
+        </div>
+      </div>
+      <div style="color:#718096; font-size:1.5rem;">→</div>
+      <div class="machine-body">
+        <div class="machine-title">add_numbers(a, b)</div>
+        <div class="gear" id="m1-gear">⚙️</div>
+        <div class="calc-display" id="m1-calc">a + b = ?</div>
+      </div>
+      <div style="color:#718096; font-size:1.5rem;">→</div>
+      <div class="belt-wrap">
+        <div class="belt-label">return</div>
+        <div class="output-belt"></div>
+        <div class="output-ball" id="m1-output">?</div>
+      </div>
+    </div>
+    <div class="code-block">
+      <span class="ln"><span class="kw">def</span> <span class="fn">add_numbers</span>(a, b):</span>
+      <span class="ln ind-1"><span class="kw">return</span> a + b</span>
+    </div>
+    <div class="console-output" id="m1-console">等待投入參數...</div>
+  </div>
+
+  <div class="card" id="m2">
+    <div class="section-title">🎭 模組 2：世紀騙局：print() vs return</div>
+    <div class="section-sub"><code>print()</code> 只是在螢幕投影，你「看到」但無法「抓住」它。<code>return</code> 才是把實體東西塞進變數箱！</div>
+    <div class="m2-layout">
+      <div class="m2-col" style="border-color:#fc8181;">
+        <h3 style="color:#c53030; margin-bottom:10px;">❌ 只有投影 (print)</h3>
+        <div class="code-block" style="padding:12px; margin-bottom:15px; font-size:1rem;">
+          <span class="ln"><span class="kw">def</span> <span class="fn">show_apple</span>():</span>
+          <span class="ln ind-1"><span class="kw">print</span>(<span class="str">"🍎"</span>)</span>
+        </div>
+        <button class="btn btn-primary" id="m2-btn-left" onclick="runPrint()" style="background:linear-gradient(135deg,#fc8181,#e53e3e);">▶ 執行 show_apple()</button>
+        <div class="hologram" id="m2-hologram">🍎</div>
+        <div class="box-var" id="m2-box1">
+          <div class="box-label">box1 = show_apple()</div>
+          <div class="box-value" id="m2-val1">📦 空的...</div>
+        </div>
+      </div>
+      
+      <div class="m2-col" style="border-color:#68d391;">
+        <h3 style="color:#276749; margin-bottom:10px;">✅ 實體交出 (return)</h3>
+        <div class="code-block" style="padding:12px; margin-bottom:15px; font-size:1rem;">
+          <span class="ln"><span class="kw">def</span> <span class="fn">get_apple</span>():</span>
+          <span class="ln ind-1"><span class="kw">return</span> <span class="str">"🍎"</span></span>
+        </div>
+        <button class="btn btn-primary" id="m2-btn-right" onclick="runReturn()" style="background:linear-gradient(135deg,#68d391,#38a169);">▶ 執行 get_apple()</button>
+        <div class="box-var" id="m2-box2">
+          <div class="box-label">box2 = get_apple()</div>
+          <div class="box-value" id="m2-val2">📦 空的...</div>
+        </div>
+      </div>
+    </div>
+    <div class="console-output" id="m2-console">點擊左側或右側按鈕，觀察差異...</div>
+  </div>
+
+  <div class="card" id="m3">
+    <div class="section-title">🌌 模組 3：平行宇宙：作用域的結界 (Scope)</div>
+    <div class="section-sub">Function 內部創造的變數，存在於自己的「結界」裡。函式結束後，結界崩塌，外面的 <code>hp</code> 安然無恙！</div>
+    <div class="scope-scene" id="m3-scene">
+      <div class="universe-label">🌍 Main 宇宙 (Global Scope)</div>
+      <div class="global-vars">
+        <div class="var-box">
+          <div class="var-name">hp (全域)</div>
+          <div class="var-val" id="m3-global-hp">100</div>
+        </div>
+      </div>
+      <div class="func-room" id="m3-room">
+        <div class="func-room-label">🔮 Function 房間 (Local Scope) — set_hp()</div>
+        <div class="local-vars">
+          <div class="var-box local" id="m3-local-box" style="opacity:0; transform:scale(0.5); transition:all 0.5s;">
+            <div class="var-name">hp (區域)</div>
+            <div class="var-val" id="m3-local-hp">?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="code-block" style="margin-bottom:0;">
+      <span class="ln"><span class="kw">def</span> <span class="fn">set_hp</span>():</span>
+      <span class="ln ind-1">hp = <span class="num">10</span>  <span class="cmt"># 區域變數</span></span>
+      <span class="ln"></span>
+      <span class="ln">hp = <span class="num">100</span>  <span class="cmt"># 全域變數</span></span>
+      <span class="ln"><span class="fn">set_hp</span>()</span>
+      <span class="ln"><span class="kw">print</span>(hp)  <span class="cmt"># 仍然是 100！</span></span>
+    </div>
+    <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn btn-primary" id="m3-btn" onclick="runScope()">▶ 呼叫函式</button>
+      <button class="btn btn-secondary" onclick="resetScope()">↩ 重置</button>
+    </div>
+    <div class="console-output" id="m3-console">等待呼叫...</div>
+  </div>
+
+  <div class="card" id="m4">
+    <div class="section-title">🍕 模組 4：客製化披薩店：預設引數與關鍵字引數</div>
+    <div class="section-sub">呼叫函式時可以省略有預設值的參數，也可以用「關鍵字」精準指定特定參數！</div>
+    <div class="laser-scan">
+      <div class="laser-line" id="m4-laser"></div>
+      <div class="code-block" style="margin-bottom:0;">
+        <span class="ln"><span class="kw">def</span> <span class="fn">order_pizza</span>(size=<span class="str" id="m4-p-size">"M"</span>, topping=<span class="str" id="m4-p-top">"起司"</span>):</span>
+        <span class="ln ind-1"><span class="kw">print</span>(<span class="str">f"🍕 {size} 號 + {topping} 披薩！"</span>)</span>
+      </div>
+    </div>
+    <div class="pizza-btns" style="margin-top:15px;">
+      <button class="btn btn-primary" onclick="orderPizza(1)">① order_pizza()</button>
+      <button class="btn btn-primary" onclick="orderPizza(2)">② order_pizza("L", "蘑菇")</button>
+      <button class="btn btn-primary" onclick="orderPizza(3)">③ order_pizza(topping="臘腸")</button>
+      <button class="btn btn-secondary" onclick="resetPizza()">↩ 重置</button>
+    </div>
+    <div class="pizza-preview" id="m4-preview">
+      <div class="pizza-emoji" id="m4-pizza">🍕</div>
+      <div class="pizza-spec" id="m4-spec" style="opacity:0;">M + 起司</div>
+    </div>
+    <div class="console-output" id="m4-console">按下按鈕叫披薩...</div>
+  </div>
+
+  <div class="card" id="m5">
+    <div class="section-title">🔪 模組 5：口袋裡的瑞士刀：Lambda 匿名函式</div>
+    <div class="section-sub">傳統 <code>def</code> 函式是重型工廠；<code>lambda</code> 是單行解決的雷射精準刀，無需 <code>def</code> 和 <code>return</code>！</div>
+    <div class="input-row" style="margin-bottom:15px;">
+      <label style="font-family:monospace; font-weight:bold;">輸入 x =</label>
+      <input type="number" id="m5-x" value="4" style="width:70px; padding:8px; border:2px solid #cbd5e0; border-radius:8px; font-size:1.1rem; text-align:center;">
+      <button class="btn btn-primary" id="m5-btn" onclick="runLambda()">▶ 同時執行</button>
+      <button class="btn btn-secondary" onclick="resetLambda()">↩ 重置</button>
+    </div>
+    <div class="m5-compare">
+      <div class="factory-col">
+        <h3>🏭 傳統工廠 (def)</h3>
+        <div class="code-block" style="text-align:left; margin-bottom:8px;">
+          <span class="ln" id="m5-l1"><span class="kw">def</span> <span class="fn">square</span>(x):</span>
+          <span class="ln ind-1" id="m5-l2"><span class="kw">return</span> x ** <span class="num">2</span></span>
+        </div>
+        <div style="color:#718096; font-size:0.85rem;">啟動工廠、逐行執行…</div>
+        <div class="result-badge" id="m5-res1">= ?</div>
+      </div>
+      <div class="factory-col" style="background:#1a1a2e; border-color:#9f7aea;">
+        <h3 style="color:#b794f4;">⚡ Lambda 雷射</h3>
+        <div class="laser-gun-wrap" id="m5-laser-wrap">
+          <div class="laser-beam-h" id="m5-beam"></div>
+          <div class="laser-gun">🔫</div>
+          <div style="color:#d4d4d4; font-family:monospace; font-size:0.8rem;">lambda x: x**2</div>
+          <div style="color:#a0aec0; font-size:1.2rem;">→</div>
+          <div class="laser-target" id="m5-laser-in">x</div>
+          <div style="color:#a0aec0; font-size:1.2rem;">→</div>
+          <div class="laser-target" id="m5-laser-out">?</div>
+        </div>
+        <div class="result-badge" id="m5-res2" style="background:linear-gradient(135deg,#9f7aea,#6b46c1); border-color:#9f7aea; color:#fff; margin-top:10px;">= ?</div>
+      </div>
+    </div>
+    <div class="console-output" id="m5-console">等待執行...</div>
+  </div>
+
+  <div class="card" id="m6">
+    <div class="section-title">🏆 模組 6：Pandas apply() 概念先修班</div>
+    <div class="section-sub">將 <code>lambda</code> 匿名函式放進 Pandas 的 <code>.apply()</code> 中，瞬間對整排資料打 8 折！點擊「下一步」一探底層運作原理。</div>
+    <div class="m6-layout">
+      <div>
+        <div class="code-block">
+          <span class="ln" id="m6-l0"><span class="kw">import</span> pandas <span class="kw">as</span> pd</span>
+          <span class="ln" id="m6-l1">df = pd.DataFrame({<span class="str">'price'</span>: [<span class="num">100</span>, <span class="num">200</span>, <span class="num">300</span>]})</span>
+          <span class="ln" id="m6-l2"></span>
+          <span class="ln" id="m6-l3"><span class="cmt"># apply 會將 lambda 函式套用到每一個元素</span></span>
+          <span class="ln" id="m6-l4">df[<span class="str">'price'</span>] = df[<span class="str">'price'</span>].apply(<span class="kw">lambda</span> x: <span class="kw">int</span>(x * <span class="num">0.8</span>))</span>
+          <span class="ln" id="m6-l5"><span class="kw">print</span>(df)</span>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-primary" id="m6-step-btn" onclick="stepApply()">▶ 下一步 (Step)</button>
+          <button class="btn btn-secondary" onclick="resetApply()">↩ 重置</button>
+        </div>
+      </div>
+      <div style="position:relative; padding-left: 60px;">
+        <div style="font-family:monospace; font-size:0.8rem; color:#718096; margin-bottom:8px; text-align:center;">lambda x: int(x * 0.8)</div>
+        <div class="scanner-gun" id="m6-gun">🔫</div>
+        <div class="scanner-beam" id="m6-beam"></div>
+        <div class="price-array" id="m6-array">
+          <div class="price-item" id="m6-p0">100</div>
+          <div class="price-item" id="m6-p1">200</div>
+          <div class="price-item" id="m6-p2">300</div>
+        </div>
+      </div>
+    </div>
+    <div class="console-output" id="m6-console">點擊「下一步」開始追蹤...</div>
+  </div>
+
+</div>
+<script>
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+// Intersection Observer
+const observer = new IntersectionObserver((entries, obs) => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.card').forEach(c => observer.observe(c));
+
+// ============================
+// M1: 函式工廠
+// ============================
+let m1Busy = false;
+async function runFactory() {
+  if(m1Busy) return;
+  m1Busy = true;
+  const aVal = parseFloat(document.getElementById('m1-a').value) || 0;
+  const bVal = parseFloat(document.getElementById('m1-b').value) || 0;
+  const btn = document.getElementById('m1-btn');
+  btn.disabled = true;
+  const con = document.getElementById('m1-console');
+  const gear = document.getElementById('m1-gear');
+  const calc = document.getElementById('m1-calc');
+  const ballA = document.getElementById('m1-ball-a');
+  const ballB = document.getElementById('m1-ball-b');
+  const output = document.getElementById('m1-output');
+
+  ballA.style.opacity = '0'; ballA.style.top = '-45px';
+  ballB.style.opacity = '0'; ballB.style.top = '-45px';
+  output.style.opacity = '0';
+  calc.textContent = 'a + b = ?';
+  gear.classList.remove('spin');
+  con.textContent = `呼叫 add_numbers(${aVal}, ${bVal})...`;
+
+  ballA.textContent = aVal; ballB.textContent = bVal;
+  ballA.style.opacity = '1'; ballB.style.opacity = '1';
+  await delay(400);
+  ballA.style.top = '50px'; ballB.style.top = '50px';
+  await delay(600);
+  ballA.style.opacity = '0'; ballB.style.opacity = '0';
+
+  gear.classList.add('spin');
+  con.textContent += `\n⚙️ 機器運算中: ${aVal} + ${bVal} ...`;
+  await delay(300);
+  calc.textContent = `${aVal} + ${bVal}`;
+  await delay(800);
+  const result = aVal + bVal;
+  calc.textContent = `= ${result}`;
+  await delay(600);
+  gear.classList.remove('spin');
+
+  output.textContent = result;
+  output.style.opacity = '1';
+  con.textContent += `\n✅ return ${result}\n\n>>> add_numbers(${aVal}, ${bVal})\n${result}`;
+
+  btn.disabled = false;
+  m1Busy = false;
+}
+function resetFactory() {
+  document.getElementById('m1-ball-a').style.opacity = '0';
+  document.getElementById('m1-ball-b').style.opacity = '0';
+  document.getElementById('m1-output').style.opacity = '0';
+  document.getElementById('m1-gear').classList.remove('spin');
+  document.getElementById('m1-calc').textContent = 'a + b = ?';
+  document.getElementById('m1-console').textContent = '等待投入參數...';
+  document.getElementById('m1-btn').disabled = false;
+  m1Busy = false;
+}
+
+// ============================
+// M2: print vs return
+// ============================
+let m2LeftBusy = false, m2RightBusy = false;
+async function runPrint() {
+  if(m2LeftBusy) return;
+  m2LeftBusy = true;
+  document.getElementById('m2-btn-left').disabled = true;
+  const con = document.getElementById('m2-console');
+  const hologram = document.getElementById('m2-hologram');
+  const val1 = document.getElementById('m2-val1');
+  const box1 = document.getElementById('m2-box1');
+
+  hologram.style.opacity = '0';
+  val1.textContent = '📦 空的...';
+  box1.classList.remove('has-value');
+
+  con.textContent = '呼叫 show_apple()...';
+  await delay(500);
+
+  hologram.style.opacity = '0.5';
+  con.textContent += '\n🍎 的全息投影出現了！(半透明) → 螢幕印出';
+  await delay(1200);
+
+  hologram.style.opacity = '0';
+  con.textContent += '\n💨 投影消失！print() 不回傳任何東西...';
+  await delay(600);
+
+  val1.innerHTML = '<span class="none-value">None</span>';
+  box1.classList.add('has-value');
+  box1.style.borderColor = '#a0aec0';
+  con.textContent += '\n\n>>> box1 = show_apple()\n🍎\n>>> print(box1)\nNone  ← show_apple() 回傳的是 None！';
+
+  document.getElementById('m2-btn-left').disabled = false;
+  m2LeftBusy = false;
+}
+async function runReturn() {
+  if(m2RightBusy) return;
+  m2RightBusy = true;
+  document.getElementById('m2-btn-right').disabled = true;
+  const con = document.getElementById('m2-console');
+  const val2 = document.getElementById('m2-val2');
+  const box2 = document.getElementById('m2-box2');
+
+  val2.textContent = '📦 空的...';
+  box2.classList.remove('has-value');
+
+  con.textContent = '呼叫 get_apple()...';
+  await delay(500);
+  con.textContent += '\n🍎 實體蘋果正在飛出...';
+  await delay(600);
+
+  val2.innerHTML = '<span class="apple-solid">🍎</span>';
+  box2.classList.add('has-value');
+  con.textContent += '\n\n>>> box2 = get_apple()\n>>> print(box2)\n🍎  ← 成功！box2 裝著真正的蘋果！';
+
+  document.getElementById('m2-btn-right').disabled = false;
+  m2RightBusy = false;
+}
+
+// ============================
+// M3: 作用域
+// ============================
+let m3Busy = false;
+async function runScope() {
+  if(m3Busy) return;
+  m3Busy = true;
+  document.getElementById('m3-btn').disabled = true;
+  const con = document.getElementById('m3-console');
+  const room = document.getElementById('m3-room');
+  const localBox = document.getElementById('m3-local-box');
+  const localHp = document.getElementById('m3-local-hp');
+
+  con.textContent = '呼叫 set_hp()... 進入 Function 房間';
+  await delay(500);
+
+  room.classList.add('active');
+  await delay(700);
+
+  localHp.textContent = '10';
+  localBox.style.opacity = '1'; localBox.style.transform = 'scale(1)';
+  con.textContent += '\n🔮 區域變數 hp = 10 在房間內誕生！';
+  await delay(1200);
+
+  con.textContent += '\n💥 函式結束...結界崩塌！';
+  room.style.animation = 'none';
+  localBox.style.opacity = '0'; localBox.style.transform = 'scale(0.5)';
+  await delay(400);
+  room.classList.remove('active');
+  await delay(600);
+
+  con.textContent += '\n\n>>> print(hp)  # 全域 hp 毫髮無傷！\n100';
+  document.getElementById('m3-btn').disabled = false;
+  m3Busy = false;
+}
+function resetScope() {
+  const room = document.getElementById('m3-room');
+  const localBox = document.getElementById('m3-local-box');
+  room.classList.remove('active');
+  localBox.style.opacity = '0'; localBox.style.transform = 'scale(0.5)';
+  document.getElementById('m3-console').textContent = '等待呼叫...';
+  document.getElementById('m3-btn').disabled = false;
+  m3Busy = false;
+}
+
+// ============================
+// M4: 披薩店
+// ============================
+let m4Busy = false;
+async function orderPizza(mode) {
+  if(m4Busy) return;
+  m4Busy = true;
+  const con = document.getElementById('m4-console');
+  const pizza = document.getElementById('m4-pizza');
+  const spec = document.getElementById('m4-spec');
+  const laser = document.getElementById('m4-laser');
+  const pSize = document.getElementById('m4-p-size');
+  const pTop = document.getElementById('m4-p-top');
+
+  pSize.style.background = ''; pSize.style.color = '#ce9178';
+  pTop.style.background = ''; pTop.style.color = '#ce9178';
+  spec.style.opacity = '0';
+  pizza.style.transform = 'scale(1)';
+
+  let size = 'M', topping = '起司', callStr = '';
+
+  if(mode === 1) {
+    callStr = 'order_pizza()';
+    con.textContent = `呼叫 ${callStr}...\n沒有傳入參數，使用預設值！`;
+    await delay(400);
+    pSize.style.background = 'rgba(246,224,94,0.2)'; pSize.style.color = '#f6e05e';
+    pTop.style.background = 'rgba(246,224,94,0.2)'; pTop.style.color = '#f6e05e';
+  } else if(mode === 2) {
+    size = 'L'; topping = '蘑菇';
+    callStr = 'order_pizza("L", "蘑菇")';
+    con.textContent = `呼叫 ${callStr}...\n傳入位置引數，覆蓋預設值！`;
+    await delay(400);
+    laser.style.left = '-100%';
+    await delay(50);
+    laser.classList.add('fire');
+    await delay(700);
+    laser.classList.remove('fire');
+    laser.style.left = '-100%';
+    pSize.style.background = 'rgba(246,224,94,0.2)'; pSize.style.color = '#f6e05e';
+    pTop.style.background = 'rgba(246,224,94,0.2)'; pTop.style.color = '#f6e05e';
+  } else {
+    topping = '臘腸';
+    callStr = 'order_pizza(topping="臘腸")';
+    con.textContent = `呼叫 ${callStr}...\n使用關鍵字引數，精準鎖定 topping！`;
+    await delay(400);
+    laser.style.left = '-100%';
+    await delay(50);
+    laser.classList.add('fire');
+    await delay(700);
+    laser.classList.remove('fire');
+    laser.style.left = '-100%';
+    pTop.style.background = 'rgba(246,224,94,0.2)'; pTop.style.color = '#f6e05e';
+    pSize.style.color = '#ce9178';
+  }
+
+  await delay(600);
+  pizza.style.transform = 'scale(1.15) rotate(5deg)';
+  spec.style.opacity = '1';
+  spec.textContent = `${size} + ${topping}`;
+  await delay(300);
+  pizza.style.transform = 'scale(1)';
+  con.textContent += `\n\n🍕 ${size} 號 + ${topping} 披薩出爐！`;
+
+  m4Busy = false;
+}
+function resetPizza() {
+  document.getElementById('m4-p-size').style.cssText = '';
+  document.getElementById('m4-p-top').style.cssText = '';
+  document.getElementById('m4-spec').style.opacity = '0';
+  document.getElementById('m4-pizza').style.transform = 'scale(1)';
+  document.getElementById('m4-console').textContent = '按下按鈕叫披薩...';
+  m4Busy = false;
+}
+
+// ============================
+// M5: Lambda
+// ============================
+let m5Busy = false;
+async function runLambda() {
+  if(m5Busy) return;
+  m5Busy = true;
+  document.getElementById('m5-btn').disabled = true;
+  const x = parseFloat(document.getElementById('m5-x').value) || 0;
+  const result = x ** 2;
+  const con = document.getElementById('m5-console');
+  const res1 = document.getElementById('m5-res1');
+  const res2 = document.getElementById('m5-res2');
+  const l1 = document.getElementById('m5-l1');
+  const l2 = document.getElementById('m5-l2');
+  const beam = document.getElementById('m5-beam');
+  const laserIn = document.getElementById('m5-laser-in');
+  const laserOut = document.getElementById('m5-laser-out');
+
+  res1.classList.remove('show'); res2.classList.remove('show');
+  l1.classList.remove('active'); l2.classList.remove('active');
+  laserIn.textContent = 'x'; laserOut.textContent = '?';
+  beam.style.width = '0';
+
+  con.textContent = `同時執行 square(${x}) 和 lambda x: x**2 ...`;
+
+  await delay(300);
+  l1.classList.add('active');
+  con.textContent += `\n[def] 步驟1: 定義函式 square(x)`;
+  await delay(700);
+  l1.classList.remove('active');
+  l2.classList.add('active');
+  con.textContent += `\n[def] 步驟2: return ${x} ** 2`;
+  await delay(700);
+  l2.classList.remove('active');
+  res1.textContent = `= ${result}`;
+  res1.classList.add('show');
+  con.textContent += `\n[def] ✅ 結果: ${result}`;
+
+  await delay(200);
+  laserIn.textContent = x;
+  beam.style.width = '60px';
+  con.textContent += `\n[λ] ⚡ 雷射瞬間：${x} → ${result}`;
+  await delay(300);
+  beam.style.width = '0';
+  laserOut.textContent = result;
+  res2.textContent = `= ${result}`;
+  res2.classList.add('show');
+  con.textContent += `\n[λ] ✅ 結果: ${result}  (單行、無需 def/return！)`;
+
+  document.getElementById('m5-btn').disabled = false;
+  m5Busy = false;
+}
+function resetLambda() {
+  document.getElementById('m5-res1').classList.remove('show');
+  document.getElementById('m5-res2').classList.remove('show');
+  document.getElementById('m5-l1').classList.remove('active');
+  document.getElementById('m5-l2').classList.remove('active');
+  document.getElementById('m5-laser-in').textContent = 'x';
+  document.getElementById('m5-laser-out').textContent = '?';
+  document.getElementById('m5-beam').style.width = '0';
+  document.getElementById('m5-console').textContent = '等待執行...';
+  document.getElementById('m5-btn').disabled = false;
+  m5Busy = false;
+}
+
+// ============================
+// M6: Pandas apply() step
+// ============================
+// 更新陣列對應新的程式碼行號 (0~5)
+const m6Lines = ['m6-l0','m6-l1','m6-l2','m6-l3','m6-l4','m6-l5'];
+const m6Prices = [100, 200, 300];
+let m6Step = 0, m6Loop = 0, m6Busy = false;
+let m6Result = [];
+const M6_GUN_TOPS = ['2px', '52px', '102px'];
+
+async function stepApply() {
+  if(m6Busy) return;
+  m6Busy = true;
+  const con = document.getElementById('m6-console');
+  const btn = document.getElementById('m6-step-btn');
+  const gun = document.getElementById('m6-gun');
+  const beam = document.getElementById('m6-beam');
+
+  m6Lines.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+
+  if(m6Step === 0) {
+    document.getElementById('m6-l0').classList.add('active');
+    document.getElementById('m6-l1').classList.add('active');
+    con.textContent = "載入 Pandas 並建立 DataFrame...\ndf['price'] 欄位包含: [100, 200, 300]";
+    m6Step = 1;
+  } else if(m6Step === 1) {
+    if(m6Loop < 3) {
+      document.getElementById('m6-l4').classList.add('active');
+      con.textContent = `apply() 底層巡迴第 ${m6Loop+1} 次：\n抓出 x = ${m6Prices[m6Loop]}`;
+
+      const itemEl = document.getElementById(`m6-p${m6Loop}`);
+      gun.style.top = M6_GUN_TOPS[m6Loop];
+      itemEl.classList.add('scanning');
+      beam.classList.add('active');
+      await delay(600);
+
+      const val = Math.floor(m6Prices[m6Loop] * 0.8);
+      beam.classList.remove('active');
+      await delay(200);
+      con.textContent += `\n執行 lambda: int(${m6Prices[m6Loop]} × 0.8) = ${val}`;
+      await delay(400);
+
+      itemEl.classList.remove('scanning');
+      itemEl.classList.add('done');
+      itemEl.textContent = val;
+      m6Result.push(val);
+      con.textContent += `\n更新該欄位資料 → ${val}`;
+      m6Loop++;
+
+      if(m6Loop < 3) {
+        con.textContent += '\n\n點擊繼續處理下一個元素...';
+      } else {
+        m6Step = 2;
+        con.textContent += '\n\n✅ 所有資料處理完畢！';
+      }
+    }
+  } else if(m6Step === 2) {
+    document.getElementById('m6-l5').classList.add('active');
+    con.textContent = `print(df)\n\n   price\n0    ${m6Result[0]}\n1    ${m6Result[1]}\n2    ${m6Result[2]}\n\n🎉 Pandas apply() 搭配 lambda 成功！`;
+    btn.disabled = true;
+  }
+
+  m6Busy = false;
+}
+
+function resetApply() {
+  m6Step = 0; m6Loop = 0; m6Result = [];
+  m6Lines.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  [0,1,2].forEach(i => {
+    const el = document.getElementById(`m6-p${i}`);
+    el.className = 'price-item';
+    el.textContent = m6Prices[i];
+  });
+  document.getElementById('m6-gun').style.top = '2px';
+  document.getElementById('m6-beam').classList.remove('active');
+  document.getElementById('m6-console').textContent = '點擊「下一步」開始追蹤...';
+  document.getElementById('m6-step-btn').disabled = false;
+  m6Busy = false;
+}
+</script>
+</body>
+</html>
