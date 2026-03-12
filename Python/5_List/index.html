@@ -114,14 +114,12 @@ body{padding:0;margin:0;background-color:#f8f9fa;font-family:'Segoe UI',sans-ser
 </head>
 <body>
 <div class="container">
-<!-- ===== PAGE HEADER ===== -->
 <div class="card visible" style="text-align:center;padding:28px;">
 <div style="font-size:3rem;margin-bottom:8px;">📋</div>
 <h1 style="font-size:1.8rem;font-weight:800;color:#2d3748;margin:0 0 8px;">Python 串列與二維串列</h1>
 <p style="color:#718096;margin:0;">List &amp; 2D List — 互動式動畫教學</p>
 </div>
 
-<!-- ===== MODULE 1: INDEXING ===== -->
 <div class="card" id="card1">
 <div class="section-title"><span class="icon">🚂</span>模組一：零的領域與雙向索引</div>
 <div class="section-sub">正數索引從左讀取，負數索引從右讀取。輸入索引值讓機械手臂抓取水果！</div>
@@ -141,7 +139,6 @@ body{padding:0;margin:0;background-color:#f8f9fa;font-family:'Segoe UI',sans-ser
 <div class="console-output" id="trainConsole">>>> 等待抓取指令...</div>
 </div>
 
-<!-- ===== MODULE 2: SLICING ===== -->
 <div class="card" id="card2">
 <div class="section-title"><span class="icon">⚡</span>模組二：雷射切片機 [start:stop]</div>
 <div class="section-sub">切片取出子串列。注意：包含 start 索引，但「不」包含 stop 索引（包頭不包尾）！</div>
@@ -170,15 +167,15 @@ body{padding:0;margin:0;background-color:#f8f9fa;font-family:'Segoe UI',sans-ser
 <div class="console-output" id="sliceConsole">>>> 調整滑桿後點擊切片執行</div>
 </div>
 
-<!-- ===== MODULE 3: SHELF ===== -->
 <div class="card" id="card3">
 <div class="section-title"><span class="icon">🏗️</span>模組三：貨櫃調度場（串列方法）</div>
-<div class="section-sub">用動畫理解 append、extend、insert、pop 的運作差異！</div>
+<div class="section-sub">用動畫理解 append、extend、insert、pop 的運作差異，特別注意 append(串列) 與 extend(串列) 的不同！</div>
 <div class="shelf-scene">
 <div class="shelf" id="shelf"></div>
 </div>
 <div class="shelf-methods">
 <button class="btn btn-green" onclick="shelfAppend()">📦 .append("A")</button>
+<button class="btn btn-green" style="background:linear-gradient(135deg,#2f855a,#22543d);color:#fff;" onclick="shelfAppendList()">📦 .append(["B","C"])</button>
 <button class="btn btn-primary" onclick="shelfExtend()">🚂 .extend(["B","C"])</button>
 <button class="btn" style="background:linear-gradient(135deg,#ed8936,#dd6b20);color:#fff;" onclick="shelfInsert()">➡️ .insert(1,"X")</button>
 <button class="btn" style="background:linear-gradient(135deg,#e53e3e,#c53030);color:#fff;" onclick="shelfPop()">🦾 .pop()</button>
@@ -187,7 +184,6 @@ body{padding:0;margin:0;background-color:#f8f9fa;font-family:'Segoe UI',sans-ser
 <div class="console-output" id="shelfConsole">>>> 點擊方法按鈕觀察貨架變化</div>
 </div>
 
-<!-- ===== MODULE 4: 2D DRAWER ===== -->
 <div class="card" id="card4">
 <div class="section-title"><span class="icon">🗄️</span>模組四：俄羅斯套娃 — 二維串列解密</div>
 <div class="section-sub">先找「大抽屜」(row)，再找「小格子」(column)。輸入 matrix[row][col] 觀察動畫！</div>
@@ -212,7 +208,6 @@ body{padding:0;margin:0;background-color:#f8f9fa;font-family:'Segoe UI',sans-ser
 <div class="console-output" id="matrixConsole">>>> 等待指令...</div>
 </div>
 
-<!-- ===== MODULE 5: RADAR ===== -->
 <div class="card" id="card5">
 <div class="section-title"><span class="icon">📡</span>模組五：雷達掃描器 — 走訪二維矩陣</div>
 <div class="section-sub">巢狀迴圈：外層選「整橫列 (Row)」，內層「逐格掃描」取值。</div>
@@ -236,7 +231,6 @@ body{padding:0;margin:0;background-color:#f8f9fa;font-family:'Segoe UI',sans-ser
 <div class="console-output" id="radarConsole">>>> 等待掃描指令...</div>
 </div>
 
-<!-- ===== MODULE 6: CINEMA ===== -->
 <div class="card" id="card6">
 <div class="section-title"><span class="icon">🎬</span>模組六：綜合實戰 — 電影院自動劃位系統</div>
 <div class="section-sub">點擊座位圖上的空座位，再按「下一步」逐行追蹤劃位程式碼的執行！</div>
@@ -414,7 +408,14 @@ function renderShelf() {
   shelfData.forEach((item, i) => {
     const b = document.createElement('div');
     b.className = 'container-box';
-    b.innerHTML = `${item}<div class="box-idx">[${i}]</div>`;
+    
+    // 判斷是否為陣列，如果是的話縮小字體顯示為巢狀形式
+    let displayText = Array.isArray(item) ? `[${item.join(',')}]` : item;
+    if(Array.isArray(item)) {
+        b.style.fontSize = '0.65rem';
+    }
+    
+    b.innerHTML = `${displayText}<div class="box-idx">[${i}]</div>`;
     shelf.appendChild(b);
   });
 }
@@ -438,10 +439,33 @@ async function shelfAppend() {
   shelfBusy = false;
 }
 
+// 新增的 shelfAppendList 函數
+async function shelfAppendList() {
+  if (shelfBusy) return; shelfBusy = true;
+  const con = document.getElementById('shelfConsole');
+  con.textContent = `>>> 將整個子串列 ["B","C"] 作為「單一貨櫃」整體放入...`;
+  
+  // 推進一個真正的陣列，產生二維結構
+  shelfData.push(['🅱️', '©️']);
+  renderShelf();
+  
+  const boxes = document.getElementById('shelf').children;
+  const newBox = boxes[boxes.length - 1];
+  newBox.classList.add('incoming');
+  await delay(80);
+  newBox.style.transition = 'all .5s ease';
+  newBox.classList.remove('incoming');
+  newBox.style.opacity = '1'; newBox.style.transform = 'translateY(0) scale(1)';
+  await delay(500);
+  
+  con.textContent = `>>> list.append(["B","C"])  ← 形成巢狀！(長度只增加 1)\n>>> ${JSON.stringify(shelfData)}`;
+  shelfBusy = false;
+}
+
 async function shelfExtend() {
   if (shelfBusy) return; shelfBusy = true;
   const con = document.getElementById('shelfConsole');
-  con.textContent = `>>> 小火車載來 ["B","C"]，攤平拼接...`;
+  con.textContent = `>>> 小火車載來 ["B","C"]，拆開包裝「攤平」拼接...`;
   await delay(400);
   const newItems = ['🅱️', '©️'];
   for (const item of newItems) {
@@ -455,7 +479,7 @@ async function shelfExtend() {
     nb.classList.remove('incoming');
     await delay(480);
   }
-  con.textContent = `>>> list.extend(["B","C"])  ← 攤平，非巢狀！\n>>> ${JSON.stringify(shelfData)}`;
+  con.textContent = `>>> list.extend(["B","C"])  ← 攤平，非巢狀！(長度增加 2)\n>>> ${JSON.stringify(shelfData)}`;
   shelfBusy = false;
 }
 
@@ -489,7 +513,10 @@ async function shelfPop() {
   await delay(420);
   const popped = shelfData.pop();
   renderShelf();
-  con.textContent = `>>> list.pop()  → 移除 "${popped}"\n>>> ${JSON.stringify(shelfData)}`;
+  
+  // 如果彈出的是陣列，為了終端機顯示美觀做一點處理
+  const poppedDisplay = Array.isArray(popped) ? `[${popped.join(',')}]` : popped;
+  con.textContent = `>>> list.pop()  → 移除 "${poppedDisplay}"\n>>> ${JSON.stringify(shelfData)}`;
   shelfBusy = false;
 }
 
@@ -626,10 +653,8 @@ async function runRadar() {
       codeLns[3].classList.add('active');
       const val = radarMatrix[ri][ci];
       
-      // 【修正核心】模擬 Python print() 的預設換行行為
       output += `${val}\n`; 
       
-      // 更新 Console，將正在掃描的進度與實際輸出區分開來
       con.textContent = `>>> 掃描 [${ri}][${ci}] = ${val}\n\n[終端機實際輸出]\n${output}`;
       await delay(350);
       
@@ -640,7 +665,6 @@ async function runRadar() {
   }
   
   codeLns.forEach(l => l.classList.remove('active'));
-  // 【修正核心】結束時，一樣顯示直向排列的真實輸出結果
   con.textContent = `>>> 掃描完畢！共走訪 9 個元素：\n\n[終端機實際輸出]\n${output}`;
   radarBusy = false;
 }
