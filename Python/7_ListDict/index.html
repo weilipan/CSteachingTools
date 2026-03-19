@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python 雙雄對決：List vs. Dict</title>
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../layout.js" defer></script>
+<style>
+/* === 底層規範 === */
+body { padding: 0; margin: 0; background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+.container { padding-top: 80px; padding-bottom: 60px; max-width: 1000px; margin: 0 auto; }
+.card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.08); padding: 32px; margin-bottom: 36px; opacity: 0; transform: translateY(30px); transition: all 0.6s ease; overflow: hidden; }
+.card.visible { opacity: 1; transform: translateY(0); }
+.section-title { font-size: 1.4rem; font-weight: 700; color: #2d3748; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+.section-sub { color: #718096; font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5; }
+
+/* === Console 輸出與程式碼排版保護機制 === */
+.console-output { white-space: pre-wrap; font-family: 'Consolas', monospace; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; font-size: 0.9rem; min-height: 40px; margin-top: 15px; border-left: 4px solid #4a5568; line-height: 1.5; }
+.code-block { background: #1e1e1e; border-radius: 8px; padding: 16px; font-family: 'Consolas', monospace; font-size: 0.9rem; color: #d4d4d4; line-height: 1.6; margin-bottom: 15px; }
+.ln { display: block; white-space: nowrap; transition: background 0.3s ease, color 0.3s ease; padding: 2px 6px; border-radius: 4px; border-left: 3px solid transparent; }
+.ln.active { background: rgba(255, 213, 79, 0.2); color: #ffd54f; font-weight: bold; border-left-color: #ffd54f; }
+.ind-1 { padding-left: 1.5rem !important; }
+.ind-2 { padding-left: 3.0rem !important; }
+.ind-3 { padding-left: 4.5rem !important; }
+.kw { color: #569cd6; } .str { color: #ce9178; } .num { color: #b5cea8; } .cmt { color: #6a9955; } .fn { color: #dcdcaa; }
+
+/* === 共用按鈕 === */
+.btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; margin-right: 8px; margin-bottom: 8px; }
+.btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-secondary { background: #e2e8f0; color: #4a5568; }
+.btn-secondary:hover { background: #cbd5e0; }
+
+/* === M1: 順序 vs 標籤 === */
+.m1-layout { display: flex; flex-direction: column; gap: 20px; }
+.m1-track { background: #f7fafc; padding: 20px; border-radius: 12px; border: 2px solid #e2e8f0; position: relative; }
+.m1-track h3 { margin-top: 0; color: #4a5568; font-size: 1.1rem; border-bottom: 2px dashed #cbd5e0; padding-bottom: 8px; }
+.m1-items { display: flex; gap: 15px; align-items: flex-end; position: relative; height: 80px; }
+.item-box { width: 60px; height: 60px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 8px; font-size: 1.5rem; position: relative; background: #fff; border: 2px solid #a0aec0; transition: all 0.3s; }
+.item-box.lit { border-color: #ed8936; box-shadow: 0 0 15px rgba(237,137,54,0.6); transform: scale(1.1); }
+.item-label { position: absolute; top: -15px; font-size: 0.8rem; font-family: monospace; font-weight: bold; background: #2d3748; color: #fff; padding: 2px 6px; border-radius: 4px; }
+.robot-arm { position: absolute; top: 10px; left: 10px; font-size: 2rem; transition: left 0.4s ease-in-out, top 0.4s ease; z-index: 10; opacity: 0; }
+
+/* === M2: O(N) vs O(1) === */
+.m2-grid-wrap { display: flex; gap: 4px; flex-wrap: wrap; background: #edf2f7; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative; }
+.m2-cell { width: 30px; height: 30px; background: #cbd5e0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: all 0.2s; }
+.m2-cell.scanned { background: #f6ad55; box-shadow: 0 0 10px #f6ad55; }
+.m2-cell.target { background: #48bb78; }
+.m2-cell.portal-fx { animation: portalOpen 0.6s forwards; }
+@keyframes portalOpen { 0% { transform: scale(1); background: #9f7aea; box-shadow: 0 0 0 #9f7aea; } 50% { transform: scale(1.5); background: #805ad5; box-shadow: 0 0 20px #b794f4; } 100% { transform: scale(1.2); background: #48bb78; box-shadow: 0 0 15px #48bb78; } }
+.m2-guard { position: absolute; top: -25px; left: 15px; font-size: 1.5rem; transition: left 0.1s linear; opacity: 0; }
+
+/* === M3: 插隊的代價 (大幅修正 Flexbox 排版) === */
+.m3-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width:600px){.m3-layout{grid-template-columns:1fr;}}
+.m3-col { background: #f7fafc; padding: 20px; border-radius: 12px; border: 2px solid #e2e8f0; min-height: 150px; position: relative; overflow: hidden; }
+/* 使用 Flexbox 讓寬度變化的動畫自動推擠後方元素 */
+.queue-area { display: flex; gap: 5px; align-items: flex-end; height: 80px; position: relative; }
+.q-person { font-size: 2.5rem; width: 45px; text-align: center; overflow: hidden; display: flex; justify-content: center; align-items: flex-end; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.q-vip { width: 0; opacity: 0; transform: translateY(-40px); margin: 0; padding: 0; }
+
+.corkboard { background: #d6bcfa; border: 8px solid #b794f4; border-radius: 8px; height: 120px; position: relative; }
+.sticky-note { width: 50px; height: 50px; background: #fefcbf; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); position: absolute; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-family: monospace; font-weight: bold; transform: rotate(-5deg); transition: all 0.4s; }
+.note-1 { top: 10px; left: 10px; } .note-2 { top: 40px; left: 80px; transform: rotate(8deg); }
+
+/* === M4: Hashable 保鑣 === */
+.club-scene { display: flex; align-items: flex-end; gap: 30px; background: #1a202c; padding: 30px; border-radius: 12px; border-bottom: 6px solid #4a5568; margin-bottom: 15px; overflow: hidden; }
+.bouncer { font-size: 4rem; position: relative; z-index: 2; }
+.bouncer::after { content: 'Dict 保鑣'; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 0.8rem; font-weight: bold; white-space: nowrap; }
+.queue-line { display: flex; gap: 15px; flex: 1; }
+.var-card { background: #fff; border: 2px solid #cbd5e0; padding: 10px 15px; border-radius: 8px; font-family: monospace; font-weight: bold; font-size: 1.1rem; text-align: center; transition: all 0.5s; position: relative; }
+.stamp { position: absolute; top: -10px; right: -10px; font-size: 1.5rem; opacity: 0; transform: scale(3); transition: all 0.3s; }
+.stamp.approved { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 5px #48bb78); }
+.stamp.rejected { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 5px #e53e3e); }
+@keyframes jelly { 0%,100%{transform:scale(1,1);} 25%{transform:scale(1.2,0.8);} 50%{transform:scale(0.8,1.2);} 75%{transform:scale(1.1,0.9);} }
+.jelly-anim { animation: jelly 0.6s infinite; background: #fed7d7; border-color: #fc8181; color: #c53030; }
+@keyframes shakeUI { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-8px);} 40%,80%{transform:translateX(8px);} }
+.shake-ui { animation: shakeUI 0.4s; }
+
+/* === M5: 俄羅斯套娃 (JSON) === */
+.m5-scene { background: #2d3748; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; }
+.big-cabinet { background: #4a5568; border: 4px solid #718096; padding: 15px; border-radius: 8px; display: flex; gap: 20px; position: relative; transition: all 0.4s; }
+.big-cabinet::before { content: 'users (List)'; position: absolute; top: -25px; left: 10px; color: #a0aec0; font-family: monospace; font-weight: bold; }
+.safe-box { background: #2b6cb0; border: 3px solid #63b3ed; padding: 15px; border-radius: 8px; position: relative; transition: all 0.4s; display: flex; gap: 10px; }
+.safe-box::before { content: 'Dict'; position: absolute; top: -20px; left: 5px; color: #90cdf4; font-size: 0.8rem; font-family: monospace; }
+.safe-box.dimmed { opacity: 0.3; transform: scale(0.9); }
+.safe-box.highlight { box-shadow: 0 0 20px #63b3ed; transform: scale(1.05); z-index: 2; }
+.data-slot { background: #ebf8ff; color: #2b6cb0; font-family: monospace; padding: 5px 10px; border-radius: 4px; font-weight: bold; border: 1px solid #90cdf4; position: relative; transition: all 0.4s; }
+.data-slot::before { content: attr(data-key); position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: #bee3f8; background: #2c5282; padding: 1px 4px; border-radius: 3px; }
+.data-slot.open { background: #f6e05e; color: #744210; border-color: #d69e2e; transform: translateY(-10px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+/* === M6: 實戰貼文系統 === */
+.m6-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width: 768px){ .m6-layout { grid-template-columns: 1fr; } }
+.post-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; position: relative; }
+.post-card { background: #fff; border: 2px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; transition: all 0.4s; position: relative; }
+.post-card.checking { border-color: #ed8936; box-shadow: 0 0 12px rgba(237,137,54,0.4); transform: translateX(10px); }
+.post-card.dimmed { opacity: 0.3; filter: grayscale(1); }
+.post-card.matched { border-color: #48bb78; background: #f0fff4; }
+.popular-list-ui { background: #edf2f7; border: 2px dashed #a0aec0; min-height: 60px; border-radius: 8px; padding: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.pop-item { background: #667eea; color: #fff; padding: 4px 10px; border-radius: 20px; font-family: monospace; font-size: 0.9rem; animation: popIn 0.4s cubic-bezier(.17,.84,.44,1.275); }
+@keyframes popIn { 0%{transform:scale(0) translateY(-20px);opacity:0;} 100%{transform:scale(1) translateY(0);opacity:1;} }
+.fly-name { position: absolute; background: #667eea; color: #fff; padding: 4px 10px; border-radius: 20px; font-family: monospace; font-size: 0.9rem; z-index: 100; transition: all 0.6s ease-in-out; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="portal-header" style="text-align:center; margin-bottom:40px;">
+    <h1 class="section-title" style="font-size: 2.2rem; justify-content:center; margin-bottom:10px;">⚔️ Python 雙雄對決：List vs. Dict</h1>
+    <p class="section-sub" style="font-size:1.1rem; max-width:600px; margin:0 auto;">從底層記憶體、效能差異，一路過渡到最實用的 JSON 結構解析，徹底掌握資料結構的選擇與混搭技巧！</p>
+  </div>
+
+  <div class="card" id="m1">
+    <div class="section-title">🚂 模組 1：核心哲學 — 「順序」vs.「標籤」</div>
+    <div class="section-sub">List 依靠「位置」存取，必須從頭數；Dict 依靠「標籤」存取，無視物理位置。</div>
+    
+    <div class="m1-layout">
+      <div class="m1-track">
+        <h3>List 列車 (依序排列)</h3>
+        <div class="robot-arm" id="m1-arm-list">🦾</div>
+        <div class="m1-items" id="m1-list-container">
+          <div class="item-box" id="m1-l0"><div class="item-label">[0]</div>🍎</div>
+          <div class="item-box" id="m1-l1"><div class="item-label">[1]</div>🍌</div>
+          <div class="item-box" id="m1-l2"><div class="item-label">[2]</div>🍇</div>
+        </div>
+        <div style="margin-top:15px;">
+          <button class="btn btn-primary" onclick="runM1List()">▶ 尋找 my_list[1]</button>
+        </div>
+      </div>
+
+      <div class="m1-track">
+        <h3>Dict 藥品櫃 (鍵值對應)</h3>
+        <div class="robot-arm" id="m1-arm-dict">🦾</div>
+        <div class="m1-items" id="m1-dict-container" style="justify-content:space-around;">
+          <div class="item-box" id="m1-dA"><div class="item-label" style="background:#553c9a;">"A"</div>🍎</div>
+          <div class="item-box" id="m1-dC"><div class="item-label" style="background:#553c9a;">"C"</div>🍇</div>
+          <div class="item-box" id="m1-dB"><div class="item-label" style="background:#553c9a;">"B"</div>🍌</div>
+        </div>
+        <div style="margin-top:15px;">
+          <button class="btn btn-primary" onclick="runM1Dict()" style="background:linear-gradient(135deg, #805ad5, #553c9a);">▶ 尋找 my_dict["B"]</button>
+        </div>
+      </div>
+    </div>
+    <div class="console-output" id="m1-console">點擊上方按鈕觀察機械手臂的抓取方式...</div>
+  </div>
+
+  <div class="card" id="m2">
+    <div class="section-title">⚡ 模組 2：效能大飆車 — O(N) vs. O(1)</div>
+    <div class="section-sub">為什麼資料量大時要用 Dict？體驗「循序搜尋」與「Hash 瞬間移動」的巨大時間差。</div>
+    
+    <div class="m2-grid-wrap" id="m2-grid">
+      <div class="m2-guard" id="m2-guard">🔦</div>
+      </div>
+    
+    <div>
+      <button class="btn btn-primary" onclick="runM2List()" id="m2-btn-list">▶ List 搜尋 (in list)</button>
+      <button class="btn btn-primary" onclick="runM2Dict()" id="m2-btn-dict" style="background:linear-gradient(135deg, #805ad5, #553c9a);">▶ Dict 搜尋 (in dict)</button>
+      <button class="btn btn-secondary" onclick="resetM2()">↩ 重置</button>
+    </div>
+    <div class="console-output" id="m2-console">隱藏目標：金幣 (位於陣列尾端)</div>
+  </div>
+
+  <div class="card" id="m3">
+    <div class="section-title">🧱 模組 3：牽一髮動全身 — 插隊的代價</div>
+    <div class="section-sub">在 List 開頭 <code>insert</code> 必須讓所有元素大搬風（成本極高）；而 Dict 指派新 Key 則是隨插即用。</div>
+    
+    <div class="m3-layout">
+      <div class="m3-col">
+        <h3 style="margin-top:0; border-bottom:2px solid #cbd5e0; padding-bottom:8px;">List 排隊隊伍</h3>
+        <div class="queue-area" id="m3-queue">
+          <div class="q-person" id="m3-q1">🧍</div>
+          <div class="q-person" id="m3-q2">🧍‍♂️</div>
+          <div class="q-person" id="m3-q3">🧍‍♀️</div>
+        </div>
+        <button class="btn btn-primary" onclick="runM3List()" id="m3-btn-list" style="margin-top:20px;">▶ my_list.insert(0, "VIP")</button>
+      </div>
+
+      <div class="m3-col">
+        <h3 style="margin-top:0; border-bottom:2px solid #cbd5e0; padding-bottom:8px;">Dict 公佈欄</h3>
+        <div class="corkboard" id="m3-board">
+          <div class="sticky-note note-1">"A": 1</div>
+          <div class="sticky-note note-2">"B": 2</div>
+        </div>
+        <button class="btn btn-primary" onclick="runM3Dict()" id="m3-btn-dict" style="margin-top:20px; background:linear-gradient(135deg, #805ad5, #553c9a);">▶ my_dict["VIP"] = 1</button>
+      </div>
+      
+      <div style="grid-column: 1 / -1; display: flex; justify-content: center; margin-top: 10px;">
+        <button class="btn btn-secondary" onclick="resetM3()">↩ 重置模組 3</button>
+      </div>
+    </div>
+    <div class="console-output" id="m3-console">比較兩種資料結構新增資料的物理成本...</div>
+  </div>
+
+  <div class="card" id="m4">
+    <div class="section-title">🚫 模組 4：誰能當鑰匙？ — 不可變法則 (Hashable)</div>
+    <div class="section-sub">Dict 的 Key 必須是「不可變 (Immutable)」的。字串、整數可以；但容易變形的 List 絕對不行！</div>
+    
+    <div class="club-scene" id="m4-scene">
+      <div class="bouncer">🦍</div>
+      <div class="queue-line" id="m4-queue">
+        <div class="var-card" id="m4-v1">42<div class="stamp" id="m4-s1">✅</div></div>
+        <div class="var-card" id="m4-v2">"Hello"<div class="stamp" id="m4-s2">✅</div></div>
+        <div class="var-card" id="m4-v3" style="border-style:dashed;">[1, 2]<div class="stamp" id="m4-s3">❌</div></div>
+      </div>
+    </div>
+    <div>
+      <button class="btn btn-primary" onclick="runM4()" id="m4-btn">▶ 開始安檢</button>
+      <button class="btn btn-secondary" onclick="resetM4()">↩ 重置</button>
+    </div>
+    <div class="console-output" id="m4-console">點擊開始安檢，將變數作為 Dict 的 Key...</div>
+  </div>
+
+  <div class="card" id="m5">
+    <div class="section-title">🪆 模組 5：俄羅斯套娃實戰 — JSON 結構解析</div>
+    <div class="section-sub">最常見的 <code>List of Dicts</code> 結構。先用「數字索引」開大鐵櫃，再用「字串 Key」開保險箱。</div>
+    
+    <div class="code-block" style="text-align:center;">
+      <span class="ln">users = [ {"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"} ]</span>
+      <span class="ln" style="margin-top:10px; font-size:1.1rem;">print( users<span id="m5-code-idx" style="transition:color 0.3s;">[1]</span><span id="m5-code-key" style="transition:color 0.3s;">["name"]</span> )</span>
+    </div>
+
+    <div class="m5-scene">
+      <div class="big-cabinet" id="m5-cabinet">
+        <div class="safe-box" id="m5-safe0">
+          <div class="data-slot" data-key='"id"'>1</div>
+          <div class="data-slot" data-key='"name"'>Alice</div>
+        </div>
+        <div class="safe-box" id="m5-safe1">
+          <div class="data-slot" data-key='"id"'>2</div>
+          <div class="data-slot" id="m5-target-slot" data-key='"name"'>Bob</div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="text-align:center;">
+      <button class="btn btn-primary" id="m5-btn" onclick="runM5()">▶ 執行 users[1]["name"]</button>
+      <button class="btn btn-secondary" onclick="resetM5()">↩ 重置</button>
+    </div>
+    <div class="console-output" id="m5-console">等待執行取值...</div>
+  </div>
+
+  <div class="card" id="m6">
+    <div class="section-title">🏆 模組 6：綜合實戰 — 社群媒體貼文過濾系統</div>
+    <div class="section-sub">融合 for 迴圈、if 判斷與兩種資料結構。點擊「下一步」追蹤嚴格 <code>ind-3</code> 縮排防護下的程式碼！</div>
+    
+    <div class="m6-layout">
+      <div>
+        <div class="code-block">
+          <span class="ln" id="m6-l0">popular_posts = []</span>
+          <span class="ln" id="m6-l1"><span class="kw">for</span> post <span class="kw">in</span> posts:</span>
+          <span class="ln ind-1" id="m6-l2"><span class="kw">if</span> post[<span class="str">"likes"</span>] > <span class="num">100</span>:</span>
+          <span class="ln ind-2" id="m6-l3">popular_posts.append(post[<span class="str">"author"</span>])</span>
+          <span class="ln" id="m6-l4"><span class="kw">print</span>(popular_posts)</span>
+        </div>
+        <div>
+          <button class="btn btn-primary" id="m6-step-btn" onclick="stepM6()">▶ 下一步 (Step)</button>
+          <button class="btn btn-secondary" onclick="resetM6()">↩ 重置</button>
+        </div>
+      </div>
+      
+      <div>
+        <div style="font-family:monospace; font-weight:bold; margin-bottom:5px; color:#4a5568;">[ JSON 資料來源 posts ]</div>
+        <div class="post-cards" id="m6-cards">
+          <div class="post-card" id="m6-c0">
+            <div><span style="color:#718096;">"author":</span> <span id="m6-a0" style="font-weight:bold; color:#2b6cb0;">"Alice"</span></div>
+            <div><span style="color:#718096;">"likes":</span> <span style="color:#e53e3e; font-weight:bold;">150</span></div>
+          </div>
+          <div class="post-card" id="m6-c1">
+            <div><span style="color:#718096;">"author":</span> <span id="m6-a1" style="font-weight:bold; color:#2b6cb0;">"Bob"</span></div>
+            <div><span style="color:#718096;">"likes":</span> <span style="color:#e53e3e; font-weight:bold;">80</span></div>
+          </div>
+          <div class="post-card" id="m6-c2">
+            <div><span style="color:#718096;">"author":</span> <span id="m6-a2" style="font-weight:bold; color:#2b6cb0;">"Charlie"</span></div>
+            <div><span style="color:#718096;">"likes":</span> <span style="color:#e53e3e; font-weight:bold;">200</span></div>
+          </div>
+        </div>
+        
+        <div style="font-family:monospace; font-weight:bold; margin-bottom:5px; color:#4a5568;">popular_posts 陣列區</div>
+        <div class="popular-list-ui" id="m6-pop-list">
+          </div>
+      </div>
+    </div>
+    <div class="console-output" id="m6-console">等待篩選... 目標條件：likes > 100</div>
+  </div>
+
+</div>
+
+<script>
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+// --- Intersection Observer ---
+const observer = new IntersectionObserver((entries, obs) => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.card').forEach(c => observer.observe(c));
+
+// ============================
+// M1: 順序 vs 標籤
+// ============================
+let m1ListBusy = false, m1DictBusy = false;
+async function runM1List() {
+  if(m1ListBusy) return;
+  m1ListBusy = true;
+  const con = document.getElementById('m1-console');
+  const arm = document.getElementById('m1-arm-list');
+  const boxes = [document.getElementById('m1-l0'), document.getElementById('m1-l1'), document.getElementById('m1-l2')];
+  
+  boxes.forEach(b => b.classList.remove('lit'));
+  arm.style.opacity = '1';
+  arm.style.top = '-20px';
+  arm.style.left = '10px'; // 回歸起點
+  con.textContent = "執行 my_list[1]...\n[List] 機械手臂從車頭 [0] 開始巡覽。";
+  await delay(600);
+  
+  // Check [0]
+  arm.style.left = '15px';
+  await delay(600);
+  
+  // Check [1]
+  con.textContent += "\n[List] 移動到下一節車廂 [1]... 找到目標！";
+  arm.style.left = '90px';
+  await delay(600);
+  
+  arm.style.top = '10px'; // 往下抓
+  boxes[1].classList.add('lit');
+  await delay(500);
+  con.textContent += "\n✅ 取出 🍌 (依靠實體位置存取)";
+  
+  await delay(1000);
+  arm.style.opacity = '0';
+  m1ListBusy = false;
+}
+
+async function runM1Dict() {
+  if(m1DictBusy) return;
+  m1DictBusy = true;
+  const con = document.getElementById('m1-console');
+  const arm = document.getElementById('m1-arm-dict');
+  const boxes = [document.getElementById('m1-dA'), document.getElementById('m1-dC'), document.getElementById('m1-dB')];
+  
+  boxes.forEach(b => b.classList.remove('lit'));
+  arm.style.opacity = '1';
+  arm.style.top = '-20px';
+  arm.style.left = '10px';
+  con.textContent = '執行 my_dict["B"]...\n[Dict] 解析標籤 "B" 的 Hash 值...';
+  await delay(600);
+  
+  con.textContent += '\n[Dict] 無視順序，直接飛向目標抽屜！';
+  // 直接飛到 B (index 2 也就是 150px)
+  arm.style.left = '165px'; 
+  await delay(600);
+  
+  arm.style.top = '10px';
+  boxes[2].classList.add('lit');
+  await delay(500);
+  con.textContent += "\n✅ 取出 🍌 (依靠標籤精準存取)";
+  
+  await delay(1000);
+  arm.style.opacity = '0';
+  m1DictBusy = false;
+}
+
+// ============================
+// M2: O(N) vs O(1)
+// ============================
+const m2Grid = document.getElementById('m2-grid');
+const M2_TOTAL = 15;
+const M2_TARGET = 12; // 金幣位置
+for(let i=0; i<M2_TOTAL; i++) {
+  const cell = document.createElement('div');
+  cell.className = 'm2-cell';
+  cell.id = `m2-c${i}`;
+  if(i === M2_TARGET) cell.textContent = '🪙';
+  m2Grid.appendChild(cell);
+}
+
+let m2Busy = false;
+async function runM2List() {
+  if(m2Busy) return;
+  m2Busy = true;
+  const con = document.getElementById('m2-console');
+  const guard = document.getElementById('m2-guard');
+  
+  // Reset
+  document.querySelectorAll('.m2-cell').forEach(c => c.classList.remove('scanned', 'target', 'portal-fx'));
+  guard.style.opacity = '1';
+  guard.style.left = '0px';
+  con.textContent = "執行 `if '🪙' in my_list:` ...\n[List] 警衛開始循序搜尋 O(N)";
+  await delay(500);
+
+  for(let i=0; i<=M2_TARGET; i++) {
+    const cell = document.getElementById(`m2-c${i}`);
+    guard.style.left = `${i * 34}px`;
+    cell.classList.add('scanned');
+    await delay(150); // 模擬花費時間
+    if(i !== M2_TARGET) cell.classList.remove('scanned');
+  }
+  
+  document.getElementById(`m2-c${M2_TARGET}`).classList.add('target');
+  con.textContent += `\n✅ 找到金幣！耗時：${M2_TARGET + 1} 步。`;
+  m2Busy = false;
+}
+
+async function runM2Dict() {
+  if(m2Busy) return;
+  m2Busy = true;
+  const con = document.getElementById('m2-console');
+  const guard = document.getElementById('m2-guard');
+  
+  // Reset
+  document.querySelectorAll('.m2-cell').forEach(c => c.classList.remove('scanned', 'target', 'portal-fx'));
+  guard.style.opacity = '0';
+  
+  con.textContent = "執行 `if '🪙' in my_dict:` ...\n[Dict] 計算 Hash 函數，開啟傳送門 O(1)";
+  await delay(600);
+  
+  const targetCell = document.getElementById(`m2-c${M2_TARGET}`);
+  targetCell.classList.add('portal-fx');
+  await delay(600);
+  
+  con.textContent += `\n⚡ 瞬間移動！耗時：1 步。這就是 Dict 效能碾壓的原因！`;
+  m2Busy = false;
+}
+
+function resetM2() {
+  document.querySelectorAll('.m2-cell').forEach(c => c.classList.remove('scanned', 'target', 'portal-fx'));
+  document.getElementById('m2-guard').style.opacity = '0';
+  document.getElementById('m2-console').textContent = '隱藏目標：金幣 (位於陣列尾端)';
+  m2Busy = false;
+}
+
+// ============================
+// M3: 插隊的代價 (修正版)
+// ============================
+let m3ListBusy = false, m3DictBusy = false;
+async function runM3List() {
+  if(m3ListBusy) return;
+  m3ListBusy = true;
+  const con = document.getElementById('m3-console');
+  const queue = document.getElementById('m3-queue');
+  const btn = document.getElementById('m3-btn-list');
+  btn.disabled = true;
+
+  con.textContent = "執行 my_list.insert(0, 'VIP')...";
+  await delay(400);
+  
+  con.textContent += "\n⚠️ 後方所有人必須往後退，讓出空間 (記憶體大搬風)";
+  
+  // 建立 VIP 元素，預設寬度為 0 且隱藏
+  const vip = document.createElement('div');
+  vip.className = 'q-person q-vip';
+  vip.textContent = '😎';
+  vip.id = 'm3-vip-person';
+  queue.insertBefore(vip, queue.firstChild);
+  
+  await delay(50); // 給予瀏覽器渲染 DOM 的時間
+  
+  // 展開寬度，Flexbox 會自動把後面的人往右推！
+  vip.style.width = '45px';
+  vip.style.opacity = '1';
+  vip.style.transform = 'translateY(0)';
+  
+  await delay(600);
+  con.textContent += "\n✅ VIP 成功插隊！";
+}
+
+async function runM3Dict() {
+  if(m3DictBusy) return;
+  m3DictBusy = true;
+  const con = document.getElementById('m3-console');
+  const board = document.getElementById('m3-board');
+  const btn = document.getElementById('m3-btn-dict');
+  btn.disabled = true;
+
+  con.textContent = '執行 my_dict["VIP"] = 1...';
+  await delay(500);
+  
+  const newNote = document.createElement('div');
+  newNote.className = 'sticky-note';
+  newNote.id = 'm3-vip-note';
+  newNote.textContent = '"VIP":1';
+  newNote.style.background = '#fbd38d';
+  // 調整位置確保在軟木塞內
+  newNote.style.top = '30px';
+  newNote.style.left = '50%'; 
+  newNote.style.transform = 'scale(2) rotate(15deg)';
+  newNote.style.opacity = '0';
+  board.appendChild(newNote);
+  
+  await delay(100);
+  newNote.style.transform = 'scale(1) rotate(-8deg)';
+  newNote.style.opacity = '1';
+  con.textContent += "\n✅ 直接找空位釘上軟木塞！(不干擾其他人，隨插即用)";
+}
+
+function resetM3() {
+  const vipPerson = document.getElementById('m3-vip-person');
+  if(vipPerson) vipPerson.remove();
+  const vipNote = document.getElementById('m3-vip-note');
+  if(vipNote) vipNote.remove();
+  
+  document.getElementById('m3-btn-list').disabled = false;
+  document.getElementById('m3-btn-dict').disabled = false;
+  document.getElementById('m3-console').textContent = '比較兩種資料結構新增資料的物理成本...';
+  m3ListBusy = false;
+  m3DictBusy = false;
+}
+
+// ============================
+// M4: Hashable 保鑣
+// ============================
+let m4Busy = false;
+async function runM4() {
+  if(m4Busy) return;
+  m4Busy = true;
+  const con = document.getElementById('m4-console');
+  const btn = document.getElementById('m4-btn');
+  btn.disabled = true;
+  const scene = document.getElementById('m4-scene');
+  const s1 = document.getElementById('m4-s1');
+  const s2 = document.getElementById('m4-s2');
+  const v3 = document.getElementById('m4-v3');
+  const s3 = document.getElementById('m4-s3');
+
+  // Reset stamps
+  s1.className = 'stamp'; s2.className = 'stamp'; s3.className = 'stamp';
+  v3.classList.remove('jelly-anim');
+  scene.classList.remove('shake-ui');
+
+  con.textContent = "安檢開始... 檢查變數是否可以做為 Dict 的 Key";
+  await delay(600);
+
+  // Int
+  con.textContent += "\n🔍 檢查整數 42：不可變 (Immutable)";
+  await delay(400);
+  s1.classList.add('approved');
+  await delay(500);
+
+  // String
+  con.textContent += "\n🔍 檢查字串 'Hello'：不可變 (Immutable)";
+  await delay(400);
+  s2.classList.add('approved');
+  await delay(500);
+
+  // List
+  con.textContent += "\n🔍 檢查串列 [1, 2]：內容可變動 (Mutable)！";
+  v3.classList.add('jelly-anim');
+  await delay(800);
+  s3.classList.add('rejected');
+  scene.classList.add('shake-ui');
+  con.textContent += "\n💥 TypeError: unhashable type: 'list'\n保鑣：會變形的傢伙不准當鑰匙！";
+  
+  await delay(500);
+  scene.classList.remove('shake-ui');
+  m4Busy = false;
+}
+function resetM4() {
+  document.getElementById('m4-s1').className = 'stamp';
+  document.getElementById('m4-s2').className = 'stamp';
+  document.getElementById('m4-s3').className = 'stamp';
+  document.getElementById('m4-v3').classList.remove('jelly-anim');
+  document.getElementById('m4-console').textContent = '點擊開始安檢，將變數作為 Dict 的 Key...';
+  document.getElementById('m4-btn').disabled = false;
+  m4Busy = false;
+}
+
+// ============================
+// M5: 俄羅斯套娃
+// ============================
+let m5Busy = false;
+async function runM5() {
+  if(m5Busy) return;
+  m5Busy = true;
+  const con = document.getElementById('m5-console');
+  const safe0 = document.getElementById('m5-safe0');
+  const safe1 = document.getElementById('m5-safe1');
+  const tSlot = document.getElementById('m5-target-slot');
+  const cIdx = document.getElementById('m5-code-idx');
+  const cKey = document.getElementById('m5-code-key');
+
+  // Reset
+  safe0.classList.remove('dimmed');
+  safe1.classList.remove('highlight');
+  tSlot.classList.remove('open');
+  cIdx.style.color = ''; cIdx.style.fontWeight = '';
+  cKey.style.color = ''; cKey.style.fontWeight = '';
+
+  con.textContent = "執行 users[1][\"name\"] ...";
+  await delay(600);
+
+  // 解析 users[1]
+  cIdx.style.color = '#ecc94b'; cIdx.style.fontWeight = 'bold';
+  safe0.classList.add('dimmed');
+  safe1.classList.add('highlight');
+  con.textContent += "\n\n>> 步驟 1: 透過 [1] (數字索引) 從 List 大鐵櫃找出第二個 Dict 保險箱。";
+  await delay(1200);
+
+  // 解析 ["name"]
+  cIdx.style.color = ''; cIdx.style.fontWeight = '';
+  cKey.style.color = '#ecc94b'; cKey.style.fontWeight = 'bold';
+  tSlot.classList.add('open');
+  con.textContent += "\n>> 步驟 2: 透過 [\"name\"] (字串標籤) 從 Dict 保險箱精準開啟抽屜。";
+  await delay(800);
+  
+  con.textContent += "\n\n✅ 最終取得字串: \"Bob\"";
+  setTimeout(() => { cKey.style.color = ''; cKey.style.fontWeight = ''; }, 1000);
+  m5Busy = false;
+}
+function resetM5() {
+  document.getElementById('m5-safe0').classList.remove('dimmed');
+  document.getElementById('m5-safe1').classList.remove('highlight');
+  document.getElementById('m5-target-slot').classList.remove('open');
+  document.getElementById('m5-code-idx').style.color = '';
+  document.getElementById('m5-code-key').style.color = '';
+  document.getElementById('m5-console').textContent = '等待執行取值...';
+  m5Busy = false;
+}
+
+// ============================
+// M6: 實戰貼文過濾
+// ============================
+let m6Step = 0, m6Loop = 0, m6Busy = false;
+const m6Lines = ['m6-l0','m6-l1','m6-l2','m6-l3','m6-l4'];
+const m6Posts = [{author: "Alice", likes: 150, pass: true}, {author: "Bob", likes: 80, pass: false}, {author: "Charlie", likes: 200, pass: true}];
+
+async function stepM6() {
+  if(m6Busy) return;
+  m6Busy = true;
+  const con = document.getElementById('m6-console');
+  const btn = document.getElementById('m6-step-btn');
+  const popList = document.getElementById('m6-pop-list');
+
+  m6Lines.forEach(id => document.getElementById(id).classList.remove('active'));
+
+  if(m6Step === 0) {
+    document.getElementById('m6-l0').classList.add('active');
+    con.textContent = "初始化空的 popular_posts 陣列區。";
+    m6Step = 1;
+  } else if(m6Step === 1) {
+    if(m6Loop < 3) {
+      const card = document.getElementById(`m6-c${m6Loop}`);
+      document.getElementById('m6-l1').classList.add('active');
+      card.classList.add('checking');
+      con.textContent = `迴圈第 ${m6Loop+1} 圈：\n抓取 ${m6Posts[m6Loop].author} 的貼文資料 (Dict)。`;
+      await delay(800);
+
+      document.getElementById('m6-l1').classList.remove('active');
+      document.getElementById('m6-l2').classList.add('active');
+      con.textContent += `\n\n檢查 if ${m6Posts[m6Loop].likes} > 100：`;
+      await delay(600);
+
+      if(m6Posts[m6Loop].pass) {
+        con.textContent += " True ✅";
+        card.classList.add('matched');
+        await delay(500);
+
+        document.getElementById('m6-l2').classList.remove('active');
+        document.getElementById('m6-l3').classList.add('active'); // .ind-3 區塊防護展示
+        con.textContent += `\n>> 條件成立，將 "${m6Posts[m6Loop].author}" 加入陣列。`;
+        
+        // 飛行特效
+        const authorSpan = document.getElementById(`m6-a${m6Loop}`);
+        const rectA = authorSpan.getBoundingClientRect();
+        const rectB = popList.getBoundingClientRect();
+        const flyNode = document.createElement('div');
+        flyNode.className = 'fly-name';
+        flyNode.textContent = `"${m6Posts[m6Loop].author}"`;
+        flyNode.style.top = `${rectA.top + window.scrollY - 5}px`;
+        flyNode.style.left = `${rectA.left + window.scrollX - 5}px`;
+        document.body.appendChild(flyNode);
+        
+        await delay(50);
+        // 計算降落位置
+        flyNode.style.top = `${rectB.top + window.scrollY + 10}px`;
+        flyNode.style.left = `${rectB.left + window.scrollX + 20 + (m6Loop * 60)}px`;
+        
+        await delay(600);
+        flyNode.remove();
+        const item = document.createElement('div');
+        item.className = 'pop-item';
+        item.textContent = `"${m6Posts[m6Loop].author}"`;
+        popList.appendChild(item);
+
+      } else {
+        con.textContent += " False ❌";
+        card.classList.add('dimmed');
+        con.textContent += `\n>> 條件不成立，略過此貼文。`;
+      }
+      
+      await delay(500);
+      card.classList.remove('checking');
+      m6Loop++;
+      if(m6Loop === 3) m6Step = 2;
+    }
+  } else if(m6Step === 2) {
+    document.getElementById('m6-l4').classList.add('active');
+    con.textContent = `迴圈結束，印出熱門名單：\n['Alice', 'Charlie']\n🎉 資料過濾成功！`;
+    btn.disabled = true;
+  }
+  
+  m6Busy = false;
+}
+
+function resetM6() {
+  m6Step = 0; m6Loop = 0;
+  m6Lines.forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById('m6-pop-list').innerHTML = '';
+  [0,1,2].forEach(i => document.getElementById(`m6-c${i}`).className = 'post-card');
+  document.getElementById('m6-console').textContent = '等待篩選... 目標條件：likes > 100';
+  document.getElementById('m6-step-btn').disabled = false;
+  m6Busy = false;
+}
+</script>
+</body>
+</html>
