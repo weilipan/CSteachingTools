@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>破解巢狀結構：2D List 與 JSON</title>
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../layout.js" defer></script>
+<style>
+/* === 底層規範 === */
+body { padding: 0; margin: 0; background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+.container { padding-top: 80px; padding-bottom: 60px; max-width: 1000px; margin: 0 auto; }
+.card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.08); padding: 32px; margin-bottom: 36px; opacity: 0; transform: translateY(30px); transition: all 0.6s ease; overflow: hidden; }
+.card.visible { opacity: 1; transform: translateY(0); }
+.section-title { font-size: 1.4rem; font-weight: 700; color: #2d3748; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+.section-sub { color: #718096; font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5; }
+
+/* === Console 輸出與程式碼排版保護機制 === */
+.console-output { white-space: pre-wrap; font-family: 'Consolas', monospace; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; font-size: 0.9rem; min-height: 40px; margin-top: 15px; border-left: 4px solid #4a5568; line-height: 1.5; }
+.code-block { background: #1e1e1e; border-radius: 8px; padding: 16px; font-family: 'Consolas', monospace; font-size: 0.9rem; color: #d4d4d4; line-height: 1.6; margin-bottom: 15px; text-align: left; }
+.ln { display: block; white-space: nowrap; transition: background 0.3s ease, color 0.3s ease; padding: 2px 6px; border-radius: 4px; border-left: 3px solid transparent; }
+.ln.active { background: rgba(255, 213, 79, 0.2); color: #ffd54f; font-weight: bold; border-left-color: #ffd54f; }
+.ind-1 { padding-left: 1.5rem !important; }
+.ind-2 { padding-left: 3.0rem !important; }
+.ind-3 { padding-left: 4.5rem !important; }
+.kw { color: #569cd6; } .str { color: #ce9178; } .num { color: #b5cea8; } .cmt { color: #6a9955; } .fn { color: #dcdcaa; }
+
+/* === 共用按鈕 === */
+.btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; margin-right: 8px; margin-bottom: 8px; }
+.btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-secondary { background: #e2e8f0; color: #4a5568; }
+.btn-secondary:hover { background: #cbd5e0; }
+
+/* === M1: 販賣機 (3x5 二維陣列) === */
+.vending-machine { background: #2d3748; padding: 20px; border-radius: 12px; border: 6px solid #4a5568; display: inline-block; position: relative; margin: 0 auto; }
+.vm-grid { display: grid; grid-template-columns: 40px repeat(5, 60px); grid-template-rows: 40px repeat(3, 60px); gap: 5px; position: relative; }
+.vm-header { display: flex; align-items: center; justify-content: center; color: #a0aec0; font-family: monospace; font-weight: bold; font-size: 0.9rem; }
+.vm-cell { background: #1a202c; border-radius: 6px; border: 2px solid #4a5568; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; position: relative; z-index: 1; transition: all 0.3s; }
+.vm-cell.target { border-color: #f6ad55; box-shadow: 0 0 15px rgba(246,173,85,0.6); background: #2c2518; }
+.elevator { position: absolute; left: 45px; top: 45px; width: calc(100% - 45px); height: 60px; background: rgba(66, 153, 225, 0.2); border-top: 3px solid #63b3ed; border-bottom: 3px solid #63b3ed; transition: top 0.6s ease-in-out; z-index: 2; pointer-events: none; opacity: 0; }
+.claw { position: absolute; left: 0; top: 0; width: 60px; height: 100%; border: 3px solid #f6ad55; border-radius: 6px; box-sizing: border-box; transition: left 0.6s ease-in-out; z-index: 3; background: rgba(246, 173, 85, 0.2); }
+
+/* === M2: 吃豆人迷宮 === */
+.maze-scene { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.maze-grid { display: grid; grid-template-columns: repeat(5, 50px); grid-template-rows: repeat(3, 50px); gap: 5px; background: #1a202c; padding: 15px; border-radius: 8px; position: relative; border: 4px solid #2b6cb0; }
+.maze-cell { background: #2d3748; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: background 0.3s; }
+.maze-row-active { background: rgba(66, 153, 225, 0.3); }
+.dot { width: 10px; height: 10px; background: #f6e05e; border-radius: 50%; transition: opacity 0.2s; }
+.pacman { position: absolute; font-size: 1.8rem; top: 15px; left: 15px; transition: all 0.4s linear; z-index: 10; opacity: 0; }
+.pacman.chomp { animation: chomp 0.4s infinite; }
+@keyframes chomp { 0%, 100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.1) rotate(15deg); } }
+
+/* === M3: 型別放大鏡 (更新嵌套結構) === */
+.inspector-scene { padding: 30px; background: #edf2f7; border-radius: 12px; border: 2px dashed #cbd5e0; text-align: center; }
+.data-vis { display: flex; align-items: center; justify-content: center; font-family: monospace; font-size: 1.2rem; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; white-space: pre-wrap; line-height: 2; }
+/* M3 專用高亮標籤 */
+.m3-wrap { border: 2px solid transparent; border-radius: 6px; padding: 2px 4px; transition: all 0.3s; display: inline-block; cursor: pointer; }
+.m3-wrap:hover { background: #f7fafc; }
+.m3-wrap.active-list { border-color: #4299e1; background: #ebf8ff; color: #2b6cb0; }
+.m3-wrap.active-dict { border-color: #9f7aea; background: #faf5ff; color: #553c9a; }
+.m3-key-wrap { border-radius: 4px; padding: 0 4px; transition: all 0.3s; display: inline-block; }
+.m3-key-wrap.active-key { background: #fbd38d; color: #744210; font-weight: bold; }
+.type-panel { margin-top: 20px; padding: 15px; border-radius: 8px; min-height: 60px; font-weight: bold; transition: all 0.3s; background: #fff; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+/* === M4: JSON 檔案總管 === */
+.m4-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width: 600px) { .m4-layout { grid-template-columns: 1fr; } }
+.tree-view { background: #fff; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px; font-family: 'Segoe UI', sans-serif; height: 200px; overflow-y: auto; }
+.tree-node { margin-left: 20px; padding: 4px 0; cursor: pointer; display: none; align-items: center; gap: 6px; transition: all 0.3s; opacity: 0; }
+.tree-node.visible { display: flex; opacity: 1; }
+.tree-node:hover { background: #f7fafc; }
+.tree-node.highlight { background: #ebf8ff; color: #2b6cb0; font-weight: bold; border-radius: 4px; padding-left: 5px; }
+
+/* === M5: 購物車實戰 === */
+.m5-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width: 768px) { .m5-layout { grid-template-columns: 1fr; } }
+.cart-items { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.cart-item { background: #fff; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; font-family: monospace; position: relative; transition: all 0.3s; }
+.cart-item.processing { border-color: #ed8936; box-shadow: 0 0 10px rgba(237,137,54,0.4); transform: translateX(10px); }
+.total-counter { background: #c6f6d5; border: 3px solid #48bb78; color: #276749; padding: 15px; border-radius: 12px; text-align: center; font-size: 1.5rem; font-weight: bold; transition: transform 0.2s; }
+.total-counter.bump { transform: scale(1.1); box-shadow: 0 0 20px rgba(72,187,120,0.6); }
+.fly-num { position: absolute; font-weight: bold; color: #e53e3e; font-size: 1.2rem; z-index: 100; transition: all 0.6s ease-in-out; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div style="text-align:center; margin-bottom:40px;">
+    <h1 class="section-title" style="font-size: 2.2rem; justify-content:center; margin-bottom:10px;">🌌 破解巢狀結構：2D List 與 JSON</h1>
+    <p class="section-sub" style="font-size:1.1rem; max-width:650px; margin:0 auto;">終結「維度迷失」！透過視覺化動畫，將多重中括號 <code>[][]</code> 的抽象代碼，還原成實體的空間座標與檔案總管結構。</p>
+  </div>
+
+  <div class="card" id="m1">
+    <div class="section-title">🎰 模組 1：自動販賣機 (破解 2D List 座標)</div>
+    <div class="section-sub">二維陣列 <code>snacks[row][col]</code> 的取值，就是「先垂直下降找樓層，再水平移動找格子」。</div>
+    
+    <div style="text-align:center;">
+      <div class="code-block" style="display:inline-block; margin-bottom:20px;">
+        <span class="ln" style="font-size:1.2rem;">print( snacks<span id="m1-code-row" style="transition:all 0.3s;">[2]</span><span id="m1-code-col" style="transition:all 0.3s;">[4]</span> )</span>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-bottom: 20px;">
+      <div class="vending-machine">
+        <div class="vm-grid">
+          <div></div>
+          <div class="vm-header">c0</div><div class="vm-header">c1</div><div class="vm-header">c2</div><div class="vm-header">c3</div><div class="vm-header">c4</div>
+          
+          <div class="vm-header">r0</div>
+          <div class="vm-cell">🍫</div><div class="vm-cell">🍬</div><div class="vm-cell">🍪</div><div class="vm-cell">🥤</div><div class="vm-cell">🧃</div>
+          
+          <div class="vm-header">r1</div>
+          <div class="vm-cell">🍎</div><div class="vm-cell">🍌</div><div class="vm-cell">🍇</div><div class="vm-cell">🍓</div><div class="vm-cell">🍉</div>
+          
+          <div class="vm-header">r2</div>
+          <div class="vm-cell">🍔</div><div class="vm-cell">🍟</div><div class="vm-cell">🍕</div><div class="vm-cell">🌭</div><div class="vm-cell" id="m1-target">🍿</div>
+          
+          <div class="elevator" id="m1-elevator">
+            <div class="claw" id="m1-claw"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="text-align:center;">
+      <button class="btn btn-primary" id="m1-btn" onclick="runM1()">▶ 執行 snacks[2][4]</button>
+      <button class="btn btn-secondary" onclick="resetM1()">↩ 重置</button>
+    </div>
+    <div class="console-output" id="m1-console">點擊執行觀察「先垂直、後水平」的機械動作...</div>
+  </div>
+
+  <div class="card" id="m2">
+    <div class="section-title">👻 模組 2：吃豆人迷宮 (Nested Loops 走訪)</div>
+    <div class="section-sub">外層迴圈每換一列 (Row)，內層的吃豆人就要把那一列的每一格 (Cell) 走完。</div>
+    
+    <div class="maze-scene">
+      <div style="flex:1; min-width: 250px;">
+        <div class="code-block">
+          <span class="ln" id="m2-l0">total = <span class="num">0</span></span>
+          <span class="ln" id="m2-l1"><span class="kw">for</span> row <span class="kw">in</span> matrix:</span>
+          <span class="ln ind-1" id="m2-l2"><span class="kw">for</span> cell <span class="kw">in</span> row:</span>
+          <span class="ln ind-2" id="m2-l3">print(cell)</span>
+        </div>
+        <button class="btn btn-primary" id="m2-btn" onclick="runM2()">▶ 開始走訪 (Auto Run)</button>
+        <button class="btn btn-secondary" onclick="resetM2()">↩ 重新佈置</button>
+      </div>
+      
+      <div class="maze-grid" id="m2-grid">
+        <div class="pacman" id="m2-pacman">🟡</div>
+        </div>
+    </div>
+    <div class="console-output" id="m2-console">等待迴圈啟動...</div>
+  </div>
+
+  <div class="card" id="m3">
+    <div class="section-title">🔍 模組 3：型別透視放大鏡 (Type Inspector)</div>
+    <div class="section-sub">解決「型別失憶症」！每剝開一層中括號，就要重新確認現在手中握著的是 List 還是 Dict。</div>
+    
+    <div class="inspector-scene">
+      <div style="margin-bottom:15px; color:#4a5568; font-weight:bold;">👉 點擊下方按鈕或程式碼區塊，動態掃描型別與範圍：</div>
+      
+      <div class="data-vis">
+        data = 
+        <span id="m3-t1" class="m3-wrap" onclick="inspectType(1); event.stopPropagation();">
+          [ 
+          <span id="m3-t2" class="m3-wrap" onclick="inspectType(2); event.stopPropagation();">
+            { "name": "Alice", 
+            <span id="m3-t3-key" class="m3-key-wrap" onclick="inspectType(3); event.stopPropagation();">"scores"</span>: 
+            <span id="m3-t3-val" class="m3-wrap" onclick="inspectType(3); event.stopPropagation();">[80, 90]</span> }
+          </span> 
+          ]
+        </span>
+      </div>
+      
+      <div class="type-panel" id="m3-panel">
+        <span style="color:#a0aec0; font-weight:normal;">點擊上方區塊進行 X 光透視...</span>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:15px;">
+      <button class="btn btn-secondary" onclick="inspectType(1)">🔎 掃描 data</button>
+      <button class="btn btn-secondary" onclick="inspectType(2)">🔎 掃描 data[0]</button>
+      <button class="btn btn-secondary" onclick="inspectType(3)">🔎 掃描 data[0]["scores"]</button>
+    </div>
+  </div>
+
+  <div class="card" id="m4">
+    <div class="section-title">📂 模組 4：JSON 檔案總管 (List of Dicts)</div>
+    <div class="section-sub">連續括號 <code>data[1]["user"]["id"]</code> 就像在電腦裡「一層層打開資料夾找檔案」。</div>
+    
+    <div class="m4-layout">
+      <div>
+        <div class="code-block" style="text-align:center; padding: 25px 10px;">
+          <span class="ln" style="font-size:1.1rem; color:#a0aec0;">print(</span>
+          <span class="ln" style="font-size:1.4rem; font-weight:bold;">
+            data<span id="m4-k1" style="transition:color 0.3s;">[1]</span><span id="m4-k2" style="transition:color 0.3s;">["user"]</span><span id="m4-k3" style="transition:color 0.3s;">["id"]</span>
+          </span>
+          <span class="ln" style="font-size:1.1rem; color:#a0aec0;">)</span>
+        </div>
+        <button class="btn btn-primary" id="m4-btn" onclick="runM4()" style="width:100%;">▶ 逐層開啟</button>
+        <button class="btn btn-secondary" onclick="resetM4()" style="width:100%; margin-top:10px;">↩ 關閉所有資料夾</button>
+      </div>
+      
+      <div class="tree-view" id="m4-tree">
+        <div class="tree-node visible" style="margin-left:0;">📁 data (List)</div>
+        <div class="tree-node" id="m4-n1">📁 0 (Dict)</div>
+        <div class="tree-node" id="m4-n2">📁 1 (Dict)</div>
+        <div class="tree-node" id="m4-n3" style="margin-left:40px;">📁 "user" (Dict)</div>
+        <div class="tree-node" id="m4-n4" style="margin-left:60px;">📄 "id" = "U123"</div>
+        <div class="tree-node" id="m4-n5" style="margin-left:60px;">📄 "name" = "Bob"</div>
+        <div class="tree-node" id="m4-n6" style="margin-left:40px;">📄 "active" = True</div>
+      </div>
+    </div>
+    <div class="console-output" id="m4-console">等待指令...</div>
+  </div>
+
+  <div class="card" id="m5">
+    <div class="section-title">🛒 模組 5：綜合實戰 — 購物車結帳系統</div>
+    <div class="section-sub">將 List of Dicts 與迴圈結合，精準抽取內部數值進行數學運算！</div>
+    
+    <div class="m5-layout">
+      <div>
+        <div class="code-block">
+          <span class="ln" id="m5-l0">total = <span class="num">0</span></span>
+          <span class="ln" id="m5-l1"><span class="kw">for</span> item <span class="kw">in</span> cart:</span>
+          <span class="ln ind-1" id="m5-l2">subtotal = item[<span class="str">"price"</span>] * item[<span class="str">"qty"</span>]</span>
+          <span class="ln ind-1" id="m5-l3">total += subtotal</span>
+        </div>
+        <button class="btn btn-primary" id="m5-step-btn" onclick="stepM5()">▶ 結帳 (Step)</button>
+        <button class="btn btn-secondary" onclick="resetM5()">↩ 清空重來</button>
+      </div>
+      
+      <div>
+        <div class="cart-items">
+          <div class="cart-item" id="m5-c0">
+            {"name": "A", "price": <span id="m5-p0" style="color:#e53e3e;">100</span>, "qty": <span id="m5-q0" style="color:#2b6cb0;">2</span>}
+          </div>
+          <div class="cart-item" id="m5-c1">
+            {"name": "B", "price": <span id="m5-p1" style="color:#e53e3e;">50</span>, "qty": <span id="m5-q1" style="color:#2b6cb0;">3</span>}
+          </div>
+        </div>
+        <div class="total-counter" id="m5-total-ui">
+          總金額 Total: $<span id="m5-total-val">0</span>
+        </div>
+      </div>
+    </div>
+    <div class="console-output" id="m5-console">等待結帳...</div>
+  </div>
+
+</div>
+
+<script>
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+// Intersection Observer
+const observer = new IntersectionObserver((entries, obs) => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.card').forEach(c => observer.observe(c));
+
+// ============================
+// M1: 販賣機
+// ============================
+let m1Busy = false;
+async function runM1() {
+  if(m1Busy) return;
+  m1Busy = true;
+  const con = document.getElementById('m1-console');
+  const btn = document.getElementById('m1-btn');
+  const ele = document.getElementById('m1-elevator');
+  const claw = document.getElementById('m1-claw');
+  const target = document.getElementById('m1-target');
+  const cRow = document.getElementById('m1-code-row');
+  const cCol = document.getElementById('m1-code-col');
+
+  btn.disabled = true;
+  target.classList.remove('target');
+  ele.style.opacity = '1';
+  ele.style.top = '45px'; // 初始化 Row 0 (加上 header offset 45px)
+  claw.style.left = '0px';
+
+  con.textContent = "解析 snacks[2][4] ...";
+  await delay(600);
+
+  // Row 2 (Vertical)
+  cRow.style.color = '#ecc94b'; cRow.style.fontWeight = 'bold';
+  con.textContent += "\n>> 步驟 1 (外層): 找到 [2]，升降台垂直移動至第 2 列 (Row 2)";
+  ele.style.top = `${45 + (2 * 65)}px`; // row 2 座標
+  await delay(800);
+  cRow.style.color = ''; cRow.style.fontWeight = '';
+
+  // Col 4 (Horizontal)
+  cCol.style.color = '#ecc94b'; cCol.style.fontWeight = 'bold';
+  con.textContent += "\n>> 步驟 2 (內層): 找到 [4]，爪子水平移動至第 4 行 (Col 4)";
+  claw.style.left = `${4 * 65}px`; // col 4 座標
+  await delay(800);
+  
+  target.classList.add('target');
+  con.textContent += "\n✅ 成功取得 🍿！(先垂直、後水平)";
+  
+  setTimeout(() => {
+    cCol.style.color = ''; cCol.style.fontWeight = '';
+    ele.style.opacity = '0';
+    m1Busy = false;
+    btn.disabled = false;
+  }, 1000);
+}
+
+function resetM1() {
+  document.getElementById('m1-target').classList.remove('target');
+  document.getElementById('m1-elevator').style.opacity = '0';
+  document.getElementById('m1-elevator').style.top = '45px';
+  document.getElementById('m1-claw').style.left = '0px';
+  document.getElementById('m1-console').textContent = '點擊執行觀察「先垂直、後水平」的機械動作...';
+}
+
+// ============================
+// M2: 吃豆人迷宮
+// ============================
+const m2Grid = document.getElementById('m2-grid');
+for(let r=0; r<3; r++) {
+  for(let c=0; c<5; c++) {
+    const cell = document.createElement('div');
+    cell.className = 'maze-cell';
+    cell.id = `m2-c-${r}-${c}`;
+    cell.innerHTML = `<div class="dot" id="m2-d-${r}-${c}"></div>`;
+    m2Grid.appendChild(cell);
+  }
+}
+
+let m2Busy = false;
+async function runM2() {
+  if(m2Busy) return;
+  m2Busy = true;
+  const con = document.getElementById('m2-console');
+  const btn = document.getElementById('m2-btn');
+  const pac = document.getElementById('m2-pacman');
+  const l1 = document.getElementById('m2-l1');
+  const l2 = document.getElementById('m2-l2');
+  const l3 = document.getElementById('m2-l3');
+
+  btn.disabled = true;
+  pac.style.opacity = '1';
+  pac.classList.add('chomp');
+  con.textContent = "啟動二維迴圈...";
+
+  for(let r=0; r<3; r++) {
+    l1.classList.add('active');
+    con.textContent = `外層迴圈 (Row ${r}) 啟動，點亮整排道路...`;
+    // 點亮整排
+    for(let c=0; c<5; c++) document.getElementById(`m2-c-${r}-${c}`).classList.add('maze-row-active');
+    
+    // 移到該排起點
+    pac.style.top = `${15 + (r * 55)}px`;
+    pac.style.left = `15px`;
+    await delay(600);
+    l1.classList.remove('active');
+
+    for(let c=0; c<5; c++) {
+      l2.classList.add('active');
+      pac.style.left = `${15 + (c * 55)}px`;
+      await delay(300);
+      l2.classList.remove('active');
+      
+      l3.classList.add('active');
+      document.getElementById(`m2-d-${r}-${c}`).style.opacity = '0'; // 吃到豆子
+      await delay(200);
+      l3.classList.remove('active');
+    }
+    
+    con.textContent = `Row ${r} 走訪完畢，準備切換下一列。`;
+    for(let c=0; c<5; c++) document.getElementById(`m2-c-${r}-${c}`).classList.remove('maze-row-active');
+    await delay(300);
+  }
+
+  con.textContent = "✅ 所有格子走訪完畢！";
+  pac.classList.remove('chomp');
+  pac.style.opacity = '0';
+  btn.disabled = false;
+  m2Busy = false;
+}
+
+function resetM2() {
+  document.querySelectorAll('.dot').forEach(d => d.style.opacity = '1');
+  document.querySelectorAll('.maze-cell').forEach(c => c.classList.remove('maze-row-active'));
+  document.getElementById('m2-pacman').style.opacity = '0';
+  document.getElementById('m2-console').textContent = '等待迴圈啟動...';
+}
+
+// ============================
+// M3: 型別放大鏡 (修正高亮邏輯)
+// ============================
+function inspectType(level) {
+  const panel = document.getElementById('m3-panel');
+  const t1 = document.getElementById('m3-t1');
+  const t2 = document.getElementById('m3-t2');
+  const t3Val = document.getElementById('m3-t3-val');
+  const t3Key = document.getElementById('m3-t3-key');
+
+  // Reset states
+  t1.className = 'm3-wrap';
+  t2.className = 'm3-wrap';
+  t3Val.className = 'm3-wrap';
+  t3Key.className = 'm3-key-wrap';
+
+  if (level === 1) {
+    t1.classList.add('active-list');
+    panel.innerHTML = `<span style="font-size:1.8rem;">📦</span><div><div style="color:#2b6cb0;">List (串列)</div><div style="font-size:0.9rem; font-weight:normal; color:#4a5568;">這是一個大貨櫃，裡面裝著字典箱子。用 [數字] 取值。</div></div>`;
+    panel.style.borderColor = '#4299e1'; panel.style.background = '#ebf8ff';
+  } else if (level === 2) {
+    t2.classList.add('active-dict');
+    panel.innerHTML = `<span style="font-size:1.8rem;">🏷️</span><div><div style="color:#553c9a;">Dict (字典)</div><div style="font-size:0.9rem; font-weight:normal; color:#4a5568;">這是一個貼滿標籤的魔法櫃。用 ["字串"] 找對應的資料。</div></div>`;
+    panel.style.borderColor = '#9f7aea'; panel.style.background = '#faf5ff';
+  } else if (level === 3) {
+    t3Key.classList.add('active-key');
+    t3Val.classList.add('active-list');
+    panel.innerHTML = `<span style="font-size:1.8rem;">📦</span><div><div style="color:#2b6cb0;">List (串列)</div><div style="font-size:0.9rem; font-weight:normal; color:#4a5568;">透過 "scores" 標籤，我們找到裡面藏著的分數陣列 (List)。</div></div>`;
+    panel.style.borderColor = '#4299e1'; panel.style.background = '#ebf8ff';
+  }
+}
+
+// ============================
+// M4: 檔案總管
+// ============================
+let m4Busy = false;
+async function runM4() {
+  if(m4Busy) return;
+  m4Busy = true;
+  const con = document.getElementById('m4-console');
+  const k1 = document.getElementById('m4-k1');
+  const k2 = document.getElementById('m4-k2');
+  const k3 = document.getElementById('m4-k3');
+
+  resetM4(); // Auto reset
+  con.textContent = "開始循線尋找檔案...";
+  await delay(600);
+
+  // [1]
+  k1.style.color = '#ecc94b'; k1.style.fontWeight = 'bold';
+  document.getElementById('m4-n1').classList.add('visible');
+  document.getElementById('m4-n2').classList.add('visible', 'highlight');
+  con.textContent += "\n>> [1] : 開啟第 1 號資料夾";
+  await delay(1000);
+  k1.style.color = ''; k1.style.fontWeight = ''; document.getElementById('m4-n2').classList.remove('highlight');
+
+  // ["user"]
+  k2.style.color = '#ecc94b'; k2.style.fontWeight = 'bold';
+  document.getElementById('m4-n3').classList.add('visible', 'highlight');
+  con.textContent += "\n>> [\"user\"] : 進入 user 目錄";
+  await delay(1000);
+  k2.style.color = ''; k2.style.fontWeight = ''; document.getElementById('m4-n3').classList.remove('highlight');
+
+  // ["id"]
+  k3.style.color = '#ecc94b'; k3.style.fontWeight = 'bold';
+  document.getElementById('m4-n4').classList.add('visible', 'highlight');
+  document.getElementById('m4-n5').classList.add('visible');
+  document.getElementById('m4-n6').classList.add('visible');
+  con.textContent += "\n>> [\"id\"] : 讀取 id 檔案內容 -> 'U123'";
+  
+  setTimeout(() => { k3.style.color = ''; k3.style.fontWeight = ''; m4Busy = false; }, 800);
+}
+
+function resetM4() {
+  for(let i=1; i<=6; i++) {
+    const el = document.getElementById(`m4-n${i}`);
+    el.classList.remove('visible', 'highlight');
+  }
+  document.getElementById('m4-console').textContent = '等待指令...';
+}
+
+// ============================
+// M5: 購物車結帳
+// ============================
+let m5Step = 0, m5Loop = 0, m5Busy = false;
+let totalVal = 0;
+const cartData = [{p: 100, q: 2}, {p: 50, q: 3}];
+const m5Lines = ['m5-l0','m5-l1','m5-l2','m5-l3'];
+
+async function stepM5() {
+  if(m5Busy) return;
+  m5Busy = true;
+  const con = document.getElementById('m5-console');
+  const btn = document.getElementById('m5-step-btn');
+  const totalUI = document.getElementById('m5-total-ui');
+  const totalValUI = document.getElementById('m5-total-val');
+
+  m5Lines.forEach(id => document.getElementById(id).classList.remove('active'));
+
+  if(m5Step === 0) {
+    document.getElementById('m5-l0').classList.add('active');
+    con.textContent = "初始化 total = 0";
+    m5Step = 1;
+  } else if(m5Step === 1) {
+    if(m5Loop < 2) {
+      document.getElementById('m5-l1').classList.add('active');
+      const itemCard = document.getElementById(`m5-c${m5Loop}`);
+      itemCard.classList.add('processing');
+      con.textContent = `迴圈抓取商品 ${m5Loop === 0 ? 'A' : 'B'} (Dict)...`;
+      await delay(800);
+
+      document.getElementById('m5-l1').classList.remove('active');
+      document.getElementById('m5-l2').classList.add('active');
+      
+      const p = cartData[m5Loop].p;
+      const q = cartData[m5Loop].q;
+      const sub = p * q;
+      con.textContent += `\n>> 計算小計: ${p} * ${q} = ${sub}`;
+      await delay(800);
+
+      document.getElementById('m5-l2').classList.remove('active');
+      document.getElementById('m5-l3').classList.add('active');
+      
+      // 飛行數字特效
+      const sourceRect = itemCard.getBoundingClientRect();
+      const targetRect = totalUI.getBoundingClientRect();
+      const flyNode = document.createElement('div');
+      flyNode.className = 'fly-num';
+      flyNode.textContent = `+${sub}`;
+      flyNode.style.top = `${sourceRect.top + window.scrollY + 10}px`;
+      flyNode.style.left = `${sourceRect.left + window.scrollX + 100}px`;
+      document.body.appendChild(flyNode);
+      
+      await delay(50);
+      flyNode.style.top = `${targetRect.top + window.scrollY}px`;
+      flyNode.style.left = `${targetRect.left + window.scrollX + (targetRect.width/2)}px`;
+      
+      await delay(600);
+      flyNode.remove();
+      totalVal += sub;
+      totalValUI.textContent = totalVal;
+      totalUI.classList.add('bump');
+      con.textContent += `\n>> 加總至 total: 目前 ${totalVal}`;
+      
+      await delay(300);
+      totalUI.classList.remove('bump');
+      itemCard.classList.remove('processing');
+      
+      m5Loop++;
+      if(m5Loop === 2) m5Step = 2;
+    }
+  } else if(m5Step === 2) {
+    con.textContent = `✅ 結帳完成！總金額為 ${totalVal}`;
+    btn.disabled = true;
+  }
+  m5Busy = false;
+}
+
+function resetM5() {
+  m5Step = 0; m5Loop = 0; totalVal = 0;
+  m5Lines.forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById('m5-c0').classList.remove('processing');
+  document.getElementById('m5-c1').classList.remove('processing');
+  document.getElementById('m5-total-val').textContent = '0';
+  document.getElementById('m5-console').textContent = '等待結帳...';
+  document.getElementById('m5-step-btn').disabled = false;
+}
+</script>
+</body>
+</html>
