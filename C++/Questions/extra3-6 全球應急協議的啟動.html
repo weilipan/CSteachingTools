@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球災害應變組織 - 最高協議啟動實體模擬</title>
+    <style>
+        body {
+            /* 模擬金屬門板背景 */
+            background-color: #1a1e24;
+            background-image: repeating-linear-gradient(45deg, rgba(255,255,255, 0.01) 0px, rgba(255,255,255, 0.01) 1px, transparent 1px, transparent 10px),
+                              linear-gradient(to right, #1a1e24, #2c313a, #1a1e24);
+            color: #58a6ff;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace; /* 使用等寬字體更具工業感 */
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 { color: #e6edf3; font-size: 24px; text-shadow: 0 0 10px rgba(88, 166, 255, 0.5); }
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+            gap: 20px;
+        }
+        
+        /* 控制面板樣式 - 終端機風格 */
+        .controls {
+            background: rgba(13, 17, 23, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #30363d;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+        .controls label { display: inline-block; margin: 0 10px; font-weight: bold; }
+        input {
+            width: 50px;
+            padding: 8px;
+            background: #0d1117;
+            color: #79c0ff;
+            border: 1px solid #58a6ff;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 16px;
+        }
+        button {
+            background: linear-gradient(#238636, #1b662a);
+            color: white;
+            border: 1px solid rgba(27,106,42, 0.5);
+            padding: 10px 25px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 3px 0 #1b662a;
+        }
+        button:hover { background: linear-gradient(#2ea043, #238636); }
+        button:active { box-shadow: 0 1px 0 #1b662a; transform: translateY(2px); }
+        button:disabled { background: #30363d; cursor: not-allowed; box-shadow: none; transform: none; color: #8b949e;}
+        
+        /* ------------------------------------------------------------------------------------------ */
+        /* --- 實體保險箱轉盤核心 CSS (重點部分) --- */
+        /* ------------------------------------------------------------------------------------------ */
+        
+        /* 轉盤外部容器 (保險箱主體的一部分) */
+        .safebox-dial-area {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            background-color: #2c313a;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* 外部凹陷陰影與內發光 */
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.6), 0 5px 20px rgba(0,0,0,0.4);
+            border: 5px solid #1a1e24;
+        }
+        
+        /* 固定基準點 (Top Fixed Index) - 紅色三角形位於正上方 12 點方向 */
+        .fixed-index {
+            position: absolute;
+            top: 5px; /* 在凹槽上方 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid #ff7b72; /* 紅色箭頭向下 */
+            z-index: 30;
+            filter: drop-shadow(0 0 5px rgba(255, 123, 114, 0.8));
+        }
+
+        /* 可旋轉的轉盤本體 (包含旋鈕與刻度圈) */
+        .rotating-dial {
+            position: relative;
+            width: 290px;
+            height: 290px;
+            border-radius: 50%;
+            /* 預設為初始位置 0 度 */
+            transform-origin: center center;
+            transform: rotate(0deg); 
+            /* 動畫效果設定 */
+            transition: transform 1.5s ease-in-out;
+            z-index: 10;
+        }
+
+        /* 旋鈕中央立體部分 (The Knob) - 黑色拉絲金屬感 */
+        .knob {
+            position: absolute;
+            width: 190px;
+            height: 190px;
+            top: 50px; /* (290-190)/2 */
+            left: 50px;
+            background: radial-gradient(circle at 30% 30%, #444, #111 70%, #000);
+            border-radius: 50%;
+            z-index: 20;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8), inset 0 2px 5px rgba(255,255,255,0.1);
+            border: 3px solid #000;
+        }
+        
+        /* 旋鈕抓握側邊紋理 (Knurl) */
+        .knob-knurl {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            top: 45px;
+            left: 45px;
+            border-radius: 50%;
+            background-image: repeating-conic-gradient(#000 0% 1%, #222 1% 2%);
+            z-index: 15;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        /* 存放刻度線與數字的容器 */
+        #ticks-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        /* 刻度線與標籤的 CSS - 重新設定 */
+        .tick {
+            position: absolute;
+            width: 2px;
+            height: 10px;
+            background-color: #8b949e;
+            top: 0;
+            left: calc(50% - 1px);
+            /* 旋轉軸心設定在轉盤正中央 (半徑 145px) */
+            transform-origin: center 145px; 
+        }
+        .tick.major {
+            width: 4px;
+            height: 18px;
+            background-color: #58a6ff;
+            left: calc(50% - 2px);
+        }
+        .tick-label {
+            position: absolute;
+            width: 30px;
+            text-align: center;
+            top: 22px; /* 數字在刻度下方 */
+            left: calc(50% - 15px);
+            transform-origin: center 123px; /* 調整數字軸心 (145-22) */
+            font-size: 16px;
+            color: #8b949e;
+            font-weight: bold;
+        }
+        .tick-label.zero { color: #ff7b72; font-size: 20px; }
+        
+        /* ------------------------------------------------------------------------------------------ */
+
+        /* 日誌樣式 - 終端機風格 */
+        .log-container {
+            width: 90%;
+            max-width: 550px;
+            background: rgba(13, 17, 23, 0.9);
+            border: 2px solid #30363d;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            min-height: 220px;
+            font-size: 14px;
+            color: #a5d6ff;
+            overflow-y: auto;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+        .log-entry { margin: 5px 0; border-left: 2px solid transparent; padding-left: 10px; }
+        .log-entry.active { border-left-color: #58a6ff; background-color: rgba(88,166,255,0.1); }
+        .highlight { color: #ff7b72; font-weight: bold; }
+        .energy { color: #d2a8ff; font-weight: bold; }
+        .total-log { color: #3fb950; font-weight: bold; margin-top: 10px; border-top: 1px dashed #30363d; padding-top: 10px;}
+    </style>
+</head>
+<body>
+
+    <h1>SDG 17 - 最高級別應急協議啟動</h1>
+    
+    <div class="dashboard">
+        <div class="controls">
+            <label>初始 INDEX: <input type="number" id="start" value="0" min="0" max="39"></label>
+            <label>資金 [1]: <input type="number" id="t1" value="30" min="0" max="39"></label>
+            <label>物資 [2]: <input type="number" id="t2" value="0" min="0" max="39"></label>
+            <label>人員 [3]: <input type="number" id="t3" value="30" min="0" max="39"></label>
+            <br>
+            <button id="startBtn" onclick="runSimulation()">🔒 開始動員協議</button>
+        </div>
+
+        <div class="safebox-dial-area">
+            <div class="fixed-index"></div>
+            
+            <div class="rotating-dial" id="dial">
+                <div class="knob"></div>
+                <div class="knob-knurl"></div>
+                <div id="ticks-container"></div>
+            </div>
+        </div>
+
+        <div class="log-container" id="logBox">
+            > 系統就緒。刻度 0-39 已校準。<br>
+            > 請設定初始位置與三個門檻值。<br>
+            > <span class='energy'>1 刻度單位 = 9 度 動員能量。</span><br>
+        </div>
+    </div>
+
+    <script>
+        // --- 初始化：繪製圓盤上的刻度 ---
+        window.onload = function() {
+            const container = document.getElementById('ticks-container');
+            // 題目邏輯：順時針轉，數字變小。
+            // 這代表刻度在圓盤上必須是「順時針遞增排列」。
+            // (0 at 12 o'clock, 1 slightly to the right, etc.)
+            for (let i = 0; i < 40; i++) {
+                // 角度是正的，代表順時針排列
+                const angle = i * 9; 
+                
+                // 畫刻度線
+                const tick = document.createElement('div');
+                tick.className = 'tick' + (i % 5 === 0 ? ' major' : '');
+                tick.style.transform = `rotate(${angle}deg)`;
+                container.appendChild(tick);
+
+                // 每 5 個刻度標示數字
+                if (i % 5 === 0) {
+                    const label = document.createElement('div');
+                    label.className = 'tick-label' + (i === 0 ? ' zero' : '');
+                    label.innerText = i;
+                    label.style.transform = `rotate(${angle}deg)`; // 保持文字垂直
+                    container.appendChild(label);
+                }
+            }
+        };
+
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+
+        // 追蹤目前的視覺日誌
+        let currentLogEntry = null;
+
+        function logMsg(msg, isNewStage = false) {
+            const logBox = document.getElementById('logBox');
+            if (currentLogEntry && isNewStage) {
+                currentLogEntry.classList.remove('active');
+            }
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            if (isNewStage) {
+                entry.classList.add('active');
+                currentLogEntry = entry;
+            }
+            entry.innerHTML = `> ${msg}`;
+            logBox.appendChild(entry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        async function runSimulation() {
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('logBox').innerHTML = ""; 
+            
+            const start = parseInt(document.getElementById('start').value);
+            const t1 = parseInt(document.getElementById('t1').value);
+            const t2 = parseInt(document.getElementById('t2').value);
+            const t3 = parseInt(document.getElementById('t3').value);
+
+            if ([start, t1, t2, t3].some(v => isNaN(v) || v < 0 || v > 39)) {
+                logMsg("<span style='color:red;font-weight:bold'>[ERROR] 請輸入 0 到 39 之間的整數。</span>", true);
+                document.getElementById('startBtn').disabled = false;
+                return;
+            }
+
+            const dial = document.getElementById('dial');
+            let totalEnergy = 0; // 計算用（總角度加總）
+            
+            // 重要：旋轉邏輯翻轉。
+            // 如果初始號碼是 X，要將它轉到頂部的固定基準點。
+            // 由於號碼是順時針排列 (Number 5 is at +45deg)，
+            // 我們需要將整個圓盤「逆時針旋轉 45 度」(-45deg) 才能讓 5 對齊基準點。
+            
+            let visualRotationAngle = - (start * 9); 
+            
+            dial.style.transition = "none"; // 初始化位置不需要動畫
+            dial.style.transform = `rotate(${visualRotationAngle}deg)`;
+            
+            logMsg(`動員校準：圓盤初始對齊 <span class='highlight'>刻度 ${start}</span>`, true);
+            await delay(1200); // 暫停，讓使用者確認初始對齊
+            
+            dial.style.transition = "transform 1.5s ease-in-out"; 
+
+            // =========================================================================
+            // 第一階段：順時針推動 2 整圈
+            // 題目「順時針推動」 = 用戶把旋鈕向右轉 = CSS 角度增加 (+)
+            // =========================================================================
+            logMsg("【一】執行安全鎖解鎖：順時針推動 2 圈...", true);
+            
+            let stageDegrees = 720;
+            visualRotationAngle += stageDegrees; // 視覺上角度增加
+            totalEnergy += stageDegrees;         // 能量加總
+
+            dial.style.transform = `rotate(${visualRotationAngle}deg)`;
+            logMsg(`能量消耗: <span class='energy'>${stageDegrees}°</span>`);
+            await delay(1800);
+
+            // =========================================================================
+            // 第二階段：繼續順時針推動，直到對齊資金門檻(t1)
+            // =========================================================================
+            logMsg(`【二】動員階段：順時針對齊「資金到位」門檻 <span class='highlight'>${t1}</span>...`, true);
+            
+            // 計算刻度差
+            let ticks = (start - t1 + 40) % 40;
+            stageDegrees = ticks * 9;
+            
+            visualRotationAngle += stageDegrees; 
+            totalEnergy += stageDegrees;
+
+            dial.style.transform = `rotate(${visualRotationAngle}deg)`;
+            logMsg(`轉盤移動: ${ticks} 刻度 (消耗: <span class='energy'>${stageDegrees}°</span>)`);
+            await delay(1800);
+
+            // =========================================================================
+            // 第三階段：接著，逆時針方向進行 1 整圈
+            // 「逆時針推動」 = 用戶向左轉 = CSS 角度減少 (-)
+            // =========================================================================
+            logMsg("【三】全面審查：逆時針推動 1 圈...", true);
+            
+            stageDegrees = 360;
+            visualRotationAngle -= stageDegrees; // 視覺上減去角度
+            totalEnergy += stageDegrees;         // 能量永遠為正相加
+
+            dial.style.transform = `rotate(${visualRotationAngle}deg)`;
+            logMsg(`能量消耗: <span class='energy'>${stageDegrees}°</span>`);
+            await delay(1800);
+
+            // =========================================================================
+            // 第四階段：繼續逆時針推動，直到對齊物資門檻(t2)
+            // =========================================================================
+            logMsg(`【四】動員階段：逆時針對齊「物資就緒」門檻 <span class='highlight'>${t2}</span>...`, true);
+            
+            ticks = (t2 - t1 + 40) % 40;
+            stageDegrees = ticks * 9;
+            
+            visualRotationAngle -= stageDegrees; // 逆時針視覺減少
+            totalEnergy += stageDegrees;
+
+            dial.style.transform = `rotate(${visualRotationAngle}deg)`;
+            logMsg(`轉盤移動: ${ticks} 刻度 (消耗: <span class='energy'>${stageDegrees}°</span>)`);
+            await delay(1800);
+
+            // =========================================================================
+            // 第五階段：最後，順時針方向推動，直到對齊人員門檻(t3)
+            // =========================================================================
+            logMsg(`【五】終極階段：順時針對齊「人員部署」門檻 <span class='highlight'>${t3}</span>...`, true);
+            
+            ticks = (t2 - t3 + 40) % 40;
+            stageDegrees = ticks * 9;
+            
+            visualRotationAngle += stageDegrees; // 順時針視覺增加
+            totalEnergy += stageDegrees;
+
+            dial.style.transform = `rotate(${visualRotationAngle}deg)`;
+            logMsg(`轉盤移動: ${ticks} 刻度 (消耗: <span class='energy'>${stageDegrees}°</span>)`);
+            await delay(1800);
+
+            // =========================================================================
+            // 總結
+            // =========================================================================
+            if (currentLogEntry) currentLogEntry.classList.remove('active');
+            
+            logBox.innerHTML += `<div class='total-log'>[COMPLETE] 國際應援協議成功啟動！<br>
+                                 驗證總動員能量：<span style='font-size:18px'>${totalEnergy}</span> (總旋轉角度)</div>`;
+            logBox.scrollTop = logBox.scrollHeight;
+            
+            document.getElementById('startBtn').disabled = false;
+        }
+    </script>
+</body>
+</html>

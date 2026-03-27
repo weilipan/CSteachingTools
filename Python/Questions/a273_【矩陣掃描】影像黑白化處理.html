@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦視覺 101：影像二值化模擬器</title>
+    <style>
+        body { background-color: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', 'Courier New', monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1 { color: #4ec9b0; font-family: 'Segoe UI', Tahoma, sans-serif; margin-bottom: 10px; }
+        
+        /* 上方資訊區塊排版 */
+        .info-layout { display: flex; gap: 20px; width: 100%; max-width: 1100px; margin-bottom: 10px; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        .problem-desc { flex: 1.5; }
+        .syntax-hint { flex: 1; border-color: #569cd6 !important; background: rgba(86, 156, 214, 0.05) !important; }
+        .syntax-hint h2 { color: #569cd6 !important; border-bottom-color: #3c3c3c !important; }
+        .panel p { margin: 8px 0; line-height: 1.6; font-size: 14.5px; }
+        .panel ul { margin: 8px 0; padding-left: 20px; font-size: 14.5px; line-height: 1.6; }
+        .panel li { margin-bottom: 8px; color: #cccccc; }
+        .highlight-text { color: #c586c0; font-weight: bold; }
+        code { background: #111; border: 1px solid #3c3c3c; padding: 2px 5px; border-radius: 4px; color: #ce9178; font-family: Consolas, monospace; font-size: 13.5px;}
+        strong { color: #9cdcfe; }
+
+        .layout { display: flex; gap: 20px; width: 100%; max-width: 1100px; }
+        
+        .panel { background: #252526; border: 1px solid #3c3c3c; border-radius: 8px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
+        .panel h2 { margin-top: 0; font-size: 16px; color: #c586c0; border-bottom: 1px solid #3c3c3c; padding-bottom: 8px; }
+
+        /* 左側程式碼 */
+        .code-area { flex: 1.2; }
+        .code-line { padding: 4px 8px; border-radius: 4px; margin: 2px 0; display: flex; font-size: 14px; }
+        .line-num { color: #858585; width: 25px; user-select: none; }
+        .line-code { white-space: pre; }
+        .active-line { background-color: #062f4a; border-left: 4px solid #569cd6; padding-left: 4px; }
+        
+        /* 語法顏色 */
+        .kw { color: #c586c0; } .fn { color: #dcdcaa; } .st { color: #ce9178; } .cm { color: #6a9955; } .vr { color: #9cdcfe; }
+
+        /* 右側狀態區 */
+        .state-area { flex: 1.5; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* 影像矩陣視覺化專用 CSS */
+        .image-container { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #1e1e1e; padding: 15px; border-radius: 6px; border: 1px solid #3c3c3c; min-height: 200px;}
+        .image-table { border-collapse: collapse; margin-top: 10px; }
+        .image-table th, .image-table td { border: 2px solid #555; text-align: center; position: relative; }
+        .image-table th { background: #2d2d30; color: #858585; font-size: 12px; font-weight: normal; padding: 5px; }
+        .pixel { width: 45px; height: 45px; font-weight: bold; transition: transform 0.3s, box-shadow 0.3s, background-color 0.4s; display: flex; align-items: center; justify-content: center; border-radius: 4px;}
+        
+        /* 掃描線特效 */
+        .pixel-active { outline: 3px solid #f39c12; outline-offset: 2px; transform: scale(1.15); box-shadow: 0 0 15px #f39c12; z-index: 10; }
+
+        .var-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+        .var-box { background: #1e1e1e; border: 1px solid #3c3c3c; padding: 10px; border-radius: 4px; text-align: center; }
+        .var-name { color: #9cdcfe; font-size: 12px; display: block; margin-bottom: 5px; }
+        .var-val { font-size: 18px; font-weight: bold; color: #b5cea8; transition: color 0.3s; }
+        .highlight-var { color: #f39c12; text-shadow: 0 0 8px #f39c12; }
+
+        textarea { width: 90%; height: 80px; background: #1e1e1e; color: #d4d4d4; border: 1px solid #3c3c3c; padding: 10px; border-radius: 4px; font-family: monospace; }
+        .controls { display: flex; gap: 10px; margin-top: 10px; }
+        button { background-color: #0e639c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 1; }
+        button:hover { background-color: #1177bb; }
+        button:disabled { background-color: #4d4d4d; cursor: not-allowed; color: #888; }
+        .btn-step { background-color: #238636; } .btn-step:hover { background-color: #2ea043; }
+        
+        .terminal { background: #000; color: #ce9178; padding: 10px; border-radius: 4px; min-height: 80px; margin-top: 10px; font-family: monospace; white-space: pre-wrap;}
+    </style>
+</head>
+<body>
+
+    <h1>📷 影像二值化：巢狀矩陣掃描模擬</h1>
+
+    <div class="info-layout">
+        <div class="panel problem-desc">
+            <h2>📝 題目敘述：影像黑白化處理</h2>
+            <p><span class="highlight-text">內容：</span><br>電腦中的灰階圖片其實就是一個二維陣列 (Matrix)，每個格子 (Pixel) 代表亮度 (0~255)。<br>在影像辨識中，我們常做「二值化 (Binarization)」：設定一個門檻值 T，亮度超過 T 的變 1 (白)，否則變 0 (黑)。<br>請讀入一個 R x C 的矩陣，並輸出二值化後的結果。</p>
+            <p><span class="highlight-text">輸入說明：</span><br>第一行：三個整數 R (列), C (欄), T (門檻值)。<br>接下來 R 行：每行 C 個整數 (代表亮度)。</p>
+            <p><span class="highlight-text">輸出說明：</span><br>輸出 R 行，每行 C 個整數 (只包含 0 或 1)，以空白隔開。</p>
+        </div>
+        
+        <div class="panel syntax-hint">
+            <h2>💡 語法提示：Pythonic 輸入技巧</h2>
+            <ul>
+                <li>處理二維陣列的輸入時，<code>list(map(int, input().split()))</code> 是非常強大的標準寫法。</li>
+                <li>它的作用完全等同於<strong>串列推導式 (List Comprehension)</strong>：<br><code>[int(i) for i in input().split()]</code>。</li>
+                <li>透過這個技巧，我們可以一次將一整排由空白隔開的灰階數值，直接轉換成一個整數陣列塞進 <code>image</code> 中！</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="layout">
+        <div class="panel code-area">
+            <h2 style="color: #4ec9b0;">📜 程式碼</h2>
+            <div id="code-container"></div>
+        </div>
+
+        <div class="state-area">
+            <div class="panel">
+                <h2 style="color: #4ec9b0;">📥 測資與控制</h2>
+                <textarea id="input-box">3 3 100
+50 150 200
+100 80 120
+255 0 90</textarea>
+                <div class="controls">
+                    <button onclick="initSimulation()">載入影像參數</button>
+                    <button id="step-btn" class="btn-step" onclick="nextStep()" disabled>下一步 ⏭</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2 style="color: #4ec9b0;">🖼️ 記憶體：image (灰階二維矩陣)</h2>
+                <div class="image-container" id="array-visualizer">
+                    <div style="color: #858585;">[] (無影像資料)</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2 style="color: #4ec9b0;">🧮 巢狀迴圈掃描與輸出</h2>
+                <div class="var-grid">
+                    <div class="var-box"><span class="var-name">i (目前列 Row)</span><span class="var-val" id="var-i">-</span></div>
+                    <div class="var-box"><span class="var-name">j (目前欄 Col)</span><span class="var-val" id="var-j">-</span></div>
+                    <div class="var-box"><span class="var-name">image[i][j] (亮度)</span><span class="var-val" id="var-val">-</span></div>
+                    <div class="var-box" style="border-color: #f39c12;"><span class="var-name" style="color:#f39c12;">T (門檻值)</span><span class="var-val" id="var-t">-</span></div>
+                </div>
+                <div id="output-box" class="terminal">等待執行...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Python 程式碼建構
+        const pythonCode = [
+            '<span class="cm"># 1. 解析 R, C, T</span>',
+            '<span class="vr">r</span>, <span class="vr">c</span>, <span class="vr">t</span> = <span class="fn">map</span>(<span class="fn">int</span>, <span class="fn">input</span>().<span class="fn">split</span>())',
+            '<span class="vr">image</span> = []',
+            '<span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="vr">r</span>):',
+            '    <span class="cm"># 讀取一整排像素並轉為 int list</span>',
+            '    row = <span class="fn">list</span>(<span class="fn">map</span>(<span class="fn">int</span>, <span class="fn">input</span>().<span class="fn">split</span>()))',
+            '    <span class="vr">image</span>.<span class="fn">append</span>(row)',
+            '',
+            '<span class="cm"># 2. 巢狀迴圈：影像二值化</span>',
+            '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="vr">r</span>):',
+            '    <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span class="vr">c</span>):',
+            '        <span class="kw">if</span> <span class="vr">image</span>[i][j] > <span class="vr">t</span>:',
+            '            <span class="vr">image</span>[i][j] = <span class="kw">1</span>  <span class="cm"># 白</span>',
+            '        <span class="kw">else</span>:',
+            '            <span class="vr">image</span>[i][j] = <span class="kw">0</span>  <span class="cm"># 黑</span>',
+            '        ',
+            '        <span class="fn">print</span>(<span class="vr">image</span>[i][j], end=<span class="st">" "</span>)',
+            '    <span class="fn">print</span>() <span class="cm"># 換行</span>'
+        ];
+
+        const codeContainer = document.getElementById('code-container');
+        pythonCode.forEach((lineHTML, index) => {
+            codeContainer.innerHTML += `<div class="code-line" id="line-${index + 1}"><div class="line-num">${index + 1}</div><div class="line-code">${lineHTML}</div></div>`;
+        });
+
+        let steps = [];
+        let currentStep = 0;
+
+        function initSimulation() {
+            const inputTxt = document.getElementById('input-box').value.trim();
+            const tokens = inputTxt.split(/\s+/).map(Number);
+            if(tokens.length < 3 || tokens.some(isNaN)) return alert("請輸入正確的測資格式");
+            
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            document.getElementById('output-box').innerText = '';
+            document.querySelectorAll('.var-val').forEach(el => el.innerText = '-');
+            
+            steps = [];
+            let r = tokens.shift();
+            let c = tokens.shift();
+            let t = tokens.shift();
+            let matrix2D = [];
+            let outputText = "";
+
+            // 解析並存入陣列
+            for(let i = 0; i < r; i++) {
+                let row = [];
+                for(let j = 0; j < c; j++) {
+                    row.push(tokens.length > 0 ? tokens.shift() : 0);
+                }
+                matrix2D.push(row);
+            }
+
+            steps.push({ line: 2, r, c, t, grid: JSON.parse(JSON.stringify(matrix2D)) });
+            steps.push({ line: 4, grid: JSON.parse(JSON.stringify(matrix2D)) }); // 簡化載入過程，直接秀出原圖
+
+            // 產生巢狀迴圈的執行步驟
+            for(let i = 0; i < r; i++) {
+                steps.push({ line: 10, i, grid: JSON.parse(JSON.stringify(matrix2D)) }); // 進入外層迴圈
+                
+                for(let j = 0; j < c; j++) {
+                    let pixelVal = matrix2D[i][j];
+                    steps.push({ line: 11, i, j, val: pixelVal, grid: JSON.parse(JSON.stringify(matrix2D)), activeCell: [i, j] }); // 進入內層迴圈
+                    
+                    steps.push({ line: 12, i, j, val: pixelVal, grid: JSON.parse(JSON.stringify(matrix2D)), activeCell: [i, j] }); // if 判斷
+                    
+                    if (pixelVal > t) {
+                        matrix2D[i][j] = 1;
+                        steps.push({ line: 13, i, j, val: 1, grid: JSON.parse(JSON.stringify(matrix2D)), activeCell: [i, j] }); // 變白
+                    } else {
+                        matrix2D[i][j] = 0;
+                        steps.push({ line: 15, i, j, val: 0, grid: JSON.parse(JSON.stringify(matrix2D)), activeCell: [i, j] }); // 變黑
+                    }
+                    
+                    outputText += matrix2D[i][j] + " ";
+                    steps.push({ line: 17, i, j, val: matrix2D[i][j], grid: JSON.parse(JSON.stringify(matrix2D)), activeCell: [i, j], out: outputText }); // 印出
+                }
+                outputText += "\n";
+                steps.push({ line: 18, i, grid: JSON.parse(JSON.stringify(matrix2D)), out: outputText }); // 換行
+            }
+
+            currentStep = 0;
+            document.getElementById('var-t').innerText = t;
+            document.getElementById('step-btn').disabled = false;
+            document.getElementById('step-btn').innerText = "開始掃描 ⏭";
+            renderGrid(steps[0].grid, null);
+        }
+
+        // 灰階與黑白轉換邏輯
+        function getBgColor(val) {
+            if (val === 1) return '#ffffff'; // 白
+            if (val === 0) return '#000000'; // 黑
+            // 灰階 (保護範圍在 0-255)
+            let safeVal = Math.max(0, Math.min(255, val));
+            return `rgb(${safeVal}, ${safeVal}, ${safeVal})`;
+        }
+        function getTextColor(val) {
+            if (val === 1) return '#000000'; // 白底黑字
+            if (val === 0) return '#ffffff'; // 黑底白字
+            return val > 127 ? '#000000' : '#ffffff'; // 依照灰階亮度決定字色
+        }
+
+        function renderGrid(gridData, activeCell) {
+            const container = document.getElementById('array-visualizer');
+            if (!gridData || gridData.length === 0) return;
+
+            let html = '<table class="image-table">';
+            // 欄位標籤 (Col)
+            html += '<tr><th>[i][j]</th>';
+            for(let j=0; j<gridData[0].length; j++) html += `<th>Col [${j}]</th>`;
+            html += '</tr>';
+            
+            gridData.forEach((row, rIdx) => {
+                html += `<tr><th>Row [${rIdx}]</th>`;
+                row.forEach((val, cIdx) => {
+                    let isAct = (activeCell && activeCell[0] === rIdx && activeCell[1] === cIdx);
+                    let pixelClass = 'pixel' + (isAct ? ' pixel-active' : '');
+                    let bg = getBgColor(val);
+                    let txt = getTextColor(val);
+                    
+                    html += `<td><div class="${pixelClass}" style="background-color: ${bg}; color: ${txt};">${val}</div></td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</table>';
+            container.innerHTML = html;
+        }
+
+        function nextStep() {
+            if (currentStep >= steps.length) {
+                document.getElementById('step-btn').innerText = "處理完畢 ✅";
+                document.getElementById('step-btn').disabled = true;
+                return;
+            }
+
+            document.getElementById('step-btn').innerText = "下一步 ⏭";
+            const s = steps[currentStep];
+
+            // 1. 程式碼高亮
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            const actLine = document.getElementById(`line-${s.line}`);
+            if(actLine) {
+                actLine.classList.add('active-line');
+                // 自動捲動
+                actLine.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+
+            // 2. 更新變數監控表
+            if(s.i !== undefined) document.getElementById('var-i').innerText = s.i;
+            if(s.j !== undefined) document.getElementById('var-j').innerText = s.j;
+            
+            const valBox = document.getElementById('var-val');
+            if(s.val !== undefined) {
+                valBox.innerText = s.val;
+                // 加入一點顏色特效
+                valBox.classList.add('highlight-var');
+                setTimeout(() => valBox.classList.remove('highlight-var'), 300);
+            }
+
+            // 3. 重新渲染畫面與掃描特效
+            renderGrid(s.grid, s.activeCell);
+
+            // 4. 更新終端機輸出
+            if(s.out !== undefined) document.getElementById('output-box').innerText = s.out;
+
+            currentStep++;
+        }
+    </script>
+</body>
+</html>

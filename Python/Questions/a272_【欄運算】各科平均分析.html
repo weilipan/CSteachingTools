@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python 二維串列 (2D List) 教學模擬器</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { color: #4ec9b0; font-family: 'Segoe UI', Tahoma, sans-serif; margin-bottom: 10px;}
+        
+        /* --- 新增：題目敘述區塊樣式 --- */
+        .problem-container {
+            width: 100%;
+            max-width: 1100px;
+            background: #2d2d30;
+            border-left: 4px solid #c586c0;
+            border-radius: 4px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            line-height: 1.6;
+            box-sizing: border-box;
+        }
+        .problem-container h3 { margin: 0 0 8px 0; color: #c586c0; font-size: 16px; font-family: 'Segoe UI', Tahoma, sans-serif;}
+        .problem-section { margin-bottom: 10px; }
+        .problem-title { font-weight: bold; color: #9cdcfe; }
+        .problem-text { font-size: 14px; margin: 2px 0 0 0; color: #cccccc;}
+        /* --------------------------- */
+
+        .layout {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 10px;
+        }
+        
+        .panel {
+            background: #252526;
+            border: 1px solid #3c3c3c;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+        .panel h2 { margin-top: 0; font-size: 16px; color: #569cd6; border-bottom: 1px solid #3c3c3c; padding-bottom: 8px; }
+/* --- 語法小提示區塊樣式 --- */
+.hint-box {
+    width: 100%;
+    max-width: 1100px;
+    background: rgba(86, 156, 214, 0.1);
+    border-left: 4px solid #569cd6;
+    border-radius: 4px;
+    padding: 12px 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-sizing: border-box;
+    font-size: 14px;
+    color: #cccccc;
+    line-height: 1.6;
+}
+.hint-box strong { color: #9cdcfe; }
+.hint-box code { 
+    background: #1e1e1e; 
+    padding: 2px 6px; 
+    border-radius: 4px; 
+    color: #ce9178; 
+    font-family: monospace;
+}
+
+        /* 左側程式碼 */
+        .code-area { flex: 1.2; }
+        .code-line {
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 2px 0;
+            display: flex;
+            font-size: 14px;
+        }
+        .line-num { color: #858585; width: 25px; user-select: none; }
+        .line-code { white-space: pre; }
+        .active-line { background-color: #062f4a; border-left: 4px solid #569cd6; padding-left: 4px; }
+        
+        /* 語法顏色 */
+        .kw { color: #c586c0; } /* keyword (purple) */
+        .fn { color: #dcdcaa; } /* function */
+        .st { color: #ce9178; } /* string */
+        .cm { color: #6a9955; } /* comment */
+        .vr { color: #9cdcfe; } /* variable */
+
+        /* 右側狀態區 */
+        .state-area { flex: 1.5; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* 二維陣列表格視覺化 */
+        .array-container {
+            background: #1e1e1e;
+            border: 1px solid #3c3c3c;
+            border-radius: 6px;
+            padding: 10px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .matrix-table { border-collapse: collapse; margin-top: 10px; }
+        .matrix-table th, .matrix-table td { 
+            border: 1px solid #555; 
+            padding: 8px 15px; 
+            text-align: center; 
+        }
+        .matrix-table th { background: #2d2d30; color: #858585; font-size: 12px; font-weight: normal; }
+        .idx-col { background: #2d2d30; color: #569cd6; font-size: 12px; }
+        .cell { font-weight: bold; color: #d4d4d4; transition: all 0.3s; }
+        
+        /* 網頁特效：讀取與選取狀態 */
+        .cell-new { background-color: rgba(78, 201, 176, 0.3); color: #4ec9b0; }
+        .cell-active { background-color: rgba(86, 156, 214, 0.5); color: #fff; box-shadow: 0 0 10px #569cd6; transform: scale(1.1); }
+
+        .var-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .var-box { background: #1e1e1e; border: 1px solid #3c3c3c; padding: 10px; border-radius: 4px; text-align: center; }
+        .var-name { color: #9cdcfe; font-size: 12px; display: block; margin-bottom: 5px; }
+        .var-val { font-size: 18px; font-weight: bold; color: #b5cea8; transition: color 0.3s; }
+        .val-updated { color: #ce9178; text-shadow: 0 0 8px #ce9178; }
+
+        textarea { width: 90%; height: 60px; background: #1e1e1e; color: #d4d4d4; border: 1px solid #3c3c3c; padding: 10px; border-radius: 4px; font-family: monospace; }
+        .controls { display: flex; gap: 10px; margin-top: 10px; }
+        button { background-color: #0e639c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 1; }
+        button:hover { background-color: #1177bb; }
+        button:disabled { background-color: #4d4d4d; cursor: not-allowed; color: #888; }
+        .btn-step { background-color: #238636; }
+        .btn-step:hover { background-color: #2ea043; }
+        
+        .terminal { background: #000; color: #ce9178; padding: 10px; border-radius: 4px; min-height: 30px; margin-top: 10px; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+    <h1>📊 二維串列 (2D List) 運作模擬器</h1>
+
+    <div class="problem-container">
+        <h3>📝 題目：各科平均分析</h3>
+        <div class="problem-section">
+            <span class="problem-title">內容：</span>
+            <p class="problem-text">這是資料分析最常見的需求：計算「每一個欄位」的平均值。輸入一份 N 位學生的成績表，固定有 3 個科目：國文、英文、數學。請計算並輸出這三科的班級平均分數。</p>
+        </div>
+        <div class="problem-section">
+            <span class="problem-title">輸入說明：</span>
+            <p class="problem-text">第一行：一個整數 N (學生數)。<br>接下來 N 行：每行 3 個整數 (順序為：國、英、數)。</p>
+        </div>
+        <div class="problem-section" style="margin-bottom: 0;">
+            <span class="problem-title">輸出說明：</span>
+            <p class="problem-text">輸出一行，包含 3 個浮點數，代表國、英、數的平均，請保留一位小數，中間以空白隔開。</p>
+        </div>
+    </div>
+<div class="hint-box">
+        <strong>💡 語法小提示：Pythonic 的輸入技巧</strong><br>
+        程式碼第 5 行的 <code>list(map(int, input().split()))</code> 是解題系統中最常見的寫法。<br>
+        它的作用完全等同於<strong>串列推導式 (List Comprehension)</strong>：<code>[int(i) for i in input().split()]</code>。<br>
+        兩者都能將讀取到的一整行字串，瞬間切割並轉換成整數串列 (例如：<code>[100, 100, 100]</code>) 喔！
+    </div>
+
+    <div class="layout">
+        <div class="panel code-area">
+            <h2>📜 程式碼</h2>
+            <div id="code-container"></div>
+        </div>
+
+        <div class="state-area">
+            <div class="panel">
+                <h2>📥 測資與控制</h2>
+                <textarea id="input-box">3
+100 100 100
+80 80 80
+60 60 60</textarea>
+                <div class="controls">
+                    <button onclick="initSimulation()">載入測資</button>
+                    <button id="step-btn" class="btn-step" onclick="nextStep()" disabled>下一步 ⏭</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>🗄️ 記憶體：scores_2d (二維陣列)</h2>
+                <div class="array-container" id="array-visualizer">
+                    <div style="color: #858585;">[] (空串列)</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>🧮 累加變數與輸出</h2>
+                <div class="var-grid">
+                    <div class="var-box"><span class="var-name">i (目前 Row)</span><span class="var-val" id="var-i">-</span></div>
+                    <div class="var-box"><span class="var-name">n (總數)</span><span class="var-val" id="var-n">-</span></div>
+                    <div class="var-box"></div>
+                    <div class="var-box"><span class="var-name">chi_sum</span><span class="var-val" id="var-chi">0</span></div>
+                    <div class="var-box"><span class="var-name">eng_sum</span><span class="var-val" id="var-eng">0</span></div>
+                    <div class="var-box"><span class="var-name">math_sum</span><span class="var-val" id="var-math">0</span></div>
+                </div>
+                <div id="output-box" class="terminal">等待執行...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pythonCode = [
+            '<span class="vr">n</span> = <span class="fn">int</span>(<span class="fn">input</span>())',
+            '<span class="cm"># 1. 建立二維串列</span>',
+            '<span class="vr">scores_2d</span> = []',
+            '<span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="vr">n</span>):',
+            '    row = <span class="fn">list</span>(<span class="fn">map</span>(<span class="fn">int</span>, <span class="fn">input</span>().<span class="fn">split</span>()))',
+            '    <span class="vr">scores_2d</span>.<span class="fn">append</span>(row)',
+            '',
+            '<span class="cm"># 2. 計算各科總分</span>',
+            '<span class="vr">chi_sum</span>, <span class="vr">eng_sum</span>, <span class="vr">math_sum</span> = <span class="kw">0</span>, <span class="kw">0</span>, <span class="kw">0</span>',
+            '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="vr">n</span>):',
+            '    <span class="vr">chi_sum</span> += <span class="vr">scores_2d</span>[i][<span class="kw">0</span>]',
+            '    <span class="vr">eng_sum</span> += <span class="vr">scores_2d</span>[i][<span class="kw">1</span>]',
+            '    <span class="vr">math_sum</span> += <span class="vr">scores_2d</span>[i][<span class="kw">2</span>]',
+            '',
+            '<span class="fn">print</span>(<span class="st">f"{</span><span class="vr">chi_sum</span>/n<span class="st">:.1f} {</span><span class="vr">eng_sum</span>/n<span class="st">:.1f} {</span><span class="vr">math_sum</span>/n<span class="st">:.1f}"</span>)'
+        ];
+
+        const codeContainer = document.getElementById('code-container');
+        pythonCode.forEach((lineHTML, index) => {
+            codeContainer.innerHTML += `
+                <div class="code-line" id="line-${index + 1}">
+                    <div class="line-num">${index + 1}</div>
+                    <div class="line-code">${lineHTML}</div>
+                </div>
+            `;
+        });
+
+        let steps = [];
+        let currentStep = 0;
+
+        function initSimulation() {
+            const inputTxt = document.getElementById('input-box').value.trim();
+            const tokens = inputTxt.split(/\s+/);
+            if(tokens.length === 0 || tokens[0] === "") return alert("請輸入測資");
+            
+            // UI 重置
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            document.getElementById('output-box').innerText = '';
+            document.querySelectorAll('.var-val').forEach(el => el.innerText = (el.id === 'var-i' || el.id === 'var-n') ? '-' : '0');
+            
+            steps = [];
+            let n = parseInt(tokens.shift());
+            let matrix2D = [];
+            let chi = 0, eng = 0, math = 0;
+
+            // 預先產生腳本 (State Machine)
+            steps.push({ line: 1, n: n, grid: [], action: 'init' });
+            steps.push({ line: 3, n: n, grid: [], action: 'init_list' });
+
+            // 階段一：建構陣列
+            for(let i = 0; i < n; i++) {
+                if(tokens.length < 3) break;
+                steps.push({ line: 4, n: n, grid: JSON.parse(JSON.stringify(matrix2D)), action: 'read_row' });
+                
+                let r = [parseInt(tokens.shift()), parseInt(tokens.shift()), parseInt(tokens.shift())];
+                matrix2D.push(r);
+                
+                steps.push({ line: 6, n: n, grid: JSON.parse(JSON.stringify(matrix2D)), action: 'append_row', highlightRow: i });
+            }
+
+            steps.push({ line: 9, n: n, grid: JSON.parse(JSON.stringify(matrix2D)), action: 'init_sum' });
+
+            // 階段二：分析表格
+            for(let i = 0; i < n; i++) {
+                steps.push({ line: 10, n: n, grid: JSON.parse(JSON.stringify(matrix2D)), i: i, chi, eng, math, action: 'loop2' });
+                
+                chi += matrix2D[i][0];
+                steps.push({ line: 11, n: n, grid: JSON.parse(JSON.stringify(matrix2D)), i: i, chi, eng, math, action: 'sum_chi', activeCell: [i, 0], updateVar: 'chi' });
+                
+                eng += matrix2D[i][1];
+                steps.push({ line: 12, n: n, grid: JSON.parse(JSON.stringify(matrix2D)), i: i, chi, eng, math, action: 'sum_eng', activeCell: [i, 1], updateVar: 'eng' });
+                
+                math += matrix2D[i][2];
+                steps.push({ line: 13, n: n, grid: JSON.parse(JSON.stringify(matrix2D)), i: i, chi, eng, math, action: 'sum_math', activeCell: [i, 2], updateVar: 'math' });
+            }
+
+            steps.push({ line: 15, n: n, grid: JSON.parse(JSON.stringify(matrix2D)), action: 'print', output: `${(chi/n).toFixed(1)} ${(eng/n).toFixed(1)} ${(math/n).toFixed(1)}` });
+
+            currentStep = 0;
+            document.getElementById('step-btn').disabled = false;
+            document.getElementById('step-btn').innerText = "開始單步執行 ⏭";
+            renderGrid([], null); // 清空表格
+        }
+
+        function renderGrid(gridData, activeCell, newRowIdx = -1) {
+            const container = document.getElementById('array-visualizer');
+            if (gridData.length === 0) {
+                container.innerHTML = '<div style="color: #858585;">[] (目前為空串列)</div>';
+                return;
+            }
+
+            let html = '<table class="matrix-table">';
+            // Header (Col indices)
+            html += '<tr><th>[i][j]</th><th>Col [0]<br>(國文)</th><th>Col [1]<br>(英文)</th><th>Col [2]<br>(數學)</th></tr>';
+            
+            gridData.forEach((row, rIdx) => {
+                let trClass = (rIdx === newRowIdx) ? 'style="background: rgba(78, 201, 176, 0.1);"' : '';
+                html += `<tr ${trClass}>`;
+                html += `<td class="idx-col">Row [${rIdx}]</td>`; // Row index
+                
+                row.forEach((val, cIdx) => {
+                    let cellClass = 'cell';
+                    if (activeCell && activeCell[0] === rIdx && activeCell[1] === cIdx) {
+                        cellClass += ' cell-active';
+                    } else if (rIdx === newRowIdx) {
+                        cellClass += ' cell-new';
+                    }
+                    html += `<td class="${cellClass}">${val}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</table>';
+            container.innerHTML = html;
+        }
+
+        function nextStep() {
+            if (currentStep >= steps.length) {
+                document.getElementById('step-btn').innerText = "執行完畢 ✅";
+                document.getElementById('step-btn').disabled = true;
+                return;
+            }
+
+            document.getElementById('step-btn').innerText = "下一步 ⏭";
+            const s = steps[currentStep];
+
+            // 1. 程式碼高亮
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            document.getElementById(`line-${s.line}`).classList.add('active-line');
+
+            // 2. 變數更新
+            if(s.n !== undefined) document.getElementById('var-n').innerText = s.n;
+            if(s.i !== undefined) document.getElementById('var-i').innerText = s.i;
+            if(s.chi !== undefined) document.getElementById('var-chi').innerText = s.chi;
+            if(s.eng !== undefined) document.getElementById('var-eng').innerText = s.eng;
+            if(s.math !== undefined) document.getElementById('var-math').innerText = s.math;
+
+            // 變數閃爍特效
+            document.querySelectorAll('.var-val').forEach(el => el.classList.remove('val-updated'));
+            if(s.updateVar) {
+                document.getElementById(`var-${s.updateVar}`).classList.add('val-updated');
+            }
+
+            // 3. 2D List 視覺化更新
+            let active = s.activeCell || null;
+            let highlight = s.highlightRow !== undefined ? s.highlightRow : -1;
+            renderGrid(s.grid, active, highlight);
+
+            // 4. 輸出
+            if(s.output) {
+                document.getElementById('output-box').innerText = s.output;
+            }
+
+            currentStep++;
+        }
+    </script>
+</body>
+</html>
