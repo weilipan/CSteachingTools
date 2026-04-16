@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pandas 基礎運用：資料搜集與清理</title>
-  <meta name="description" content="互動式視覺化教學：Pandas 資料搜集、清理、定位、篩選、統計與型態轉換。" />
+  <meta name="description" content="互動式視覺化教學：Pandas 資料搜集、清理、定位、篩選、統計與 Inplace 型態轉換。" />
   <link rel="stylesheet" href="../../theme.css" />
   <script src="../../layout.js" defer></script>
   <style>
@@ -49,112 +49,44 @@
       font-weight: 600;
     }
 
-    /* Official Doc Link */
     .doc-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      color: #2563eb;
-      text-decoration: none;
-      font-weight: 600;
-      padding: 4px 10px;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      border-radius: 6px;
-      margin-bottom: 16px;
-      transition: all 0.2s ease;
+      display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #2563eb;
+      text-decoration: none; font-weight: 600; padding: 4px 10px; background: #eff6ff;
+      border: 1px solid #bfdbfe; border-radius: 6px; margin-bottom: 16px; transition: all 0.2s ease;
     }
-    .doc-link:hover {
-      background: #dbeafe;
-      color: #1d4ed8;
-      transform: translateY(-1px);
-    }
+    .doc-link:hover { background: #dbeafe; color: #1d4ed8; transform: translateY(-1px); }
 
     /* Console Output */
-    .console-output {
-      white-space: pre-wrap;
-      font-family: monospace;
-      background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 15px;
-      border-radius: 8px;
-      line-height: 1.5;
-      min-height: 60px;
-    }
+    .console-output { white-space: pre-wrap; font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; line-height: 1.5; min-height: 60px; }
 
-    /* Indentation classes */
+    /* Indentation & Code Block */
     .ind-1 { padding-left: 1.5rem !important; }
     .ind-2 { padding-left: 3rem !important; }
-
-    /* Code block */
-    .code-block {
-      background: #282c34;
-      border-radius: 8px;
-      padding: 14px 16px;
-      margin: 12px 0;
-      overflow-x: auto;
-    }
-    .ln {
-      display: block;
-      white-space: nowrap;
-      font-family: 'Courier New', monospace;
-      font-size: 0.88rem;
-      color: #abb2bf;
-      line-height: 1.7;
-    }
-    .ln .kw { color: #c678dd; }
-    .ln .fn { color: #61afef; }
-    .ln .str { color: #98c379; }
-    .ln .cm { color: #5c6370; font-style: italic; }
-    .ln .num { color: #d19a66; }
-
-    .highlight {
-      background-color: #fff3cd !important;
-      color: #856404 !important;
-      font-weight: bold;
-      transition: background-color 0.3s;
-      border-radius: 4px;
-    }
+    .code-block { background: #282c34; border-radius: 8px; padding: 14px 16px; margin: 12px 0; overflow-x: auto; }
+    .ln { display: block; white-space: nowrap; font-family: 'Courier New', monospace; font-size: 0.88rem; color: #abb2bf; line-height: 1.7; }
+    .ln .kw { color: #c678dd; } .ln .fn { color: #61afef; } .ln .str { color: #98c379; } .ln .cm { color: #5c6370; font-style: italic; } .ln .num { color: #d19a66; }
+    .highlight { background-color: #fff3cd !important; color: #856404 !important; font-weight: bold; transition: background-color 0.3s; border-radius: 4px; }
 
     /* Buttons */
     .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
-    .btn {
-      padding: 7px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-family: 'Courier New', monospace;
-      font-size: 0.82rem;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    .btn-blue { background: #3b82f6; color: #fff; }
-    .btn-blue:hover { background: #2563eb; transform: translateY(-1px); }
-    .btn-green { background: #10b981; color: #fff; }
-    .btn-green:hover { background: #059669; transform: translateY(-1px); }
-    .btn-purple { background: #8b5cf6; color: #fff; }
-    .btn-purple:hover { background: #7c3aed; transform: translateY(-1px); }
-    .btn-orange { background: #f59e0b; color: #fff; }
-    .btn-orange:hover { background: #d97706; transform: translateY(-1px); }
-    .btn-red { background: #ef4444; color: #fff; }
-    .btn-red:hover { background: #dc2626; transform: translateY(-1px); }
-    .btn-gray { background: #6b7280; color: #fff; }
-    .btn-gray:hover { background: #4b5563; transform: translateY(-1px); }
-    .btn-dark { background: #334155; color: #fff; }
-    .btn-dark:hover { background: #1e293b; transform: translateY(-1px); }
-    .btn-teal { background: #0d9488; color: #fff; }
-    .btn-teal:hover { background: #0f766e; transform: translateY(-1px); }
+    .btn { padding: 7px 16px; border: none; border-radius: 6px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 0.82rem; font-weight: 600; transition: all 0.2s; }
+    .btn-blue { background: #3b82f6; color: #fff; } .btn-blue:hover { background: #2563eb; transform: translateY(-1px); }
+    .btn-green { background: #10b981; color: #fff; } .btn-green:hover { background: #059669; transform: translateY(-1px); }
+    .btn-purple { background: #8b5cf6; color: #fff; } .btn-purple:hover { background: #7c3aed; transform: translateY(-1px); }
+    .btn-orange { background: #f59e0b; color: #fff; } .btn-orange:hover { background: #d97706; transform: translateY(-1px); }
+    .btn-red { background: #ef4444; color: #fff; } .btn-red:hover { background: #dc2626; transform: translateY(-1px); }
+    .btn-gray { background: #6b7280; color: #fff; } .btn-gray:hover { background: #4b5563; transform: translateY(-1px); }
+    .btn-dark { background: #334155; color: #fff; } .btn-dark:hover { background: #1e293b; transform: translateY(-1px); }
+    .btn-teal { background: #0d9488; color: #fff; } .btn-teal:hover { background: #0f766e; transform: translateY(-1px); }
 
     /* ───── MODULE 1 ───── */
     .csv-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     .csv-table td, .csv-table th { border: 1px solid #ddd; padding: 7px 10px; text-align: left; }
     .row-noise { background: #fee2e2; color: #991b1b; transition: opacity 0.5s ease, max-height 0.5s ease, padding 0.4s ease; max-height: 60px; overflow: hidden; }
     .row-noise.hidden { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; }
-    .row-noise td { transition: padding 0.4s ease; }
-    .row-noise.hidden td { padding: 0; border-width: 0; }
+    .row-noise td { transition: padding 0.4s ease; } .row-noise.hidden td { padding: 0; border-width: 0; }
     .row-header { background: #fef9c3; font-weight: bold; transition: background 0.3s; }
-    .row-header.active-header { background: #d1fae5; }
+    .row-header.active-header { background: #d1fae5; box-shadow: inset 0 0 0 2px #10b981; }
     .garbled { color: #9f1239; font-style: italic; }
     .garbled.fixed { color: #166534; font-style: normal; animation: flip 0.4s ease; }
     @keyframes flip { 0% { transform: rotateX(90deg); opacity: 0; } 100% { transform: rotateX(0deg); opacity: 1; } }
@@ -233,36 +165,42 @@
     .m9-row.highlighted { background: #fef3c7; font-weight: 600; }
     .m9-warn-box { background:#fef2f2; border:1px solid #fca5a5; border-radius:8px; padding:12px; font-size:0.85rem; color:#b91c1c; margin-top:12px; line-height:1.5; font-weight:600; }
 
-    /* ───── MODULE 10 (Describe) ───── */
-    .m10-desc-container { display: flex; gap: 20px; align-items: flex-start; margin-top: 16px; overflow-x: auto; }
-    .m10-table { border-collapse: collapse; font-size: 0.8rem; background: #fff; min-width: 250px;}
-    .m10-table th, .m10-table td { border: 1px solid #e2e8f0; padding: 6px 10px; text-align: right; }
-    .m10-table th { background: #f8fafc; color: #334155; text-align: center; }
-    .m10-table td:first-child { font-weight: 700; background: #f1f5f9; text-align: left;}
-    .m10-box { border: 2px dashed #cbd5e1; border-radius: 8px; padding: 12px; background: #f8fafc; transition: all 0.5s ease; }
-    .m10-box.active { border-style: solid; border-color: #8b5cf6; background: #f5f3ff; box-shadow: 0 4px 12px rgba(139,92,246,0.15); }
-    .m10-box h4 { margin: 0 0 10px 0; font-size: 0.9rem; color: #475569; text-align: center; }
+    /* ───── MODULE 10 (ISIN Magic) ───── */
+    .vip-pass { background: #fef08a; border: 2px dashed #eab308; padding: 10px 16px; border-radius: 8px; font-weight: bold; color: #854d0e; text-align: center; margin-bottom: 12px; transition: opacity 0.4s, transform 0.4s; font-size: 0.95rem;}
+    .vip-pass.hidden { opacity: 0; transform: translateY(-10px); pointer-events: none; }
+    .vip-pass.scan-anim { animation: passScan 0.5s ease; }
+    @keyframes passScan { 50% { background: #d1fae5; border-color: #10b981; transform: scale(1.05); } }
 
-    /* ───── MODULE 11 (Inplace) ───── */
-    .m11-container { display: flex; gap: 20px; align-items: flex-start; margin-top: 16px; }
-    .m11-table-box { flex: 1; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 12px; background: #f8fafc; transition: all 0.5s ease; min-height: 180px;}
-    .m11-table-box.active-copy { border-style: solid; border-color: #3b82f6; background: #eff6ff; box-shadow: 0 4px 12px rgba(59,130,246,0.15); }
-    .m11-table-box h4 { margin: 0 0 10px 0; font-size: 0.9rem; color: #475569; text-align: center; }
-    .m11-mini-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; background: #fff; }
-    .m11-mini-table th, .m11-mini-table td { border: 1px solid #e2e8f0; padding: 4px 8px; text-align: center; }
-    .m11-mini-table th { background: #f1f5f9; }
-    .m11-nan { background: #fee2e2; color: #991b1b; font-weight: bold; }
-    .m11-row { transition: all 0.4s ease; }
-    .m11-row.erased { opacity: 0; transform: scaleY(0); font-size: 0; padding: 0; border: none; line-height: 0; }
-    .m11-row.erased td { padding: 0; border: none; }
-    .m11-desc { font-size: 0.85rem; padding: 10px; border-radius: 8px; margin-top: 10px; display: none; }
-    .m11-desc.show-copy { display: block; background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
-    .m11-desc.show-inplace { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    /* ───── MODULE 11 (Describe) ───── */
+    .m11-desc-container { display: flex; gap: 20px; align-items: flex-start; margin-top: 16px; overflow-x: auto; }
+    .m11-table { border-collapse: collapse; font-size: 0.8rem; background: #fff; min-width: 250px;}
+    .m11-table th, .m11-table td { border: 1px solid #e2e8f0; padding: 6px 10px; text-align: right; }
+    .m11-table th { background: #f8fafc; color: #334155; text-align: center; }
+    .m11-table td:first-child { font-weight: 700; background: #f1f5f9; text-align: left;}
+    .m11-box { border: 2px dashed #cbd5e1; border-radius: 8px; padding: 12px; background: #f8fafc; transition: all 0.5s ease; }
+    .m11-box.active { border-style: solid; border-color: #8b5cf6; background: #f5f3ff; box-shadow: 0 4px 12px rgba(139,92,246,0.15); }
+    .m11-box h4 { margin: 0 0 10px 0; font-size: 0.9rem; color: #475569; text-align: center; }
 
-    /* ───── MODULE 12 (Script Pipeline) ───── */
-    .m12-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media (max-width: 640px) { .m12-layout { grid-template-columns: 1fr; } }
-    .m12-console { min-height: 240px; }
+    /* ───── MODULE 12 (Inplace) ───── */
+    .m12-container { display: flex; gap: 20px; align-items: flex-start; margin-top: 16px; }
+    .m12-table-box { flex: 1; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 12px; background: #f8fafc; transition: all 0.5s ease; min-height: 180px;}
+    .m12-table-box.active-copy { border-style: solid; border-color: #3b82f6; background: #eff6ff; box-shadow: 0 4px 12px rgba(59,130,246,0.15); }
+    .m12-table-box h4 { margin: 0 0 10px 0; font-size: 0.9rem; color: #475569; text-align: center; }
+    .m12-mini-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; background: #fff; }
+    .m12-mini-table th, .m12-mini-table td { border: 1px solid #e2e8f0; padding: 4px 8px; text-align: center; }
+    .m12-mini-table th { background: #f1f5f9; }
+    .m12-nan { background: #fee2e2; color: #991b1b; font-weight: bold; }
+    .m12-row { transition: all 0.4s ease; }
+    .m12-row.erased { opacity: 0; transform: scaleY(0); font-size: 0; padding: 0; border: none; line-height: 0; }
+    .m12-row.erased td { padding: 0; border: none; }
+    .m12-desc { font-size: 0.85rem; padding: 10px; border-radius: 8px; margin-top: 10px; display: none; }
+    .m12-desc.show-copy { display: block; background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
+    .m12-desc.show-inplace { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+    /* ───── MODULE 13 (Script Pipeline) ───── */
+    .m13-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 640px) { .m13-layout { grid-template-columns: 1fr; } }
+    .m13-console { min-height: 240px; }
     .cursor-blink::after { content: '▋'; animation: cursorBlink 0.8s step-start infinite; }
     @keyframes cursorBlink { 50% { opacity: 0; } }
 
@@ -389,6 +327,7 @@
       <button class="btn btn-orange" onclick="nanAction('dropna_how_all')">df.dropna(how='all')</button>
       <button class="btn btn-purple" onclick="nanAction('dropna_subset')">df.dropna(subset=['iso_code'])</button>
       <button class="btn btn-blue" onclick="nanAction('dropna_axis_col')">df.dropna(axis='columns')</button>
+      <button class="btn btn-dark" onclick="nanAction('dropna_inplace')">df.dropna(inplace=True)</button>
       <button class="btn btn-green" onclick="nanAction('fillna')">df.fillna(0)</button>
       <button class="btn btn-gray" onclick="nanReset()">↺ 重置表格</button>
     </div>
@@ -502,7 +441,47 @@
   </div>
 
   <div class="card" id="card10">
-    <h2 class="section-title">📊 模組十：資料統計概況 <span class="badge">describe</span></h2>
+    <h2 class="section-title">🎫 模組十：VIP 通關名單 <span class="badge">.isin() 魔法</span></h2>
+    <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">當條件很多時，不要再用 <code>|</code> 瘋狂串接了！先建立名單再丟給 <code>.isin()</code>，程式碼瞬間變優雅。</p>
+    
+    <div class="code-block" style="margin-bottom:8px; min-height: 110px;">
+      <span class="ln"><span class="cm"># 1. 先準備一份 VIP 名單 (List)</span></span>
+      <span class="ln" id="m10-code-list">name_list = [<span class="str">'Alice'</span>, <span class="str">'Charlie'</span>]</span>
+      
+      <div id="m10-code-trad" style="display:none; margin-top:12px;">
+        <span class="ln"><span class="cm"># 2. 傳統寫法 (容易漏寫括號)：</span></span>
+        <span class="ln" id="m10-line-trad">df[ (df[<span class="str">'Name'</span>] == <span class="str">'Alice'</span>) | (df[<span class="str">'Name'</span>] == <span class="str">'Charlie'</span>) ]</span>
+      </div>
+      
+      <div id="m10-code-isin" style="display:none; margin-top:12px;">
+        <span class="ln"><span class="cm"># 3. .isin() 魔法 (直接傳入名單)：</span></span>
+        <span class="ln" id="m10-line-isin">df[ df[<span class="str">'Name'</span>].<span class="fn">isin</span>(name_list) ]</span>
+      </div>
+    </div>
+    
+    <div id="m10-vip-pass" class="vip-pass hidden">🎟️ VIP 通行證：['Alice', 'Charlie']</div>
+
+    <div class="btn-group">
+      <button class="btn btn-dark" onclick="isinAction('create')">1. 建立名單變數</button>
+      <button class="btn btn-red" onclick="isinAction('traditional')">2. 傳統寫法：用 | 串接</button>
+      <button class="btn btn-green" onclick="isinAction('isin')">3. 優雅通關：.isin()</button>
+      <button class="btn btn-gray" onclick="isinAction('reset')">↺ 重新開始</button>
+    </div>
+
+    <table class="m9-filter-table" id="m10-table">
+      <thead><tr><th>Name</th><th>Math</th><th>Science</th></tr></thead>
+      <tbody>
+        <tr class="m9-row" id="m10-r1"><td>Alice</td><td>85</td><td>90</td></tr>
+        <tr class="m9-row" id="m10-r2"><td>Bob</td><td>50</td><td>65</td></tr>
+        <tr class="m9-row" id="m10-r3"><td>Charlie</td><td>95</td><td>85</td></tr>
+        <tr class="m9-row" id="m10-r4"><td>David</td><td>40</td><td>45</td></tr>
+      </tbody>
+    </table>
+    <div id="m10-status" style="font-size:0.85rem;color:#1e293b;background:#f1f5f9;padding:8px 12px;border-radius:6px;margin-top:12px;min-height:20px;font-weight:600;">跟著步驟點擊，體驗 .isin() 的威力！</div>
+  </div>
+
+  <div class="card" id="card11">
+    <h2 class="section-title">📊 模組十一：資料統計概況 <span class="badge">describe</span></h2>
     <a href="https://pandas.pydata.org/docs/user_guide/basics.html" target="_blank" class="doc-link">📚 Pandas Basics 官方指南</a>
     <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">利用 <code>describe()</code> 可以一鍵產生數值型欄位的統計摘要，包含筆數、平均數、標準差、最大最小值與四分位數，幫助你快速掌握資料分布輪廓。</p>
     
@@ -511,10 +490,10 @@
       <button class="btn btn-gray" onclick="descAction('reset')">↺ 重置檢視</button>
     </div>
 
-    <div class="m10-desc-container">
-      <div class="m10-box" id="m10-raw-box" style="flex:1;">
+    <div class="m11-desc-container">
+      <div class="m11-box" id="m11-raw-box" style="flex:1;">
         <h4>📄 原始資料 (部分展示)</h4>
-        <table class="m10-table" style="width:100%;">
+        <table class="m11-table" style="width:100%;">
           <thead><tr><th>Name</th><th>Age</th><th>Salary</th></tr></thead>
           <tbody>
             <tr><td>Alice</td><td>28</td><td>45000</td></tr>
@@ -525,9 +504,9 @@
         </table>
       </div>
 
-      <div class="m10-box" id="m10-desc-box" style="display:none; flex:1;">
+      <div class="m11-box" id="m11-desc-box" style="display:none; flex:1;">
         <h4 style="color:#6d28d9;">📈 統計摘要結果</h4>
-        <table class="m10-table" style="width:100%;">
+        <table class="m11-table" style="width:100%;">
           <thead><tr><th></th><th>Age</th><th>Salary</th></tr></thead>
           <tbody>
             <tr><td>count</td><td>4.000000</td><td>4.000000</td></tr>
@@ -542,11 +521,11 @@
         </table>
       </div>
     </div>
-    <div id="m10-status" style="font-size:0.85rem;color:#1e293b;background:#f1f5f9;padding:8px 12px;border-radius:6px;margin-top:12px;min-height:20px;font-weight:600;">預設只針對數值型欄位 (Age, Salary) 進行計算，自動略過字串欄位 (Name)。</div>
+    <div id="m11-status" style="font-size:0.85rem;color:#1e293b;background:#f1f5f9;padding:8px 12px;border-radius:6px;margin-top:12px;min-height:20px;font-weight:600;">預設只針對數值型欄位 (Age, Salary) 進行計算，自動略過字串欄位 (Name)。</div>
   </div>
 
-  <div class="card" id="card11">
-    <h2 class="section-title">🪄 模組十一：Inplace 的魔法 <span class="badge">影印機 vs 橡皮擦</span></h2>
+  <div class="card" id="card12">
+    <h2 class="section-title">🪄 模組十二：Inplace 的魔法 <span class="badge">影印機 vs 橡皮擦</span></h2>
     <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">理解 <code>inplace</code> 的運作原理。業界實務通常建議使用影印機模式 (<code>inplace=False</code>) 以保留原始資料的安全。</p>
     
     <div class="btn-group">
@@ -555,61 +534,61 @@
       <button class="btn btn-gray" onclick="resetInplace()">↺ 重置</button>
     </div>
 
-    <div class="m11-container">
-      <div class="m11-table-box" id="m11-orig-box">
+    <div class="m12-container">
+      <div class="m12-table-box" id="m12-orig-box">
         <h4>📄 原始 df (記憶體 A)</h4>
-        <table class="m11-mini-table">
+        <table class="m12-mini-table">
           <tr><th>ID</th><th>Score</th></tr>
           <tr><td>A01</td><td>88</td></tr>
-          <tr class="m11-row" id="m11-orig-nan"><td>A02</td><td class="m11-nan">NaN</td></tr>
+          <tr class="m12-row" id="m12-orig-nan"><td>A02</td><td class="m12-nan">NaN</td></tr>
           <tr><td>A03</td><td>95</td></tr>
         </table>
       </div>
-      <div class="m11-table-box" id="m11-copy-box" style="display:none; opacity:0; transform:translateX(-20px);">
+      <div class="m12-table-box" id="m12-copy-box" style="display:none; opacity:0; transform:translateX(-20px);">
         <h4 style="color:#1d4ed8;">✨ df_clean (記憶體 B)</h4>
-        <table class="m11-mini-table">
+        <table class="m12-mini-table">
           <tr><th>ID</th><th>Score</th></tr>
           <tr><td>A01</td><td>88</td></tr>
           <tr><td>A03</td><td>95</td></tr>
         </table>
       </div>
     </div>
-    <div id="m11-desc" class="m11-desc"></div>
+    <div id="m12-desc" class="m12-desc"></div>
   </div>
 
-  <div class="card" id="card12">
-    <h2 class="section-title">🚀 模組十二：終極實戰演練 <span class="badge">從髒資料到乾淨洞察</span></h2>
+  <div class="card" id="card13">
+    <h2 class="section-title">🚀 模組十三：終極實戰演練 <span class="badge">從髒資料到乾淨洞察</span></h2>
     <div class="btn-group">
-      <button class="btn btn-green" id="m12-run-btn" onclick="m12RunScript()">▶ 執行自動化腳本</button>
-      <button class="btn btn-gray" onclick="m12Reset()">↺ 重置</button>
+      <button class="btn btn-green" id="m13-run-btn" onclick="m13RunScript()">▶ 執行自動化腳本</button>
+      <button class="btn btn-gray" onclick="m13Reset()">↺ 重置</button>
     </div>
 
-    <div class="m12-layout">
+    <div class="m13-layout">
       <div>
         <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;">📄 data_pipeline.py</div>
         <div class="code-block">
           <span class="ln"><span class="kw">import</span> pandas <span class="kw">as</span> pd</span>
-          <span class="ln" id="m12-l1">df = pd.<span class="fn">read_csv</span>(</span>
-          <span class="ln ind-1 " id="m12-l1b"><span class="str">'energy_data.csv'</span>,</span>
-          <span class="ln ind-1 " id="m12-l1c"><span class="str">encoding='utf-8-sig'</span>,</span>
-          <span class="ln ind-1" id="m12-l1d">skiprows=<span class="num">3</span>,</span>
-          <span class="ln ind-1" id="m12-l1e"><span class="str">header=<span class="num">0</span></span></span>
+          <span class="ln" id="m13-l1">df = pd.<span class="fn">read_csv</span>(</span>
+          <span class="ln ind-1 " id="m13-l1b"><span class="str">'energy_data.csv'</span>,</span>
+          <span class="ln ind-1 " id="m13-l1c"><span class="str">encoding='utf-8-sig'</span>,</span>
+          <span class="ln ind-1" id="m13-l1d">skiprows=<span class="num">3</span>,</span>
+          <span class="ln ind-1" id="m13-l1e"><span class="str">header=<span class="num">0</span></span></span>
           <span class="ln">)</span>
           <span class="ln"> </span>
-          <span class="ln" id="m12-l2">df.<span class="fn">rename</span>(columns=str.lower, inplace=<span class="str">True</span>)</span>
-          <span class="ln" id="m12-l3">df = df.<span class="fn">convert_dtypes</span>()</span>
-          <span class="ln" id="m12-l4">df.<span class="fn">dropna</span>(how=<span class="str">'all'</span>, inplace=<span class="str">True</span>)</span>
-          <span class="ln" id="m12-l4b">df.<span class="fn">fillna</span>(<span class="num">0</span>, inplace=<span class="str">True</span>)</span>
-          <span class="ln" id="m12-l5">df.<span class="fn">drop_duplicates</span>(inplace=<span class="str">True</span>)</span>
+          <span class="ln" id="m13-l2">df.<span class="fn">rename</span>(columns=str.lower, inplace=<span class="str">True</span>)</span>
+          <span class="ln" id="m13-l3">df = df.<span class="fn">convert_dtypes</span>()</span>
+          <span class="ln" id="m13-l4">df.<span class="fn">dropna</span>(how=<span class="str">'all'</span>, inplace=<span class="str">True</span>)</span>
+          <span class="ln" id="m13-l4b">df.<span class="fn">fillna</span>(<span class="num">0</span>, inplace=<span class="str">True</span>)</span>
+          <span class="ln" id="m13-l5">df.<span class="fn">drop_duplicates</span>(inplace=<span class="str">True</span>)</span>
           <span class="ln"> </span>
-          <span class="ln" id="m12-l6">df = df[(df[<span class="str">'electricity'</span>] > <span class="num">0</span>) &amp; (df[<span class="str">'year'</span>] >= <span class="num">2020</span>)]</span>
-          <span class="ln" id="m12-l7">summary = df.<span class="fn">describe</span>()</span>
-          <span class="ln" id="m12-l8"><span class="fn">print</span>(summary)</span>
+          <span class="ln" id="m13-l6">df = df[df[<span class="str">'country'</span>].<span class="fn">isin</span>([<span class="str">'Taiwan'</span>, <span class="str">'Japan'</span>])]</span>
+          <span class="ln" id="m13-l7">summary = df.<span class="fn">describe</span>()</span>
+          <span class="ln" id="m13-l8"><span class="fn">print</span>(summary)</span>
         </div>
       </div>
       <div>
         <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;">💻 Terminal</div>
-        <div class="console-output m12-console" id="m12-console"></div>
+        <div class="console-output m13-console" id="m13-console"></div>
       </div>
     </div>
   </div>
@@ -958,11 +937,76 @@
     }
   }
 
-  /* ── M10: Describe ── */
-  function descAction(type) {
-    const rawBox = document.getElementById('m10-raw-box');
-    const descBox = document.getElementById('m10-desc-box');
+  /* ── M10: ISIN Magic ── */
+  async function isinAction(type) {
+    const pass = document.getElementById('m10-vip-pass');
     const status = document.getElementById('m10-status');
+    const codeList = document.getElementById('m10-code-list');
+    const codeTrad = document.getElementById('m10-code-trad');
+    const codeIsin = document.getElementById('m10-code-isin');
+    const lineTrad = document.getElementById('m10-line-trad');
+    const lineIsin = document.getElementById('m10-line-isin');
+
+    const r1 = document.getElementById('m10-r1');
+    const r2 = document.getElementById('m10-r2');
+    const r3 = document.getElementById('m10-r3');
+    const r4 = document.getElementById('m10-r4');
+
+    // Reset Table and Animation
+    [r1, r2, r3, r4].forEach(r => r.classList.remove('dimmed', 'highlighted'));
+    pass.classList.remove('scan-anim');
+
+    if (type === 'create') {
+      codeTrad.style.display = 'none';
+      codeIsin.style.display = 'none';
+      
+      codeList.classList.add('highlight');
+      setTimeout(() => codeList.classList.remove('highlight'), 800);
+      pass.classList.remove('hidden');
+      status.innerHTML = "✅ 第一步：用中括號 <code>[]</code> 建立 List 名單，存入 <code>name_list</code> 變數。";
+    
+    } else if (type === 'traditional') {
+      codeTrad.style.display = 'block';
+      codeIsin.style.display = 'none';
+      
+      lineTrad.classList.add('highlight');
+      setTimeout(() => lineTrad.classList.remove('highlight'), 800);
+      pass.classList.add('hidden');
+      
+      r2.classList.add('dimmed'); r4.classList.add('dimmed');
+      r1.classList.add('highlighted'); 
+      await delay(400); 
+      r3.classList.add('highlighted');
+      status.innerHTML = "⚠️ 傳統寫法：不用名單，逐一比對 <code>|</code>，條件越多越容易寫錯。";
+    
+    } else if (type === 'isin') {
+      codeTrad.style.display = 'block';
+      codeIsin.style.display = 'block';
+      
+      lineIsin.classList.add('highlight');
+      setTimeout(() => lineIsin.classList.remove('highlight'), 800);
+      
+      pass.classList.remove('hidden');
+      pass.classList.add('scan-anim');
+      await delay(250);
+      
+      r2.classList.add('dimmed'); r4.classList.add('dimmed');
+      r1.classList.add('highlighted'); r3.classList.add('highlighted');
+      status.innerHTML = "✨ <b>.isin() 魔法</b>：拿著建好的名單一次掃描，瞬間通關！乾淨俐落！";
+    
+    } else {
+      codeTrad.style.display = 'none';
+      codeIsin.style.display = 'none';
+      pass.classList.add('hidden');
+      status.innerHTML = "跟著步驟點擊，體驗 .isin() 的威力！";
+    }
+  }
+
+  /* ── M11: Describe ── */
+  function descAction(type) {
+    const rawBox = document.getElementById('m11-raw-box');
+    const descBox = document.getElementById('m11-desc-box');
+    const status = document.getElementById('m11-status');
 
     if (type === 'describe') {
         rawBox.classList.remove('active');
@@ -976,44 +1020,44 @@
     }
   }
 
-  /* ── M11: Inplace ── */
+  /* ── M12: Inplace ── */
   function resetInplace() {
-    document.getElementById('m11-orig-nan').classList.remove('erased');
-    document.getElementById('m11-copy-box').style.display = 'none';
-    document.getElementById('m11-copy-box').style.opacity = '0';
-    document.getElementById('m11-copy-box').style.transform = 'translateX(-20px)';
-    document.getElementById('m11-orig-box').classList.remove('active-copy');
-    const desc = document.getElementById('m11-desc');
-    desc.className = 'm11-desc'; desc.innerHTML = '';
+    document.getElementById('m12-orig-nan').classList.remove('erased');
+    document.getElementById('m12-copy-box').style.display = 'none';
+    document.getElementById('m12-copy-box').style.opacity = '0';
+    document.getElementById('m12-copy-box').style.transform = 'translateX(-20px)';
+    document.getElementById('m12-orig-box').classList.remove('active-copy');
+    const desc = document.getElementById('m12-desc');
+    desc.className = 'm12-desc'; desc.innerHTML = '';
   }
   async function runInplace(isInplace) {
     resetInplace(); await delay(100);
-    const desc = document.getElementById('m11-desc');
+    const desc = document.getElementById('m12-desc');
     if (!isInplace) {
-      document.getElementById('m11-orig-box').classList.add('active-copy');
-      const copyBox = document.getElementById('m11-copy-box');
+      document.getElementById('m12-orig-box').classList.add('active-copy');
+      const copyBox = document.getElementById('m12-copy-box');
       copyBox.style.display = 'block';
       await delay(50);
       copyBox.style.opacity = '1';
       copyBox.style.transform = 'translateX(0)';
       desc.innerHTML = '<b>【官方推薦】影印機模式 (<code>inplace=False</code>)</b>：產生一份乾淨的副本，原始資料安全保留，防呆防錯最佳選擇！';
-      desc.className = 'm11-desc show-copy';
+      desc.className = 'm12-desc show-copy';
     } else {
-      document.getElementById('m11-orig-nan').classList.add('erased');
+      document.getElementById('m12-orig-nan').classList.add('erased');
       desc.innerHTML = '<b>【風險警告】橡皮擦模式 (<code>inplace=True</code>)</b>：直接修改原始記憶體資料。省去賦值步驟，但一旦刪錯只能重讀檔案！';
-      desc.className = 'm11-desc show-inplace';
+      desc.className = 'm12-desc show-inplace';
     }
   }
 
-  /* ── M12: Async Script ── */
-  let m12Running = false;
-  function m12Reset() {
-    m12Running = false;
-    document.getElementById('m12-console').textContent = '';
-    ['m12-l1','m12-l1b','m12-l1c','m12-l1d','m12-l1e','m12-l2','m12-l3','m12-l4','m12-l4b','m12-l5','m12-l6','m12-l7','m12-l8'].forEach(id => {
+  /* ── M13: Async Script ── */
+  let m13Running = false;
+  function m13Reset() {
+    m13Running = false;
+    document.getElementById('m13-console').textContent = '';
+    ['m13-l1','m13-l1b','m13-l1c','m13-l1d','m13-l1e','m13-l2','m13-l3','m13-l4','m13-l4b','m13-l5','m13-l6','m13-l7','m13-l8'].forEach(id => {
       const el = document.getElementById(id); if (el) el.classList.remove('highlight');
     });
-    document.getElementById('m12-run-btn').disabled = false;
+    document.getElementById('m13-run-btn').disabled = false;
   }
 
   async function typeWriter(el, text, speed = 20) {
@@ -1021,34 +1065,34 @@
     el.textContent += '\n';
   }
 
-  async function m12RunScript() {
-    if (m12Running) return; m12Running = true;
-    document.getElementById('m12-run-btn').disabled = true;
-    const con = document.getElementById('m12-console'); con.textContent = '';
+  async function m13RunScript() {
+    if (m13Running) return; m13Running = true;
+    document.getElementById('m13-run-btn').disabled = true;
+    const con = document.getElementById('m13-console'); con.textContent = '';
     const hl = (ids, on) => ids.forEach(id => {
       const el = document.getElementById(id); if (el) on ? el.classList.add('highlight') : el.classList.remove('highlight');
     });
 
-    hl(['m12-l1','m12-l1b','m12-l1c','m12-l1d','m12-l1e'], true); await delay(400);
+    hl(['m13-l1','m13-l1b','m13-l1c','m13-l1d','m13-l1e'], true); await delay(400);
     await typeWriter(con, '$ python data_pipeline.py\n[1/6] 讀取資料中 (包含 header=0)...\n✔️ 讀取成功，維度: (17135, 130)'); await delay(300);
 
-    hl(['m12-l1','m12-l1b','m12-l1c','m12-l1d','m12-l1e'], false); hl(['m12-l2'], true); await delay(300);
+    hl(['m13-l1','m13-l1b','m13-l1c','m13-l1d','m13-l1e'], false); hl(['m13-l2'], true); await delay(300);
     await typeWriter(con, '[2/6] 統一欄位名稱為小寫 (rename)... ✔️'); await delay(300);
 
-    hl(['m12-l2'], false); hl(['m12-l3'], true); await delay(300);
+    hl(['m13-l2'], false); hl(['m13-l3'], true); await delay(300);
     await typeWriter(con, '[3/6] 轉換最佳型態 (convert_dtypes)... ✔️'); await delay(300);
 
-    hl(['m12-l3'], false); hl(['m12-l4','m12-l4b','m12-l5'], true); await delay(300);
+    hl(['m13-l3'], false); hl(['m13-l4','m13-l4b','m13-l5'], true); await delay(300);
     await typeWriter(con, '[4/6] 清理 NaN 與重複值...\n✔️ 清除完成，目前維度: (17123, 130)'); await delay(300);
 
-    hl(['m12-l4','m12-l4b','m12-l5'], false); hl(['m12-l6'], true); await delay(300);
+    hl(['m13-l4','m13-l4b','m13-l5'], false); hl(['m13-l6'], true); await delay(300);
     await typeWriter(con, '[5/6] 篩選 2020 年後且具發電量資料...\n✔️ 條件套用成功，殘留維度: (325, 130)'); await delay(300);
 
-    hl(['m12-l6'], false); hl(['m12-l7','m12-l8'], true); await delay(300);
+    hl(['m13-l6'], false); hl(['m13-l7','m13-l8'], true); await delay(300);
     await typeWriter(con, '[6/6] 產生統計摘要 (describe):\n       electricity         year\ncount   325.000000   325.000000\nmean   4210.500000  2021.500000\nstd     150.210000     1.120000\n\n🎉 資料準備完成，隨時可輸出圖表！');
 
-    hl(['m12-l7','m12-l8'], false);
-    document.getElementById('m12-run-btn').disabled = false; m12Running = false;
+    hl(['m13-l7','m13-l8'], false);
+    document.getElementById('m13-run-btn').disabled = false; m13Running = false;
   }
 </script>
 </body>

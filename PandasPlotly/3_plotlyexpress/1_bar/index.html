@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>長條圖與堆疊 (px.bar) | Plotly Express 教學</title>
+  <meta name="description" content="透過職業籃球隊伍場均得分資料，學習 Plotly Express px.bar 長條圖與堆疊的完整教學，含動畫時間軸與互動展示。" />
+  <link rel="stylesheet" href="../../../theme.css" />
+  <script src="../../../layout.js" defer></script>
+  <style>
+    body { padding: 0; margin: 0; background-color: #f8f9fa; font-family: sans-serif; }
+
+    .container {
+      padding-top: 80px;
+      padding-bottom: 60px;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+      padding: 60px 20px 50px;
+      text-align: center;
+      border-bottom: 3px solid #e94560;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(233,69,96,0.2);
+      border: 1px solid #e94560;
+      color: #e94560;
+      border-radius: 20px;
+      padding: 4px 16px;
+      font-size: 0.78rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 12px;
+      letter-spacing: -0.5px;
+    }
+    .hero h1 span { color: #e94560; }
+    .hero p {
+      color: #a8b2d8;
+      font-size: 1.05rem;
+      max-width: 580px;
+      margin: 0 auto 28px;
+      line-height: 1.7;
+    }
+    .hero-links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.25s;
+    }
+    .hero-link.primary { background: #e94560; color: #fff; }
+    .hero-link.primary:hover { background: #c73652; transform: translateY(-2px); }
+    .hero-link.secondary { background: rgba(255,255,255,0.08); color: #ccd6f6; border: 1px solid rgba(255,255,255,0.15); }
+    .hero-link.secondary:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+
+    /* ── Card ── */
+    .card {
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+      padding: 28px;
+      margin-bottom: 30px;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: all 0.6s ease-out;
+    }
+    .card.visible { opacity: 1; transform: translateY(0); }
+
+    .section-title {
+      font-size: 1.22rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin: 0 0 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title .icon { font-size: 1.3rem; }
+    .doc-link {
+      margin-left: auto;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #0f3460;
+      text-decoration: none;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      padding: 2px 10px;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .doc-link:hover { opacity: 1; }
+    .section-desc {
+      color: #546e7a;
+      font-size: 0.92rem;
+      margin: 0 0 24px;
+      line-height: 1.6;
+    }
+
+    /* ── DataFrame Table ── */
+    .df-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .df-table th {
+      background: #1a1a2e;
+      color: #ccd6f6;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .df-table td {
+      padding: 7px 12px;
+      border-bottom: 1px solid #eef0f5;
+      color: #37474f;
+      white-space: nowrap;
+    }
+    .df-table tr:nth-child(even) td { background: #f7f9fc; }
+    .df-table tr:hover td { background: #e8f4fd; }
+    .df-index { color: #9e9e9e !important; font-weight: 600; }
+    .tag-g { background: #e3f2fd; color: #1565c0; border-radius: 4px; padding: 1px 6px; font-size: 0.75rem; }
+    .tag-f { background: #fff3e0; color: #e65100; border-radius: 4px; padding: 1px 6px; font-size: 0.75rem; }
+    .tag-c { background: #f3e5f5; color: #7b1fa2; border-radius: 4px; padding: 1px 6px; font-size: 0.75rem; }
+
+    /* ── Two-col ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+    @media(max-width:680px){ .two-col { grid-template-columns: 1fr; } }
+    .col-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #90a4ae;
+      margin-bottom: 10px;
+    }
+
+    /* ── Code block ── */
+    .code-block {
+      background: #0d1117;
+      border-radius: 8px;
+      padding: 18px 20px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      border-left: 3px solid #e94560;
+    }
+    .code-block span {
+      display: block;
+      white-space: pre;
+      color: #c9d1d9;
+      transition: background 0.3s;
+      border-radius: 3px;
+      padding: 0 4px;
+    }
+    .code-block span.highlight {
+      background: rgba(233,69,96,0.22);
+      color: #ff8fab;
+    }
+    .code-block .c-kw  { color: #ff79c6; }
+    .code-block .c-fn  { color: #50fa7b; }
+    .code-block .c-str { color: #f1fa8c; }
+    .code-block .c-cm  { color: #6272a4; font-style: italic; }
+    .code-block .c-var { color: #8be9fd; }
+    .code-block .c-num { color: #bd93f9; }
+    
+    .ind-1 { padding-left: 1.5rem !important; }
+    .ind-2 { padding-left: 3rem !important; }
+
+    /* ── Btn group ── */
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s;
+      background: #f0f2f5;
+      color: #37474f;
+      border: 1.5px solid transparent;
+    }
+    .btn:hover { background: #e8eaf0; transform: translateY(-1px); }
+    .btn.active { background: #1a1a2e; color: #fff; border-color: #e94560; }
+
+    /* ── Chart area ── */
+    .chart-area {
+      border: 1.5px solid #e0e4ed;
+      border-radius: 8px;
+      padding: 20px 20px 40px 20px; /* leave room for x-axis */
+      background: #fafbff;
+      height: 250px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      text-align: center;
+      margin-bottom: 4px;
+      min-height: 18px;
+      transition: all 0.4s;
+    }
+    .chart-subtitle {
+      font-size: 0.7rem;
+      color: #90a4ae;
+      text-align: center;
+      margin-bottom: 10px;
+      min-height: 16px;
+      transition: all 0.4s;
+    }
+    .x-label, .y-label {
+      font-size: 0.7rem;
+      color: #90a4ae;
+      font-weight: 600;
+      position: absolute;
+      transition: all 0.4s;
+    }
+    .x-label { bottom: 10px; left: 50%; transform: translateX(-50%); }
+    .y-label {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      left: 5px; top: 50%;
+      margin-top: -10px;
+    }
+
+    /* ── Bar Chart Base (0 to 140 scale = 100% height) ── */
+    .bar-chart-v {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      flex: 1;
+      position: relative;
+      border-bottom: 1px solid #cbd5e1;
+      margin-left: 20px;
+    }
+    .bar-col {
+      display: flex;
+      flex-direction: column; /* Stacked mode */
+      justify-content: flex-end;
+      align-items: center;
+      height: 100%;
+      position: relative;
+      transition: all 0.5s cubic-bezier(.34,1.56,.64,1);
+    }
+    /* Group mode toggled via JS */
+    .bar-col.group-mode {
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    
+    .bar-seg {
+      width: 38px;
+      transition: height 0.65s cubic-bezier(.34,1.56,.64,1), background 0.45s, width 0.4s;
+      position: relative;
+      cursor: pointer;
+    }
+    .bar-col.group-mode .bar-seg {
+      width: 18px; /* Thinner bars in group mode */
+      border-radius: 3px 3px 0 0 !important;
+    }
+    .bar-seg:hover { filter: brightness(1.15); }
+    
+    .bar-label {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      color: #546e7a;
+      font-weight: 600;
+      margin-top: 6px;
+      white-space: nowrap;
+    }
+
+    /* ── Horizontal bar chart ── */
+    .bar-chart-h {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      flex: 1;
+      padding-left: 60px;
+      border-left: 1px solid #cbd5e1;
+      border-bottom: none;
+      margin-left: 0;
+    }
+    .bar-h-row { display: flex; align-items: center; position: relative; }
+    .bar-h-label {
+      position: absolute;
+      right: 100%;
+      margin-right: 8px;
+      font-size: 0.75rem;
+      color: #546e7a;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .bar-h-seg {
+      height: 22px;
+      transition: width 0.7s cubic-bezier(.34,1.56,.64,1);
+      cursor: pointer;
+    }
+    .bar-h-seg:hover { filter: brightness(1.15); }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 15px;
+      height: 18px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: #546e7a; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+    /* ── Animation bar ── */
+    .anim-year {
+      text-align: center; font-size: 2.2rem; font-weight: 800; color: #0f3460;
+      letter-spacing: 2px; margin-bottom: 4px; font-variant-numeric: tabular-nums;
+    }
+    .anim-progress { height: 4px; background: #e0e4ed; border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
+    .anim-progress-bar { height: 100%; background: linear-gradient(90deg, #e94560, #0f3460); width: 0%; transition: width 0.8s linear; }
+    .play-btn {
+      display: block; margin: 0 auto 20px; padding: 10px 28px; background: linear-gradient(135deg, #e94560, #c73652);
+      color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      transition: all 0.25s; box-shadow: 0 4px 14px rgba(233,69,96,0.3);
+    }
+    .play-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(233,69,96,0.4); }
+    .play-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ── Tooltip demo ── */
+    .tooltip-demo {
+      position: absolute; background: #1a1a2e; color: #fff; border-radius: 6px; padding: 8px 12px;
+      font-size: 0.75rem; line-height: 1.6; pointer-events: none; box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+      opacity: 0; transition: opacity 0.2s; z-index: 50; min-width: 120px; border-top: 3px solid #e94560;
+      transform: translate(-50%, -100%); margin-top: -10px;
+    }
+    .tooltip-demo.show { opacity: 1; }
+    .tooltip-demo strong { color: #f1fa8c; display: block; font-size: 0.85rem; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 4px; }
+    .tip-row { display: flex; justify-content: space-between; gap: 12px; }
+    .tip-key { color: #90a4ae; }
+
+    /* ── M8-M9 specific ── */
+    .c4-hline {
+      position: absolute; left: 0; width: 100%; border-top: 2px dashed #e53e3e;
+      opacity: 0; transition: opacity 0.4s; z-index: 5;
+      /* Position updated via JS inline styles */
+    }
+    .c4-hrect {
+      position: absolute; left: 0; width: 100%; background: rgba(72, 187, 120, 0.18);
+      opacity: 0; transition: opacity 0.4s; z-index: 1;
+    }
+    .c4-annot {
+      position: absolute; background: white; border: 1.5px solid #2d3748; padding: 4px 10px;
+      border-radius: 4px; font-size: 0.75rem; font-weight: 700; color: #2d3748;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1); opacity: 0; transition: all 0.4s; z-index: 10;
+      transform: translate(-50%, -10px);
+    }
+    .c4-annot::after {
+      content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+      border-width: 6px 5px 0; border-style: solid; border-color: #2d3748 transparent transparent transparent;
+    }
+    
+    /* ── Info note ── */
+    .info-note {
+      display: flex; gap: 10px; background: #e8f4fd; border-left: 3px solid #1565c0;
+      padding: 10px 14px; margin-top: 16px; font-size: 0.8rem; color: #1565c0; line-height: 1.5; border-radius: 4px;
+    }
+    
+    @media(max-width:500px){ .bar-seg { width: 28px; } }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">🏀 Plotly Express 教學系列</div>
+  <h1>長條圖與堆疊<br><span>px.bar</span></h1>
+  <p>以「職業籃球隊伍場均得分 (2015–2025)」為主線，從基礎繪圖、資料切分到動態時間軸，完整掌握 px.bar 的每一個進階技法。</p>
+  <div class="hero-links">
+    <a href="https://plotly.com/python-api-reference/generated/plotly.express.bar.html" target="_blank" class="hero-link primary">📊 px.bar 官方 API 文件</a>
+    <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.plot.bar.html" target="_blank" class="hero-link secondary">🐼 pandas plot.bar</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="card" id="card1">
+    <div class="section-title">
+      <span class="icon">📋</span> M1–M2：資料認識與基礎長條圖
+    </div>
+    <p class="section-desc">準備一份包含年份、球隊與前/後場得分組成的資料表。使用最精簡的指令繪製總得分長條圖。</p>
+
+    <div class="two-col">
+      <div>
+        <div class="col-label">📄 DataFrame 預覽 (df) 節錄</div>
+        <div style="overflow-x:auto">
+          <table class="df-table">
+            <thead>
+              <tr>
+                <th>#</th><th>年份</th><th>球隊</th><th>位置</th><th>得分</th><th>球星</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="df-index">124</td><td>2021</td><td>太陽</td><td><span class="tag-g">後場</span></td><td>61.2</td><td>保羅</td></tr>
+              <tr><td class="df-index">125</td><td>2021</td><td>太陽</td><td><span class="tag-f">前場</span></td><td>53.6</td><td>布克</td></tr>
+              <tr><td colspan="6" style="text-align:center; color:#9e9e9e; background:#f8f9fa;">... (歷年共數百筆資料) ...</td></tr>
+              <tr><td class="df-index">390</td><td>2025</td><td>公鹿</td><td><span class="tag-g">後場</span></td><td>49.2</td><td>里拉德</td></tr>
+              <tr><td class="df-index">391</td><td>2025</td><td>公鹿</td><td><span class="tag-f">前場</span></td><td>70.0</td><td>字母哥</td></tr>
+              <tr><td class="df-index">392</td><td>2025</td><td>雷霆</td><td><span class="tag-g">後場</span></td><td>68.1</td><td>SGA</td></tr>
+              <tr><td class="df-index">393</td><td>2025</td><td>雷霆</td><td><span class="tag-f">前場</span></td><td>52.0</td><td>霍姆格倫</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="info-note">
+          <span>ℹ️</span>
+          <span>每支球隊的總得分是由「後場得分」與「前場得分」加總而成，這也是後續展示「堆疊(stack)」的核心邏輯。</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="col-label">💻 基礎程式碼</div>
+        <div class="code-block" id="code-m1">
+          <span class="ln"><span class="c-kw">import</span> plotly.express <span class="c-kw">as</span> px</span>
+          <span class="ln"><span class="c-var">df_2025</span> = df[df[<span class="c-str">'年份'</span>] == <span class="c-num">2025</span>]</span>
+          <span class="ln"><span class="c-var">fig</span> = px.<span class="c-fn">bar</span>(df_2025, x=<span class="c-str">'球隊'</span>, y=<span class="c-str">'得分'</span>)</span>
+          <span class="ln"><span class="c-var">fig</span>.<span class="c-fn">show</span>()</span>
+        </div>
+
+        <div style="margin-top:16px">
+          <div class="col-label">📊 CSS 模擬圖表</div>
+          <div class="chart-area" style="height:210px">
+            <div class="chart-title" style="display:none"></div>
+            <div class="chart-subtitle" style="display:none"></div>
+            <div class="bar-chart-v">
+              <div class="bar-col"><div class="bar-seg" style="height:84.5%;background:#636efa;border-radius:4px 4px 0 0;"></div><div class="bar-label">勇士</div></div>
+              <div class="bar-col"><div class="bar-seg" style="height:86.9%;background:#636efa;border-radius:4px 4px 0 0;"></div><div class="bar-label">湖人</div></div>
+              <div class="bar-col"><div class="bar-seg" style="height:82.7%;background:#636efa;border-radius:4px 4px 0 0;"></div><div class="bar-label">太陽</div></div>
+              <div class="bar-col"><div class="bar-seg" style="height:85.1%;background:#636efa;border-radius:4px 4px 0 0;"></div><div class="bar-label">公鹿</div></div>
+              <div class="bar-col"><div class="bar-seg" style="height:87.5%;background:#636efa;border-radius:4px 4px 0 0;"></div><div class="bar-label">塞爾提克</div></div>
+              <div class="bar-col"><div class="bar-seg" style="height:78.7%;background:#636efa;border-radius:4px 4px 0 0;"></div><div class="bar-label">熱火</div></div>
+              <div class="bar-col"><div class="bar-seg" style="height:85.7%;background:#636efa;border-radius:4px 4px 0 0;"></div><div class="bar-label">雷霆</div></div>
+            </div>
+            <div class="y-label">得分</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="card2">
+    <div class="section-title">
+      <span class="icon">🎨</span> M3–M5：標籤、資料切分與堆疊模式
+    </div>
+    <p class="section-desc">加入標題，並使用 <code>color</code> 將總得分拆解為前場/後場得分，最後切換 <code>barmode</code> 比較「堆疊」與「並排」的視覺差異。</p>
+
+    <div class="btn-group">
+      <button class="btn active" id="btn-m3" onclick="setMode2('title')">① title &amp; labels</button>
+      <button class="btn"        id="btn-m4" onclick="setMode2('color')">② color &amp; map</button>
+      <button class="btn"        id="btn-m5" onclick="setMode2('group')">③ barmode='group'</button>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="col-label">💻 程式碼</div>
+        <div class="code-block" id="code-m2">
+          <span class="ln"><span class="c-var">fig</span> = px.<span class="c-fn">bar</span>(df_2025, x=<span class="c-str">'球隊'</span>, y=<span class="c-str">'得分'</span>,</span>
+          <span class="ln ind-1" id="c2-title">title=<span class="c-str">'2025 聯盟火力分析&lt;br&gt;&lt;sup&gt;前/後場得分佔比&lt;/sup&gt;'</span>,</span>
+          <span class="ln ind-1" id="c2-labels">labels={<span class="c-str">'得分'</span>:<span class="c-str">'場均總分'</span>},</span>
+          <span class="ln ind-1" id="c2-color" style="opacity:0.4;">color=<span class="c-str">'位置'</span>, color_discrete_map={<span class="c-str">'後場'</span>:<span class="c-str">'#1f77b4'</span>, <span class="c-str">'前場'</span>:<span class="c-str">'#ff7f0e'</span>},</span>
+          <span class="ln ind-1" id="c2-bmode" style="opacity:0.4;">barmode=<span class="c-str">'<span id="bmode-text">stack</span>'</span></span>
+          <span class="ln">)</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="col-label">📊 互動圖表</div>
+        <div class="chart-area" id="chart-m2">
+          <div class="chart-title" id="ct-title">2025 聯盟火力分析</div>
+          <div class="chart-subtitle" id="ct-sub">前/後場得分佔比</div>
+          <div class="bar-chart-v" id="bars-m2">
+            <div class="bar-col" id="col-0">
+              <div class="bar-seg seg-top" style="height:34.5%; border-radius:4px 4px 0 0;" data-val="48.4"></div>
+              <div class="bar-seg seg-bot" style="height:50%;" data-val="70.0"></div>
+              <div class="bar-label">勇士</div>
+            </div>
+            <div class="bar-col" id="col-1">
+              <div class="bar-seg seg-top" style="height:51.2%; border-radius:4px 4px 0 0;" data-val="71.7"></div>
+              <div class="bar-seg seg-bot" style="height:35.7%;" data-val="50.0"></div>
+              <div class="bar-label">湖人</div>
+            </div>
+            <div class="bar-col" id="col-2">
+              <div class="bar-seg seg-top" style="height:36.3%; border-radius:4px 4px 0 0;" data-val="50.9"></div>
+              <div class="bar-seg seg-bot" style="height:46.4%;" data-val="65.0"></div>
+              <div class="bar-label">太陽</div>
+            </div>
+            <div class="bar-col" id="col-3">
+              <div class="bar-seg seg-top" style="height:50%; border-radius:4px 4px 0 0;" data-val="70.0"></div>
+              <div class="bar-seg seg-bot" style="height:35.1%;" data-val="49.2"></div>
+              <div class="bar-label">公鹿</div>
+            </div>
+            <div class="bar-col" id="col-4">
+              <div class="bar-seg seg-top" style="height:44.6%; border-radius:4px 4px 0 0;" data-val="62.5"></div>
+              <div class="bar-seg seg-bot" style="height:42.8%;" data-val="60.0"></div>
+              <div class="bar-label">塞爾</div>
+            </div>
+            <div class="bar-col" id="col-5">
+              <div class="bar-seg seg-top" style="height:43%; border-radius:4px 4px 0 0;" data-val="60.3"></div>
+              <div class="bar-seg seg-bot" style="height:35.7%;" data-val="50.0"></div>
+              <div class="bar-label">熱火</div>
+            </div>
+            <div class="bar-col" id="col-6">
+              <div class="bar-seg seg-top" style="height:37.1%; border-radius:4px 4px 0 0;" data-val="52.0"></div>
+              <div class="bar-seg seg-bot" style="height:48.6%;" data-val="68.1"></div>
+              <div class="bar-label">雷霆</div>
+            </div>
+          </div>
+          <div class="y-label" id="y-label-m2">場均總分</div>
+          <div class="legend" id="m2-legend" style="opacity:0">
+            <div class="legend-item"><div class="legend-dot" style="background:#1f77b4"></div>後場得分</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ff7f0e"></div>前場得分</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="card3">
+    <div class="section-title">
+      <span class="icon">🖱️</span> M6–M7：懸停資訊與水平長條圖
+    </div>
+    <p class="section-desc">加入 Tooltip 顯示詳細球星數據。當 X 軸標籤太擠時，使用 <code>orientation='h'</code> 將圖表轉為水平，並將 x 與 y 欄位對調。</p>
+
+    <div class="btn-group">
+      <button class="btn active" id="btn-m6" onclick="setMode3('hover')">① hover_name &amp; data</button>
+      <button class="btn"        id="btn-m7" onclick="setMode3('horiz')">② orientation='h'</button>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="col-label">💻 程式碼</div>
+        <div class="code-block" id="code-m3">
+          <span class="ln"><span class="c-var">fig</span> = px.<span class="c-fn">bar</span>(df_2025, <span id="c3-xy">x=<span class="c-str">'球隊'</span>, y=<span class="c-str">'得分'</span></span>, color=<span class="c-str">'位置'</span>,</span>
+          <span class="ln ind-1" id="c3-hover">hover_name=<span class="c-str">'球星'</span>, hover_data={<span class="c-str">'命中率'</span>:<span class="c-kw">True</span>},</span>
+          <span class="ln ind-1" id="c3-orient" style="opacity:0.4;">orientation=<span class="c-str">'h'</span>  <span class="c-cm"># 記得 X 與 Y 需對調！</span></span>
+          <span class="ln">)</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="col-label">📊 互動圖表</div>
+        <div class="chart-area" id="chart-m3" style="padding-bottom: 20px;">
+          <div class="tooltip-demo" id="tooltip-m3">
+            <strong id="tt-star">球星</strong>
+            <div class="tip-row"><span class="tip-key">球隊/位置</span><span id="tt-teampos">勇士/後場</span></div>
+            <div class="tip-row"><span class="tip-key">得分貢獻</span><span id="tt-pts">70.0</span></div>
+            <div class="tip-row"><span class="tip-key">命中率</span><span id="tt-fg">48.2%</span></div>
+          </div>
+
+          <div class="bar-chart-v" id="bars-m3v">
+            <div class="bar-col">
+              <div class="bar-seg" style="height:34.5%;background:#ff7f0e;border-radius:4px 4px 0 0;" data-star="D. Green" data-tp="勇士 / 前場" data-pts="48.4" data-fg="45.1%"></div>
+              <div class="bar-seg" style="height:50%;background:#1f77b4;" data-star="S. Curry" data-tp="勇士 / 後場" data-pts="70.0" data-fg="47.2%"></div>
+              <div class="bar-label">勇士</div>
+            </div>
+            <div class="bar-col">
+              <div class="bar-seg" style="height:51.2%;background:#ff7f0e;border-radius:4px 4px 0 0;" data-star="L. James" data-tp="湖人 / 前場" data-pts="71.7" data-fg="52.3%"></div>
+              <div class="bar-seg" style="height:35.7%;background:#1f77b4;" data-star="D. Russell" data-tp="湖人 / 後場" data-pts="50.0" data-fg="43.5%"></div>
+              <div class="bar-label">湖人</div>
+            </div>
+            <div class="bar-col">
+              <div class="bar-seg" style="height:37.1%;background:#ff7f0e;border-radius:4px 4px 0 0;" data-star="霍姆格倫" data-tp="雷霆 / 前場" data-pts="52.0" data-fg="53.0%"></div>
+              <div class="bar-seg" style="height:48.6%;background:#1f77b4;" data-star="SGA" data-tp="雷霆 / 後場" data-pts="68.1" data-fg="51.5%"></div>
+              <div class="bar-label">雷霆</div>
+            </div>
+          </div>
+
+          <div class="bar-chart-h" id="bars-m3h" style="display:none; height:180px;">
+            <div class="bar-h-row">
+              <div class="bar-h-label">勇士</div>
+              <div class="bar-h-seg" style="width:50%; background:#1f77b4" data-star="S. Curry" data-tp="勇士 / 後場" data-pts="70.0" data-fg="47.2%"></div>
+              <div class="bar-h-seg" style="width:34.5%; background:#ff7f0e; border-radius:0 4px 4px 0;" data-star="D. Green" data-tp="勇士 / 前場" data-pts="48.4" data-fg="45.1%"></div>
+            </div>
+            <div class="bar-h-row">
+              <div class="bar-h-label">湖人</div>
+              <div class="bar-h-seg" style="width:35.7%; background:#1f77b4" data-star="D. Russell" data-tp="湖人 / 後場" data-pts="50.0" data-fg="43.5%"></div>
+              <div class="bar-h-seg" style="width:51.2%; background:#ff7f0e; border-radius:0 4px 4px 0;" data-star="L. James" data-tp="湖人 / 前場" data-pts="71.7" data-fg="52.3%"></div>
+            </div>
+            <div class="bar-h-row">
+              <div class="bar-h-label">雷霆</div>
+              <div class="bar-h-seg" style="width:48.6%; background:#1f77b4" data-star="SGA" data-tp="雷霆 / 後場" data-pts="68.1" data-fg="51.5%"></div>
+              <div class="bar-h-seg" style="width:37.1%; background:#ff7f0e; border-radius:0 4px 4px 0;" data-star="霍姆格倫" data-tp="雷霆 / 前場" data-pts="52.0" data-fg="53.0%"></div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="card4">
+    <div class="section-title">
+      <span class="icon">✏️</span> M8–M9：參考線與圖表註解
+    </div>
+    <p class="section-desc">在圖表繪製完成後，對 <code>fig</code> 進行後處理，加入明確的資料比較基準，讓圖表更具洞察力。</p>
+
+    <div class="btn-group">
+      <button class="btn active" id="btn-m8" onclick="setMode4('lines')">① add_hline &amp; add_hrect</button>
+      <button class="btn"        id="btn-m9" onclick="setMode4('annot')">② add_annotation</button>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="col-label">💻 程式碼</div>
+        <div class="code-block">
+          <span class="ln"><span class="c-var">fig</span>.<span class="c-fn">add_hline</span>(</span>
+          <span class="ln ind-1" id="c4-hline">y=<span class="c-num">116.4</span>, line_dash=<span class="c-str">'dash'</span>, line_color=<span class="c-str">'red'</span></span>
+          <span class="ln">)</span>
+          <span class="ln"><span class="c-var">fig</span>.<span class="c-fn">add_hrect</span>(</span>
+          <span class="ln ind-1" id="c4-hrect">y0=<span class="c-num">120</span>, y1=<span class="c-num">130</span>, fillcolor=<span class="c-str">'green'</span>, opacity=<span class="c-num">0.15</span></span>
+          <span class="ln">)</span>
+          <span class="ln" id="c4-annot" style="opacity:0.4;"><span class="c-var">fig</span>.<span class="c-fn">add_annotation</span>(</span>
+          <span class="ln ind-1" id="c4-annot2" style="opacity:0.4;">x=<span class="c-str">'塞爾提克'</span>, y=<span class="c-num">122.5</span>, text=<span class="c-str">'聯盟最高'</span></span>
+          <span class="ln" id="c4-annot3" style="opacity:0.4;">)</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="col-label">📊 互動圖表</div>
+        <div class="chart-area" style="position:relative;">
+          <div class="c4-hline" id="hline-el" style="bottom:83.1%;"></div>
+          <div class="c4-hrect" id="hrect-el" style="bottom:85.7%; height:7.1%;"></div>
+          <div class="c4-annot" id="annot-el" style="bottom: calc(87.5% + 15px); left: 71.4%;">聯盟最高</div>
+
+          <div class="bar-chart-v">
+            <div class="bar-col"><div class="bar-seg" style="height:84.5%;background:#1f77b4;border-radius:4px 4px 0 0;"></div><div class="bar-label">勇士</div></div>
+            <div class="bar-col"><div class="bar-seg" style="height:86.9%;background:#ff7f0e;border-radius:4px 4px 0 0;"></div><div class="bar-label">湖人</div></div>
+            <div class="bar-col"><div class="bar-seg" style="height:82.7%;background:#1f77b4;border-radius:4px 4px 0 0;"></div><div class="bar-label">太陽</div></div>
+            <div class="bar-col"><div class="bar-seg" style="height:85.1%;background:#2ca02c;border-radius:4px 4px 0 0;"></div><div class="bar-label">公鹿</div></div>
+            <div class="bar-col"><div class="bar-seg" style="height:87.5%;background:#ff7f0e;border-radius:4px 4px 0 0;"></div><div class="bar-label">塞爾提克</div></div>
+            <div class="bar-col"><div class="bar-seg" style="height:78.7%;background:#1f77b4;border-radius:4px 4px 0 0;"></div><div class="bar-label">熱火</div></div>
+            <div class="bar-col"><div class="bar-seg" style="height:85.7%;background:#1f77b4;border-radius:4px 4px 0 0;"></div><div class="bar-label">雷霆</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="card5">
+    <div class="section-title">
+      <span class="icon">🎬</span> M10：動態時間軸演進
+    </div>
+    <p class="section-desc">結合 <code>animation_frame</code> 與 <code>range_y</code>，展示各隊 2015-2025 年間的火力演變史。</p>
+
+    <div class="code-block" style="margin-bottom:20px">
+      <span class="ln"><span class="c-var">fig</span> = px.<span class="c-fn">bar</span>(df, x=<span class="c-str">'球隊'</span>, y=<span class="c-str">'得分'</span>, color=<span class="c-str">'位置'</span>,</span>
+      <span class="ln ind-1">animation_frame=<span class="c-str">'年份'</span>, animation_group=<span class="c-str">'球隊'</span>,</span>
+      <span class="ln ind-1">range_y=[<span class="c-num">0</span>, <span class="c-num">140</span>] <span class="c-cm"># 固定Y軸，動畫才不會劇烈跳動</span></span>
+      <span class="ln">)</span>
+    </div>
+
+    <div style="text-align:center; margin-bottom:10px">
+      <div class="anim-year" id="anim-year">2015</div>
+      <div style="font-size:0.75rem; color:#90a4ae; font-weight:700;">賽季</div>
+    </div>
+    <div class="anim-progress"><div class="anim-progress-bar" id="anim-bar"></div></div>
+    <button class="play-btn" id="play-btn" onclick="playAnimation()">▶ 播放歷年變化 (2015–2025)</button>
+
+    <div class="chart-area" style="height:250px">
+      <div class="bar-chart-v">
+        <div class="bar-col"><div class="bar-seg" id="ab-0" style="height:0%; background:#1f77b4; border-radius:4px 4px 0 0;"></div><div class="bar-label">勇士</div></div>
+        <div class="bar-col"><div class="bar-seg" id="ab-1" style="height:0%; background:#ff7f0e; border-radius:4px 4px 0 0;"></div><div class="bar-label">湖人</div></div>
+        <div class="bar-col"><div class="bar-seg" id="ab-2" style="height:0%; background:#1f77b4; border-radius:4px 4px 0 0;"></div><div class="bar-label">太陽</div></div>
+        <div class="bar-col"><div class="bar-seg" id="ab-3" style="height:0%; background:#2ca02c; border-radius:4px 4px 0 0;"></div><div class="bar-label">公鹿</div></div>
+        <div class="bar-col"><div class="bar-seg" id="ab-4" style="height:0%; background:#ff7f0e; border-radius:4px 4px 0 0;"></div><div class="bar-label">塞爾提克</div></div>
+        <div class="bar-col"><div class="bar-seg" id="ab-5" style="height:0%; background:#1f77b4; border-radius:4px 4px 0 0;"></div><div class="bar-label">熱火</div></div>
+        <div class="bar-col"><div class="bar-seg" id="ab-6" style="height:0%; background:#1f77b4; border-radius:4px 4px 0 0;"></div><div class="bar-label">雷霆</div></div>
+      </div>
+      <div class="y-label">總得分</div>
+    </div>
+  </div>
+
+</div><script>
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+/* Observer */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { 
+      e.target.classList.add('visible'); 
+      observer.unobserve(e.target); 
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.card').forEach(c => observer.observe(c));
+
+/* ── M3-M5 Logic ── */
+function setMode2(mode) {
+  ['btn-m3','btn-m4','btn-m5'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById(mode === 'title' ? 'btn-m3' : mode === 'color' ? 'btn-m4' : 'btn-m5').classList.add('active');
+
+  const c2t = document.getElementById('c2-title');
+  const c2l = document.getElementById('c2-labels');
+  const c2c = document.getElementById('c2-color');
+  const c2b = document.getElementById('c2-bmode');
+  const btext = document.getElementById('bmode-text');
+  
+  const legend = document.getElementById('m2-legend');
+  
+  // reset all bar columns class
+  for(let i=0; i<7; i++){
+    document.getElementById('col-'+i).classList.remove('group-mode');
+  }
+
+  if (mode === 'title') {
+    c2t.classList.add('highlight'); c2l.classList.add('highlight');
+    c2c.style.opacity='0.4'; c2b.style.opacity='0.4'; btext.textContent = 'stack';
+    legend.style.opacity = '0';
+    setTimeout(() => { c2t.classList.remove('highlight'); c2l.classList.remove('highlight'); }, 800);
+    
+    document.querySelectorAll('.seg-top').forEach(el => el.style.background = '#636efa');
+    document.querySelectorAll('.seg-bot').forEach(el => {
+      el.style.background = '#636efa'; el.style.borderRadius = '0';
+    });
+  } 
+  else if (mode === 'color') {
+    c2c.classList.add('highlight');
+    c2c.style.opacity='1'; c2b.style.opacity='0.4'; btext.textContent = 'stack';
+    legend.style.opacity = '1';
+    setTimeout(() => c2c.classList.remove('highlight'), 800);
+    
+    document.querySelectorAll('.seg-top').forEach(el => el.style.background = '#ff7f0e'); // 前場橘色
+    document.querySelectorAll('.seg-bot').forEach(el => {
+      el.style.background = '#1f77b4'; el.style.borderRadius = '0'; // 後場藍色
+    });
+  } 
+  else if (mode === 'group') {
+    c2b.classList.add('highlight');
+    c2c.style.opacity='1'; c2b.style.opacity='1'; btext.textContent = 'group';
+    legend.style.opacity = '1';
+    setTimeout(() => c2b.classList.remove('highlight'), 800);
+    
+    document.querySelectorAll('.seg-top').forEach(el => el.style.background = '#ff7f0e');
+    document.querySelectorAll('.seg-bot').forEach(el => {
+      el.style.background = '#1f77b4'; el.style.borderRadius = '3px 3px 0 0';
+    });
+    for(let i=0; i<7; i++) document.getElementById('col-'+i).classList.add('group-mode');
+  }
+}
+
+/* ── M6-M7 Hover Tooltip & Orientation ── */
+const tooltip = document.getElementById('tooltip-m3');
+document.addEventListener('mousemove', e => {
+  if (tooltip.classList.contains('show')) {
+    tooltip.style.left = e.pageX + 'px';
+    tooltip.style.top = e.pageY + 'px';
+  }
+});
+
+document.querySelectorAll('.bar-seg, .bar-h-seg').forEach(bar => {
+  bar.addEventListener('mouseenter', () => {
+    if(bar.dataset.star) {
+      document.getElementById('tt-star').textContent = bar.dataset.star;
+      document.getElementById('tt-teampos').textContent = bar.dataset.tp;
+      document.getElementById('tt-pts').textContent = bar.dataset.pts;
+      document.getElementById('tt-fg').textContent = bar.dataset.fg;
+      tooltip.classList.add('show');
+    }
+  });
+  bar.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+});
+
+function setMode3(mode) {
+  ['btn-m6','btn-m7'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById(mode === 'hover' ? 'btn-m6' : 'btn-m7').classList.add('active');
+  
+  const c3h = document.getElementById('c3-hover');
+  const c3o = document.getElementById('c3-orient');
+  const c3xy = document.getElementById('c3-xy');
+
+  if (mode === 'hover') {
+    c3h.classList.add('highlight'); c3o.style.opacity='0.4'; c3xy.textContent = "x='球隊', y='得分'";
+    document.getElementById('bars-m3v').style.display = 'flex';
+    document.getElementById('bars-m3h').style.display = 'none';
+    setTimeout(() => c3h.classList.remove('highlight'), 800);
+  } else {
+    c3o.classList.add('highlight'); c3o.style.opacity='1'; c3xy.textContent = "x='得分', y='球隊'"; c3xy.classList.add('highlight');
+    document.getElementById('bars-m3v').style.display = 'none';
+    document.getElementById('bars-m3h').style.display = 'flex';
+    setTimeout(() => { c3o.classList.remove('highlight'); c3xy.classList.remove('highlight'); }, 800);
+  }
+}
+
+/* ── M8-M9 Lines and Annotation ── */
+function setMode4(mode) {
+  ['btn-m8','btn-m9'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById(mode === 'lines' ? 'btn-m8' : 'btn-m9').classList.add('active');
+
+  const hl = document.getElementById('hline-el');
+  const hr = document.getElementById('hrect-el');
+  const an = document.getElementById('annot-el');
+  
+  const c4h = document.getElementById('c4-hline');
+  const c4r = document.getElementById('c4-hrect');
+  const c4a = document.getElementById('c4-annot');
+  const c4a2 = document.getElementById('c4-annot2');
+  const c4a3 = document.getElementById('c4-annot3');
+
+  if(mode === 'lines'){
+    hl.style.opacity = '1'; hr.style.opacity = '1'; an.style.opacity = '0';
+    c4h.classList.add('highlight'); c4r.classList.add('highlight');
+    c4a.style.opacity='0.4'; c4a2.style.opacity='0.4'; c4a3.style.opacity='0.4';
+    setTimeout(() => { c4h.classList.remove('highlight'); c4r.classList.remove('highlight'); }, 800);
+  } else {
+    hl.style.opacity = '1'; hr.style.opacity = '1'; an.style.opacity = '1';
+    c4a.classList.add('highlight'); c4a2.classList.add('highlight'); c4a3.classList.add('highlight');
+    c4a.style.opacity='1'; c4a2.style.opacity='1'; c4a3.style.opacity='1';
+    setTimeout(() => { c4a.classList.remove('highlight'); c4a2.classList.remove('highlight'); c4a3.classList.remove('highlight'); }, 800);
+  }
+}
+
+/* ── M10 Animation ── */
+// Calculate height % based on 0-140 scale. e.g. 110 pts = 110/140*100 = 78.5%
+const years = [2015, 2017, 2019, 2021, 2023, 2025];
+const animPts = {
+  2015: [78.5, 71.5, 72.5, 74.2, 76.4, 68.9, 74.2], // 勇 湖 太 鹿 塞 熱 雷
+  2017: [82.7, 74.7, 76.5, 77.5, 80.0, 73.6, 76.4],
+  2019: [79.9, 76.6, 79.6, 81.5, 80.2, 75.0, 81.7],
+  2021: [81.2, 79.9, 82.0, 85.7, 76.5, 77.0, 76.4],
+  2023: [82.8, 84.0, 83.5, 83.5, 82.8, 80.5, 84.0],
+  2025: [84.5, 86.9, 82.7, 85.1, 87.5, 78.7, 85.7]
+};
+
+let animating = false;
+function setAnim(year) {
+  document.getElementById('anim-year').textContent = year;
+  const pts = animPts[year];
+  for(let i=0; i<7; i++){
+    document.getElementById('ab-'+i).style.height = pts[i] + '%';
+  }
+  const prog = ((year - 2015) / 10) * 100;
+  document.getElementById('anim-bar').style.width = prog + '%';
+}
+
+async function playAnimation() {
+  if (animating) return;
+  animating = true;
+  const btn = document.getElementById('play-btn');
+  btn.disabled = true;
+  btn.textContent = '⏸ 播放中…';
+
+  for (let i = 0; i < years.length; i++) {
+    setAnim(years[i]);
+    await delay(1000);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ 再播一次 (2015–2025)';
+  animating = false;
+}
+// init
+setAnim(2015);
+</script>
+
+</body>
+</html>
