@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pandas 進階資料處理：定位、合併、特徵工程與聚合</title>
+  <meta name="description" content="互動式視覺化教學：Pandas loc 精準切片、merge 合併比較、特徵工程、groupby 聚合排序。" />
+  <link rel="stylesheet" href="../../theme.css" />
+  <script src="../../layout.js" defer></script>
+  <style>
+    /* ── 鐵律：版面保護 ── */
+    body {
+      padding: 0;
+      margin: 0;
+      background-color: #f8f9fa;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .container {
+      padding-top: 80px;
+      padding-bottom: 60px;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    /* ── 鐵律：Card ── */
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+      padding: 30px 32px;
+      margin-bottom: 32px;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+
+    .card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── 鐵律：section-title ── */
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin: 0 0 14px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title .badge {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      font-size: 0.73rem;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    /* ── 鐵律：Console Output ── */
+    .console-output {
+      white-space: pre-wrap;
+      font-family: monospace;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      line-height: 1.6;
+      min-height: 48px;
+    }
+
+    /* ── 鐵律：縮排 class ── */
+    .ind-1 {
+      padding-left: 1.5rem !important;
+    }
+
+    .ind-2 {
+      padding-left: 3rem !important;
+    }
+
+    /* ── 程式碼區塊 ── */
+    .code-block {
+      background: #282c34;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+
+    .ln {
+      display: block;
+      white-space: nowrap;
+      font-family: 'Courier New', monospace;
+      font-size: 0.86rem;
+      color: #abb2bf;
+      line-height: 1.75;
+    }
+
+    .ln .kw {
+      color: #c678dd;
+    }
+
+    .ln .fn {
+      color: #61afef;
+    }
+
+    .ln .str {
+      color: #98c379;
+    }
+
+    .ln .cm {
+      color: #5c6370;
+      font-style: italic;
+    }
+
+    .ln .num {
+      color: #d19a66;
+    }
+
+    .ln .op {
+      color: #56b6c2;
+    }
+
+    .highlight {
+      background-color: rgba(255, 215, 0, 0.25) !important;
+      color: #ffd700 !important;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      border-radius: 3px;
+    }
+
+    /* ── 按鈕 ── */
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .btn {
+      padding: 7px 16px;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      letter-spacing: 0.01em;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    }
+
+    .btn-blue {
+      background: #3b82f6;
+      color: #fff;
+    }
+
+    .btn-blue:hover {
+      background: #2563eb;
+    }
+
+    .btn-green {
+      background: #10b981;
+      color: #fff;
+    }
+
+    .btn-green:hover {
+      background: #059669;
+    }
+
+    .btn-purple {
+      background: #8b5cf6;
+      color: #fff;
+    }
+
+    .btn-purple:hover {
+      background: #7c3aed;
+    }
+
+    .btn-orange {
+      background: #f59e0b;
+      color: #fff;
+    }
+
+    .btn-orange:hover {
+      background: #d97706;
+    }
+
+    .btn-red {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .btn-red:hover {
+      background: #dc2626;
+    }
+
+    .btn-teal {
+      background: #0d9488;
+      color: #fff;
+    }
+
+    .btn-teal:hover {
+      background: #0f766e;
+    }
+
+    .btn-indigo {
+      background: #6366f1;
+      color: #fff;
+    }
+
+    .btn-indigo:hover {
+      background: #4f46e5;
+    }
+
+    .btn-gray {
+      background: #6b7280;
+      color: #fff;
+    }
+
+    .btn-gray:hover {
+      background: #4b5563;
+    }
+
+    /* ── select 下拉 ── */
+    .fancy-select {
+      padding: 8px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      background: #f8fafc;
+      font-family: 'Courier New', monospace;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .fancy-select:focus {
+      border-color: #6366f1;
+    }
+
+    /* ── doc-link ── */
+    .doc-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 4px 10px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      transition: all 0.2s;
+    }
+
+    .doc-link:hover {
+      background: #dbeafe;
+      transform: translateY(-1px);
+    }
+
+    /* ── Page Hero ── */
+    .page-hero {
+      background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+      border-radius: 14px;
+      padding: 36px 32px;
+      margin-bottom: 32px;
+      color: #fff;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    }
+
+    .page-hero h1 {
+      margin: 0 0 8px;
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .page-hero p {
+      margin: 0;
+      opacity: 0.82;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .hero-tag {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    /* ── 兩欄佈局 ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── 資料表格 ── */
+    .df-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .df-table th {
+      background: #f1f5f9;
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      color: #334155;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .df-table td {
+      padding: 7px 12px;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      text-align: center;
+      transition: all 0.35s ease;
+    }
+
+    .df-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    .df-nan {
+      background: #fee2e2 !important;
+      color: #991b1b;
+      font-weight: 700;
+    }
+
+    .df-highlight {
+      background: #fef3c7 !important;
+      color: #92400e;
+      font-weight: 700;
+    }
+
+    .df-new-col {
+      background: #d1fae5 !important;
+      color: #065f46;
+      font-weight: 700;
+    }
+
+    .df-row-selected {
+      background: #ede9fe !important;
+    }
+
+    .df-row-dimmed {
+      opacity: 0.25;
+    }
+
+    /* ── 狀態列 ── */
+    .status-bar {
+      font-size: 0.85rem;
+      color: #1e293b;
+      background: #f1f5f9;
+      padding: 9px 14px;
+      border-radius: 8px;
+      margin-top: 10px;
+      min-height: 20px;
+      font-weight: 600;
+      border-left: 3px solid #6366f1;
+      transition: all 0.3s;
+    }
+
+    /* ── 單元一：loc 篩選 ── */
+    .filter-tag {
+      display: inline-block;
+      background: #ede9fe;
+      color: #5b21b6;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin: 2px;
+    }
+
+    /* ── 單元二：Merge 視覺化 ── */
+    .merge-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .merge-box {
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 0.8rem;
+      font-family: monospace;
+      line-height: 1.6;
+    }
+
+    .merge-box-left {
+      background: #eff6ff;
+      border: 2px solid #3b82f6;
+      color: #1e40af;
+    }
+
+    .merge-box-right {
+      background: #f0fdf4;
+      border: 2px solid #10b981;
+      color: #065f46;
+    }
+
+    .merge-arrow {
+      font-size: 1.5rem;
+      color: #94a3b8;
+    }
+
+    .merge-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      border-radius: 8px;
+      padding: 4px 16px;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .how-selector {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+
+    .how-btn {
+      padding: 8px 18px;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 700;
+      transition: all 0.2s;
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    .how-btn.active-inner {
+      background: #6366f1;
+      color: #fff;
+      border-color: #6366f1;
+    }
+
+    .how-btn.active-left {
+      background: #3b82f6;
+      color: #fff;
+      border-color: #3b82f6;
+    }
+
+    .how-btn.active-right {
+      background: #10b981;
+      color: #fff;
+      border-color: #10b981;
+    }
+
+    .how-btn.active-outer {
+      background: #f59e0b;
+      color: #fff;
+      border-color: #f59e0b;
+    }
+
+    .how-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ── 單元三：100% 長條圖 ── */
+    .bar-chart-wrap {
+      margin: 16px 0;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .bar-label {
+      width: 80px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #334155;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 32px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      overflow: hidden;
+      display: flex;
+      position: relative;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .bar-seg {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fff;
+      transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .bar-seg-atk {
+      background: linear-gradient(90deg, #6366f1, #818cf8);
+    }
+
+    .bar-seg-def {
+      background: linear-gradient(90deg, #10b981, #34d399);
+    }
+
+    .bar-legend {
+      display: flex;
+      gap: 20px;
+      margin-top: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      display: inline-block;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+
+    /* ── 單元四：Groupby ── */
+    .chain-code {
+      border-left: 3px solid #6366f1;
+      padding-left: 12px;
+      margin: 12px 0;
+    }
+
+    .result-table-wrap {
+      overflow-x: auto;
+    }
+
+    .rank-badge {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 22px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      margin-right: 4px;
+    }
+
+    .rank-1 {
+      background: #ffd700;
+      color: #78350f;
+    }
+
+    .rank-2 {
+      background: #d1d5db;
+      color: #374151;
+    }
+
+    .rank-3 {
+      background: #c97c3a;
+      color: #fff;
+    }
+
+    /* ── 區塊小標題 ── */
+    .sub-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #4f46e5;
+      margin: 20px 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sub-title::before {
+      content: '';
+      width: 4px;
+      height: 1em;
+      background: #6366f1;
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    /* ── 資料集預覽框 ── */
+    .dataset-preview {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      overflow-x: auto;
+    }
+
+    .dataset-preview h4 {
+      margin: 0 0 8px;
+      font-size: 0.82rem;
+      color: #64748b;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <!-- Hero -->
+    <div class="page-hero">
+      <h1>🐼 Pandas 進階資料處理</h1>
+      <p>精準切片 × 多表合併 × 特徵工程 × 聚合排序 — 以寶可夢資料集為主角的互動式視覺化教學</p>
+      <div class="hero-tags">
+        <span class="hero-tag">loc 定位</span>
+        <span class="hero-tag">pd.merge</span>
+        <span class="hero-tag">特徵工程</span>
+        <span class="hero-tag">100% 長條圖</span>
+        <span class="hero-tag">groupby</span>
+        <span class="hero-tag">Method Chaining</span>
+      </div>
+    </div>
+
+    <!-- ────────────────────────────────── 單元一：loc ────────────────────────────────── -->
+    <div class="card" id="card1">
+      <h2 class="section-title">🎯 單元一：精準切片與定位 <span class="badge">loc 應用</span></h2>
+      <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.loc.html" target="_blank"
+        class="doc-link">📚 df.loc 官方文件</a>
+      <p style="margin:0 0 14px;color:#4b5563;font-size:0.9rem;">
+        <code>df.loc[]</code> 認的是「欄位名稱」與「條件布林值」。選擇篩選條件後，下方程式碼與結果表格將即時同步更新。
+      </p>
+
+      <!-- 控制列 -->
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <label style="font-weight:700;font-size:0.88rem;color:#475569;">篩選條件：</label>
+        <select class="fancy-select" id="loc-filter-select" onchange="locFilterChange()">
+          <option value="all">顯示全部</option>
+          <option value="fire">Type1 == '火'</option>
+          <option value="water">Type1 == '水'</option>
+          <option value="atk_gt_90">Attack > 90</option>
+          <option value="hp_lt_60">HP &lt; 60</option>
+          <option value="dual">Type1=='火' &amp; Attack > 90</option>
+        </select>
+      </div>
+
+      <div class="two-col">
+        <!-- 程式碼 -->
+        <div>
+          <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;">📄 程式碼</div>
+          <div class="code-block">
+            <span class="ln"><span class="kw">import</span> pandas <span class="kw">as</span> pd</span>
+            <span class="ln"> </span>
+            <span class="ln"><span class="cm"># df_info 已與 df_stats 合併</span></span>
+            <span class="ln" id="loc-code-line">df[df[<span class="str">'Type1'</span>] <span class="op">==</span> <span
+                class="str">'火'</span>]</span>
+          </div>
+          <div class="status-bar" id="loc-status">請選擇上方篩選條件</div>
+        </div>
+        <!-- 資料集說明 -->
+        <div>
+          <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;">📦 資料集預覽 (df_merged)</div>
+          <div class="dataset-preview">
+            <div style="font-size:0.78rem;color:#64748b;margin-bottom:6px;">df_info × df_stats → inner merge on ID</div>
+            <table class="df-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Type1</th>
+                  <th>Type2</th>
+                  <th>HP</th>
+                  <th>Atk</th>
+                  <th>Def</th>
+                </tr>
+              </thead>
+              <tbody style="font-size:0.76rem;">
+                <tr>
+                  <td>1</td>
+                  <td>小火龍</td>
+                  <td>火</td>
+                  <td>-</td>
+                  <td>39</td>
+                  <td>52</td>
+                  <td>43</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>傑尼龜</td>
+                  <td>水</td>
+                  <td>-</td>
+                  <td>44</td>
+                  <td>48</td>
+                  <td>65</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>妙蛙種子</td>
+                  <td>草</td>
+                  <td>毒</td>
+                  <td>45</td>
+                  <td>49</td>
+                  <td>49</td>
+                </tr>
+                <tr>
+                  <td>5</td>
+                  <td>超夢</td>
+                  <td>超能力</td>
+                  <td>-</td>
+                  <td>106</td>
+                  <td>110</td>
+                  <td>90</td>
+                </tr>
+                <tr>
+                  <td>6</td>
+                  <td>噴火龍</td>
+                  <td>火</td>
+                  <td>飛行</td>
+                  <td>78</td>
+                  <td>84</td>
+                  <td>78</td>
+                </tr>
+                <tr>
+                  <td>7</td>
+                  <td>快龍</td>
+                  <td>龍</td>
+                  <td>飛行</td>
+                  <td>91</td>
+                  <td>134</td>
+                  <td>95</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 結果表 -->
+      <div class="sub-title" style="margin-top:20px;">篩選結果</div>
+      <div style="overflow-x:auto;">
+        <table class="df-table" id="loc-result-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Type1</th>
+              <th>Type2</th>
+              <th>HP</th>
+              <th>Attack</th>
+              <th>Defense</th>
+            </tr>
+          </thead>
+          <tbody id="loc-result-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ────────────────────────────────── 單元二：Merge ────────────────────────────────── -->
+    <div class="card" id="card2">
+      <h2 class="section-title">🔗 單元二：資料表的無縫接軌 <span class="badge">merge 比較</span></h2>
+      <a href="https://pandas.pydata.org/docs/reference/api/pandas.merge.html" target="_blank" class="doc-link">📚
+        pd.merge 官方文件</a>
+      <p style="margin:0 0 14px;color:#4b5563;font-size:0.9rem;">
+        兩張表的 ID 並不完全重疊（df_info 有 ID=4，df_stats 沒有；df_stats 有 ID=8，df_info 沒有）。
+        切換不同的 <code>how</code> 參數，觀察 NaN 如何出現。
+      </p>
+
+      <!-- 兩個源表 -->
+      <div class="two-col" style="margin-bottom:16px;">
+        <div class="dataset-preview">
+          <h4>📘 df_info（左表）</h4>
+          <table class="df-table" id="merge-left-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Type1</th>
+                <th>Type2</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="ml-1">
+                <td>1</td>
+                <td>小火龍</td>
+                <td>火</td>
+                <td>-</td>
+              </tr>
+              <tr id="ml-2">
+                <td>2</td>
+                <td>傑尼龜</td>
+                <td>水</td>
+                <td>-</td>
+              </tr>
+              <tr id="ml-3">
+                <td>3</td>
+                <td>妙蛙種子</td>
+                <td>草</td>
+                <td>毒</td>
+              </tr>
+              <tr id="ml-4">
+                <td>4</td>
+                <td>皮卡丘</td>
+                <td>電</td>
+                <td>-</td>
+              </tr>
+              <tr id="ml-5">
+                <td>5</td>
+                <td>超夢</td>
+                <td>超能力</td>
+                <td>-</td>
+              </tr>
+              <tr id="ml-6">
+                <td>6</td>
+                <td>噴火龍</td>
+                <td>火</td>
+                <td>飛行</td>
+              </tr>
+              <tr id="ml-7">
+                <td>7</td>
+                <td>快龍</td>
+                <td>龍</td>
+                <td>飛行</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="dataset-preview">
+          <h4>📗 df_stats（右表）</h4>
+          <table class="df-table" id="merge-right-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>HP</th>
+                <th>Attack</th>
+                <th>Defense</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="mr-1">
+                <td>1</td>
+                <td>39</td>
+                <td>52</td>
+                <td>43</td>
+              </tr>
+              <tr id="mr-2">
+                <td>2</td>
+                <td>44</td>
+                <td>48</td>
+                <td>65</td>
+              </tr>
+              <tr id="mr-3">
+                <td>3</td>
+                <td>45</td>
+                <td>49</td>
+                <td>49</td>
+              </tr>
+              <tr id="mr-5">
+                <td>5</td>
+                <td>106</td>
+                <td>110</td>
+                <td>90</td>
+              </tr>
+              <tr id="mr-6">
+                <td>6</td>
+                <td>78</td>
+                <td>84</td>
+                <td>78</td>
+              </tr>
+              <tr id="mr-7">
+                <td>7</td>
+                <td>91</td>
+                <td>134</td>
+                <td>95</td>
+              </tr>
+              <tr id="mr-8">
+                <td>8</td>
+                <td>55</td>
+                <td>65</td>
+                <td>80</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- How 選擇器 -->
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="font-weight:700;font-size:0.88rem;color:#475569;">how =</span>
+        <div class="how-selector">
+          <button class="how-btn" id="how-inner" onclick="mergeSelect('inner')">inner</button>
+          <button class="how-btn" id="how-left" onclick="mergeSelect('left')">left</button>
+          <button class="how-btn" id="how-right" onclick="mergeSelect('right')">right</button>
+          <button class="how-btn" id="how-outer" onclick="mergeSelect('outer')">outer</button>
+        </div>
+      </div>
+
+      <!-- 動態程式碼 -->
+      <div class="code-block">
+        <span class="ln"><span class="kw">import</span> pandas <span class="kw">as</span> pd</span>
+        <span class="ln" id="merge-code-line">pd.<span class="fn">merge</span>(df_info, df_stats, <span
+            class="kw">on</span>=<span class="str">'ID'</span>, <span class="kw">how</span>=<span class="str"
+            id="merge-how-str">'inner'</span>)</span>
+      </div>
+
+      <!-- 結果表 -->
+      <div class="sub-title">合併結果</div>
+      <div style="overflow-x:auto;">
+        <table class="df-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Type1</th>
+              <th>Type2</th>
+              <th>HP</th>
+              <th>Attack</th>
+              <th>Defense</th>
+            </tr>
+          </thead>
+          <tbody id="merge-result-body"></tbody>
+        </table>
+      </div>
+      <div class="status-bar" id="merge-status">請點選上方 how 參數查看不同的合併結果</div>
+    </div>
+
+    <!-- ────────────────────────────────── 單元三：特徵工程 ────────────────────────────────── -->
+    <div class="card" id="card3">
+      <h2 class="section-title">⚗️ 單元三：欄位工程與邏輯運算 <span class="badge">特徵工程 + 等高長條圖</span></h2>
+      <a href="https://pandas.pydata.org/docs/user_guide/indexing.html#returning-a-view-versus-a-copy" target="_blank"
+        class="doc-link">📚 Pandas 欄位操作指南</a>
+
+      <!-- 區塊一：加總欄位 -->
+      <div class="sub-title">① 增加欄位與純運算</div>
+      <p style="margin:0 0 10px;color:#4b5563;font-size:0.88rem;">將 Attack 與 Defense 相加，建立新欄位 <code>Total_Stats</code>。
+      </p>
+
+      <div class="two-col">
+        <div>
+          <div class="code-block">
+            <span class="ln"><span class="cm"># 新增 Total_Stats 欄位</span></span>
+            <span class="ln" id="fe-code-1">df[<span class="str">'Total_Stats'</span>] = df[<span
+                class="str">'Attack'</span>] <span class="op">+</span> df[<span class="str">'Defense'</span>]</span>
+          </div>
+          <button class="btn btn-purple" onclick="feStep1()">▶ 執行：新增 Total_Stats</button>
+          <button class="btn btn-gray" style="margin-left:4px;" onclick="feReset()">↺ 重置</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="df-table">
+            <thead>
+              <tr id="fe-thead">
+                <th>Name</th>
+                <th>Attack</th>
+                <th>Defense</th>
+              </tr>
+            </thead>
+            <tbody id="fe-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 區塊二：百分比轉換 -->
+      <div class="sub-title" style="margin-top:28px;">② 邏輯判斷與百分比運算</div>
+      <p style="margin:0 0 10px;color:#4b5563;font-size:0.88rem;">為了繪製等高長條圖，需將 Attack 與 Defense 轉換為「佔兩者總和的百分比」。</p>
+
+      <div class="code-block">
+        <span class="ln"><span class="cm"># 計算各佔 Total_Stats 的百分比</span></span>
+        <span class="ln" id="fe-code-2a">df[<span class="str">'Atk_pct'</span>] = (df[<span class="str">'Attack'</span>]
+          / df[<span class="str">'Total_Stats'</span>] <span class="op">*</span> <span class="num">100</span>).<span
+            class="fn">round</span>(<span class="num">1</span>)</span>
+        <span class="ln" id="fe-code-2b">df[<span class="str">'Def_pct'</span>] = (df[<span
+            class="str">'Defense'</span>] / df[<span class="str">'Total_Stats'</span>] <span class="op">*</span> <span
+            class="num">100</span>).<span class="fn">round</span>(<span class="num">1</span>)</span>
+      </div>
+      <button class="btn btn-indigo" onclick="feStep2()" id="fe-step2-btn" disabled>▶ 執行：計算百分比</button>
+
+      <div style="margin-top:14px;overflow-x:auto;">
+        <table class="df-table">
+          <thead>
+            <tr id="fe-pct-thead">
+              <th>Name</th>
+              <th>Attack</th>
+              <th>Defense</th>
+            </tr>
+          </thead>
+          <tbody id="fe-pct-body"></tbody>
+        </table>
+      </div>
+
+      <!-- 區塊三：等高長條圖 -->
+      <div class="sub-title" style="margin-top:28px;">③ 視覺化：等高長條圖（100% Stacked Bar Chart）</div>
+      <p style="margin:0 0 10px;color:#4b5563;font-size:0.88rem;">每列長條圖總長度相同（100%），用顏色對比攻擊與防禦的比例分布。</p>
+
+      <div class="code-block">
+        <span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>
+        <span class="ln"> </span>
+        <span class="ln">fig = px.<span class="fn">bar</span>(df, y=<span class="str">'Name'</span>, x=[<span
+            class="str">'Atk_pct'</span>, <span class="str">'Def_pct'</span>],</span>
+        <span class="ln ind-1">orientation=<span class="str">'h'</span>, barmode=<span
+            class="str">'stack'</span>,</span>
+        <span class="ln ind-1">title=<span class="str">'攻防比例（等高長條圖）'</span>)</span>
+        <span class="ln">fig.<span class="fn">show</span>()</span>
+      </div>
+
+      <div class="bar-chart-wrap" id="fe-bar-chart">
+        <div style="text-align:center;color:#94a3b8;padding:20px;font-size:0.88rem;">請先執行步驟 ① 與 ②，才能顯示圖表</div>
+      </div>
+      <div class="bar-legend" style="display:none;" id="fe-legend">
+        <span><span class="legend-dot" style="background:#6366f1;"></span>Attack %</span>
+        <span><span class="legend-dot" style="background:#10b981;"></span>Defense %</span>
+      </div>
+      <div class="status-bar" id="fe-status">點擊「執行：新增 Total_Stats」開始</div>
+    </div>
+
+    <!-- ────────────────────────────────── 單元四：Groupby ────────────────────────────────── -->
+    <div class="card" id="card4">
+      <h2 class="section-title">📊 單元四：聚合、排序與進階洞察 <span class="badge">groupby · sort · nlargest</span></h2>
+      <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.groupby.html" target="_blank"
+        class="doc-link">📚 df.groupby 官方文件</a>
+      <p style="margin:0 0 14px;color:#4b5563;font-size:0.9rem;">
+        選擇你想探索的問題，觀察如何用 Pandas 的<strong>方法鏈結 (Method Chaining)</strong> 優雅地一行解決。
+      </p>
+
+      <!-- 問題選擇 -->
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+        <label style="font-weight:700;font-size:0.88rem;color:#475569;">探索問題：</label>
+        <select class="fancy-select" id="agg-select" onchange="aggChange()">
+          <option value="">── 請選擇 ──</option>
+          <option value="avg_atk_by_type">各屬性的平均攻擊力（由高到低）</option>
+          <option value="top3_def">防禦力前三名的寶可夢</option>
+          <option value="max_hp_by_type">各屬性中 HP 最高的寶可夢</option>
+          <option value="count_by_type">各屬性有幾隻寶可夢</option>
+        </select>
+      </div>
+
+      <!-- 程式碼與結果 -->
+      <div class="two-col">
+        <div>
+          <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;">📄 Method Chaining</div>
+          <div class="code-block chain-code" id="agg-code-block" style="min-height:90px;">
+            <span class="ln"><span class="cm"># 選擇上方問題後</span></span>
+            <span class="ln"><span class="cm"># 程式碼將顯示在此</span></span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;">📊 結果</div>
+          <div id="agg-result" style="overflow-x:auto;">
+            <div class="console-output"
+              style="min-height:90px;display:flex;align-items:center;justify-content:center;color:#5c6370;">請選擇左側問題
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="status-bar" id="agg-status">使用 Method Chaining 可讓程式碼更簡潔易讀，一行完成多個操作</div>
+    </div>
+
+  </div><!-- /container -->
+
+  <script>
+    /* ═══════════════════════════════════════════
+       全域資料
+    ═══════════════════════════════════════════ */
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    const DF_INFO = [
+      { ID: 1, Name: '小火龍', Type1: '火', Type2: '-' },
+      { ID: 2, Name: '傑尼龜', Type1: '水', Type2: '-' },
+      { ID: 3, Name: '妙蛙種子', Type1: '草', Type2: '毒' },
+      { ID: 4, Name: '皮卡丘', Type1: '電', Type2: '-' },
+      { ID: 5, Name: '超夢', Type1: '超能力', Type2: '-' },
+      { ID: 6, Name: '噴火龍', Type1: '火', Type2: '飛行' },
+      { ID: 7, Name: '快龍', Type1: '龍', Type2: '飛行' },
+    ];
+    const DF_STATS = [
+      { ID: 1, HP: 39, Attack: 52, Defense: 43 },
+      { ID: 2, HP: 44, Attack: 48, Defense: 65 },
+      { ID: 3, HP: 45, Attack: 49, Defense: 49 },
+      { ID: 5, HP: 106, Attack: 110, Defense: 90 },
+      { ID: 6, HP: 78, Attack: 84, Defense: 78 },
+      { ID: 7, HP: 91, Attack: 134, Defense: 95 },
+      { ID: 8, HP: 55, Attack: 65, Defense: 80 },
+    ];
+
+    // Inner merge (IDs 1,2,3,5,6,7 overlap)
+    const DF_MERGED = DF_INFO
+      .filter(i => DF_STATS.some(s => s.ID === i.ID))
+      .map(i => { const s = DF_STATS.find(s => s.ID === i.ID); return { ...i, ...s }; });
+
+    /* ═══════════════════════════════════════════
+       Intersection Observer
+    ═══════════════════════════════════════════ */
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          io.unobserve(e.target);
+          const id = e.target.id;
+          if (id === 'card1') initLocTable();
+          if (id === 'card2') mergeSelect('inner');
+          if (id === 'card3') feReset();
+          if (id === 'card4') initAgg();
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.card').forEach(c => io.observe(c));
+
+    /* ═══════════════════════════════════════════
+       單元一：loc
+    ═══════════════════════════════════════════ */
+    function initLocTable() {
+      locFilterChange();
+    }
+
+    function locFilterChange() {
+      const val = document.getElementById('loc-filter-select').value;
+      const codeEl = document.getElementById('loc-code-line');
+      const statusEl = document.getElementById('loc-status');
+
+      let filtered = [...DF_MERGED];
+      let codeTxt = '';
+      let statusTxt = '';
+
+      switch (val) {
+        case 'all':
+          codeTxt = `<span class="cm"># 顯示全部資料</span>`;
+          statusTxt = `📋 顯示所有 ${filtered.length} 筆資料（df_info × df_stats inner merge 結果）`;
+          break;
+        case 'fire':
+          filtered = filtered.filter(r => r.Type1 === '火');
+          codeTxt = `df.<span class="fn">loc</span>[df[<span class="str">'Type1'</span>] <span class="op">==</span> <span class="str">'火'</span>]`;
+          statusTxt = `🔥 篩選出 Type1 == '火' 的寶可夢，共 ${filtered.length} 筆`;
+          break;
+        case 'water':
+          filtered = filtered.filter(r => r.Type1 === '水');
+          codeTxt = `df.<span class="fn">loc</span>[df[<span class="str">'Type1'</span>] <span class="op">==</span> <span class="str">'水'</span>]`;
+          statusTxt = `💧 篩選出 Type1 == '水' 的寶可夢，共 ${filtered.length} 筆`;
+          break;
+        case 'atk_gt_90':
+          filtered = filtered.filter(r => r.Attack > 90);
+          codeTxt = `df.<span class="fn">loc</span>[df[<span class="str">'Attack'</span>] <span class="op">&gt;</span> <span class="num">90</span>]`;
+          statusTxt = `⚔️ 篩選出 Attack > 90 的寶可夢，共 ${filtered.length} 筆`;
+          break;
+        case 'hp_lt_60':
+          filtered = filtered.filter(r => r.HP < 60);
+          codeTxt = `df.<span class="fn">loc</span>[df[<span class="str">'HP'</span>] <span class="op">&lt;</span> <span class="num">60</span>]`;
+          statusTxt = `❤️ 篩選出 HP < 60 的寶可夢，共 ${filtered.length} 筆`;
+          break;
+        case 'dual':
+          filtered = filtered.filter(r => r.Type1 === '火' && r.Attack > 90);
+          codeTxt = `df.<span class="fn">loc</span>[(df[<span class="str">'Type1'</span>] <span class="op">==</span> <span class="str">'火'</span>) <span class="op">&amp;</span> (df[<span class="str">'Attack'</span>] <span class="op">&gt;</span> <span class="num">90</span>)]`;
+          statusTxt = `🔥⚔️ 火屬性 且 Attack > 90 的強力寶可夢，共 ${filtered.length} 筆`;
+          break;
+      }
+
+      codeEl.innerHTML = codeTxt;
+      statusEl.textContent = statusTxt;
+      renderLocTable(filtered);
+    }
+
+    function renderLocTable(rows) {
+      const tbody = document.getElementById('loc-result-body');
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:16px;">查無符合條件的資料</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(r => `
+      <tr class="df-row-selected">
+        <td>${r.ID}</td><td>${r.Name}</td><td>${r.Type1}</td><td>${r.Type2}</td>
+        <td>${r.HP}</td><td>${r.Attack}</td><td>${r.Defense}</td>
+      </tr>`).join('');
+    }
+
+    /* ═══════════════════════════════════════════
+       單元二：Merge
+    ═══════════════════════════════════════════ */
+    const MERGE_DATA = {
+      inner: [
+        { ID: 1, Name: '小火龍', Type1: '火', Type2: '-', HP: 39, Attack: 52, Defense: 43 },
+        { ID: 2, Name: '傑尼龜', Type1: '水', Type2: '-', HP: 44, Attack: 48, Defense: 65 },
+        { ID: 3, Name: '妙蛙種子', Type1: '草', Type2: '毒', HP: 45, Attack: 49, Defense: 49 },
+        { ID: 5, Name: '超夢', Type1: '超能力', Type2: '-', HP: 106, Attack: 110, Defense: 90 },
+        { ID: 6, Name: '噴火龍', Type1: '火', Type2: '飛行', HP: 78, Attack: 84, Defense: 78 },
+        { ID: 7, Name: '快龍', Type1: '龍', Type2: '飛行', HP: 91, Attack: 134, Defense: 95 },
+      ],
+      left: [
+        { ID: 1, Name: '小火龍', Type1: '火', Type2: '-', HP: 39, Attack: 52, Defense: 43 },
+        { ID: 2, Name: '傑尼龜', Type1: '水', Type2: '-', HP: 44, Attack: 48, Defense: 65 },
+        { ID: 3, Name: '妙蛙種子', Type1: '草', Type2: '毒', HP: 45, Attack: 49, Defense: 49 },
+        { ID: 4, Name: '皮卡丘', Type1: '電', Type2: '-', HP: null, Attack: null, Defense: null },
+        { ID: 5, Name: '超夢', Type1: '超能力', Type2: '-', HP: 106, Attack: 110, Defense: 90 },
+        { ID: 6, Name: '噴火龍', Type1: '火', Type2: '飛行', HP: 78, Attack: 84, Defense: 78 },
+        { ID: 7, Name: '快龍', Type1: '龍', Type2: '飛行', HP: 91, Attack: 134, Defense: 95 },
+      ],
+      right: [
+        { ID: 1, Name: '小火龍', Type1: '火', Type2: '-', HP: 39, Attack: 52, Defense: 43 },
+        { ID: 2, Name: '傑尼龜', Type1: '水', Type2: '-', HP: 44, Attack: 48, Defense: 65 },
+        { ID: 3, Name: '妙蛙種子', Type1: '草', Type2: '毒', HP: 45, Attack: 49, Defense: 49 },
+        { ID: 5, Name: '超夢', Type1: '超能力', Type2: '-', HP: 106, Attack: 110, Defense: 90 },
+        { ID: 6, Name: '噴火龍', Type1: '火', Type2: '飛行', HP: 78, Attack: 84, Defense: 78 },
+        { ID: 7, Name: '快龍', Type1: '龍', Type2: '飛行', HP: 91, Attack: 134, Defense: 95 },
+        { ID: 8, Name: null, Type1: null, Type2: null, HP: 55, Attack: 65, Defense: 80 },
+      ],
+      outer: [
+        { ID: 1, Name: '小火龍', Type1: '火', Type2: '-', HP: 39, Attack: 52, Defense: 43 },
+        { ID: 2, Name: '傑尼龜', Type1: '水', Type2: '-', HP: 44, Attack: 48, Defense: 65 },
+        { ID: 3, Name: '妙蛙種子', Type1: '草', Type2: '毒', HP: 45, Attack: 49, Defense: 49 },
+        { ID: 4, Name: '皮卡丘', Type1: '電', Type2: '-', HP: null, Attack: null, Defense: null },
+        { ID: 5, Name: '超夢', Type1: '超能力', Type2: '-', HP: 106, Attack: 110, Defense: 90 },
+        { ID: 6, Name: '噴火龍', Type1: '火', Type2: '飛行', HP: 78, Attack: 84, Defense: 78 },
+        { ID: 7, Name: '快龍', Type1: '龍', Type2: '飛行', HP: 91, Attack: 134, Defense: 95 },
+        { ID: 8, Name: null, Type1: null, Type2: null, HP: 55, Attack: 65, Defense: 80 },
+      ],
+    };
+
+    const MERGE_STATUS = {
+      inner: '🔵 inner：只保留兩表都有的 ID（1,2,3,5,6,7），ID=4 與 ID=8 均被排除。',
+      left: '🔷 left：保留左表所有列（1-7）。ID=4 在右表找不到，其 HP/Attack/Defense 填入 NaN。',
+      right: '🟢 right：保留右表所有列（1,2,3,5,6,7,8）。ID=8 在左表找不到，其 Name/Type 填入 NaN。',
+      outer: '🟡 outer：保留兩表所有 ID。ID=4 和 ID=8 均保留，缺少的欄位填入 NaN。',
+    };
+
+    function mergeSelect(how) {
+      // Update button style
+      ['inner', 'left', 'right', 'outer'].forEach(h => {
+        const btn = document.getElementById('how-' + h);
+        btn.className = 'how-btn';
+        if (h === how) btn.classList.add('active-' + h);
+      });
+
+      // Update code
+      document.getElementById('merge-how-str').textContent = `'${how}'`;
+      document.getElementById('merge-code-line').classList.add('highlight');
+      setTimeout(() => document.getElementById('merge-code-line').classList.remove('highlight'), 800);
+
+      // Highlight source rows
+      const leftIds = how === 'inner' ? [1, 2, 3, 5, 6, 7] : how === 'left' ? [1, 2, 3, 4, 5, 6, 7] : how === 'right' ? [1, 2, 3, 5, 6, 7] : [1, 2, 3, 4, 5, 6, 7];
+      const rightIds = how === 'inner' ? [1, 2, 3, 5, 6, 7] : how === 'left' ? [1, 2, 3, 5, 6, 7] : how === 'right' ? [1, 2, 3, 5, 6, 7, 8] : [1, 2, 3, 5, 6, 7, 8];
+      [1, 2, 3, 4].forEach(id => {
+        const el = document.getElementById('ml-' + id);
+        if (el) el.style.opacity = leftIds.includes(id) ? '1' : '0.25';
+      });
+      [5, 6, 7].forEach(id => {
+        const el = document.getElementById('ml-' + id);
+        if (el) el.style.opacity = leftIds.includes(id) ? '1' : '0.25';
+      });
+      [1, 2, 3, 5, 6, 7, 8].forEach(id => {
+        const el = document.getElementById('mr-' + id);
+        if (el) el.style.opacity = rightIds.includes(id) ? '1' : '0.25';
+      });
+
+      // Render result
+      const rows = MERGE_DATA[how];
+      const tbody = document.getElementById('merge-result-body');
+      tbody.innerHTML = rows.map(r => {
+        const hasNan = r.HP === null || r.Name === null;
+        const rowClass = hasNan ? '' : '';
+        const cell = (v, extra = '') => v === null
+          ? `<td class="df-nan">NaN</td>`
+          : `<td ${extra}>${v}</td>`;
+        return `<tr class="${rowClass}">
+        ${cell(r.ID)} ${cell(r.Name)} ${cell(r.Type1)} ${cell(r.Type2)}
+        ${cell(r.HP)} ${cell(r.Attack)} ${cell(r.Defense)}
+      </tr>`;
+      }).join('');
+
+      document.getElementById('merge-status').textContent = MERGE_STATUS[how];
+    }
+
+    /* ═══════════════════════════════════════════
+       單元三：特徵工程
+    ═══════════════════════════════════════════ */
+    const FE_DATA = [
+      { Name: '小火龍', Attack: 52, Defense: 43 },
+      { Name: '傑尼龜', Attack: 48, Defense: 65 },
+      { Name: '妙蛙種子', Attack: 49, Defense: 49 },
+      { Name: '超夢', Attack: 110, Defense: 90 },
+      { Name: '噴火龍', Attack: 84, Defense: 78 },
+      { Name: '快龍', Attack: 134, Defense: 95 },
+    ];
+    let feState = 0; // 0=reset, 1=total added, 2=pct added
+
+    function feReset() {
+      feState = 0;
+      document.getElementById('fe-step2-btn').disabled = true;
+      // 移除 Total_Stats 欄位標題（若已存在），恢復成 3 欄
+      const existingTh = document.getElementById('total-th');
+      if (existingTh) existingTh.remove();
+      document.getElementById('atk-pct-th').style.background = '';
+      document.getElementById('def-pct-th').style.background = '';
+      document.getElementById('fe-legend').style.display = 'none';
+      document.getElementById('fe-bar-chart').innerHTML = '<div style="text-align:center;color:#94a3b8;padding:20px;font-size:0.88rem;">請先執行步驟 ① 與 ②，才能顯示圖表</div>';
+      document.getElementById('fe-status').textContent = '點擊「執行：新增 Total_Stats」開始';
+      // 只渲染 3 欄，不含 Total_Stats
+      const tbody = document.getElementById('fe-table-body');
+      tbody.innerHTML = FE_DATA.map(r => `
+      <tr><td>${r.Name}</td><td>${r.Attack}</td><td>${r.Defense}</td></tr>
+    `).join('');
+      // 百分比表：移除動態加入的欄位標題，恢復 3 欄
+      ['pct-total-th', 'atk-pct-th', 'def-pct-th'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+      });
+      const pb = document.getElementById('fe-pct-body');
+      pb.innerHTML = FE_DATA.map(r => `
+      <tr><td>${r.Name}</td><td>${r.Attack}</td><td>${r.Defense}</td></tr>
+    `).join('');
+    }
+
+    async function feStep1() {
+      if (feState >= 1) return;
+      feState = 1;
+      // Highlight code
+      const cl1 = document.getElementById('fe-code-1');
+      cl1.classList.add('highlight');
+      await delay(600);
+      cl1.classList.remove('highlight');
+      // 動態插入 Total_Stats 欄位標題
+      const thead = document.getElementById('fe-thead');
+      if (!document.getElementById('total-th')) {
+        const newTh = document.createElement('th');
+        newTh.id = 'total-th';
+        newTh.textContent = 'Total_Stats';
+        newTh.style.cssText = 'background:#d1fae5;color:#065f46;transition:background 0.4s;';
+        thead.appendChild(newTh);
+      }
+      // 填入各列數值（第 4 欄以動畫綠色呈現）
+      const tbody = document.getElementById('fe-table-body');
+      tbody.innerHTML = FE_DATA.map(r => {
+        const total = r.Attack + r.Defense;
+        return `<tr>
+        <td>${r.Name}</td><td>${r.Attack}</td><td>${r.Defense}</td>
+        <td class="df-new-col">${total}</td>
+      </tr>`;
+      }).join('');
+      // 百分比表：插入 Total_Stats 欄位標題（步驟 ① 執行後才出現）
+      const pctThead = document.getElementById('fe-pct-thead');
+      if (!document.getElementById('pct-total-th')) {
+        const pth = document.createElement('th');
+        pth.id = 'pct-total-th';
+        pth.textContent = 'Total_Stats';
+        pth.style.cssText = 'background:#d1fae5;color:#065f46;transition:background 0.4s;';
+        pctThead.appendChild(pth);
+      }
+      const pb = document.getElementById('fe-pct-body');
+      pb.innerHTML = FE_DATA.map(r => {
+        const total = r.Attack + r.Defense;
+        return `<tr>
+        <td>${r.Name}</td><td>${r.Attack}</td><td>${r.Defense}</td>
+        <td class="df-new-col">${total}</td>
+      </tr>`;
+      }).join('');
+      document.getElementById('fe-step2-btn').disabled = false;
+      document.getElementById('fe-status').textContent = '✅ Total_Stats 欄位已新增！現在點擊「計算百分比」繼續。';
+    }
+
+    async function feStep2() {
+      if (feState < 1 || feState >= 2) return;
+      feState = 2;
+      const cl2a = document.getElementById('fe-code-2a');
+      const cl2b = document.getElementById('fe-code-2b');
+      cl2a.classList.add('highlight');
+      cl2b.classList.add('highlight');
+      await delay(700);
+      cl2a.classList.remove('highlight');
+      cl2b.classList.remove('highlight');
+      // 百分比表：動態插入 Atk_pct 與 Def_pct 欄位標題（步驟 ② 才出現）
+      const pctThead = document.getElementById('fe-pct-thead');
+      if (!document.getElementById('atk-pct-th')) {
+        const aTh = document.createElement('th');
+        aTh.id = 'atk-pct-th';
+        aTh.textContent = 'Atk_pct';
+        aTh.style.cssText = 'background:#dbeafe;color:#1d4ed8;transition:background 0.4s;';
+        pctThead.appendChild(aTh);
+      }
+      if (!document.getElementById('def-pct-th')) {
+        const dTh = document.createElement('th');
+        dTh.id = 'def-pct-th';
+        dTh.textContent = 'Def_pct';
+        dTh.style.cssText = 'background:#d1fae5;color:#065f46;transition:background 0.4s;';
+        pctThead.appendChild(dTh);
+      }
+      const pb = document.getElementById('fe-pct-body');
+      pb.innerHTML = FE_DATA.map(r => {
+        const total = r.Attack + r.Defense;
+        const atkPct = (r.Attack / total * 100).toFixed(1);
+        const defPct = (r.Defense / total * 100).toFixed(1);
+        return `<tr>
+        <td>${r.Name}</td><td>${r.Attack}</td><td>${r.Defense}</td>
+        <td class="df-new-col">${total}</td>
+        <td style="background:#dbeafe;color:#1d4ed8;font-weight:700;">${atkPct}%</td>
+        <td style="background:#d1fae5;color:#065f46;font-weight:700;">${defPct}%</td>
+      </tr>`;
+      }).join('');
+      // Render bar chart
+      renderBarChart();
+      document.getElementById('fe-status').textContent = '🎉 百分比計算完成！等高長條圖已顯示於下方。';
+    }
+
+    function renderBarChart() {
+      const wrap = document.getElementById('fe-bar-chart');
+      wrap.innerHTML = '';
+      FE_DATA.forEach(r => {
+        const total = r.Attack + r.Defense;
+        const atkPct = (r.Attack / total * 100).toFixed(1);
+        const defPct = (r.Defense / total * 100).toFixed(1);
+        const row = document.createElement('div');
+        row.className = 'bar-row';
+        row.innerHTML = `
+        <div class="bar-label">${r.Name}</div>
+        <div class="bar-track">
+          <div class="bar-seg bar-seg-atk" style="width:0%;" data-w="${atkPct}">${atkPct}%</div>
+          <div class="bar-seg bar-seg-def" style="width:0%;" data-w="${defPct}">${defPct}%</div>
+        </div>`;
+        wrap.appendChild(row);
+      });
+      document.getElementById('fe-legend').style.display = 'flex';
+      // Animate bars after paint
+      setTimeout(() => {
+        wrap.querySelectorAll('.bar-seg').forEach(seg => {
+          seg.style.width = seg.dataset.w + '%';
+        });
+      }, 50);
+    }
+
+    /* ═══════════════════════════════════════════
+       單元四：Groupby
+    ═══════════════════════════════════════════ */
+    // Full merged data for agg
+    const AGG_DATA = [
+      { ID: 1, Name: '小火龍', Type1: '火', HP: 39, Attack: 52, Defense: 43 },
+      { ID: 2, Name: '傑尼龜', Type1: '水', HP: 44, Attack: 48, Defense: 65 },
+      { ID: 3, Name: '妙蛙種子', Type1: '草', HP: 45, Attack: 49, Defense: 49 },
+      { ID: 5, Name: '超夢', Type1: '超能力', HP: 106, Attack: 110, Defense: 90 },
+      { ID: 6, Name: '噴火龍', Type1: '火', HP: 78, Attack: 84, Defense: 78 },
+      { ID: 7, Name: '快龍', Type1: '龍', HP: 91, Attack: 134, Defense: 95 },
+    ];
+
+    function initAgg() { /* nothing needed on init */ }
+
+    const AGG_CODES = {
+      avg_atk_by_type: [
+        `df.<span class="fn">groupby</span>(<span class="str">'Type1'</span>)[<span class="str">'Attack'</span>]`,
+        `  .<span class="fn">mean</span>()`,
+        `  .<span class="fn">sort_values</span>(ascending=<span class="kw">False</span>)`,
+        `  .<span class="fn">round</span>(<span class="num">1</span>)`,
+      ],
+      top3_def: [
+        `df.<span class="fn">nlargest</span>(<span class="num">3</span>, <span class="str">'Defense'</span>)`,
+        `  [[<span class="str">'Name'</span>, <span class="str">'Type1'</span>, <span class="str">'Defense'</span>]]`,
+      ],
+      max_hp_by_type: [
+        `df.<span class="fn">groupby</span>(<span class="str">'Type1'</span>)`,
+        `  .<span class="fn">apply</span>(<span class="kw">lambda</span> g: g.<span class="fn">nlargest</span>(<span class="num">1</span>, <span class="str">'HP'</span>))`,
+        `  [[<span class="str">'Name'</span>, <span class="str">'Type1'</span>, <span class="str">'HP'</span>]]`,
+      ],
+      count_by_type: [
+        `df.<span class="fn">groupby</span>(<span class="str">'Type1'</span>)[<span class="str">'Name'</span>]`,
+        `  .<span class="fn">count</span>()`,
+        `  .<span class="fn">sort_values</span>(ascending=<span class="kw">False</span>)`,
+      ],
+    };
+
+    function aggChange() {
+      const val = document.getElementById('agg-select').value;
+      if (!val) return;
+
+      // Render code
+      const codeEl = document.getElementById('agg-code-block');
+      const lines = AGG_CODES[val];
+      codeEl.innerHTML = lines.map((l, i) =>
+        `<span class="ln${i > 0 ? ' ind-1' : ''}">${l}</span>`
+      ).join('');
+
+      // Compute result
+      let html = '';
+      if (val === 'avg_atk_by_type') {
+        const grouped = {};
+        AGG_DATA.forEach(r => {
+          if (!grouped[r.Type1]) grouped[r.Type1] = [];
+          grouped[r.Type1].push(r.Attack);
+        });
+        const result = Object.entries(grouped)
+          .map(([t, vals]) => ({ type: t, mean: (vals.reduce((a, b) => a + b, 0) / vals.length) }))
+          .sort((a, b) => b.mean - a.mean);
+        html = `<table class="df-table"><thead><tr><th>Type1</th><th>Attack (mean)</th></tr></thead><tbody>` +
+          result.map(r => `<tr><td>${r.type}</td><td>${r.mean.toFixed(1)}</td></tr>`).join('') +
+          `</tbody></table>`;
+        document.getElementById('agg-status').textContent = '📊 groupby("Type1")["Attack"].mean() → 各屬性攻擊力平均，sort_values 由高到低排序';
+      }
+      else if (val === 'top3_def') {
+        const sorted = [...AGG_DATA].sort((a, b) => b.Defense - a.Defense).slice(0, 3);
+        html = `<table class="df-table"><thead><tr><th>#</th><th>Name</th><th>Type1</th><th>Defense</th></tr></thead><tbody>` +
+          sorted.map((r, i) => {
+            const rankClass = `rank-${i + 1}`;
+            return `<tr class="df-row-selected">
+            <td><span class="rank-badge ${rankClass}">${i + 1}</span></td>
+            <td>${r.Name}</td><td>${r.Type1}</td><td><strong>${r.Defense}</strong></td></tr>`;
+          }).join('') +
+          `</tbody></table>`;
+        document.getElementById('agg-status').textContent = '🏆 nlargest(3, "Defense") → 直接取出防禦力最高的前 3 筆，無需手動排序！';
+      }
+      else if (val === 'max_hp_by_type') {
+        const grouped = {};
+        AGG_DATA.forEach(r => {
+          if (!grouped[r.Type1] || r.HP > grouped[r.Type1].HP)
+            grouped[r.Type1] = r;
+        });
+        const result = Object.values(grouped).sort((a, b) => b.HP - a.HP);
+        html = `<table class="df-table"><thead><tr><th>Name</th><th>Type1</th><th>HP</th></tr></thead><tbody>` +
+          result.map(r => `<tr><td>${r.Name}</td><td>${r.Type1}</td><td>${r.HP}</td></tr>`).join('') +
+          `</tbody></table>`;
+        document.getElementById('agg-status').textContent = '🔍 groupby + apply(lambda g: g.nlargest(1,"HP")) → 各屬性 HP 最高的代表';
+      }
+      else if (val === 'count_by_type') {
+        const grouped = {};
+        AGG_DATA.forEach(r => { grouped[r.Type1] = (grouped[r.Type1] || 0) + 1; });
+        const result = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
+        html = `<table class="df-table"><thead><tr><th>Type1</th><th>Count</th></tr></thead><tbody>` +
+          result.map(([t, c]) => `<tr><td>${t}</td><td>${c}</td></tr>`).join('') +
+          `</tbody></table>`;
+        document.getElementById('agg-status').textContent = '📈 groupby("Type1")["Name"].count() → 統計各屬性的寶可夢數量';
+      }
+
+      const resultEl = document.getElementById('agg-result');
+      resultEl.innerHTML = html;
+    }
+  </script>
+</body>
+
+</html>
