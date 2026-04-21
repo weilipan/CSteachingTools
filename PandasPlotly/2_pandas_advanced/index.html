@@ -652,7 +652,6 @@
 <body>
   <div class="container">
 
-    <!-- Hero -->
     <div class="page-hero">
       <h1>🐼 Pandas 進階資料處理</h1>
       <p>精準切片 × 多表合併 × 特徵工程 × 聚合排序 — 以寶可夢資料集為主角的互動式視覺化教學</p>
@@ -666,7 +665,6 @@
       </div>
     </div>
 
-    <!-- ────────────────────────────────── 單元一：loc ────────────────────────────────── -->
     <div class="card" id="card1">
       <h2 class="section-title">🎯 單元一：精準切片與定位 <span class="badge">loc 應用</span></h2>
       <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.loc.html" target="_blank"
@@ -675,7 +673,6 @@
         <code>df.loc[]</code> 認的是「欄位名稱」與「條件布林值」。選擇篩選條件後，下方程式碼與結果表格將即時同步更新。
       </p>
 
-      <!-- 控制列 -->
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
         <label style="font-weight:700;font-size:0.88rem;color:#475569;">篩選條件：</label>
         <select class="fancy-select" id="loc-filter-select" onchange="locFilterChange()">
@@ -689,7 +686,6 @@
       </div>
 
       <div class="two-col">
-        <!-- 程式碼 -->
         <div>
           <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;">📄 程式碼</div>
           <div class="code-block">
@@ -701,7 +697,6 @@
           </div>
           <div class="status-bar" id="loc-status">請選擇上方篩選條件</div>
         </div>
-        <!-- 資料集說明 -->
         <div>
           <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;">📦 資料集預覽 (df_merged)</div>
           <div class="dataset-preview">
@@ -779,7 +774,6 @@
         </div>
       </div>
 
-      <!-- 結果表 -->
       <div class="sub-title" style="margin-top:20px;">篩選結果</div>
       <div style="overflow-x:auto;">
         <table class="df-table" id="loc-result-table">
@@ -799,7 +793,6 @@
       </div>
     </div>
 
-    <!-- ────────────────────────────────── 單元二：Merge ────────────────────────────────── -->
     <div class="card" id="card2">
       <h2 class="section-title">🔗 單元二：資料表的無縫接軌 <span class="badge">merge 比較</span></h2>
       <a href="https://pandas.pydata.org/docs/reference/api/pandas.merge.html" target="_blank" class="doc-link">📚
@@ -809,7 +802,6 @@
         切換不同的 <code>how</code> 參數，觀察 NaN 如何出現。
       </p>
 
-      <!-- 兩個源表 -->
       <div class="two-col" style="margin-bottom:16px;">
         <div class="dataset-preview">
           <h4>📘 df_info（左表）</h4>
@@ -927,7 +919,6 @@
         </div>
       </div>
 
-      <!-- How 選擇器 -->
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span style="font-weight:700;font-size:0.88rem;color:#475569;">how =</span>
         <div class="how-selector">
@@ -938,7 +929,6 @@
         </div>
       </div>
 
-      <!-- 動態程式碼 -->
       <div class="code-block">
         <span class="ln"><span class="kw">import</span> pandas <span class="kw">as</span> pd</span>
         <span class="ln" id="merge-code-line">pd.<span class="fn">merge</span>(df_info, df_stats, <span
@@ -946,7 +936,6 @@
             id="merge-how-str">'inner'</span>)</span>
       </div>
 
-      <!-- 結果表 -->
       <div class="sub-title">合併結果</div>
       <div style="overflow-x:auto;">
         <table class="df-table">
@@ -965,15 +954,84 @@
         </table>
       </div>
       <div class="status-bar" id="merge-status">請點選上方 how 參數查看不同的合併結果</div>
-    </div>
 
-    <!-- ────────────────────────────────── 單元三：特徵工程 ────────────────────────────────── -->
+      <div class="sub-title" style="margin-top:40px;">進階合併：多欄位對應不同名稱 (left_on & right_on)</div>
+      <p style="margin:0 0 14px;color:#4b5563;font-size:0.9rem;">
+        實務上常遇到兩張表的鍵值欄位名稱不同，且需要同時對齊多個欄位（Composite Keys）。<br>
+        注意：使用 <code>left_on</code> 與 <code>right_on</code> 時，合併後的表格會<b>同時保留</b>左表與右表的對應欄位，未對應到的會填入 NaN。
+      </p>
+
+      <div class="two-col" style="margin-bottom:16px;">
+        <div class="dataset-preview">
+          <h4>📘 df_pokemon_attr（左表）</h4>
+          <table class="df-table" id="adv-left-table">
+            <thead>
+              <tr><th>Name</th><th>Attr_1</th><th>Attr_2</th></tr>
+            </thead>
+            <tbody>
+              <tr id="aml-1"><td>噴火龍</td><td>火</td><td>飛行</td></tr>
+              <tr id="aml-2"><td>妙蛙種子</td><td>草</td><td>毒</td></tr>
+              <tr id="aml-3"><td>傑尼龜</td><td>水</td><td>-</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="dataset-preview">
+          <h4>📗 df_weather_bonus（右表）</h4>
+          <table class="df-table" id="adv-right-table">
+            <thead>
+              <tr><th>Env_Main</th><th>Env_Sub</th><th>Bonus_Weather</th></tr>
+            </thead>
+            <tbody>
+              <tr id="amr-1"><td>火</td><td>飛行</td><td>🌞 晴天 (強風)</td></tr>
+              <tr id="amr-2"><td>草</td><td>毒</td><td>☁️ 陰天</td></tr>
+              <tr id="amr-3"><td>電</td><td>-</td><td>⛈️ 雷雨</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="font-weight:700;font-size:0.88rem;color:#475569;">how =</span>
+        <div class="how-selector">
+          <button class="how-btn" id="adv-how-inner" onclick="advMergeSelect('inner')">inner</button>
+          <button class="how-btn" id="adv-how-left" onclick="advMergeSelect('left')">left</button>
+          <button class="how-btn" id="adv-how-right" onclick="advMergeSelect('right')">right</button>
+          <button class="how-btn" id="adv-how-outer" onclick="advMergeSelect('outer')">outer</button>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <span class="ln">pd.<span class="fn">merge</span>(</span>
+        <span class="ln ind-1">df_pokemon_attr, df_weather_bonus,</span>
+        <span class="ln ind-1"><span class="kw">left_on</span>=[<span class="str">'Attr_1'</span>, <span class="str">'Attr_2'</span>],</span>
+        <span class="ln ind-1"><span class="kw">right_on</span>=[<span class="str">'Env_Main'</span>, <span class="str">'Env_Sub'</span>],</span>
+        <span class="ln ind-1" id="adv-merge-code-line"><span class="kw">how</span>=<span class="str" id="adv-merge-how-str">'inner'</span></span>
+        <span class="ln">)</span>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="df-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th style="background:#eff6ff;">Attr_1</th>
+              <th style="background:#eff6ff;">Attr_2</th>
+              <th style="background:#f0fdf4;">Env_Main</th>
+              <th style="background:#f0fdf4;">Env_Sub</th>
+              <th>Bonus_Weather</th>
+            </tr>
+          </thead>
+          <tbody id="adv-merge-result-body"></tbody>
+        </table>
+      </div>
+      <div class="status-bar" id="adv-merge-status">請點選上方 how 參數查看不同的合併結果</div>
+      </div>
+
     <div class="card" id="card3">
       <h2 class="section-title">⚗️ 單元三：欄位工程與邏輯運算 <span class="badge">特徵工程 + 等高長條圖</span></h2>
       <a href="https://pandas.pydata.org/docs/user_guide/indexing.html#returning-a-view-versus-a-copy" target="_blank"
         class="doc-link">📚 Pandas 欄位操作指南</a>
 
-      <!-- 區塊一：加總欄位 -->
       <div class="sub-title">① 增加欄位與純運算</div>
       <p style="margin:0 0 10px;color:#4b5563;font-size:0.88rem;">將 Attack 與 Defense 相加，建立新欄位 <code>Total_Stats</code>。
       </p>
@@ -1002,7 +1060,6 @@
         </div>
       </div>
 
-      <!-- 區塊二：百分比轉換 -->
       <div class="sub-title" style="margin-top:28px;">② 邏輯判斷與百分比運算</div>
       <p style="margin:0 0 10px;color:#4b5563;font-size:0.88rem;">為了繪製等高長條圖，需將 Attack 與 Defense 轉換為「佔兩者總和的百分比」。</p>
 
@@ -1030,7 +1087,6 @@
         </table>
       </div>
 
-      <!-- 區塊三：等高長條圖 -->
       <div class="sub-title" style="margin-top:28px;">③ 視覺化：等高長條圖（100% Stacked Bar Chart）</div>
       <p style="margin:0 0 10px;color:#4b5563;font-size:0.88rem;">每列長條圖總長度相同（100%），用顏色對比攻擊與防禦的比例分布。</p>
 
@@ -1055,7 +1111,6 @@
       <div class="status-bar" id="fe-status">點擊「執行：新增 Total_Stats」開始</div>
     </div>
 
-    <!-- ────────────────────────────────── 單元四：Groupby ────────────────────────────────── -->
     <div class="card" id="card4">
       <h2 class="section-title">📊 單元四：聚合、排序與進階洞察 <span class="badge">groupby · sort · nlargest</span></h2>
       <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.groupby.html" target="_blank"
@@ -1064,7 +1119,6 @@
         選擇你想探索的問題，觀察如何用 Pandas 的<strong>方法鏈結 (Method Chaining)</strong> 優雅地一行解決。
       </p>
 
-      <!-- 問題選擇 -->
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
         <label style="font-weight:700;font-size:0.88rem;color:#475569;">探索問題：</label>
         <select class="fancy-select" id="agg-select" onchange="aggChange()">
@@ -1076,7 +1130,6 @@
         </select>
       </div>
 
-      <!-- 程式碼與結果 -->
       <div class="two-col">
         <div>
           <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;">📄 Method Chaining</div>
@@ -1097,9 +1150,7 @@
       <div class="status-bar" id="agg-status">使用 Method Chaining 可讓程式碼更簡潔易讀，一行完成多個操作</div>
     </div>
 
-  </div><!-- /container -->
-
-  <script>
+  </div><script>
     /* ═══════════════════════════════════════════
        全域資料
     ═══════════════════════════════════════════ */
@@ -1139,7 +1190,10 @@
           io.unobserve(e.target);
           const id = e.target.id;
           if (id === 'card1') initLocTable();
-          if (id === 'card2') mergeSelect('inner');
+          if (id === 'card2') {
+            mergeSelect('inner');
+            advMergeSelect('inner'); // 初始化進階合併區塊
+          }
           if (id === 'card3') feReset();
           if (id === 'card4') initAgg();
         }
@@ -1295,18 +1349,83 @@
       const rows = MERGE_DATA[how];
       const tbody = document.getElementById('merge-result-body');
       tbody.innerHTML = rows.map(r => {
-        const hasNan = r.HP === null || r.Name === null;
-        const rowClass = hasNan ? '' : '';
         const cell = (v, extra = '') => v === null
           ? `<td class="df-nan">NaN</td>`
           : `<td ${extra}>${v}</td>`;
-        return `<tr class="${rowClass}">
+        return `<tr>
         ${cell(r.ID)} ${cell(r.Name)} ${cell(r.Type1)} ${cell(r.Type2)}
         ${cell(r.HP)} ${cell(r.Attack)} ${cell(r.Defense)}
       </tr>`;
       }).join('');
 
       document.getElementById('merge-status').textContent = MERGE_STATUS[how];
+    }
+
+    /* ═══════════════════════════════════════════
+       單元二：進階 Merge (left_on / right_on)
+    ═══════════════════════════════════════════ */
+    const ADV_MERGE_DATA = {
+      inner: [
+        { Name: '噴火龍', Attr_1: '火', Attr_2: '飛行', Env_Main: '火', Env_Sub: '飛行', Bonus_Weather: '🌞 晴天 (強風)' },
+        { Name: '妙蛙種子', Attr_1: '草', Attr_2: '毒', Env_Main: '草', Env_Sub: '毒', Bonus_Weather: '☁️ 陰天' }
+      ],
+      left: [
+        { Name: '噴火龍', Attr_1: '火', Attr_2: '飛行', Env_Main: '火', Env_Sub: '飛行', Bonus_Weather: '🌞 晴天 (強風)' },
+        { Name: '妙蛙種子', Attr_1: '草', Attr_2: '毒', Env_Main: '草', Env_Sub: '毒', Bonus_Weather: '☁️ 陰天' },
+        { Name: '傑尼龜', Attr_1: '水', Attr_2: '-', Env_Main: null, Env_Sub: null, Bonus_Weather: null }
+      ],
+      right: [
+        { Name: '噴火龍', Attr_1: '火', Attr_2: '飛行', Env_Main: '火', Env_Sub: '飛行', Bonus_Weather: '🌞 晴天 (強風)' },
+        { Name: '妙蛙種子', Attr_1: '草', Attr_2: '毒', Env_Main: '草', Env_Sub: '毒', Bonus_Weather: '☁️ 陰天' },
+        { Name: null, Attr_1: null, Attr_2: null, Env_Main: '電', Env_Sub: '-', Bonus_Weather: '⛈️ 雷雨' }
+      ],
+      outer: [
+        { Name: '噴火龍', Attr_1: '火', Attr_2: '飛行', Env_Main: '火', Env_Sub: '飛行', Bonus_Weather: '🌞 晴天 (強風)' },
+        { Name: '妙蛙種子', Attr_1: '草', Attr_2: '毒', Env_Main: '草', Env_Sub: '毒', Bonus_Weather: '☁️ 陰天' },
+        { Name: '傑尼龜', Attr_1: '水', Attr_2: '-', Env_Main: null, Env_Sub: null, Bonus_Weather: null },
+        { Name: null, Attr_1: null, Attr_2: null, Env_Main: '電', Env_Sub: '-', Bonus_Weather: '⛈️ 雷雨' }
+      ]
+    };
+
+    const ADV_MERGE_STATUS = {
+      inner: '🔵 inner：只保留兩表能完全對應屬性的紀錄（噴火龍、妙蛙種子）。',
+      left: '🔷 left：保留左表所有寶可夢。傑尼龜對應不到天氣，右表欄位自動填入 NaN。',
+      right: '🟢 right：保留右表所有天氣。雷雨對應不到寶可夢，左表欄位自動填入 NaN。',
+      outer: '🟡 outer：保留兩表所有紀錄。未配對成功的資料雙向均補上 NaN。'
+    };
+
+    function advMergeSelect(how) {
+      ['inner', 'left', 'right', 'outer'].forEach(h => {
+        const btn = document.getElementById('adv-how-' + h);
+        btn.className = 'how-btn';
+        if (h === how) btn.classList.add('active-' + h);
+      });
+
+      document.getElementById('adv-merge-how-str').textContent = `'${how}'`;
+      document.getElementById('adv-merge-code-line').classList.add('highlight');
+      setTimeout(() => document.getElementById('adv-merge-code-line').classList.remove('highlight'), 800);
+
+      const leftIds = how === 'inner' || how === 'right' ? [1, 2] : [1, 2, 3];
+      const rightIds = how === 'inner' || how === 'left' ? [1, 2] : [1, 2, 3];
+      
+      [1, 2, 3].forEach(id => {
+        const elL = document.getElementById('aml-' + id);
+        if (elL) elL.style.opacity = leftIds.includes(id) ? '1' : '0.25';
+        const elR = document.getElementById('amr-' + id);
+        if (elR) elR.style.opacity = rightIds.includes(id) ? '1' : '0.25';
+      });
+
+      const rows = ADV_MERGE_DATA[how];
+      const tbody = document.getElementById('adv-merge-result-body');
+      tbody.innerHTML = rows.map(r => {
+        const cell = (v, extra = '') => v === null ? `<td class="df-nan">NaN</td>` : `<td ${extra}>${v}</td>`;
+        return `<tr>
+          ${cell(r.Name)} ${cell(r.Attr_1)} ${cell(r.Attr_2)}
+          ${cell(r.Env_Main)} ${cell(r.Env_Sub)} ${cell(r.Bonus_Weather)}
+        </tr>`;
+      }).join('');
+
+      document.getElementById('adv-merge-status').textContent = ADV_MERGE_STATUS[how];
     }
 
     /* ═══════════════════════════════════════════
