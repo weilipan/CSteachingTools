@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ 位元運算實驗室｜8 顆燈泡的秘密</title>
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../layout.js" defer></script>
+<style>
+  /* ========== 鐵律：版面保護 ========== */
+  body { padding: 0; margin: 0; background-color: #f8f9fa; }
+  .container { padding-top: 80px; padding-bottom: 60px; max-width: 1000px; margin: 0 auto; }
+
+  :root {
+    --lab-bg: #0d1117;
+    --bit-on: #39ff14;
+    --bit-off: #2a2f3a;
+    --sign-red: #ff3b5c;
+    --accent: #00e5ff;
+    --carry: #ffd166;
+    --cell: clamp(32px, 8vw, 52px);
+    --mono: "JetBrains Mono", "Fira Code", Consolas, "Courier New", monospace;
+  }
+
+  /* ========== 卡片框架 ========== */
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06);
+    padding: 28px;
+    margin: 0 16px 32px;
+    color: #24292f;
+    line-height: 1.75;
+  }
+  .card.reveal { opacity: 0; translate: 0 30px; transition: opacity .7s ease, translate .7s ease; }
+  .card.reveal.in-view { opacity: 1; translate: 0 0; }
+  .section-title {
+    font-size: 1.5rem; font-weight: 800; margin: 0 0 14px;
+    padding-left: 14px; border-left: 6px solid #00b8d4;
+  }
+  .card p { margin: 0 0 12px; }
+  .tip {
+    background: #eefcff; border-left: 4px solid #00b8d4; padding: 10px 14px;
+    border-radius: 8px; margin: 14px 0 0; font-size: .95rem;
+  }
+  .tip.warn { background: #fff4f5; border-left-color: var(--sign-red); }
+  .hidden { display: none !important; }
+
+  /* ========== 深色實驗室螢幕 ========== */
+  .lab-panel {
+    background-color: var(--lab-bg);
+    background-image:
+      linear-gradient(rgba(0, 229, 255, .05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 229, 255, .05) 1px, transparent 1px);
+    background-size: 24px 24px;
+    border: 1px solid #1f2a37;
+    border-radius: 14px;
+    padding: 22px;
+    color: #e6edf3;
+    margin-top: 16px;
+    box-shadow: inset 0 0 40px rgba(0, 229, 255, .06);
+  }
+  .lab-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .lab-label { font-family: var(--mono); color: var(--accent); font-weight: 700; letter-spacing: 1px; }
+  .lab-note { color: #8b949e; font-size: .9rem; }
+
+  /* ========== 按鈕 ========== */
+  .neon-btn {
+    font: inherit; font-size: .95rem; cursor: pointer;
+    background: transparent; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 8px; padding: 8px 16px;
+    transition: background .2s, box-shadow .2s, color .2s, scale .1s;
+  }
+  .neon-btn:hover { background: rgba(0, 229, 255, .12); box-shadow: 0 0 12px rgba(0, 229, 255, .45); }
+  .neon-btn:active { scale: .95; }
+  .neon-btn.primary { background: var(--accent); color: #0d1117; font-weight: 700; }
+  .neon-btn.primary:hover { box-shadow: 0 0 18px rgba(0, 229, 255, .8); }
+  .neon-btn.danger { color: var(--sign-red); border-color: var(--sign-red); }
+  .neon-btn.danger:hover { background: rgba(255, 59, 92, .12); box-shadow: 0 0 12px rgba(255, 59, 92, .5); }
+  .neon-btn.active { background: var(--accent); color: #0d1117; font-weight: 700; box-shadow: 0 0 14px rgba(0, 229, 255, .6); }
+  .neon-btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+  .is-busy button, .is-busy input { pointer-events: none; }
+  .is-busy .neon-btn { opacity: .5; }
+
+  /* 型別切換開關 */
+  .mode-switch { display: inline-flex; border: 1px solid #30363d; border-radius: 999px; padding: 4px; background: #161b22; }
+  .mode-btn {
+    font: inherit; font-size: .9rem; cursor: pointer; border: none; border-radius: 999px;
+    padding: 6px 16px; background: transparent; color: #8b949e; transition: background .25s, color .25s;
+  }
+  .mode-btn.active { background: var(--accent); color: #0d1117; font-weight: 700; }
+  .mode-btn.active.signed { background: var(--sign-red); color: #fff; }
+
+  /* ========== 位元面板 ========== */
+  .bit-panel { position: relative; padding: 30px 0 6px; }
+  .bit-row { display: flex; gap: 8px; justify-content: center; }
+  .bit-cell {
+    position: relative; display: flex; flex-direction: column; align-items: center;
+    background: none; border: none; padding: 0; font: inherit; color: inherit;
+    translate: 0 0; rotate: 0deg;
+    transition: translate .5s cubic-bezier(.65, 0, .35, 1), rotate .6s ease-in, opacity .6s ease-in;
+  }
+  .bit-cell.clickable { cursor: pointer; }
+  .bit-cell.no-trans { transition: none !important; }
+  .bit-cell.sliding { translate: var(--dx) 0; }
+  .bit-cell.falling { translate: var(--dx) 90px; rotate: var(--rot); opacity: 0; }
+  .bit-box {
+    width: var(--cell); height: calc(var(--cell) * 1.15);
+    display: grid; place-items: center;
+    font-family: var(--mono); font-size: 1.35rem; font-weight: 800;
+    border-radius: 10px;
+    background: var(--bit-off); color: #5c6370;
+    border: 1px solid #3a4150;
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .35);
+    transition: background .2s, color .2s, box-shadow .2s, scale .1s;
+  }
+  .bit-cell.clickable:hover .bit-box { border-color: var(--accent); }
+  .bit-cell.clickable:active .bit-box { scale: .86; box-shadow: inset 0 3px 6px rgba(0, 0, 0, .6); }
+  .bit-cell.on .bit-box {
+    background: var(--bit-on); color: #0d1117; border-color: #b6ff9e;
+    box-shadow: 0 0 12px var(--bit-on), 0 0 28px rgba(57, 255, 20, .4), inset 0 -4px 0 rgba(0, 0, 0, .2);
+  }
+  .bit-weight { font-family: var(--mono); font-size: .72rem; color: #8b949e; margin-top: 6px; }
+  .sign-tag {
+    display: none; position: absolute; top: -24px; left: 50%; translate: -50% 0;
+    white-space: nowrap; font-size: .7rem; font-weight: 700; color: var(--sign-red);
+    background: rgba(255, 59, 92, .12); border: 1px solid var(--sign-red); border-radius: 6px; padding: 0 6px;
+  }
+  .bit-cell.sign-bit .sign-tag { display: block; }
+  .bit-cell.sign-bit .bit-box { outline: 3px solid var(--sign-red); outline-offset: 3px; }
+  .bit-cell.sign-bit .bit-weight { color: var(--sign-red); font-weight: 700; }
+  .bit-cell.pending .bit-box { background: transparent; border: 1px dashed #4b5563; color: #4b5563; box-shadow: none; }
+  .bit-cell.col-focus .bit-box { box-shadow: 0 0 0 3px var(--accent), 0 0 18px var(--accent); }
+  .bit-cell.guarded .bit-box { opacity: .18; }
+  .bit-cell.guarded::after {
+    content: "🛡️"; position: absolute; top: calc(var(--cell) * .3); left: 50%; translate: -50% 0;
+    font-size: 1.3rem; animation: guard-in .3s ease-out;
+  }
+  .bit-cell.spotlight .bit-box { animation: spotlight 1.2s ease-in-out infinite; }
+
+  .bit-box.pop { animation: pop .35s ease-out; }
+  .bit-box.flip { animation: flip .6s ease-in-out; }
+  .bit-box.fill-in { animation: fill-in .5s ease-out; }
+  .bit-box.fill-sign { animation: fill-sign .8s ease-out; }
+
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+  @keyframes flip { 0% { transform: rotateX(0); } 50% { transform: rotateX(90deg); } 100% { transform: rotateX(0); } }
+  @keyframes fill-in { from { opacity: 0; transform: translateY(-18px); } to { opacity: 1; transform: none; } }
+  @keyframes fill-sign {
+    0% { opacity: 0; transform: translateY(-18px); box-shadow: 0 0 0 4px var(--sign-red), 0 0 24px var(--sign-red); }
+    60% { opacity: 1; transform: none; box-shadow: 0 0 0 4px var(--sign-red), 0 0 24px var(--sign-red); }
+  }
+  @keyframes guard-in { from { opacity: 0; translate: -50% -12px; } to { opacity: 1; translate: -50% 0; } }
+  @keyframes spotlight {
+    0%, 100% { box-shadow: 0 0 0 3px var(--carry), 0 0 10px var(--carry); }
+    50% { box-shadow: 0 0 0 5px var(--carry), 0 0 28px var(--carry); }
+  }
+
+  /* 黑洞 */
+  .bit-panel.has-void::before, .bit-panel.has-void::after {
+    content: ""; position: absolute; bottom: -34px; width: 58px; height: 58px; border-radius: 50%;
+    background: radial-gradient(circle, #000 30%, #1a0629 55%, rgba(155, 89, 255, .35) 68%, transparent 72%);
+    box-shadow: 0 0 22px rgba(155, 89, 255, .35);
+    animation: spin 6s linear infinite;
+  }
+  .bit-panel.has-void::before { left: 2px; }
+  .bit-panel.has-void::after { right: 2px; }
+  .bit-panel.void-l::before, .bit-panel.void-r::after { animation: gulp .7s ease-in-out, spin 6s linear infinite; }
+  @keyframes spin { to { rotate: 360deg; } }
+  @keyframes gulp { 50% { scale: 1.45; box-shadow: 0 0 40px rgba(155, 89, 255, .9); } }
+  .void-caption { display: flex; justify-content: space-between; font-size: .75rem; color: #9b59ff; margin-top: 40px; padding: 0 4px; }
+
+  /* 二補數的進位火花 */
+  .carry-spark {
+    position: absolute; top: 2px; translate: -50% 0; z-index: 3;
+    font-family: var(--mono); font-weight: 800; color: #0d1117; background: var(--carry);
+    border-radius: 999px; padding: 0 8px; font-size: .85rem;
+    box-shadow: 0 0 14px var(--carry);
+    transition: left .4s ease, top .6s ease-in, opacity .6s ease-in;
+  }
+  .carry-spark.spark-fall { top: 120px; opacity: 0; }
+
+  /* 輸入框 */
+  .dec-input {
+    font-family: var(--mono); font-size: 1.15rem; font-weight: 700; width: 110px;
+    background: #161b22; color: var(--bit-on); border: 1px solid #30363d; border-radius: 8px; padding: 6px 10px;
+  }
+  .dec-input:focus { outline: 2px solid var(--accent); }
+  .input-hint { color: var(--sign-red); font-size: .88rem; min-height: 1.4em; margin-top: 4px; }
+  .operand-block { margin-bottom: 18px; transition: opacity .3s; }
+  .operand-block.dimmed { opacity: .35; }
+  .operand-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+
+  /* 步驟指示 */
+  .steps { display: flex; gap: 10px; flex-wrap: wrap; }
+  .step-pill {
+    border: 1px solid #30363d; border-radius: 999px; padding: 4px 14px; font-size: .88rem; color: #8b949e;
+    transition: all .3s;
+  }
+  .step-pill.active { border-color: var(--carry); color: #0d1117; background: var(--carry); font-weight: 700; box-shadow: 0 0 14px var(--carry); }
+  .step-pill.done { border-color: var(--bit-on); color: var(--bit-on); }
+
+  /* 運算子區 */
+  .op-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .op-tab .sym { font-family: var(--mono); font-weight: 800; margin-right: 6px; }
+  .ops-grid { margin-top: 10px; }
+  .ops-row { display: grid; grid-template-columns: 80px 1fr 90px; align-items: center; }
+  .ops-grid .bit-panel { padding-left: 70px; padding-right: 70px; }
+  .row-label { font-family: var(--mono); color: var(--accent); font-weight: 700; }
+  .row-dec { font-family: var(--mono); font-size: 1.2rem; font-weight: 800; color: var(--bit-on); text-align: right; }
+  .ops-divider { border-top: 2px dashed #30363d; margin: 6px 0 0; position: relative; height: 0; }
+  .ops-divider span {
+    position: absolute; left: 30px; top: -16px; background: var(--lab-bg); padding: 0 8px;
+    font-family: var(--mono); font-size: 1.3rem; font-weight: 800; color: var(--carry);
+  }
+  .shift-box { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 18px 0; }
+  .shift-box input[type=range] { width: min(320px, 50vw); accent-color: var(--accent); }
+  .expr {
+    font-family: var(--mono); font-size: 1.25rem; font-weight: 800; text-align: center;
+    color: #fff; margin: 14px 0 6px;
+  }
+  .expr .res { color: var(--bit-on); text-shadow: 0 0 10px rgba(57, 255, 20, .6); }
+  .op-explain { background: rgba(0, 229, 255, .07); border: 1px solid rgba(0, 229, 255, .25); border-radius: 10px; padding: 12px 16px; margin-top: 12px; font-size: .95rem; }
+  .op-explain b { color: var(--accent); }
+
+  /* ========== 鐵律：Console 輸出保護 ========== */
+  .console-output {
+    white-space: pre-wrap; font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px;
+    margin-top: 14px; max-height: 200px; overflow-y: auto; font-size: .9rem; line-height: 1.6;
+  }
+
+  /* ========== 鐵律：程式碼排版保護 ========== */
+  .code-block {
+    background: #1e1e1e; color: #d4d4d4; border-radius: 10px; padding: 16px 18px;
+    font-family: var(--mono); font-size: .95rem; line-height: 1.7; overflow-x: auto;
+  }
+  .code-block .ln { display: block; white-space: nowrap; min-height: 1.7em; border-radius: 4px; transition: background .4s, box-shadow .4s; }
+  .ind-1 { padding-left: 1.5rem !important; }
+  .ind-2 { padding-left: 3rem !important; }
+  .code-block .ln.hl { background: rgba(0, 229, 255, .14); box-shadow: inset 3px 0 0 var(--accent); }
+  .tok-kw { color: #569cd6; }
+  .tok-num { color: #b5cea8; }
+  .tok-pp { color: #c586c0; }
+  .tok-str { color: #ce9178; }
+  .tok-cmt { color: #6a9955; margin-left: 1.2rem; }
+  .code-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; flex-wrap: wrap; }
+  .type-badge { font-family: var(--mono); font-size: .85rem; padding: 3px 10px; border-radius: 6px; background: #161b22; color: var(--accent); border: 1px solid #30363d; }
+
+  /* 奇偶與乘除 */
+  .verdict { font-size: 1.3rem; font-weight: 800; text-align: center; margin-top: 14px; min-height: 1.8em; }
+  .verdict.odd { color: var(--carry); text-shadow: 0 0 10px rgba(255, 209, 102, .5); }
+  .verdict.even { color: var(--accent); text-shadow: 0 0 10px rgba(0, 229, 255, .5); }
+  .formula { font-family: var(--mono); text-align: center; font-size: 1.05rem; margin-top: 10px; min-height: 3.2em; }
+  .formula .big { font-size: 1.3rem; font-weight: 800; color: #fff; }
+
+  @media (max-width: 720px) {
+    .card { padding: 20px 16px; margin: 0 8px 24px; }
+    .lab-panel { padding: 14px 10px; }
+    .ops-row { grid-template-columns: 44px 1fr 56px; }
+    .ops-grid .bit-panel { padding-left: 4px; padding-right: 4px; }
+    .bit-panel.has-void::before, .bit-panel.has-void::after { display: none; }
+    .void-caption { display: none; }
+    .bit-row { gap: 4px; }
+    .row-dec { font-size: 1rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    .card.reveal { translate: 0 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ===================== Card 0：開場 ===================== -->
+  <section class="card" id="intro">
+    <h2 class="section-title">💡 電腦其實只有一排燈泡</h2>
+    <p>你寫的 <code>int</code>、<code>char</code>，在電腦眼裡全都是一排<b>小燈泡</b>：亮 = <b>1</b>、暗 = <b>0</b>。今天我們只玩 8 顆，剛好是一個 <code>char</code> 的大小。</p>
+    <p>每顆燈泡都有自己的「面額」，從右邊開始是 1、2、4、8……每往左一格就<b>翻一倍</b>。把亮著的面額加起來，就是這排燈泡代表的數字。點點看吧！</p>
+    <div class="lab-panel">
+      <div id="introPanel"></div>
+      <div class="expr" id="introSum"></div>
+      <div class="lab-row" style="justify-content:center">
+        <button class="neon-btn" id="btnIntro" type="button">▶ 再示範一次：怎麼拼出 13？</button>
+        <button class="neon-btn danger" id="btnIntroClear" type="button">全部熄燈</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Card 1：位元沙盒 ===================== -->
+  <section class="card" id="sandbox">
+    <h2 class="section-title">🎛️ 位元沙盒：燈泡 ⇄ 數字 雙向連動</h2>
+    <p>點燈泡，旁邊的數字會跟著變；直接打數字，燈泡也會自己重新排好。下面所有實驗室都共用這裡的 <b>A</b> 和 <b>B</b>。</p>
+    <div class="lab-panel">
+      <div class="lab-row" style="justify-content:space-between">
+        <div class="mode-switch" role="group" aria-label="資料型別">
+          <button class="mode-btn active" id="modeU" type="button" aria-pressed="true">Unsigned（0 ~ 255）</button>
+          <button class="mode-btn signed" id="modeS" type="button" aria-pressed="false">Signed（-128 ~ 127）</button>
+        </div>
+        <span class="lab-note" id="modeNote">目前：沒有正負號，8 顆燈泡全拿來算數字</span>
+      </div>
+
+      <div class="operand-block" id="blockA" style="margin-top:18px">
+        <div class="operand-head">
+          <span class="lab-label">Operand A</span>
+          <label class="lab-note">十進位 <input class="dec-input" id="decA" type="number" inputmode="numeric"></label>
+        </div>
+        <div id="panelA"></div>
+        <div class="input-hint" id="hintA"></div>
+      </div>
+
+      <div class="operand-block" id="blockB">
+        <div class="operand-head">
+          <span class="lab-label">Operand B</span>
+          <label class="lab-note">十進位 <input class="dec-input" id="decB" type="number" inputmode="numeric"></label>
+        </div>
+        <div id="panelB"></div>
+        <div class="input-hint" id="hintB"></div>
+        <div class="lab-note hidden" id="bNote">😴 位移模式中，B 暫時下班。請到「運算子實驗室」用拉桿決定要滑幾格。</div>
+      </div>
+      <div class="lab-note hidden" id="signLegend">🔴 <b style="color:var(--sign-red)">脾氣開關</b>：最左邊那顆燈泡 0 = 心情好（正數），1 = 生氣（負數）。它的面額變成了 <b>-128</b>！</div>
+    </div>
+  </section>
+
+  <!-- ===================== Card 2：二補數 ===================== -->
+  <section class="card" id="twos">
+    <h2 class="section-title">😡 脾氣開關：讓數字變負的魔法</h2>
+    <p>切到 <b>Signed</b> 之後，最左邊那顆燈泡就變成「脾氣開關」，它的面額是 <b>-128</b>。例如 <code>11111011</code> = -128 + 64 + 32 + 16 + 8 + 2 + 1 = <b>-5</b>。</p>
+    <p>想把一個數字變成負的，電腦只用兩招：<b>① 全部翻臉（亮的熄、熄的亮）</b>，<b>② 最右邊加 1</b>。加 1 的時候如果遇到 1，就會「1+1=10」，留下 0、把 1 傳給左邊的鄰居，像骨牌一樣連鎖反應。</p>
+    <div class="lab-panel">
+      <div class="steps">
+        <span class="step-pill" id="step1">Step 1：全部反轉</span>
+        <span class="step-pill" id="step2">Step 2：尾數加一</span>
+        <span class="step-pill" id="step3">完成 🎉</span>
+      </div>
+      <div id="twosPanel"></div>
+      <div class="expr" id="twosExpr"></div>
+      <div class="lab-row" style="justify-content:center">
+        <button class="neon-btn primary" id="btnTwos" type="button">⚡ 把 A 變成負數（取二補數）</button>
+        <button class="neon-btn" id="btnApplyTwos" type="button" disabled>⬆ 套用回 Operand A</button>
+      </div>
+      <div class="tip warn hidden" id="twosHint" style="color:#24292f">
+        Unsigned 模式沒有脾氣開關，不能表示負數喔！
+        <button class="neon-btn danger" id="btnToSigned" type="button" style="margin-left:8px">幫我切到 Signed</button>
+      </div>
+      <div class="console-output" id="twosNarr">// 按下按鈕，看燈泡怎麼「翻臉」</div>
+    </div>
+  </section>
+
+  <!-- ===================== Card 3：運算子實驗室 ===================== -->
+  <section class="card" id="operators">
+    <h2 class="section-title">🧪 運算子實驗室：&amp; | ^ &lt;&lt; &gt;&gt;</h2>
+    <p>位元運算子會把 A 和 B <b>一格一格對齊</b>，每一欄各自決定結果亮不亮。切換下面的運算子，再按「慢動作」看它怎麼一格一格比。A、B 的燈泡在這裡也可以直接點。</p>
+    <div class="lab-panel">
+      <div class="op-tabs" role="group" aria-label="運算子">
+        <button class="neon-btn op-tab active" data-op="&amp;" type="button" aria-pressed="true"><span class="sym">&amp;</span>雙重守衛</button>
+        <button class="neon-btn op-tab" data-op="|" type="button" aria-pressed="false"><span class="sym">|</span>開燈派對</button>
+        <button class="neon-btn op-tab" data-op="^" type="button" aria-pressed="false"><span class="sym">^</span>唱反調</button>
+        <button class="neon-btn op-tab" data-op="&lt;&lt;" type="button" aria-pressed="false"><span class="sym">&lt;&lt;</span>左滑</button>
+        <button class="neon-btn op-tab" data-op="&gt;&gt;" type="button" aria-pressed="false"><span class="sym">&gt;&gt;</span>右滑</button>
+      </div>
+
+      <div class="ops-grid">
+        <div class="ops-row"><div class="row-label">A</div><div id="opsA"></div><div class="row-dec" id="opsADec"></div></div>
+        <div class="ops-row" id="rowB"><div class="row-label">B</div><div id="opsB"></div><div class="row-dec" id="opsBDec"></div></div>
+        <div class="ops-row hidden" id="shiftCtl">
+          <div class="row-label">滑幾格</div>
+          <div class="shift-box">
+            <input type="range" id="shiftRange" min="0" max="7" step="1" aria-label="移動位數">
+            <input class="dec-input" type="number" id="shiftNum" min="0" max="7" style="width:70px" aria-label="移動位數">
+          </div>
+          <div class="row-dec" id="shiftDec"></div>
+        </div>
+        <div class="ops-divider"><span id="opSymbol">&amp;</span></div>
+        <div class="ops-row"><div class="row-label">結果</div><div id="opsR"></div><div class="row-dec" id="opsRDec"></div></div>
+        <div class="void-caption hidden" id="opsVoidCap"><span>🕳 左黑洞</span><span>右黑洞 🕳</span></div>
+      </div>
+
+      <div class="expr" id="opsExpr"></div>
+      <div class="lab-row" style="justify-content:center">
+        <button class="neon-btn primary" id="btnPlayOps" type="button">▶ 慢動作重播</button>
+      </div>
+      <div class="op-explain" id="opExplain"></div>
+      <div class="console-output" id="opsNarr">// 慢動作旁白會出現在這裡</div>
+    </div>
+  </section>
+
+  <!-- ===================== Card 4：C++ 程式碼 ===================== -->
+  <section class="card" id="code">
+    <h2 class="section-title">⌨️ C++ 程式碼即時對照</h2>
+    <p>你在上面動的每一下，這裡都會自動寫成 C++ 程式。有變動的那一行會閃一下，按「複製」就能直接貼到編譯器上跑跑看。</p>
+    <div class="code-toolbar">
+      <span class="type-badge" id="typeBadge">unsigned char</span>
+      <button class="neon-btn" id="btnCopy" type="button" style="color:#0077a3;border-color:#0077a3">📋 複製程式碼</button>
+    </div>
+    <div class="code-block" id="codeBlock" aria-label="C++ 程式碼"></div>
+    <div class="console-output" id="codeConsole"></div>
+    <div class="tip">🤔 <b>為什麼要寫 <code>(int)r</code>？</b> 因為 <code>cout</code> 看到 <code>char</code> 會把它當成「文字」，印出奇怪的符號。先轉成 <code>int</code>，它才會乖乖印出數字。</div>
+    <div class="tip">📦 <b>為什麼要存回 <code>r</code>？</b> C++ 做運算時會偷偷把 8 顆燈泡換成 32 顆的大盒子（<code>int</code>）。把結果存回 <code>char</code>，多出來的燈泡才會被切掉，跟上面的畫面一模一樣。</div>
+    <div class="tip warn hidden" id="codeWarn"></div>
+  </section>
+
+  <!-- ===================== Card 5：奇偶數 ===================== -->
+  <section class="card" id="odd-even">
+    <h2 class="section-title">🔍 實戰一：奇數還是偶數？只看最後一顆燈泡！</h2>
+    <p>除了最右邊那顆（面額 1），其他燈泡的面額都是 2、4、8……全是<b>偶數</b>。不管它們怎麼亮，加起來都是偶數。所以一個數字是奇是偶，<b>只由最後一顆燈泡決定</b>！</p>
+    <p><code>x &amp; 1</code> 就是派出 7 個守衛 🛡️ 把左邊 7 顆燈泡全擋住，只留下最後一顆來檢查。</p>
+    <div class="lab-panel">
+      <div class="lab-row" style="justify-content:space-between">
+        <span class="lab-label">x</span>
+        <label class="lab-note">十進位 <input class="dec-input" id="oeInput" type="number" inputmode="numeric"></label>
+      </div>
+      <div id="oePanel"></div>
+      <div class="input-hint" id="oeHint"></div>
+      <div class="lab-row"><span class="lab-label">&amp; 1</span></div>
+      <div id="oeMask"></div>
+      <div class="ops-divider" style="margin-top:16px"><span>=</span></div>
+      <div id="oeRes"></div>
+      <div class="verdict" id="oeVerdict"></div>
+      <div class="lab-row" style="justify-content:center">
+        <button class="neon-btn primary" id="btnOE" type="button">▶ 派出守衛</button>
+      </div>
+    </div>
+    <div class="code-block" style="margin-top:16px">
+      <span class="ln"><span class="tok-kw">if</span> (x &amp; <span class="tok-num">1</span>) {<span class="tok-cmt">// 最後一顆燈泡亮著</span></span>
+      <span class="ln ind-1">cout &lt;&lt; <span class="tok-str">"奇數"</span>;</span>
+      <span class="ln">} <span class="tok-kw">else</span> {</span>
+      <span class="ln ind-1">cout &lt;&lt; <span class="tok-str">"偶數"</span>;</span>
+      <span class="ln">}</span>
+    </div>
+    <div class="tip">🎯 <b>冷知識：</b>在 C++ 裡 <code>-3 % 2</code> 的答案是 <b>-1</b>，所以寫 <code>if (x % 2 == 1)</code> 會把負奇數誤判成偶數！<code>x &amp; 1</code> 只看燈泡，正數負數都不會出錯。切到 Signed 輸入 -3 試試看。</div>
+  </section>
+
+  <!-- ===================== Card 6：乘除法 ===================== -->
+  <section class="card" id="mul-div">
+    <h2 class="section-title">🕳️ 實戰二：往左滑變兩倍，往右滑砍一半</h2>
+    <p>每顆燈泡往左滑一格，面額就翻倍，所以 <code>x &lt;&lt; 1</code> 就是 <b>× 2</b>。反過來往右滑一格，面額砍半，<code>x &gt;&gt; 1</code> 就是 <b>÷ 2</b>。</p>
+    <p>但是！如果 x 是奇數，最右邊那顆「面額 1」的燈泡往右滑就沒地方站了，它會<b>掉進黑洞</b>永遠消失。那顆 1 就是被丟掉的「餘數」，所以整數除法才會<b>無條件捨去</b>。</p>
+    <div class="lab-panel">
+      <div class="lab-row" style="justify-content:space-between">
+        <span class="lab-label">x</span>
+        <label class="lab-note">十進位 <input class="dec-input" id="mdInput" type="number" inputmode="numeric"></label>
+      </div>
+      <div id="mdPanel"></div>
+      <div class="void-caption"><span>🕳 左黑洞</span><span>右黑洞 🕳</span></div>
+      <div class="input-hint" id="mdHint"></div>
+      <div class="lab-row" style="justify-content:center">
+        <button class="neon-btn primary" id="btnMul" type="button">x &lt;&lt; 1（× 2）</button>
+        <button class="neon-btn primary" id="btnDiv" type="button">x &gt;&gt; 1（÷ 2）</button>
+      </div>
+      <div class="formula" id="mdFormula"></div>
+      <div class="console-output" id="mdConsole">// 試試看奇數，例如 13，然後按 ÷ 2</div>
+    </div>
+    <div class="code-block" style="margin-top:16px">
+      <span class="ln"><span class="tok-kw">unsigned char</span> x = <span class="tok-num">13</span>;<span class="tok-cmt">// 00001101</span></span>
+      <span class="ln"><span class="tok-kw">unsigned char</span> half = x &gt;&gt; <span class="tok-num">1</span>;<span class="tok-cmt">// 00000110，最右邊的 1 掉進黑洞</span></span>
+      <span class="ln">cout &lt;&lt; (<span class="tok-kw">int</span>)half;<span class="tok-cmt">// 6，跟 13 / 2 一樣</span></span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================
+ *  工具
+ * ========================================================= */
+const delay = ms => new Promise(res => setTimeout(res, ms));
+const $ = id => document.getElementById(id);
+const setClass = (el, cls, on) => { if (on) el.classList.add(cls); else el.classList.remove(cls); };
+const restartAnim = (el, cls) => {
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+  el.addEventListener('animationend', () => el.classList.remove(cls), { once: true });
+};
+const escapeHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const say = (el, text, clear = false) => {
+  const lines = clear ? [] : el.textContent.split('\n').filter(l => l !== '');
+  lines.push(text);
+  el.textContent = lines.slice(-14).join('\n');
+  el.scrollTop = el.scrollHeight;
+};
+
+/* =========================================================
+ *  State（單一資料來源：只存 8-bit 原始位元 0~255）
+ * ========================================================= */
+const state = {
+  mode: 'unsigned',
+  rawA: 5,
+  rawB: 3,
+  shiftN: 1,
+  op: '&',
+  twosStep: 0,        // 0 閒置 / 1 反轉 / 2 加一 / 3 完成
+  twosRaw: 5,
+  introRaw: 0,
+  oeRaw: 13,
+  oeGuarded: false,
+  mdRaw: 13,
+  busy: { intro: false, twos: false, ops: false, oe: false, md: false },
+  revealed: new Set()
+};
+
+/* 衍生值 */
+const isSigned = () => state.mode === 'signed';
+const isShiftOp = () => state.op === '<<' || state.op === '>>';
+const toDec = raw => (isSigned() && raw >= 128 ? raw - 256 : raw);
+const toRaw = dec => dec & 0xFF;
+const range = () => (isSigned() ? [-128, 127] : [0, 255]);
+const bin = raw => raw.toString(2).padStart(8, '0');
+const cppType = () => (isSigned() ? 'signed char' : 'unsigned char');
+function shiftRaw(raw, dir, n, signed) {
+  if (dir === '<<') return (raw << n) & 0xFF;
+  if (signed && raw >= 128) return ((raw - 256) >> n) & 0xFF;   // 算術右移：複製脾氣開關
+  return raw >> n;
+}
+function computeResult() {
+  const { rawA, rawB, op, shiftN } = state;
+  if (op === '&') return rawA & rawB;
+  if (op === '|') return rawA | rawB;
+  if (op === '^') return rawA ^ rawB;
+  return shiftRaw(rawA, op, shiftN, isSigned());
+}
+function lockModule(cardId, key, on) {
+  state.busy[key] = on;
+  setClass($(cardId), 'is-busy', on);
+}
+
+/* =========================================================
+ *  位元面板元件
+ * ========================================================= */
+function createPanel(host, opts = {}) {
+  const wrap = document.createElement('div');
+  wrap.classList.add('bit-panel');
+  if (opts.hasVoid) wrap.classList.add('has-void');
+  const row = document.createElement('div');
+  row.classList.add('bit-row');
+  const cells = [];
+  for (let pos = 0; pos < 8; pos++) {
+    const idx = 7 - pos;
+    const cell = document.createElement(opts.onToggle ? 'button' : 'div');
+    cell.classList.add('bit-cell');
+    if (opts.onToggle) {
+      cell.type = 'button';
+      cell.classList.add('clickable');
+      cell.addEventListener('click', () => opts.onToggle(idx));
+    }
+    const box = document.createElement('span');
+    box.classList.add('bit-box');
+    box.textContent = '0';
+    const w = document.createElement('span');
+    w.classList.add('bit-weight');
+    cell.append(box, w);
+    if (pos === 0) {
+      const tag = document.createElement('span');
+      tag.classList.add('sign-tag');
+      tag.textContent = 'Sign Bit（脾氣開關）';
+      cell.append(tag);
+    }
+    row.append(cell);
+    cells.push(cell);
+  }
+  wrap.append(row);
+  host.append(wrap);
+  return { wrap, row, cells, raw: null };
+}
+
+function setCellBit(cell, b) {
+  cell.firstChild.textContent = b;
+  setClass(cell, 'on', b === 1);
+  cell.classList.remove('pending');
+}
+
+function renderPanel(p, raw, signed, quiet = false) {
+  p.cells.forEach((cell, pos) => {
+    const idx = 7 - pos;
+    const b = (raw >> idx) & 1;
+    const prev = p.raw === null ? null : (p.raw >> idx) & 1;
+    setCellBit(cell, b);
+    const isSign = signed && idx === 7;
+    setClass(cell, 'sign-bit', isSign);
+    const weight = isSign ? -128 : (1 << idx);
+    cell.children[1].textContent = String(weight);
+    if (cell.tagName === 'BUTTON') cell.setAttribute('aria-label', `第 ${idx} 格，面額 ${weight}，目前是 ${b}`);
+    if (!quiet && prev !== null && prev !== b) restartAnim(cell.firstChild, 'pop');
+  });
+  p.raw = raw;
+}
+
+/* 共用：位移動畫（滑動 → 掉進黑洞 → 補位） */
+async function animateShift(p, fromRaw, dir, n, signed) {
+  renderPanel(p, fromRaw, signed, true);
+  const to = shiftRaw(fromRaw, dir, n, signed);
+  if (n === 0) return to;
+  await delay(250);
+
+  const pitch = p.cells[1].getBoundingClientRect().left - p.cells[0].getBoundingClientRect().left;
+  const dx = (dir === '<<' ? -1 : 1) * n * pitch;
+  p.cells.forEach(c => { c.style.setProperty('--dx', dx + 'px'); c.classList.add('sliding'); });
+  await delay(560);
+
+  const dropPos = [];
+  for (let k = 0; k < n; k++) dropPos.push(dir === '<<' ? k : 7 - k);
+  dropPos.forEach(pos => {
+    const c = p.cells[pos];
+    c.style.setProperty('--rot', dir === '<<' ? '-35deg' : '35deg');
+    c.classList.add('falling');
+  });
+  restartAnim(p.wrap, dir === '<<' ? 'void-l' : 'void-r');
+  await delay(680);
+
+  p.cells.forEach(c => {
+    c.classList.add('no-trans');
+    c.classList.remove('sliding', 'falling');
+    c.style.removeProperty('--dx');
+    c.style.removeProperty('--rot');
+  });
+  renderPanel(p, to, signed, true);
+  void p.row.offsetWidth;
+  p.cells.forEach(c => c.classList.remove('no-trans'));
+
+  for (let k = 0; k < n; k++) {
+    const pos = dir === '<<' ? 7 - k : k;
+    const box = p.cells[pos].firstChild;
+    const isSignFill = dir === '>>' && signed && ((to >> (7 - pos)) & 1) === 1;
+    restartAnim(box, isSignFill ? 'fill-sign' : 'fill-in');
+  }
+  await delay(600);
+  return to;
+}
+
+/* =========================================================
+ *  建立所有面板
+ * ========================================================= */
+const toggleA = idx => setRaw('A', state.rawA ^ (1 << idx));
+const toggleB = idx => setRaw('B', state.rawB ^ (1 << idx));
+
+const pIntro = createPanel($('introPanel'), { onToggle: idx => { if (state.busy.intro) return; state.introRaw ^= (1 << idx); renderIntro(); } });
+const pA = createPanel($('panelA'), { onToggle: toggleA });
+const pB = createPanel($('panelB'), { onToggle: toggleB });
+const pT = createPanel($('twosPanel'));
+const oA = createPanel($('opsA'), { onToggle: toggleA });
+const oB = createPanel($('opsB'), { onToggle: toggleB });
+const oR = createPanel($('opsR'), { hasVoid: true });
+const pOE = createPanel($('oePanel'), { onToggle: idx => { if (state.busy.oe) return; state.oeRaw ^= (1 << idx); renderOE(); } });
+const pMask = createPanel($('oeMask'));
+const pOERes = createPanel($('oeRes'));
+const pMD = createPanel($('mdPanel'), { hasVoid: true, onToggle: idx => { if (state.busy.md) return; state.mdRaw ^= (1 << idx); renderMD(); } });
+
+/* 二補數進位火花 */
+const spark = document.createElement('span');
+spark.classList.add('carry-spark', 'hidden');
+spark.textContent = '+1';
+pT.wrap.append(spark);
+
+/* =========================================================
+ *  Actions
+ * ========================================================= */
+function setRaw(key, raw) {
+  state['raw' + key] = raw & 0xFF;
+  if (key === 'A') state.twosStep = 0;
+  renderAll();
+}
+
+function setMode(m) {
+  if (state.mode === m) return;
+  const before = toDec(state.rawA);
+  state.mode = m;
+  const after = toDec(state.rawA);
+  state.twosStep = 0;
+  $('modeNote').textContent = m === 'signed'
+    ? (before !== after
+        ? `😲 燈泡完全沒動，但 A 從 ${before} 變成 ${after}！因為最左邊變成脾氣開關了`
+        : '最左邊那顆燈泡現在是「脾氣開關」，面額 -128')
+    : (before !== after
+        ? `😌 脾氣開關退休了，A 從 ${before} 變回 ${after}`
+        : '目前：沒有正負號，8 顆燈泡全拿來算數字');
+  renderAll();
+}
+
+function setOp(op) {
+  if (state.busy.ops) return;
+  state.op = op;
+  renderAll();
+  say($('opsNarr'), `// 切換成 ${op}`, true);
+  if (isShiftOp()) playOpsShift();
+}
+
+function setShift(n, animate) {
+  n = Math.max(0, Math.min(7, Math.trunc(Number(n)) || 0));
+  state.shiftN = n;
+  renderAll();
+  if (animate) playOpsShift();
+}
+
+function bindDecInput(input, hint, getRaw, commit) {
+  input.addEventListener('input', () => {
+    const s = input.value.trim();
+    if (s === '' || s === '-') return;
+    const v = Number(s);
+    const [lo, hi] = range();
+    if (!Number.isInteger(v) || v < lo || v > hi) {
+      hint.textContent = `😵 ${s} 塞不進 8 顆燈泡！${isSigned() ? 'Signed' : 'Unsigned'} 的範圍只有 ${lo} ~ ${hi}`;
+      return;
+    }
+    hint.textContent = '';
+    commit(toRaw(v));
+  });
+  input.addEventListener('blur', () => {
+    hint.textContent = '';
+    input.value = toDec(getRaw());
+  });
+}
+
+/* =========================================================
+ *  Render
+ * ========================================================= */
+function syncInput(input, raw) {
+  const [lo, hi] = range();
+  input.min = lo;
+  input.max = hi;
+  if (document.activeElement !== input) input.value = toDec(raw);
+}
+
+function renderSandbox() {
+  const s = isSigned();
+  setClass($('modeU'), 'active', !s);
+  setClass($('modeS'), 'active', s);
+  $('modeU').setAttribute('aria-pressed', String(!s));
+  $('modeS').setAttribute('aria-pressed', String(s));
+  renderPanel(pA, state.rawA, s);
+  renderPanel(pB, state.rawB, s);
+  syncInput($('decA'), state.rawA);
+  syncInput($('decB'), state.rawB);
+  setClass($('blockB'), 'dimmed', isShiftOp());
+  setClass($('bNote'), 'hidden', !isShiftOp());
+  setClass($('signLegend'), 'hidden', !s);
+}
+
+const OP_INFO = {
+  '&': () => '<b>& 雙重守衛：兩個開關都打開，燈才會亮。</b>門口站了兩個守衛，A 和 B 都點頭（1）才放行；只要有一個搖頭（0），這格就是 0。',
+  '|': () => '<b>| 開燈派對：只要有一邊打開，燈就亮。</b>A 或 B 誰想開燈都可以，兩個都不想開才會熄燈。',
+  '^': () => '<b>^ 唱反調：兩邊不一樣才亮，一樣就熄燈。</b>這傢伙超愛唱反調：你們意見相同？那我偏要說 0！',
+  '<<': () => `<b>&lt;&lt; 左滑：全部燈泡往左滑 ${state.shiftN} 格。</b>右邊空出來的位置補 0，最左邊被擠出去的燈泡會掉進黑洞。每滑一格，數字就 × 2（前提是沒有亮著的燈泡掉下去）。` +
+        (isSigned() ? '<br>⚠️ 在 C++20 以前，對<b>負數</b>做左移是「未定義行為」，不同編譯器可能給出不同答案，考試和比賽時要小心！' : ''),
+  '>>': () => `<b>&gt;&gt; 右滑：全部燈泡往右滑 ${state.shiftN} 格。</b>最右邊被擠出去的燈泡掉進黑洞，每滑一格就 ÷ 2（無條件捨去）。` +
+        (isSigned() ? '<br>🔴 Signed 模式下，左邊空出來的位置會<b>複製脾氣開關</b>：負數補 1、正數補 0，這樣負數滑完還是負數。' : '<br>Unsigned 模式下，左邊空出來的位置一律補 0。')
+};
+
+function renderOps() {
+  document.querySelectorAll('.op-tab').forEach(btn => {
+    const on = btn.dataset.op === state.op;
+    setClass(btn, 'active', on);
+    btn.setAttribute('aria-pressed', String(on));
+  });
+  const s = isSigned();
+  const shift = isShiftOp();
+  setClass($('rowB'), 'hidden', shift);
+  setClass($('shiftCtl'), 'hidden', !shift);
+  setClass($('opsVoidCap'), 'hidden', !shift);
+  $('opSymbol').textContent = shift ? `${state.op} ${state.shiftN}` : state.op;
+  $('opExplain').innerHTML = OP_INFO[state.op]();
+  $('shiftRange').value = state.shiftN;
+  if (document.activeElement !== $('shiftNum')) $('shiftNum').value = state.shiftN;
+  $('shiftDec').textContent = state.shiftN + ' 格';
+
+  renderPanel(oA, state.rawA, s);
+  renderPanel(oB, state.rawB, s);
+  $('opsADec').textContent = toDec(state.rawA);
+  $('opsBDec').textContent = toDec(state.rawB);
+  if (state.busy.ops) return;            // 動畫進行中，結果列交給動畫處理
+
+  const r = computeResult();
+  renderPanel(oR, r, s);
+  $('opsRDec').textContent = toDec(r);
+  const right = shift ? state.shiftN : toDec(state.rawB);
+  $('opsExpr').innerHTML = `${toDec(state.rawA)} ${escapeHtml(state.op)} ${right} = <span class="res">${toDec(r)}</span>`;
+}
+
+function renderTwos() {
+  if (state.busy.twos) return;
+  const s = isSigned();
+  if (state.twosStep === 0) state.twosRaw = state.rawA;
+  renderPanel(pT, state.twosRaw, s, true);
+  setClass($('step1'), 'active', false);
+  setClass($('step2'), 'active', false);
+  setClass($('step1'), 'done', state.twosStep === 3);
+  setClass($('step2'), 'done', state.twosStep === 3);
+  setClass($('step3'), 'active', state.twosStep === 3);
+  $('btnApplyTwos').disabled = state.twosStep !== 3;
+  $('twosExpr').textContent = state.twosStep === 3
+    ? `${toDec(state.rawA)}  →  ${toDec(state.twosRaw)}`
+    : `A = ${bin(state.twosRaw)} = ${toDec(state.twosRaw)}`;
+  if (s) $('twosHint').classList.add('hidden');
+}
+
+/* C++ 程式碼產生器 */
+let prevCodeTexts = [];
+function hlCpp(code) {
+  let h = escapeHtml(code);
+  h = h.replace(/\b(\d+)\b/g, '<span class="tok-num">$1</span>');
+  h = h.replace(/\b(signed|unsigned|char|int|return|using|namespace|endl)\b/g, '<span class="tok-kw">$1</span>');
+  h = h.replace(/^#include/, '<span class="tok-pp">#include</span>');
+  h = h.replace(/&lt;iostream&gt;/, '<span class="tok-str">&lt;iostream&gt;</span>');
+  return h;
+}
+function buildCppLines() {
+  const T = cppType();
+  const shift = isShiftOp();
+  const r = computeResult();
+  const lines = [
+    { i: 0, c: '#include <iostream>' },
+    { i: 0, c: 'using namespace std;' },
+    { i: 0, c: '' },
+    { i: 0, c: 'int main() {' },
+    { i: 1, c: `${T} a = ${toDec(state.rawA)};`, m: bin(state.rawA) }
+  ];
+  if (shift) {
+    lines.push({ i: 1, c: `int n = ${state.shiftN};`, m: `往${state.op === '<<' ? '左' : '右'}滑 ${state.shiftN} 格` });
+    lines.push({ i: 1, c: `${T} r = a ${state.op} n;`, m: `${bin(r)}（存回 8 格盒子）` });
+  } else {
+    lines.push({ i: 1, c: `${T} b = ${toDec(state.rawB)};`, m: bin(state.rawB) });
+    lines.push({ i: 1, c: `${T} r = a ${state.op} b;`, m: bin(r) });
+  }
+  lines.push({ i: 1, c: 'cout << (int)r << endl;', m: `輸出：${toDec(r)}` });
+  lines.push({ i: 1, c: 'return 0;' });
+  lines.push({ i: 0, c: '}' });
+  return lines;
+}
+function renderCode() {
+  const lines = buildCppLines();
+  const block = $('codeBlock');
+  block.textContent = '';
+  const texts = [];
+  lines.forEach((ln, k) => {
+    const span = document.createElement('span');
+    span.classList.add('ln');
+    if (ln.i === 1) span.classList.add('ind-1');
+    if (ln.i === 2) span.classList.add('ind-2');
+    span.innerHTML = hlCpp(ln.c) + (ln.m ? `<span class="tok-cmt">// ${escapeHtml(ln.m)}</span>` : '');
+    const text = '    '.repeat(ln.i) + ln.c + (ln.m ? '  // ' + ln.m : '');
+    texts.push(text);
+    if (prevCodeTexts.length && prevCodeTexts[k] !== text) {
+      span.classList.add('hl');
+      setTimeout(() => span.classList.remove('hl'), 1400);
+    }
+    block.append(span);
+  });
+  prevCodeTexts = texts;
+  $('typeBadge').textContent = cppType();
+  $('codeConsole').textContent = `$ g++ bitwise.cpp -o bitwise && ./bitwise\n${toDec(computeResult())}`;
+
+  const warn = $('codeWarn');
+  if (isSigned() && state.op === '<<') {
+    warn.innerHTML = '⚠️ <b>有號數左移小提醒：</b>結果超出 -128 ~ 127 時，存回 <code>signed char</code> 會被切成 8 格（C++20 起保證這樣做）。對負數左移在 C++20 以前更是「未定義行為」。';
+    warn.classList.remove('hidden');
+  } else if (isSigned() && state.op === '>>') {
+    warn.innerHTML = '🔴 <b>有號數右移：</b>C++20 起保證是「複製脾氣開關」的算術右移，所以 <code>-5 &gt;&gt; 1</code> 會得到 <b>-3</b>（往更小的方向捨去）。';
+    warn.classList.remove('hidden');
+  } else {
+    warn.classList.add('hidden');
+  }
+}
+function copyCode() {
+  const text = prevCodeTexts.join('\n');
+  const done = () => {
+    $('btnCopy').textContent = '✅ 已複製！';
+    setTimeout(() => { $('btnCopy').textContent = '📋 複製程式碼'; }, 1500);
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+function fallbackCopy(text, done) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.append(ta);
+  ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) { /* ignore */ }
+  ta.remove();
+}
+
+function renderIntro() {
+  renderPanel(pIntro, state.introRaw, false);
+  const parts = [];
+  for (let idx = 7; idx >= 0; idx--) if ((state.introRaw >> idx) & 1) parts.push(1 << idx);
+  $('introSum').innerHTML = parts.length
+    ? `${parts.join(' + ')} = <span class="res">${state.introRaw}</span>`
+    : '全部熄燈 = <span class="res">0</span>';
+}
+
+function renderOE() {
+  const s = isSigned();
+  syncInput($('oeInput'), state.oeRaw);
+  if (state.busy.oe) return;
+  renderPanel(pOE, state.oeRaw, s);
+  renderPanel(pMask, 1, s, true);
+  renderPanel(pOERes, state.oeRaw & 1, s);
+  pOE.cells.forEach((c, pos) => {
+    setClass(c, 'guarded', state.oeGuarded && pos < 7);
+    setClass(c, 'spotlight', state.oeGuarded && pos === 7);
+  });
+  const odd = (state.oeRaw & 1) === 1;
+  const v = $('oeVerdict');
+  v.textContent = `${toDec(state.oeRaw)} & 1 = ${state.oeRaw & 1}  →  ${odd ? '奇數 🌟' : '偶數 💎'}`;
+  setClass(v, 'odd', odd);
+  setClass(v, 'even', !odd);
+}
+
+function renderMD() {
+  syncInput($('mdInput'), state.mdRaw);
+  if (state.busy.md) return;
+  renderPanel(pMD, state.mdRaw, isSigned());
+}
+
+function renderAll() {
+  renderSandbox();
+  renderTwos();
+  renderOps();
+  renderCode();
+  renderOE();
+  renderMD();
+}
+
+/* =========================================================
+ *  動畫流程
+ * ========================================================= */
+async function playIntro() {
+  if (state.busy.intro) return;
+  lockModule('intro', 'intro', true);
+  state.introRaw = 0;
+  renderIntro();
+  await delay(500);
+  for (const idx of [3, 2, 0]) {
+    state.introRaw |= (1 << idx);
+    renderIntro();
+    await delay(750);
+  }
+  lockModule('intro', 'intro', false);
+}
+
+async function playTwos() {
+  if (state.busy.twos) return;
+  if (!isSigned()) { $('twosHint').classList.remove('hidden'); return; }
+  lockModule('twos', 'twos', true);
+  const narr = $('twosNarr');
+  const start = state.rawA;
+  let raw = start;
+  renderPanel(pT, raw, true, true);
+  say(narr, `出發！A = ${bin(raw)} = ${toDec(raw)}`, true);
+  $('twosExpr').textContent = `${bin(raw)} = ${toDec(raw)}`;
+  setClass($('step3'), 'active', false);
+  setClass($('step1'), 'done', false);
+  setClass($('step2'), 'done', false);
+  $('btnApplyTwos').disabled = true;
+
+  /* Step 1：NOT */
+  setClass($('step1'), 'active', true);
+  say(narr, 'Step 1：全部翻臉！亮的熄掉、熄的點亮 🔄');
+  await delay(600);
+  pT.cells.forEach(c => restartAnim(c.firstChild, 'flip'));
+  await delay(300);
+  raw = (~raw) & 0xFF;
+  renderPanel(pT, raw, true, true);
+  await delay(450);
+  say(narr, `反轉後：${bin(raw)}`);
+  $('twosExpr').textContent = `${bin(raw)}（還差一步）`;
+  await delay(700);
+  setClass($('step1'), 'active', false);
+  setClass($('step1'), 'done', true);
+
+  /* Step 2：+1 與進位連鎖 */
+  setClass($('step2'), 'active', true);
+  say(narr, 'Step 2：尾數加一！+1 從最右邊出發 ➕');
+  const moveSpark = pos => {
+    const cell = pT.cells[pos];
+    spark.style.left = (cell.offsetLeft + cell.offsetWidth / 2) + 'px';
+  };
+  spark.classList.remove('spark-fall');
+  moveSpark(7);
+  spark.classList.remove('hidden');
+  await delay(500);
+  let carry = true;
+  for (let idx = 0; idx < 8; idx++) {
+    const pos = 7 - idx;
+    moveSpark(pos);
+    await delay(450);
+    if (((raw >> idx) & 1) === 1) {
+      raw &= ~(1 << idx);
+      renderPanel(pT, raw, true);
+      say(narr, `第 ${idx} 格：1 + 1 = 10 → 留下 0，把 1 進位給左邊 ⬅`);
+      await delay(350);
+    } else {
+      raw |= (1 << idx);
+      renderPanel(pT, raw, true);
+      say(narr, `第 ${idx} 格：0 + 1 = 1 → 進位停下來 ✋`);
+      carry = false;
+      await delay(450);
+      break;
+    }
+  }
+  if (carry) {
+    const c0 = pT.cells[0];
+    spark.style.left = (c0.offsetLeft - c0.offsetWidth / 2) + 'px';
+    await delay(420);
+    spark.classList.add('spark-fall');
+    say(narr, '最左邊還剩一個進位……沒位置了，掉進黑洞 🕳');
+    await delay(700);
+  }
+  spark.classList.add('hidden');
+  setClass($('step2'), 'active', false);
+
+  state.twosRaw = raw;
+  state.twosStep = 3;
+  if (start === 128) {
+    say(narr, '🥚 彩蛋：-128 變身後還是 -128！因為 +128 塞不進 8 顆燈泡（最大只有 127），它是唯一沒有正數分身的數字。');
+  } else if (start === 0) {
+    say(narr, '😎 0 的負數還是 0，翻來翻去最後多出的進位都掉進黑洞了。');
+  } else {
+    say(narr, `完成！${toDec(start)} → ${toDec(raw)} 🎉  再按一次「套用回 A」然後再變一次，看看會不會變回來？`);
+  }
+  lockModule('twos', 'twos', false);
+  if (state.rawA !== start) state.twosStep = 0;   // 動畫中 A 被改過了，結果作廢
+  renderTwos();
+}
+
+async function playOpsShift() {
+  if (state.busy.ops) return;
+  lockModule('operators', 'ops', true);
+  const n = state.shiftN, dir = state.op, s = isSigned(), from = state.rawA;
+  const narr = $('opsNarr');
+  say(narr, `把 A（${bin(from)}）全部往${dir === '<<' ? '左' : '右'}滑 ${n} 格……`, true);
+  $('opsRDec').textContent = '…';
+  const to = await animateShift(oR, from, dir, n, s);
+  const lost = [];
+  for (let k = 0; k < n; k++) lost.push(dir === '<<' ? (from >> (7 - k)) & 1 : (from >> k) & 1);
+  const lostOnes = lost.filter(b => b === 1).length;
+  if (n === 0) say(narr, '滑 0 格 = 原地不動 😴');
+  else say(narr, lostOnes ? `🕳 有 ${lostOnes} 顆亮著的燈泡掉進黑洞了！` : '🕳 掉進黑洞的都是熄滅的燈泡，沒有損失。');
+  if (dir === '>>' && n > 0) say(narr, s && from >= 128 ? '🔴 左邊補進來的是 1（複製脾氣開關，負數還是負數）' : '左邊補進來的是 0');
+  if (dir === '<<' && n > 0) say(narr, '右邊補進來的是 0');
+  say(narr, `結果：${bin(to)} = ${toDec(to)}`);
+  lockModule('operators', 'ops', false);
+  renderOps();
+}
+
+async function playCompare() {
+  if (state.busy.ops) return;
+  lockModule('operators', 'ops', true);
+  const narr = $('opsNarr');
+  const s = isSigned(), op = state.op;
+  const a = state.rawA, b = state.rawB, r = computeResult();
+  say(narr, `慢動作：A ${op} B，一格一格比 👀`, true);
+  renderPanel(oR, r, s, true);
+  oR.cells.forEach(c => { c.classList.add('pending'); c.firstChild.textContent = '?'; });
+  $('opsRDec').textContent = '?';
+  await delay(400);
+  for (let pos = 0; pos < 8; pos++) {
+    const idx = 7 - pos;
+    const ab = (a >> idx) & 1, bb = (b >> idx) & 1, rb = (r >> idx) & 1;
+    [oA, oB, oR].forEach(p => p.cells[pos].classList.add('col-focus'));
+    setCellBit(oR.cells[pos], rb);
+    restartAnim(oR.cells[pos].firstChild, 'pop');
+    say(narr, `第 ${idx} 格：${ab} ${op} ${bb} → ${rb} ${rb ? '💡' : '·'}`);
+    await delay(430);
+    [oA, oB, oR].forEach(p => p.cells[pos].classList.remove('col-focus'));
+  }
+  oR.raw = r;
+  say(narr, `結果：${bin(r)} = ${toDec(r)}`);
+  lockModule('operators', 'ops', false);
+  renderOps();
+}
+
+async function playGuards() {
+  if (state.busy.oe) return;
+  lockModule('odd-even', 'oe', true);
+  pOE.cells.forEach(c => { c.classList.remove('guarded', 'spotlight'); });
+  $('oeVerdict').textContent = '';
+  await delay(300);
+  for (let pos = 0; pos < 7; pos++) {
+    pOE.cells[pos].classList.add('guarded');
+    await delay(150);
+  }
+  await delay(250);
+  pOE.cells[7].classList.add('spotlight');
+  await delay(500);
+  state.oeGuarded = true;
+  lockModule('odd-even', 'oe', false);
+  renderOE();
+}
+
+async function mdShift(dir) {
+  if (state.busy.md) return;
+  lockModule('mul-div', 'md', true);
+  const s = isSigned();
+  const from = state.mdRaw, fd = toDec(from);
+  const dropped = dir === '<<' ? (from >> 7) & 1 : from & 1;
+  $('mdFormula').textContent = '';
+  const to = await animateShift(pMD, from, dir, 1, s);
+  state.mdRaw = to;
+  const td = toDec(to);
+  let html;
+  if (dir === '<<') {
+    html = fd * 2 === td
+      ? `<span class="big">${fd} &lt;&lt; 1 = ${td}</span><br>${fd} × 2 = ${td} ✔ 每顆燈泡面額都翻倍了！`
+      : `<span class="big">${fd} &lt;&lt; 1 = ${td}</span><br>${fd} × 2 應該是 ${fd * 2}，但它塞不進 8 顆燈泡，最左邊被擠掉了（這叫「溢位」）😱`;
+  } else {
+    const cppDiv = Math.trunc(fd / 2);
+    if (!dropped) {
+      html = `<span class="big">${fd} &gt;&gt; 1 = ${td}</span><br>${fd} ÷ 2 = ${td}，剛好整除，沒有亮著的燈泡掉下去 ✔`;
+    } else if (fd >= 0) {
+      html = `<span class="big">${fd} &gt;&gt; 1 = ${td}</span><br>${fd} ÷ 2 = ${fd / 2}，那個 .5 就是掉進黑洞的那顆 1！所以只剩 ${td}（無條件捨去）🕳`;
+    } else {
+      html = `<span class="big">${fd} &gt;&gt; 1 = ${td}</span><br>⚠️ 負數要注意：右移是往「更小」的方向捨去（${td}），但 C++ 的 ${fd} / 2 是往 0 捨去（${cppDiv}），兩個不一樣！`;
+    }
+  }
+  $('mdFormula').innerHTML = html;
+  say($('mdConsole'), `${fd} ${dir} 1 = ${td}` + (dropped ? '    ← 一顆亮著的燈泡掉進黑洞 🕳' : ''));
+  lockModule('mul-div', 'md', false);
+  renderMD();
+}
+
+/* =========================================================
+ *  事件綁定
+ * ========================================================= */
+$('modeU').addEventListener('click', () => setMode('unsigned'));
+$('modeS').addEventListener('click', () => setMode('signed'));
+bindDecInput($('decA'), $('hintA'), () => state.rawA, raw => setRaw('A', raw));
+bindDecInput($('decB'), $('hintB'), () => state.rawB, raw => setRaw('B', raw));
+
+$('btnIntro').addEventListener('click', playIntro);
+$('btnIntroClear').addEventListener('click', () => { state.introRaw = 0; renderIntro(); });
+
+$('btnTwos').addEventListener('click', playTwos);
+$('btnApplyTwos').addEventListener('click', () => setRaw('A', state.twosRaw));
+$('btnToSigned').addEventListener('click', () => { setMode('signed'); $('twosHint').classList.add('hidden'); });
+
+document.querySelectorAll('.op-tab').forEach(btn => btn.addEventListener('click', () => setOp(btn.dataset.op)));
+$('shiftRange').addEventListener('input', e => setShift(e.target.value, false));
+$('shiftRange').addEventListener('change', e => setShift(e.target.value, true));
+$('shiftNum').addEventListener('change', e => setShift(e.target.value, true));
+$('btnPlayOps').addEventListener('click', () => (isShiftOp() ? playOpsShift() : playCompare()));
+
+$('btnCopy').addEventListener('click', copyCode);
+
+bindDecInput($('oeInput'), $('oeHint'), () => state.oeRaw, raw => { state.oeRaw = raw; renderOE(); });
+$('btnOE').addEventListener('click', playGuards);
+
+bindDecInput($('mdInput'), $('mdHint'), () => state.mdRaw, raw => { state.mdRaw = raw; renderMD(); });
+$('btnMul').addEventListener('click', () => mdShift('<<'));
+$('btnDiv').addEventListener('click', () => mdShift('>>'));
+
+/* =========================================================
+ *  Intersection Observer：卡片進入視窗才進場 / 自動示範
+ * ========================================================= */
+const revealHooks = {
+  intro: playIntro,
+  'odd-even': playGuards,
+  'mul-div': async () => {
+    state.mdRaw = 13;
+    renderMD();
+    await delay(400);
+    mdShift('>>');
+  }
+};
+const io = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const card = entry.target;
+    card.classList.add('in-view');
+    io.unobserve(card);
+    if (!state.revealed.has(card.id)) {
+      state.revealed.add(card.id);
+      const hook = revealHooks[card.id];
+      if (hook) setTimeout(hook, 600);
+    }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.card').forEach(card => {
+  card.classList.add('reveal');
+  io.observe(card);
+});
+
+/* 初始化 */
+renderIntro();
+renderAll();
+</script>
+</body>
+</html>

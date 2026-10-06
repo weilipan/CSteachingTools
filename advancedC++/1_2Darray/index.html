@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第一週：APCS 考場生存與二維網格實戰</title>
+    <!-- 根據全站技術底層規範引入 -->
+    <link rel="stylesheet" href="../../theme.css">
+    <script src="../../layout.js" defer></script>
+    <!-- 引入 Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* 基礎變數與主題色 */
+        :root[data-theme="light"] {
+            --bg-color: #f8f9fa;
+            --text-color: #333333;
+            --card-bg: #ffffff;
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --border-color: #e9ecef;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --grid-bg: #e9ecef;
+            --cell-bg: #ffffff;
+            --cell-border: #dee2e6;
+            --cell-hover: #f8f9fa;
+            --accent: #4cc9f0;
+        }
+
+        :root[data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --primary: #4cc9f0;
+            --primary-hover: #3ab0d0;
+            --secondary: #4361ee;
+            --success: #2ec4b6;
+            --danger: #ef476f;
+            --warning: #ffd166;
+            --border-color: #333333;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --code-bg: #2d2d2d;
+            --code-text: #f8f8f2;
+            --grid-bg: #2d2d2d;
+            --cell-bg: #1e1e1e;
+            --cell-border: #333333;
+            --cell-hover: #2a2a2a;
+            --accent: #4cc9f0;
+        }
+
+        /* 版面保護 */
+        body {
+            padding: 0;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 1.6;
+        }
+
+        .container {
+            padding-top: 80px;
+            padding-bottom: 60px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        /* UI 元件 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 40px;
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        /* 英雄區塊 */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(76, 201, 240, 0.1));
+            border-radius: 20px;
+            margin-bottom: 50px;
+            border: 1px solid rgba(67, 97, 238, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            color: var(--text-color);
+            letter-spacing: -0.5px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            opacity: 0.8;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* 主題切換按鈕 */
+        .theme-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* 兩欄式排版 */
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 重點觀念卡片 */
+        .concept-card {
+            background: rgba(67, 97, 238, 0.05);
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 20px;
+        }
+
+        .concept-card h3 {
+            margin-top: 0;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 程式碼區塊規範 */
+        .code-container {
+            position: relative;
+            margin-bottom: 24px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2d2d2d;
+            color: #ccc;
+            padding: 10px 15px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #1e1e1e;
+        }
+
+        .copy-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .console-output {
+            white-space: pre-wrap;
+            font-family: 'Fira Code', monospace;
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        /* 程式碼縮排保護 (核心規範) */
+        .console-output span {
+            display: block;
+            white-space: nowrap;
+        }
+        .ind-1 { padding-left: 1.5rem !important; }
+        .ind-2 { padding-left: 3rem !important; }
+        .ind-3 { padding-left: 4.5rem !important; }
+        
+        
+        .keyword { color: #c678dd; }
+        .function { color: #61afef; }
+        .string { color: #98c379; }
+        .comment { color: #5c6370; font-style: italic; }
+        .number { color: #d19a66; }
+        .operator { color: #56b6c2; }
+        .type { color: #e5c07b; }
+        
+        /* 加上以下這段：強制語法高亮的 span 維持同行，避免斷行 */
+        .console-output span.keyword,
+        .console-output span.function,
+        .console-output span.string,
+        .console-output span.comment,
+        .console-output span.number,
+        .console-output span.operator,
+        .console-output span.type {
+            display: inline; 
+        }
+        /* 網格模擬器 */
+        .simulator-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        @media (max-width: 850px) {
+            .simulator-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .grid-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .grid-container {
+            background-color: var(--grid-bg);
+            padding: 10px;
+            border-radius: 12px;
+            display: inline-block;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            border: 2px solid var(--border-color);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(6, 50px);
+            grid-template-rows: repeat(6, 50px);
+            gap: 4px;
+        }
+
+        .cell {
+            background-color: var(--cell-bg);
+            border: 1px solid var(--cell-border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+            opacity: 0.8;
+        }
+
+        .cell:hover {
+            transform: scale(1.05);
+            opacity: 1;
+            background-color: var(--cell-hover);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        /* 網格狀態顏色 (使用 classList 切換) */
+        .cell-center {
+            background-color: var(--danger) !important;
+            color: white !important;
+            border-color: var(--danger) !important;
+            opacity: 1;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(247, 37, 133, 0.4);
+            z-index: 20;
+            font-weight: bold;
+        }
+
+        .cell-neighbor {
+            background-color: var(--primary) !important;
+            color: white !important;
+            border-color: var(--primary) !important;
+            opacity: 1;
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(67, 97, 238, 0.3);
+            z-index: 15;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1.02); opacity: 1; }
+        }
+
+        .status-panel {
+            margin-top: 24px;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 120px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .status-message {
+            margin: 10px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 1.05rem;
+        }
+
+        .status-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Fira Code', monospace;
+            margin: 0 4px;
+        }
+
+        .badge-danger { background: rgba(247, 37, 133, 0.1); color: var(--danger); }
+        .badge-primary { background: rgba(67, 97, 238, 0.1); color: var(--primary); }
+        
+        .direction-code {
+            background: var(--code-bg);
+            padding: 20px;
+            border-radius: 12px;
+            color: var(--code-text);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .direction-code::before {
+            content: 'C++ 方向陣列';
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(255,255,255,0.1);
+            padding: 4px 10px;
+            border-radius: 0 12px 0 12px;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        /* 手風琴折疊選單 */
+        .accordion {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .accordion-item {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: var(--card-bg);
+        }
+
+        .accordion-header {
+            padding: 20px;
+            background: rgba(0,0,0,0.02);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+
+        .accordion-header:hover {
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .accordion-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sdg-tag {
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .sdg-7 { background: #fcc30b; color: #333; }
+        .sdg-14 { background: #0a97d9; }
+        .sdg-15 { background: #56c02b; }
+        .sdg-2 { background: #dda63a; }
+        .sdg-3 { background: #4c9f38; }
+
+        .accordion-icon {
+            transition: transform 0.3s ease;
+            color: var(--primary);
+        }
+
+        .accordion-item.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-item.active {
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.1);
+        }
+
+        .accordion-item.active .accordion-header {
+            background: rgba(67, 97, 238, 0.05);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+            padding: 0 20px;
+            opacity: 0;
+        }
+
+        .accordion-item.active .accordion-content {
+            max-height: 1000px; /* 足夠大的數值 */
+            padding: 20px;
+            opacity: 1;
+            transition: max-height 0.6s ease-in-out, opacity 0.4s 0.2s ease, padding 0.4s ease;
+        }
+
+        .scenario {
+            background: rgba(0,0,0,0.03);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--secondary);
+        }
+
+        .highlight {
+            background: rgba(76, 201, 240, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--success);
+        }
+        
+        .highlight h4, .scenario h4 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 主題切換按鈕 -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切換深淺色模式">
+        🌙
+    </button>
+
+    <div class="container">
+        
+        <!-- 區塊一：頁首 (Hero Section) -->
+        <div class="hero card">
+            <h1>🚀 第一週：APCS 考場生存與二維網格實戰</h1>
+            <p>從基礎語法邁向演算法實戰，掌握二維陣列、方向陣列與模組化思維，為你的 APCS 檢定打下堅實基礎。</p>
+        </div>
+
+        <!-- 區塊二：APCS 考場生存指南 -->
+        <div class="card">
+            <h2 class="section-title">🛡️ APCS 考場生存指南</h2>
+            <p>在 APCS 考場上，穩定度與執行效率是拿分的關鍵。以下是競程選手必備的「起手式模板」，請務必熟記！</p>
+            
+            <div class="two-columns">
+                <div class="concepts">
+                    <div class="concept-card">
+                        <h3>1. 萬用標頭檔 <span style="font-family: 'Fira Code'; font-size: 0.8rem; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; margin-left: auto;">#include &lt;bits/stdc++.h&gt;</span></h3>
+                        <p>這行魔法指令會一次載入 C++ 標準函式庫中所有的標頭檔（如 iostream, vector, algorithm 等）。在分秒必爭的考場上，這能為你省下大量回想與打字的時間。</p>
+                    </div>
+                    
+                    <div class="concept-card" style="border-left-color: var(--warning);">
+                        <h3 style="color: var(--warning);">2. 擊敗 TLE (Time Limit Exceeded)</h3>
+                        <p>C++ 為了相容 C 語言，預設會同步 <code>cin/cout</code> 與 <code>scanf/printf</code> 的緩衝區。加上 <code>ios::sync_with_stdio(0); cin.tie(0);</code> 可以解除同步，大幅提升 I/O 速度。<br>
+                        <strong style="color: var(--danger);">⚠️ 警告：加入這兩行後，絕對不可與 scanf/printf 混用，否則會導致輸出順序錯亂！</strong></p>
+                    </div>
+
+                    <div class="concept-card" style="border-left-color: var(--danger);">
+                        <h3 style="color: var(--danger);">3. 全域變數黑魔法</h3>
+                        <p>APCS 題目常需要宣告大型二維陣列 (例如 <code>int arr[1005][1005];</code>)。如果宣告在 <code>main()</code> 裡面，會佔用 Stack 空間導致 <strong>Stack Overflow (RE)</strong>。宣告在 <code>main()</code> 之外（全域變數）會配置在 Data/BSS section，不僅空間大，還會<strong>自動初始化為 0</strong>。</p>
+                    </div>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span>APCS_Template.cpp</span>
+                            <button class="copy-btn" onclick="copyCode(this, 'apcs-template')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                複製程式碼
+                            </button>
+                        </div>
+                        <div class="console-output" id="apcs-template">
+<span class="keyword">#include</span> <span class="string">&lt;bits/stdc++.h&gt;</span>
+<span class="keyword">using namespace</span> <span class="type">std</span>;
+
+<span class="comment">// 【黑魔法】大陣列一律宣告為全域變數，避免 RE，且自動歸零</span>
+<span class="type">int</span> R, C;
+<span class="type">int</span> arr[<span class="number">1005</span>][<span class="number">1005</span>]; 
+
+<span class="type">int</span> <span class="function">main</span>() {
+<span class="ind-1"><span class="comment">// 【防禦 TLE】優化 I/O 速度 (切記不可混用 scanf/printf)</span></span>
+<span class="ind-1"><span class="type">ios</span>::<span class="function">sync_with_stdio</span>(<span class="number">0</span>);</span>
+<span class="ind-1"><span class="type">cin</span>.<span class="function">tie</span>(<span class="number">0</span>);</span>
+    
+<span class="ind-1"><span class="comment">// 【對付 ZeroJudge】EOF 多筆測資讀取寫法</span></span>
+<span class="ind-1"><span class="keyword">while</span> (<span class="type">cin</span> &gt;&gt; R &gt;&gt; C) {</span>
+<span class="ind-2"><span class="comment">// 在這裡撰寫你的邏輯...</span></span>
+<span class="ind-2"></span>
+<span class="ind-1">}</span>
+<span class="ind-1"><span class="keyword">return</span> <span class="number">0</span>;</span>
+}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 區塊三：互動模擬器 - 踩地雷 8 方向與護城河 -->
+        <div class="card">
+            <h2 class="section-title">🧭 互動模擬：8 方向探索與邊界護城河</h2>
+            <p>在二維網格問題中，「找鄰居」是最常見的操作。點擊下方網格，觀察方向陣列如何運作，以及程式碼如何判斷並阻擋「越界 (Out of Bounds)」造成的 RE。</p>
+            
+            <div class="simulator-layout">
+                <div class="grid-wrapper">
+                    <div class="grid-container">
+                        <div class="grid" id="grid">
+                            <!-- JS 動態生成 6x6 網格 -->
+                        </div>
+                    </div>
+                    
+                    <div class="status-panel" id="status-panel">
+                        <div style="text-align: center; color: var(--text-color); opacity: 0.7; margin-top: 30px;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 10px;"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg>
+                            <br>
+                            請點擊上方網格的任意格子開始模擬
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="direction-code">
+                        <span class="comment">// 方向陣列 (上,下,左,右,左上,右上,左下,右下)</span><br>
+                        <span class="type">int</span> dr[<span class="number">8</span>] = {<span class="number">-1</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">-1</span>, <span class="number">-1</span>, <span class="number">1</span>, <span class="number">1</span>};<br>
+                        <span class="type">int</span> dc[<span class="number">8</span>] = {<span class="number">0</span>, <span class="number">0</span>, <span class="number">-1</span>, <span class="number">1</span>, <span class="number">-1</span>, <span class="number">1</span>, <span class="number">-1</span>, <span class="number">1</span>};<br>
+                        <br>
+                        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">8</span>; i++) {<br>
+                        <div class="ind-1"><span class="type">int</span> nr = r + dr[i];</div>
+                        <div class="ind-1"><span class="type">int</span> nc = c + dc[i];</div>
+                        <br>
+                        <div class="ind-1"><span class="comment">// 🛡️ 護城河：邊界檢查</span></div>
+                        <div class="ind-1"><span class="keyword">if</span> (nr &gt;= <span class="number">0</span> &amp;&amp; nr &lt; <span class="number">6</span> &amp;&amp; nc &gt;= <span class="number">0</span> &amp;&amp; nc &lt; <span class="number">6</span>) {</div>
+                        <div class="ind-2"><span class="comment">// 安全！可以處理 arr[nr][nc]</span></div>
+                        <div class="ind-2">process(nr, nc);</div>
+                        <div class="ind-1">}</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 區塊四：SDGs 實戰題庫 -->
+        <div class="card">
+            <h2 class="section-title">🌍 SDGs 實戰題庫</h2>
+            <p>將演算法應用於解決聯合國永續發展目標 (SDGs) 的真實情境。點擊展開查看各題要點。</p>
+            
+            <div class="accordion" id="sdg-accordion">
+                <!-- 題目 1 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div class="accordion-title">
+                            <span class="sdg-tag sdg-7">SDGs 7</span>
+                            太陽能板陣列最佳化
+                        </div>
+                        <div class="accordion-icon">▼</div>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="scenario">
+                            <h4 style="color: #fcc30b;">📝 情境描述：可負擔的潔淨能源</h4>
+                            <p>為了最大化太陽能板的發電效率，工程師需要根據日照角度調整太陽能板陣列的方向。給定一個 N x M 的發電量矩陣，請將其進行「矩陣轉置 (Transpose)」，模擬陣列旋轉 90 度後的狀態，並找出發電量最高的新座標。</p>
+                        </div>
+                        <div class="highlight">
+                            <h4>💡 教學亮點</h4>
+                            <p>學習二維陣列的<strong>轉置操作</strong> (行列互換)。理解 <code>arr[i][j]</code> 轉置後變成 <code>transposed[j][i]</code> 的映射關係，並練習動態宣告不同維度大小的新陣列。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 題目 2 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div class="accordion-title">
+                            <span class="sdg-tag sdg-14">SDGs 14</span>
+                            珊瑚礁聲納地圖校正
+                        </div>
+                        <div class="accordion-icon">▼</div>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="scenario">
+                            <h4 style="color: #0a97d9;">📝 情境描述：保育海洋生態</h4>
+                            <p>無人潛水艇回傳的珊瑚礁健康度聲納圖形，因為探測器裝反，導致地圖上下顛倒且左右相反。請撰寫程式將 N x N 的二維地圖進行「水平翻轉」再「垂直翻轉」，還原真實的珊瑚礁分佈圖。</p>
+                        </div>
+                        <div class="highlight">
+                            <h4>💡 教學亮點</h4>
+                            <p>練習陣列的<strong>翻轉與旋轉</strong>。強調「暫存陣列 (Temp Array)」的重要性，展示如果直接在原陣列修改會導致資料被覆蓋的常見錯誤，培養安全的記憶體操作觀念。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 題目 3 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div class="accordion-title">
+                            <span class="sdg-tag sdg-15">SDGs 15</span>
+                            野火危險等級評估
+                        </div>
+                        <div class="accordion-icon">▼</div>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="scenario">
+                            <h4 style="color: #56c02b;">📝 情境描述：保育陸域生態</h4>
+                            <p>森林被劃分為 N x M 的網格，每個格子標示了植被乾燥度 (0~9)。若某格子的周圍 8 個方向中有超過 3 個格子的乾燥度大於 7，該格子就會被標記為「極高危險區」。請計算出地圖上有多少個極高危險區。</p>
+                        </div>
+                        <div class="highlight">
+                            <h4>💡 教學亮點</h4>
+                            <p>完美結合<strong>方向陣列 (dr, dc)</strong> 與<strong>邊界防禦機制</strong>的實戰題。學生需要實作一個雙層迴圈掃描全圖，並在內部使用第三層迴圈檢查 8 個鄰居，是訓練多層迴圈邏輯的絕佳練習。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 題目 4 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div class="accordion-title">
+                            <span class="sdg-tag sdg-2">SDGs 2</span>
+                            尋找最佳科技農業區塊
+                        </div>
+                        <div class="accordion-icon">▼</div>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="scenario">
+                            <h4 style="color: #dda63a;">📝 情境描述：消除飢餓 (智慧農業)</h4>
+                            <p>政府提供了一張農地肥沃度地圖。為建立一座 2x2 的全自動無人溫室，你需要找出地圖中哪一個 2x2 區塊的肥沃度總和最高，並輸出該總和值與區塊左上角的座標。</p>
+                        </div>
+                        <div class="highlight">
+                            <h4>💡 教學亮點</h4>
+                            <p>學習<strong>滑動視窗 (Sliding Window)</strong> 的基礎概念。特別強調迴圈邊界條件的設定 (`i < R-1` 且 `j < C-1`)，防禦存取 2x2 區塊右下角時發生越界溢位。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 題目 5 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div class="accordion-title">
+                            <span class="sdg-tag sdg-3">SDGs 3</span>
+                            變種病毒與免疫衰退模擬 (SIRS)
+                        </div>
+                        <div class="accordion-icon">▼</div>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="scenario">
+                            <h4 style="color: #4c9f38;">📝 情境描述：健康與福祉</h4>
+                            <p>模擬病毒在城市中的傳播。每個格子有 4 種狀態：0(易感)、1(感染期第一天)、2(感染期第二天)、3(免疫期)。每天狀態轉移規則如下：<br>
+                            - 狀態 1 變 2，狀態 2 變 3，狀態 3 變 0 (免疫衰退)。<br>
+                            - 狀態 0 的人，若周圍 4 個方向有狀態 1 或 2 的人，則隔天變為狀態 1。請輸出 K 天後的地圖狀態。</p>
+                        </div>
+                        <div class="highlight">
+                            <h4>💡 教學亮點 (壓軸題)</h4>
+                            <p>進階的<strong>狀態機轉移 (State Machine)</strong>。強烈警告學生「時間同步更新」的概念：<strong>絕對必須</strong>讀取原陣列 <code>arr</code>，並將下一天的結果寫入新陣列 <code>temp_arr</code>，最後再複製回去。如果不這麼做，新感染的人會在同一天的迴圈中立刻感染下一個人，導致一天內全城覆滅的邏輯錯誤。</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 核心共用功能 ---
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+
+        // --- Intersection Observer (進場動畫) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        // 動畫觸發後可以選擇取消觀察，若希望每次滾動都觸發則保留
+                        // observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1, // 卡片出現 10% 即觸發
+                rootMargin: "0px 0px -50px 0px"
+            });
+
+            document.querySelectorAll('.card').forEach(card => {
+                observer.observe(card);
+            });
+        });
+
+        // --- 深淺色模式切換 ---
+        const themeToggle = document.getElementById('themeToggle');
+        const htmlElement = document.documentElement;
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            htmlElement.setAttribute('data-theme', newTheme);
+            themeToggle.innerText = newTheme === 'light' ? '🌙' : '☀️';
+        });
+
+        // --- 複製程式碼功能 ---
+        async function copyCode(btnElement, targetId) {
+            const codeBlock = document.getElementById(targetId);
+            // 取得純文字並去掉不必要的 HTML tags
+            let textToCopy = codeBlock.innerText;
+            
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                const originalHTML = btnElement.innerHTML;
+                btnElement.innerHTML = '✅ 已複製';
+                btnElement.style.background = 'rgba(76, 201, 240, 0.3)';
+                
+                await delay(2000);
+                
+                btnElement.innerHTML = originalHTML;
+                btnElement.style.background = '';
+            } catch (err) {
+                console.error('複製失敗', err);
+            }
+        }
+
+        // --- 網格模擬器 ---
+        const R = 6;
+        const C = 6;
+        const gridElement = document.getElementById('grid');
+        const statusPanel = document.getElementById('status-panel');
+        let cells = [];
+
+        // 方向陣列 (上,下,左,右,左上,右上,左下,右下)
+        const dr = [-1, 1, 0, 0, -1, -1, 1, 1];
+        const dc = [0, 0, -1, 1, -1, 1, -1, 1];
+
+        // 初始化網格
+        function initGrid() {
+            gridElement.innerHTML = '';
+            cells = [];
+            for (let i = 0; i < R; i++) {
+                let row = [];
+                for (let j = 0; j < C; j++) {
+                    let cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.innerText = `${i},${j}`;
+                    
+                    // 點擊事件綁定
+                    cell.addEventListener('click', () => exploreGrid(i, j));
+                    
+                    gridElement.appendChild(cell);
+                    row.push(cell);
+                }
+                cells.push(row);
+            }
+        }
+
+        // 探索邏輯 (使用 async/await 處理動畫節奏)
+        async function exploreGrid(r, c) {
+            // 1. 重置所有格子狀態，嚴格使用 classList 避免洗掉其他 class
+            for (let i = 0; i < R; i++) {
+                for (let j = 0; j < C; j++) {
+                    cells[i][j].classList.remove('cell-center', 'cell-neighbor');
+                }
+            }
+
+            // 2. 標記中心點
+            cells[r][c].classList.add('cell-center');
+            
+            // 準備統計資料
+            let validCount = 0;
+            let outOfBoundsCount = 0;
+            let outOfBoundsCoords = [];
+
+            // UI 初始狀態
+            statusPanel.innerHTML = `
+                <div class="status-message">
+                    <div class="status-icon">🎯</div>
+                    <div>
+                        <strong>鎖定目標：</strong> <span class="badge badge-primary">(${r}, ${c})</span><br>
+                        <span style="font-size: 0.9em; opacity: 0.8;">正在向 8 個方向展開雷達探測...</span>
+                    </div>
+                </div>
+            `;
+
+            await delay(300); // 稍微停頓增加視覺回饋感
+
+            // 3. 檢查 8 個方向
+            for (let i = 0; i < 8; i++) {
+                let nr = r + dr[i];
+                let nc = c + dc[i];
+
+                // 護城河判斷邏輯
+                if (nr >= 0 && nr < R && nc >= 0 && nc < C) {
+                    cells[nr][nc].classList.add('cell-neighbor');
+                    validCount++;
+                } else {
+                    outOfBoundsCount++;
+                    outOfBoundsCoords.push(`(${nr},${nc})`);
+                }
+                
+                // 動態感：每個方向檢查稍微延遲一下，但不要太慢
+                await delay(50);
+            }
+
+            // 4. 更新最終統計面板
+            let finalStatusHTML = `
+                <div class="status-message">
+                    <div class="status-icon">🎯</div>
+                    <div><strong>中心座標：</strong> <span class="badge badge-primary">(${r}, ${c})</span></div>
+                </div>
+                <div class="status-message">
+                    <div class="status-icon" style="color: var(--success);">✅</div>
+                    <div>成功找到 <strong style="color: var(--success); font-size: 1.2em;">${validCount}</strong> 個有效鄰居。</div>
+                </div>
+            `;
+
+            if (outOfBoundsCount > 0) {
+                finalStatusHTML += `
+                <div class="status-message" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+                    <div class="status-icon">🛡️</div>
+                    <div>
+                        <strong style="color: var(--danger);">護城河發揮作用！</strong><br>
+                        擋下了 <strong style="color: var(--danger); font-size: 1.2em;">${outOfBoundsCount}</strong> 次越界存取，成功避免 Segmentation Fault (RE)！<br>
+                        <span style="font-size: 0.85em; opacity: 0.8; font-family: monospace;">越界座標：${outOfBoundsCoords.join(', ')}</span>
+                    </div>
+                </div>`;
+            } else {
+                finalStatusHTML += `
+                <div class="status-message" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+                    <div class="status-icon">🌟</div>
+                    <div style="color: var(--success);">
+                        <strong>完美落點！</strong><br>
+                        位於安全地帶，8 個方向完全沒有越界問題。
+                    </div>
+                </div>`;
+            }
+
+            statusPanel.innerHTML = finalStatusHTML;
+        }
+
+        // 初始化
+        initGrid();
+
+        // --- 手風琴折疊選單邏輯 ---
+        const accordionItems = document.querySelectorAll('.accordion-item');
+        
+        accordionItems.forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            
+            header.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                
+                // 關閉其他所有展開的項目 (單選模式)
+                accordionItems.forEach(otherItem => {
+                    otherItem.classList.remove('active');
+                });
+
+                // 切換當前項目的狀態
+                if (!isActive) {
+                    item.classList.add('active');
+                    // 當展開時，將該區塊滾動到可見範圍
+                    setTimeout(() => {
+                        item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 300);
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>C++ 前綴和與迴文 (Prefix Sum & Palindrome) 互動式教學</title>
+  <link rel="stylesheet" href="../../theme.css">
+  <script src="../../layout.js" defer></script>
+  <style>
+    body { padding: 0; margin: 0; }
+    .container { padding-top: 80px; padding-bottom: 60px; }
+
+    /* ── 共用 Code blocks 與樣式 ── */
+    .code-block {
+      font-family: 'Courier New', monospace; font-size: .88rem;
+      background: #0d1117; color: #c9d1d9; border-radius: 10px;
+      padding: 14px 18px; line-height: 1.75; margin: 10px 0;
+      border: 1px solid #30363d; overflow-x: auto;
+    }
+    .code-line {
+      display: block; padding: 2px 6px; border-radius: 4px;
+      transition: background .3s, color .3s;
+    }
+    .hl-green  { background:#1a4a1e; color:#56d364; font-weight:700; }
+    .hl-red    { background:#4a1a1a; color:#f85149; font-weight:700; }
+    .hl-blue   { background:#0d2a4a; color:#58a6ff; font-weight:700; }
+    .hl-yellow { background:#3a2f00; color:#e3b341; font-weight:700; }
+
+    .ctrl-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:10px 0; }
+    .btn {
+      padding:8px 20px; border-radius:8px; border:none; cursor:pointer;
+      background:var(--accent-color,#4f8ef7); color:#fff;
+      font-size:.9rem; font-weight:700; transition:opacity .2s, transform .1s;
+    }
+    .btn:hover { opacity:.85; } .btn:active { transform:scale(.97); }
+    .btn:disabled { opacity:.45; cursor:not-allowed; }
+    
+    .out-box {
+      background:#161b22; border:1px solid #30363d; border-radius:8px;
+      padding:10px 14px; min-height:40px; font-family:monospace;
+      font-size:.9rem; color:#c9d1d9; margin-top:8px;
+      white-space: pre-wrap;
+    }
+
+    h2.mod-title { font-size:1.15rem; margin:0 0 4px; display:flex; align-items:center; gap:8px; }
+    .sec-desc { color:#8b949e; font-size:.92rem; margin:4px 0 12px; line-height:1.6; }
+
+    /* ── 陣列與指標視覺化 ── */
+    .array-vis-wrap { overflow-x: auto; padding: 8px 0 12px; }
+    .array-vis { display: inline-flex; gap: 0; position: relative; }
+    .arr-cell-col { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
+    .arr-idx { font-family: monospace; font-size: .78rem; color: #58a6ff; font-weight: 700; margin-bottom: 4px; }
+    .arr-cell {
+      width: 52px; height: 52px;
+      border: 2px solid #30363d; background: #1c2128;
+      display: flex; align-items: center; justify-content: center;
+      font-family: monospace; font-size: 1.3rem; font-weight: 700; color: #c9d1d9;
+      transition: all .3s;
+    }
+    .arr-cell.active { border-color:#58a6ff; background:#0d2a4a; color:#58a6ff; transform: scale(1.05); }
+    .arr-cell.match { border-color:#56d364; background:#1a4a1e; color:#56d364; }
+    .arr-cell.mismatch { border-color:#f85149; background:#4a1a1a; color:#f85149; }
+    .arr-cell.cut { border-color:#f85149; background:#4a1a1a; opacity: 0.3; border-style: dashed; }
+    .arr-cell:first-child { border-radius: 8px 0 0 8px; }
+    .arr-cell-col:last-child .arr-cell { border-radius: 0 8px 8px 0; }
+
+    .ptr-row { display: flex; gap: 0; position: relative; min-height: 28px; }
+    .ptr-cell {
+      width: 60px; display: flex; justify-content: center; align-items: center;
+      font-size: 1.1rem; color: #58a6ff; font-weight:700; transition: opacity .3s;
+    }
+    .ptr-cell.hidden { opacity:0; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1 class="section-title">🔄 C++ 雙指標與前綴和</h1>
+  
+  <!-- ═══ MODULE 1: Palindrome (Two Pointers) ═══ -->
+  <div class="card">
+    <h2 class="mod-title">🔍 1. 迴文判斷：雙指標對撞 (Two Pointers)</h2>
+    <p class="sec-desc">使用 <code>L</code> 與 <code>R</code> 指標從頭尾同時往中間檢查。若字元相同則繼續，直到相遇。</p>
+    <div class="code-block">
+      <span class="code-line" id="m1-c1">int L = 0, R = s.length() - 1;</span>
+      <span class="code-line" id="m1-c2">while (L &lt; R) {</span>
+      <span class="code-line" id="m1-c3">&nbsp;&nbsp;if (s[L] != s[R]) return false;</span>
+      <span class="code-line" id="m1-c4">&nbsp;&nbsp;L++; R--;</span>
+      <span class="code-line">}</span>
+    </div>
+    <div class="array-vis-wrap">
+      <div class="ptr-row" id="m1-ptr-top"></div>
+      <div class="array-vis" id="m1-arr"></div>
+    </div>
+    <div class="ctrl-row">
+      <button class="btn" id="m1-btn" onclick="runM1()">▶ 模擬雙指標</button>
+      <button class="btn" style="background:#555;" onclick="resetM1()">↺ 重置</button>
+    </div>
+    <div class="out-box" id="m1-out">— 點擊開始 —</div>
+  </div>
+
+  <!-- ═══ MODULE 2: Prefix Sum Construction (0-based) ═══ -->
+  <div class="card">
+    <h2 class="mod-title">🧱 2. 建立前綴和陣列 (0-based Indexing)</h2>
+    <p class="sec-desc">陣列從 0 開始。<code>prefix[i]</code> 記錄從 index 0 到 i 的總和。注意 <code>i=0</code> 需要獨立處理！</p>
+    <div class="code-block">
+      <span class="code-line" id="m2-c1">prefix[0] = arr[0]; <span style="color:#6e7681;">// 0-based 第一格獨立處理</span></span>
+      <span class="code-line" id="m2-c2">for (int i = 1; i &lt; N; i++) {</span>
+      <span class="code-line" id="m2-c3">&nbsp;&nbsp;prefix[i] = prefix[i-1] + arr[i];</span>
+      <span class="code-line">}</span>
+    </div>
+    <div class="array-vis-wrap">
+      <div style="margin-bottom:8px; color:#c9d1d9; font-family:monospace;">arr (原陣列)</div>
+      <div class="array-vis" id="m2-arr"></div>
+      <div style="margin:16px 0 8px; color:#c9d1d9; font-family:monospace;">prefix (前綴和陣列)</div>
+      <div class="array-vis" id="m2-prefix"></div>
+    </div>
+    <div class="ctrl-row">
+      <button class="btn" id="m2-btn" onclick="runM2()">▶ 建立前綴和</button>
+      <button class="btn" style="background:#555;" onclick="resetM2()">↺ 重置</button>
+    </div>
+    <div class="out-box" id="m2-out">— 點擊開始建表 —</div>
+  </div>
+
+  <!-- ═══ MODULE 3: Range Query (積木相減) ═══ -->
+  <div class="card">
+    <h2 class="mod-title">✂️ 3. 區間和查詢 (Range Sum Query)</h2>
+    <p class="sec-desc">計算 <code>L</code> 到 <code>R</code> 的總和，公式為 <code>prefix[R] - prefix[L-1]</code>。若 <code>L=0</code>，需特別防呆！</p>
+    <div class="code-block">
+      <span class="code-line" id="m3-c1">if (L == 0) {</span>
+      <span class="code-line" id="m3-c2">&nbsp;&nbsp;sum = prefix[R];</span>
+      <span class="code-line" id="m3-c3">} else {</span>
+      <span class="code-line" id="m3-c4">&nbsp;&nbsp;sum = prefix[R] - prefix[L-1];</span>
+      <span class="code-line">}</span>
+    </div>
+    <div class="array-vis-wrap">
+      <div class="array-vis" id="m3-prefix"></div>
+    </div>
+    <div class="ctrl-row">
+      <span style="color:#c9d1d9;">查詢區間 L:</span><select id="m3-l" class="btn" style="background:#0d1117; border:1px solid #30363d;"></select>
+      <span style="color:#c9d1d9;">R:</span><select id="m3-r" class="btn" style="background:#0d1117; border:1px solid #30363d;"></select>
+      <button class="btn" id="m3-btn" onclick="runM3()">▶ 執行相減</button>
+    </div>
+    <div class="out-box" id="m3-out">— 選擇 L 與 R 開始查詢 —</div>
+  </div>
+</div>
+
+<script>
+// 共用延遲函數
+const delay = ms => new Promise(r => setTimeout(r, ms));
+function hl(id, cls) { document.getElementById(id).className = 'code-line ' + cls; }
+function clr(...ids) { ids.forEach(id => document.getElementById(id).className = 'code-line'); }
+
+/* ── Module 1: Palindrome ── */
+const strM1 = "RACECAR";
+function resetM1() {
+  document.getElementById('m1-arr').innerHTML = strM1.split('').map((c,i) => 
+    `<div class="arr-cell-col"><div class="arr-idx">[${i}]</div><div class="arr-cell" id="m1-c-${i}">${c}</div></div>`
+  ).join('');
+  document.getElementById('m1-ptr-top').innerHTML = strM1.split('').map((_,i) => 
+    `<div class="ptr-cell hidden" id="m1-p-${i}">▼</div>`
+  ).join('');
+  document.getElementById('m1-out').textContent = '— 點擊開始 —';
+  clr('m1-c1','m1-c2','m1-c3','m1-c4');
+  document.getElementById('m1-btn').disabled = false;
+}
+
+async function runM1() {
+  document.getElementById('m1-btn').disabled = true;
+  let L = 0, R = strM1.length - 1;
+  const out = document.getElementById('m1-out');
+  
+  hl('m1-c1', 'hl-blue');
+  out.textContent = `初始化 L=${L}, R=${R}`;
+  await delay(800);
+  
+  while (L < R) {
+    clr('m1-c1','m1-c4'); hl('m1-c2', 'hl-yellow');
+    
+    // 更新指標顯示
+    document.querySelectorAll('[id^="m1-p-"]').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`m1-p-${L}`).innerHTML = 'L<br>▼';
+    document.getElementById(`m1-p-${L}`).classList.remove('hidden');
+    document.getElementById(`m1-p-${R}`).innerHTML = 'R<br>▼';
+    document.getElementById(`m1-p-${R}`).classList.remove('hidden');
+    
+    const cL = document.getElementById(`m1-c-${L}`);
+    const cR = document.getElementById(`m1-c-${R}`);
+    cL.classList.add('active'); cR.classList.add('active');
+    
+    out.textContent = `比較 s[${L}] ('${strM1[L]}') 與 s[${R}] ('${strM1[R]}')`;
+    await delay(1000);
+    
+    clr('m1-c2'); hl('m1-c3', 'hl-blue');
+    if (strM1[L] === strM1[R]) {
+      cL.classList.replace('active', 'match'); cR.classList.replace('active', 'match');
+      out.textContent = `字元相同，繼續檢查。`;
+      await delay(800);
+      clr('m1-c3'); hl('m1-c4', 'hl-green');
+      L++; R--;
+      await delay(800);
+    } else {
+      cL.classList.replace('active', 'mismatch'); cR.classList.replace('active', 'mismatch');
+      hl('m1-c3', 'hl-red');
+      out.textContent = `字元不符！提早結束 return false;`;
+      return;
+    }
+  }
+  document.getElementById(`m1-c-${L}`).classList.add('match');
+  out.textContent = `✅ L >= R，檢查完畢。此字串是迴文 (return true)！`;
+  document.getElementById('m1-btn').disabled = false;
+}
+
+/* ── Module 2: Prefix Sum Construction ── */
+const arrM2 = [3, 1, 4, 1, 5];
+let preM2 = new Array(5).fill(0);
+function resetM2() {
+  preM2.fill(0);
+  document.getElementById('m2-arr').innerHTML = arrM2.map((c,i) => 
+    `<div class="arr-cell-col"><div class="arr-idx">[${i}]</div><div class="arr-cell" id="m2-a-${i}">${c}</div></div>`
+  ).join('');
+  document.getElementById('m2-prefix').innerHTML = preM2.map((c,i) => 
+    `<div class="arr-cell-col"><div class="arr-idx">[${i}]</div><div class="arr-cell" id="m2-p-${i}">?</div></div>`
+  ).join('');
+  document.getElementById('m2-out').textContent = '— 點擊開始建表 —';
+  clr('m2-c1','m2-c2','m2-c3');
+  document.getElementById('m2-btn').disabled = false;
+}
+
+async function runM2() {
+  document.getElementById('m2-btn').disabled = true;
+  const out = document.getElementById('m2-out');
+  
+  // 處理 0-based 首項
+  hl('m2-c1', 'hl-blue');
+  preM2[0] = arrM2[0];
+  document.getElementById('m2-a-0').classList.add('match');
+  document.getElementById('m2-p-0').textContent = preM2[0];
+  document.getElementById('m2-p-0').classList.add('match');
+  out.textContent = `0-based 第一格特別處理：prefix[0] = arr[0] = ${preM2[0]}`;
+  await delay(1200);
+  
+  for(let i=1; i<arrM2.length; i++) {
+    clr('m2-c1','m2-c3'); hl('m2-c2', 'hl-yellow');
+    document.querySelectorAll('.arr-cell').forEach(el => el.classList.remove('active', 'match'));
+    await delay(500);
+    
+    clr('m2-c2'); hl('m2-c3', 'hl-green');
+    document.getElementById(`m2-a-${i}`).classList.add('active'); // 本次的值
+    document.getElementById(`m2-p-${i-1}`).classList.add('active'); // 累積的值
+    
+    preM2[i] = preM2[i-1] + arrM2[i];
+    out.textContent = `計算 prefix[${i}] = prefix[${i-1}] (${preM2[i-1]}) + arr[${i}] (${arrM2[i]}) = ${preM2[i]}`;
+    await delay(800);
+    
+    document.getElementById(`m2-p-${i}`).textContent = preM2[i];
+    document.getElementById(`m2-p-${i}`).classList.add('match');
+    await delay(800);
+  }
+  clr('m2-c3');
+  out.textContent = `✅ O(N) 前綴和建表完成！`;
+  document.getElementById('m2-btn').disabled = false;
+}
+
+/* ── Module 3: Range Query ── */
+const preM3 = [3, 4, 8, 9, 14]; // arr: [3,1,4,1,5]
+function initM3() {
+  document.getElementById('m3-prefix').innerHTML = preM3.map((c,i) => 
+    `<div class="arr-cell-col"><div class="arr-idx">[${i}]</div><div class="arr-cell" id="m3-p-${i}">${c}</div></div>`
+  ).join('');
+  
+  const selL = document.getElementById('m3-l');
+  const selR = document.getElementById('m3-r');
+  selL.innerHTML = ''; selR.innerHTML = '';
+  for(let i=0; i<5; i++) {
+    selL.innerHTML += `<option value="${i}">${i}</option>`;
+    selR.innerHTML += `<option value="${i}">${i}</option>`;
+  }
+  selL.value = "1"; selR.value = "3";
+}
+
+async function runM3() {
+  document.getElementById('m3-btn').disabled = true;
+  const out = document.getElementById('m3-out');
+  let L = parseInt(document.getElementById('m3-l').value);
+  let R = parseInt(document.getElementById('m3-r').value);
+  
+  // 初始化樣式
+  document.querySelectorAll('[id^="m3-p-"]').forEach(el => el.className = 'arr-cell');
+  
+  if (L > R) { out.textContent = "❌ L 不能大於 R！"; document.getElementById('m3-btn').disabled = false; return; }
+
+  if (L === 0) {
+    clr('m3-c4'); hl('m3-c1', 'hl-yellow'); await delay(500);
+    hl('m3-c2', 'hl-green');
+    document.getElementById(`m3-p-${R}`).classList.add('match');
+    out.textContent = `L=0，不需要扣除任何前綴。\nSum = prefix[${R}] = ${preM3[R]}`;
+  } else {
+    clr('m3-c2'); hl('m3-c3', 'hl-yellow'); await delay(500);
+    hl('m3-c4', 'hl-green');
+    
+    document.getElementById(`m3-p-${R}`).classList.add('match');
+    out.textContent = `目標包含 0~${R} 的總和 (${preM3[R]})，準備扣除多餘的部分...`;
+    await delay(1200);
+    
+    document.getElementById(`m3-p-${L-1}`).classList.add('cut');
+    out.textContent = `切除多餘的 0~${L-1} 的總和 (prefix[${L-1}] = ${preM3[L-1]})\nSum = ${preM3[R]} - ${preM3[L-1]} = ${preM3[R] - preM3[L-1]}`;
+  }
+  
+  await delay(1000);
+  document.getElementById('m3-btn').disabled = false;
+}
+
+// 初始化
+resetM1();
+resetM2();
+initM3();
+</script>
+</body>
+</html>

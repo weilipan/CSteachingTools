@@ -1,0 +1,65 @@
+【專案背景與角色設定】
+
+你是一位專業的前端工程師與資訊教育專家。我正在構建一個「互動式視覺化程式設計教學網站」，目前需要產出教學網頁。
+
+我們將採取「先討論模組架構，確認無誤後，再由你產出給程式碼生成器 (Antigravity) 的最終 Prompt」的工作模式。
+
+
+
+## 🚨 全站技術與設計底層規範 (不變的鐵律，必須嚴格遵守)
+
+1. **外部資源引入**：必須在 `<head>` 引入 `<link rel="stylesheet" href="../../theme.css">` 與 `<script src="../../layout.js" defer></script>`。
+2. **版面保護**：`body { padding: 0; margin: 0; background-color: #f8f9fa; }`，安全邊距由 `.container { padding-top: 80px; padding-bottom: 60px; max-width: 1000px; margin: 0 auto; }` 負責。
+3. **排版框架**：
+   - 統一使用 `.container` 作為最外層。
+   - 每個教學模組必須包裝在獨立的 `.card` 中（需加上陰影、圓角、與適當的 margin-bottom 分隔，背景以白色為主）。
+   - 模組標題使用 `.section-title`。
+4. **Console 輸出保護**：模擬終端機輸出的區塊（例如 `.console-output`），必須強制套用 `white-space: pre-wrap; font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px;`。
+5. **動畫與互動核心**：
+   - 複雜的視覺化流程，必須採用 `async function` 搭配自訂的 `const delay = ms => new Promise(res => setTimeout(res, ms));` 進行控制，確保不卡頓且邏輯清晰。
+   - 必須使用 `Intersection Observer API`，只有當該 `.card` 滾動進入視窗範圍時，才允許觸發進場動畫。
+6. **🔥 程式碼排版保護機制 (極度重要！防止編輯器自動換行導致跑版)**：
+   - 展示 Python 程式碼的區塊，**絕對禁止**依賴 HTML 原始碼中的空白鍵、`&nbsp;` 或 `white-space: pre` 來控制 Python 的縮排。
+   - **HTML/CSS 規範**：每一行程式碼必須包裝在獨立的 `<span>` 內，並設定 `display: block; white-space: nowrap;`。
+   - **縮排規範**：使用 CSS class 來控制縮排。請在 `<style>` 中定義 `.ind-1 { padding-left: 1.5rem !important; }` 與 `.ind-2 { padding-left: 3rem !important; }`。在 HTML 中直接套用該 class (例如 `<span class="ln ind-1">price = 250</span>`)。
+   - **JS 操作規範**：當 JS 需要動態切換程式碼的高亮狀態時，**嚴禁直接覆寫 `className` (會洗掉 ind-1)**，必須嚴格使用 `element.classList.add()` 與 `element.classList.remove()`。
+
+【本次任務主題】
+網頁標題：「高二進階程式設計 - 第一週：APCS 考場生存與二維網格實戰」
+
+請將網頁劃分為以下四大區塊 (Section)：
+
+---
+【區塊一：頁首 (Hero Section)】
+大標題：🚀 第一週：APCS 考場生存與二維網格實戰
+副標題：從基礎語法邁向演算法實戰，掌握二維陣列、方向陣列與模組化思維。
+
+---
+【區塊二：APCS 考場生存指南 (Lecture Notes)】
+請用兩欄式排版或卡片設計，呈現以下三個重點觀念，並附上 C++ 程式碼區塊 (需有「複製程式碼」按鈕)：
+1. 萬用標頭檔：介紹 `#include <bits/stdc++.h>`。
+2. 擊敗 TLE (輸入輸出優化)：介紹 `ios::sync_with_stdio(0); cin.tie(0);`，並特別警告不可與 scanf/printf 混用。
+3. 全域變數黑魔法：說明在 APCS 中，大型二維陣列 (如 `int arr[1005][1005];`) 必須宣告在 main() 之外，以避免 Stack Overflow 並預設歸零。
+
+---
+【區塊三：互動模擬器 - 踩地雷 8 方向與護城河】
+請寫一段 JavaScript，在畫面上生成一個 6x6 的網格。
+- 互動邏輯：當使用者點擊任意格子時，該格子標示為「中心點 (紅色)」，其周圍 8 個方向的格子標示為「鄰居 (藍色)」。
+- 邊界防禦機制：如果點擊邊緣的格子，JavaScript 需計算出有幾個方向「越界 (小於 0 或大於等於 6)」，並在網格下方顯示提示訊息，例如：「✅ 成功找到 X 個鄰居。🛡️ 護城河發揮作用！擋下了 Y 次越界存取 (避免了 RE)」。
+- 旁邊需附上 C++ 方向陣列的語法對照 (`int dr[8] = {-1, -1, -1, 0, 0, 1, 1, 1};`)。
+
+---
+【區塊四：SDGs 實戰題庫 (Tabs 或手風琴折疊選單)】
+請設計一個區塊，用 Tab 切換或手風琴 (Accordion) 呈現本週的 5 道 SDGs 實戰題。每一題需要包含「題目標題、情境描述、教學亮點」。
+1. [SDGs 7] 太陽能板陣列最佳化：練習二維陣列轉置。
+2. [SDGs 14] 珊瑚礁聲納地圖校正：練習陣列翻轉、旋轉與暫存陣列應用。
+3. [SDGs 15] 野火危險等級評估：結合方向陣列，計算周圍 8 格火源。
+4. [SDGs 2] 尋找最佳科技農業區塊：防禦邊界溢位，尋找 2x2 最大總和。
+5. [SDGs 3] 變種病毒與免疫衰退模擬 (SIRS)：壓軸上機考題，狀態機轉移 (0->1->2->3->0)，強調必須使用 Temp 陣列更新狀態，否則會發生一天內全滅的錯誤。
+
+---
+要求：
+1. 網頁必須具有高質感，配色舒服，區塊之間有足夠的留白 (padding/margin)。
+2. 所有的 JavaScript 邏輯必須可以順暢運作。
+3. 提供深色/淺色模式切換 (Dark/Light mode) 會更好。
+4. 請直接輸出完整的 HTML 原始碼。
