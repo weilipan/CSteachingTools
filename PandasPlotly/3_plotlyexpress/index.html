@@ -1,487 +1,336 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plotly Express 互動式資料視覺化教學</title>
-  <meta name="description" content="透過 Plotly Express 學習互動式資料視覺化，涵蓋長條圖、折線圖、散佈圖、圓餅圖等 7 種核心圖表教學。" />
+  <title>Plotly Express 互動大師班：資料視覺化</title>
+  
   <link rel="stylesheet" href="../../theme.css" />
   <script src="../../layout.js" defer></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
   <style>
-    /* ── 全站底層規範 ── */
-    body {
-      padding: 0;
-      margin: 0;
-      background-color: #f8f9fa;
-      font-family: sans-serif;
-    }
+    html { scroll-behavior: smooth; }
+    body { padding: 0; margin: 0; background-color: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .container { padding-top: 40px; padding-bottom: 60px; max-width: 1000px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
+    
+    .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); padding: 12px 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .nav-link { text-decoration: none; font-size: 0.8rem; font-weight: 600; color: #475569; padding: 6px 12px; background: #f1f5f9; border-radius: 20px; transition: all 0.2s; border: 1px solid #e2e8f0; }
+    .nav-link:hover { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; transform: translateY(-1px); }
 
-    .container {
-      padding-top: 80px;
-      padding-bottom: 60px;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding-left: 20px;
-      padding-right: 20px;
-    }
+    .card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07); padding: 30px 32px; margin-bottom: 32px; scroll-margin-top: 100px; }
+    .section-title { font-size: 1.25rem; font-weight: 700; color: #2d3748; margin: 0 0 14px 0; display: flex; align-items: center; gap: 8px; }
+    .section-title .badge { background: linear-gradient(135deg, #f97316, #eab308); color: #fff; font-size: 0.73rem; padding: 2px 10px; border-radius: 20px; font-weight: 600; }
+    
+    .page-hero { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 14px; padding: 36px 32px; margin-bottom: 32px; color: #fff; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18); }
+    .page-hero h1 { margin: 0 0 8px; font-size: 1.75rem; font-weight: 800; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .hero-tag { background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; border-radius: 20px; padding: 3px 12px; font-size: 0.78rem; font-weight: 600; }
 
-    /* ── Card 基礎規範 (含動畫初始態) ── */
-    .card {
-      background: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10);
-      padding: 28px;
-      opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 0.55s ease, transform 0.55s ease,
-                  box-shadow 0.28s ease, border-color 0.28s ease;
-      border: 2px solid transparent;
-    }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; }
+    @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+    
+    .code-block { background: #282c34; border-radius: 8px; padding: 14px 16px; margin: 12px 0; overflow-x: auto; min-height: 120px; }
+    .ln { display: block; white-space: pre; font-family: 'Courier New', monospace; font-size: 0.82rem; color: #abb2bf; line-height: 1.6; }
+    .ln .kw { color: #c678dd; } .ln .fn { color: #61afef; } .ln .str { color: #98c379; } .ln .num { color: #d19a66; } .ln .cm { color: #5c6370; font-style: italic; }
+    
+    .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; color: #fff; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+    .btn.active { box-shadow: 0 0 0 3px rgba(0,0,0,0.2) inset; filter: brightness(0.9); }
+    .btn-blue { background: #3b82f6; } .btn-green { background: #10b981; } .btn-purple { background: #8b5cf6; } 
+    .btn-orange { background: #f59e0b; } .btn-teal { background: #0d9488; }
+    
+    .plot-container { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; min-height: 350px; width: 100%; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+    
+    .dataset-preview { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; overflow-x: auto; margin-bottom: 12px; }
+    .dataset-preview h4 { margin: 0 0 8px; font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .df-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .df-table th { background: #f1f5f9; padding: 6px; border: 1px solid #e2e8f0; color: #334155; text-align: left; }
+    .df-table td { padding: 6px; border: 1px solid #e2e8f0; color: #475569; }
+    .df-table tr:hover td { background: #fff; }
 
-    .card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ── Section Title 規範 ── */
-    .section-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #2d3748;
-      margin: 0 0 12px 0;
-    }
-
-    /* ══════════════════════════════
-       Hero Section
-    ══════════════════════════════ */
-    .hero {
-      background: linear-gradient(135deg, #2563eb 0%, #7c3aed 55%, #a855f7 100%);
-      color: #ffffff;
-      border-radius: 16px;
-      padding: 56px 40px;
-      margin-bottom: 40px;
-      position: relative;
-      overflow: hidden;
-      opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 0.65s ease, transform 0.65s ease;
-    }
-
-    .hero.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* 裝飾性背景圓圈 */
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -60px; right: -60px;
-      width: 250px; height: 250px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 50%;
-    }
-
-    .hero::after {
-      content: '';
-      position: absolute;
-      bottom: -80px; left: -40px;
-      width: 300px; height: 300px;
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 50%;
-    }
-
-    .hero-badge {
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.18);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      border-radius: 20px;
-      padding: 5px 16px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      margin-bottom: 20px;
-    }
-
-    .hero h1 {
-      font-size: clamp(1.7rem, 4vw, 2.4rem);
-      font-weight: 800;
-      margin: 0 0 16px 0;
-      line-height: 1.25;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero p {
-      font-size: 1.05rem;
-      line-height: 1.75;
-      margin: 0;
-      opacity: 0.92;
-      max-width: 680px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-stats {
-      display: flex;
-      gap: 32px;
-      margin-top: 32px;
-      flex-wrap: wrap;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-stat {
-      text-align: center;
-    }
-
-    .hero-stat .num {
-      font-size: 2rem;
-      font-weight: 800;
-      display: block;
-      line-height: 1;
-    }
-
-    .hero-stat .lbl {
-      font-size: 0.8rem;
-      opacity: 0.82;
-      margin-top: 4px;
-      display: block;
-    }
-
-    /* ══════════════════════════════
-       Gallery Grid
-    ══════════════════════════════ */
-    .gallery-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .gallery-header h2 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #2d3748;
-      margin: 0;
-    }
-
-    .gallery-header .line {
-      flex: 1;
-      height: 2px;
-      background: linear-gradient(90deg, #7c3aed, transparent);
-      border-radius: 2px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
-    }
-
-    /* ── Chart Card ── */
-    .chart-card {
-      background: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10);
-      padding: 28px;
-      border: 2px solid transparent;
-      opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 0.55s ease, transform 0.55s ease,
-                  box-shadow 0.28s ease, border-color 0.28s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    .chart-card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .chart-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 28px rgba(124, 58, 237, 0.18);
-      border-color: #7c3aed;
-    }
-
-    /* 延遲 (stagger) */
-    .chart-card:nth-child(1) { transition-delay: 0.05s; }
-    .chart-card:nth-child(2) { transition-delay: 0.12s; }
-    .chart-card:nth-child(3) { transition-delay: 0.19s; }
-    .chart-card:nth-child(4) { transition-delay: 0.26s; }
-    .chart-card:nth-child(5) { transition-delay: 0.33s; }
-    .chart-card:nth-child(6) { transition-delay: 0.40s; }
-    .chart-card:nth-child(7) { transition-delay: 0.47s; }
-
-    /* 圖示區 */
-    .card-icon-wrap {
-      width: 52px;
-      height: 52px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      flex-shrink: 0;
-    }
-
-    .card-icon-wrap.c1 { background: #ede9fe; }
-    .card-icon-wrap.c2 { background: #dbeafe; }
-    .card-icon-wrap.c3 { background: #d1fae5; }
-    .card-icon-wrap.c4 { background: #fce7f3; }
-    .card-icon-wrap.c5 { background: #fef3c7; }
-    .card-icon-wrap.c6 { background: #e0f2fe; }
-    .card-icon-wrap.c7 { background: #f3e8ff; }
-
-    .card-num {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #7c3aed;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #1e293b;
-      margin: 0;
-      line-height: 1.3;
-    }
-
-    .card-desc {
-      font-size: 0.9rem;
-      color: #64748b;
-      line-height: 1.65;
-      margin: 0;
-      flex: 1;
-    }
-
-    /* CTA 按鈕 */
-    .cta-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 6px;
-      padding: 9px 18px;
-      border-radius: 6px;
-      background: linear-gradient(135deg, #6d28d9, #7c3aed);
-      color: #fff;
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-      align-self: flex-start;
-      border: none;
-      cursor: pointer;
-    }
-
-    .cta-btn:hover {
-      background: linear-gradient(135deg, #5b21b6, #6d28d9);
-      transform: translateX(3px);
-      box-shadow: 0 4px 14px rgba(109, 40, 217, 0.35);
-    }
-
-    .cta-btn svg {
-      width: 14px;
-      height: 14px;
-      flex-shrink: 0;
-    }
-
-    /* ── 底部說明 ── */
-    .footer-note {
-      margin-top: 40px;
-      text-align: center;
-      font-size: 0.85rem;
-      color: #94a3b8;
-    }
-
-    .footer-note strong {
-      color: #7c3aed;
-    }
+    .ds-insight { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin-top: 16px; font-size: 0.88rem; color: #166534; line-height: 1.6; }
+    .ds-insight h4 { margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; font-size: 0.95rem; color: #15803d; }
   </style>
 </head>
+
 <body>
+
+  <nav class="top-nav">
+    <a href="#card1" class="nav-link">1. Line & Bar</a>
+    <a href="#card2" class="nav-link">2. Scatter & Trendline</a>
+    <a href="#card3" class="nav-link">3. Histogram & Pie</a>
+    <a href="#card4" class="nav-link">4. Heatmap & Ternary</a>
+    <a href="#card5" class="nav-link">5. Geo & Map</a>
+  </nav>
+
   <div class="container">
-
-    <!-- ══ Hero Section ══ -->
-    <section class="hero" id="hero-section" aria-labelledby="hero-title">
-      <span class="hero-badge">📊 互動式教學</span>
-      <h1 id="hero-title">Plotly Express<br />互動式資料視覺化</h1>
-      <p>
-        告別靜態圖片！只需短短幾行程式碼，就能打造支援縮放、懸停提示 (Hover)
-        的專業互動式圖表，讓數據自己說話。
-      </p>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <span class="num">7</span>
-          <span class="lbl">核心圖表類型</span>
-        </div>
-        <div class="hero-stat">
-          <span class="num">px</span>
-          <span class="lbl">Plotly Express</span>
-        </div>
-        <div class="hero-stat">
-          <span class="num">∞</span>
-          <span class="lbl">互動可能性</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══ Gallery Header ══ -->
-    <div class="gallery-header">
-      <h2>圖表教學總覽</h2>
-      <div class="line"></div>
+    <div class="page-hero">
+      <h1>📊 Plotly Express 互動大師班</h1>
+      <p>結合真實資料集，探索各類圖表在資料科學中的「適用場合」與「解讀技巧」。</p>
     </div>
 
-    <!-- ══ Chart Gallery Grid ══ -->
-    <div class="grid" id="chart-grid">
+    <!-- 模組一：Line & Bar -->
+    <div class="card" id="card1">
+      <h2 class="section-title">📈 模組一：基礎趨勢與比較 <span class="badge">Line & Bar</span></h2>
+      <div class="btn-group" id="btn-group-1">
+        <button class="btn btn-blue" onclick="renderMod1('line_basic')">px.line (基本)</button>
+        <button class="btn btn-purple" onclick="renderMod1('line_color')">px.line (多群組)</button>
+        <button class="btn btn-green" onclick="renderMod1('bar_stack')">px.bar (堆疊)</button>
+        <button class="btn btn-orange" onclick="renderMod1('bar_group')">px.bar (並排)</button>
+      </div>
+      <div class="two-col">
+        <div style="display: flex; flex-direction: column;">
+          <div class="dataset-preview" id="dataset1"></div>
+          <div class="code-block" id="code1" style="flex:1;"></div>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <div id="plot1" class="plot-container"></div>
+          <div class="ds-insight" id="insight1"></div>
+        </div>
+      </div>
+    </div>
 
-      <!-- 卡片 1：長條圖 -->
-      <a class="chart-card" href="1_bar/index.html" id="card-bar">
-        <div class="card-icon-wrap c1">📊</div>
-        <span class="card-num">Unit 01</span>
-        <h3 class="card-title">長條圖與堆疊<br /><small style="font-weight:400;font-size:0.9rem;color:#7c3aed;">Bar / Stack</small></h3>
-        <p class="card-desc">比較不同類別的數值差異與組成。透過分組長條圖與堆疊長條圖直觀呈現多維度資料。</p>
-        <span class="cta-btn">
-          前往教學
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </span>
-      </a>
+    <!-- 模組二：Scatter & Trendline -->
+    <div class="card" id="card2">
+      <h2 class="section-title">🎯 模組二：散佈圖與迴歸趨勢 <span class="badge">Scatter & Trendline</span></h2>
+      <div class="btn-group" id="btn-group-2">
+        <button class="btn btn-blue" onclick="renderMod2('scatter_basic')">基礎散佈圖</button>
+        <button class="btn btn-purple" onclick="renderMod2('scatter_color')">+ color & size</button>
+        <button class="btn btn-orange" onclick="renderMod2('scatter_trend')">+ trendline</button>
+      </div>
+      <div class="two-col">
+        <div style="display: flex; flex-direction: column;">
+          <div class="dataset-preview" id="dataset2"></div>
+          <div class="code-block" id="code2" style="flex:1;"></div>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <div id="plot2" class="plot-container"></div>
+          <div class="ds-insight" id="insight2"></div>
+        </div>
+      </div>
+    </div>
 
-      <!-- 卡片 2：直方圖 -->
-      <a class="chart-card" href="2_histogram/index.html" id="card-histogram">
-        <div class="card-icon-wrap c2">📉</div>
-        <span class="card-num">Unit 02</span>
-        <h3 class="card-title">直方圖<br /><small style="font-weight:400;font-size:0.9rem;color:#2563eb;">Histogram</small></h3>
-        <p class="card-desc">探索連續型資料的次數分配與機率密度。了解資料集中趨勢、偏態與離散程度。</p>
-        <span class="cta-btn" style="background: linear-gradient(135deg,#1d4ed8,#2563eb);">
-          前往教學
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </span>
-      </a>
+    <!-- 模組三：Histogram & Pie -->
+    <div class="card" id="card3">
+      <h2 class="section-title">🥧 模組三：分佈與佔比探勘 <span class="badge">Histogram & Pie</span></h2>
+      <div class="btn-group" id="btn-group-3">
+        <button class="btn btn-blue" onclick="renderMod3('hist_basic')">px.histogram</button>
+        <button class="btn btn-purple" onclick="renderMod3('hist_marginal')">+ marginal</button>
+        <button class="btn btn-green" onclick="renderMod3('pie_basic')">px.pie</button>
+        <button class="btn btn-orange" onclick="renderMod3('pie_donut')">px.pie (hole)</button>
+      </div>
+      <div class="two-col">
+        <div style="display: flex; flex-direction: column;">
+          <div class="dataset-preview" id="dataset3"></div>
+          <div class="code-block" id="code3" style="flex:1;"></div>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <div id="plot3" class="plot-container"></div>
+          <div class="ds-insight" id="insight3"></div>
+        </div>
+      </div>
+    </div>
 
-      <!-- 卡片 3：折線圖 -->
-      <a class="chart-card" href="3_line/index.html" id="card-line">
-        <div class="card-icon-wrap c3">📈</div>
-        <span class="card-num">Unit 03</span>
-        <h3 class="card-title">折線圖<br /><small style="font-weight:400;font-size:0.9rem;color:#059669;">Line</small></h3>
-        <p class="card-desc">觀察資料隨時間或序列的發展趨勢。支援多條線與填滿面積的進階變體。</p>
-        <span class="cta-btn" style="background: linear-gradient(135deg,#047857,#059669);">
-          前往教學
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </span>
-      </a>
+    <!-- 模組四：Heatmap & Ternary -->
+    <div class="card" id="card4">
+      <h2 class="section-title">🧬 模組四：矩陣與三元相圖 <span class="badge">Heatmap & Ternary</span></h2>
+      <div class="btn-group" id="btn-group-4">
+        <button class="btn btn-blue" onclick="renderMod4('heatmap')">px.imshow</button>
+        <button class="btn btn-orange" onclick="renderMod4('ternary')">px.scatter_ternary</button>
+      </div>
+      <div class="two-col">
+        <div style="display: flex; flex-direction: column;">
+          <div class="dataset-preview" id="dataset4"></div>
+          <div class="code-block" id="code4" style="flex:1;"></div>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <div id="plot4" class="plot-container"></div>
+          <div class="ds-insight" id="insight4"></div>
+        </div>
+      </div>
+    </div>
 
-      <!-- 卡片 4：圓餅圖 -->
-      <a class="chart-card" href="4_pie/index.html" id="card-pie">
-        <div class="card-icon-wrap c4">🥧</div>
-        <span class="card-num">Unit 04</span>
-        <h3 class="card-title">圓餅圖<br /><small style="font-weight:400;font-size:0.9rem;color:#db2777;">Pie</small></h3>
-        <p class="card-desc">快速檢視各類別佔總體的百分比結構，兼顧 Donut 環形圖的現代化呈現。</p>
-        <span class="cta-btn" style="background: linear-gradient(135deg,#be185d,#db2777);">
-          前往教學
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </span>
-      </a>
+    <!-- 模組五：Geo & Map -->
+    <div class="card" id="card5">
+      <h2 class="section-title">🌍 模組五：地理空間視覺化 <span class="badge">Geo & Map</span></h2>
+      <div class="btn-group" id="btn-group-5">
+        <button class="btn btn-blue" onclick="renderMod5('geo')">px.scatter_geo</button>
+        <button class="btn btn-purple" onclick="renderMod5('geo_ortho')">projection='orthographic'</button>
+        <button class="btn btn-orange" onclick="renderMod5('map')">px.scatter_map</button>
+      </div>
+      <div class="two-col">
+        <div style="display: flex; flex-direction: column;">
+          <div class="dataset-preview" id="dataset5"></div>
+          <div class="code-block" id="code5" style="flex:1;"></div>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <div id="plot5" class="plot-container"></div>
+          <div class="ds-insight" id="insight5"></div>
+        </div>
+      </div>
+    </div>
 
-      <!-- 卡片 5：散佈圖 -->
-      <a class="chart-card" href="5_scatter/index.html" id="card-scatter">
-        <div class="card-icon-wrap c5">🔵</div>
-        <span class="card-num">Unit 05</span>
-        <h3 class="card-title">散佈圖<br /><small style="font-weight:400;font-size:0.9rem;color:#d97706;">Scatter</small></h3>
-        <p class="card-desc">分析兩個連續變數之間的相關性與離群值，支援氣泡大小與顏色維度映射。</p>
-        <span class="cta-btn" style="background: linear-gradient(135deg,#b45309,#d97706);">
-          前往教學
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </span>
-      </a>
-
-      <!-- 卡片 6：堆疊面積圖 -->
-      <a class="chart-card" href="6_area/index.html" id="card-area">
-        <div class="card-icon-wrap c6">🌊</div>
-        <span class="card-num">Unit 06</span>
-        <h3 class="card-title">堆疊面積圖<br /><small style="font-weight:400;font-size:0.9rem;color:#0284c7;">Area</small></h3>
-        <p class="card-desc">結合折線與長條圖優勢，展示總量趨勢與組成比例變化，適合時序資料的堆疊分析。</p>
-        <span class="cta-btn" style="background: linear-gradient(135deg,#0369a1,#0284c7);">
-          前往教學
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </span>
-      </a>
-
-      <!-- 卡片 7：三元相圖 -->
-      <a class="chart-card" href="7_ternary/index.html" id="card-ternary">
-        <div class="card-icon-wrap c7">🔺</div>
-        <span class="card-num">Unit 07</span>
-        <h3 class="card-title">三元相圖<br /><small style="font-weight:400;font-size:0.9rem;color:#9333ea;">Ternary Plot</small></h3>
-        <p class="card-desc">進階圖表，專門用來呈現三個變數加總為 100%（或常數）的獨特分佈，常見於成分分析。</p>
-        <span class="cta-btn" style="background: linear-gradient(135deg,#7e22ce,#9333ea);">
-          前往教學
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </span>
-      </a>
-
-    </div><!-- /grid -->
-
-    <p class="footer-note">
-      本教學系列使用 <strong>Plotly Express (px)</strong> 撰寫 · 所有圖表均支援縮放、拖曳與懸停互動
-    </p>
-
-  </div><!-- /container -->
+  </div>
 
   <script>
-    // ── 自訂延遲函數 ──
-    const delay = ms => new Promise(res => setTimeout(res, ms));
+    const getLayout = () => ({ margin: { t: 40, b: 40, l: 60, r: 20 }, font: {family: 'sans-serif'} });
+    function updateBtns(groupNum, activeIdx) {
+      document.querySelectorAll(`#btn-group-${groupNum} .btn`).forEach((btn, i) => btn.classList.toggle('active', i === activeIdx));
+    }
 
-    // ── Intersection Observer：滾動進場動畫 ──
-    const observeTargets = [
-      document.getElementById('hero-section'),
-      ...document.querySelectorAll('.chart-card')
-    ];
+    // ==========================================
+    // 模組一：Line & Bar
+    // ==========================================
+    const mod1Content = {
+      line_basic: {
+        ds: `<h4>📄 gapminder (精確 3 筆資料)</h4><table class="df-table"><tr><th>country</th><th>year</th><th>lifeExp</th></tr><tr><td>Taiwan</td><td>1952</td><td>58.5</td></tr><tr><td>Taiwan</td><td>1982</td><td>72.1</td></tr><tr><td>Taiwan</td><td>2007</td><td>78.4</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">df = px.data.<span class="fn">gapminder</span>().<span class="fn">query</span>(<span class="str">"country=='Taiwan'"</span>)</span>\n<span class="ln">fig = px.<span class="fn">line</span>(df, x=<span class="str">'year'</span>, y=<span class="str">'lifeExp'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 折線圖 (Line Chart)</h4><ul><li><b>解讀重點：</b>看線條的「斜率」與「轉折點」。斜率陡峭代表增長/衰退快速。</li></ul>`,
+        plot: () => Plotly.newPlot('plot1', [{ x: [1952,1982,2007], y: [58.5, 72.1, 78.4], type: 'scatter', mode: 'lines+markers', name: 'Taiwan' }], getLayout(), {displayModeBar: false})
+      },
+      line_color: {
+        ds: `<h4>📄 gapminder (精確 6 筆資料)</h4><table class="df-table"><tr><th>country</th><th>year</th><th>lifeExp</th></tr><tr><td>Taiwan</td><td>1952</td><td>58.5</td></tr><tr><td>Taiwan</td><td>1982</td><td>72.1</td></tr><tr><td>Taiwan</td><td>2007</td><td>78.4</td></tr><tr><td>Japan</td><td>1952</td><td>63.0</td></tr><tr><td>Japan</td><td>1982</td><td>77.1</td></tr><tr><td>Japan</td><td>2007</td><td>82.6</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">df = px.data.<span class="fn">gapminder</span>().<span class="fn">query</span>(<span class="str">"country in ['Taiwan', 'Japan']"</span>)</span>\n<span class="ln">fig = px.<span class="fn">line</span>(df, x=<span class="str">'year'</span>, y=<span class="str">'lifeExp'</span>, color=<span class="str">'country'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 多重折線圖</h4><ul><li><b>解讀重點：</b>除了看各自的趨勢，更要觀察線條是否發生「交叉 (Crossover)」，代表反轉。</li></ul>`,
+        plot: () => Plotly.newPlot('plot1', [
+          { x: [1952,1982,2007], y: [58.5, 72.1, 78.4], type: 'scatter', mode: 'lines+markers', name: 'Taiwan' },
+          { x: [1952,1982,2007], y: [63.0, 77.1, 82.6], type: 'scatter', mode: 'lines+markers', name: 'Japan' }
+        ], getLayout(), {displayModeBar: false})
+      },
+      bar_stack: {
+        ds: `<h4>📄 medals_long (精確 6 筆資料)</h4><table class="df-table"><tr><th>nation</th><th>medal</th><th>count</th></tr><tr><td>South Korea</td><td>gold</td><td>24</td></tr><tr><td>South Korea</td><td>silver</td><td>13</td></tr><tr><td>China</td><td>gold</td><td>10</td></tr><tr><td>China</td><td>silver</td><td>15</td></tr><tr><td>Canada</td><td>gold</td><td>9</td></tr><tr><td>Canada</td><td>silver</td><td>12</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">df = px.data.<span class="fn">medals_long</span>()</span>\n<span class="ln">fig = px.<span class="fn">bar</span>(df, x=<span class="str">'nation'</span>, y=<span class="str">'count'</span>, color=<span class="str">'medal'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 堆疊長條圖 (Stacked Bar)</h4><ul><li><b>解讀重點：</b>關注整體柱子高度（總數）。但因為基準線不同，懸空的內部區塊較難精準比較。</li></ul>`,
+        plot: () => Plotly.newPlot('plot1', [
+          { x: ['South Korea', 'China', 'Canada'], y: [24, 10, 9], type: 'bar', name: 'Gold' },
+          { x: ['South Korea', 'China', 'Canada'], y: [13, 15, 12], type: 'bar', name: 'Silver' }
+        ], { ...getLayout(), barmode: 'stack' }, {displayModeBar: false})
+      },
+      bar_group: {
+        ds: `<h4>📄 medals_long (精確 6 筆資料)</h4><table class="df-table"><tr><th>nation</th><th>medal</th><th>count</th></tr><tr><td>South Korea</td><td>gold</td><td>24</td></tr><tr><td>South Korea</td><td>silver</td><td>13</td></tr><tr><td>China</td><td>gold</td><td>10</td></tr><tr><td>China</td><td>silver</td><td>15</td></tr><tr><td>Canada</td><td>gold</td><td>9</td></tr><tr><td>Canada</td><td>silver</td><td>12</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">df = px.data.<span class="fn">medals_long</span>()</span>\n<span class="ln">fig = px.<span class="fn">bar</span>(df, x=<span class="str">'nation'</span>, y=<span class="str">'count'</span>,\n             color=<span class="str">'medal'</span>, barmode=<span class="str">'group'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 並排長條圖 (Grouped Bar)</h4><ul><li><b>解讀重點：</b>所有長條的基準線都在 0，能精準比對。例如直接看出 China 的 Silver (15) 大於 Gold (10)。</li></ul>`,
+        plot: () => Plotly.newPlot('plot1', [
+          { x: ['South Korea', 'China', 'Canada'], y: [24, 10, 9], type: 'bar', name: 'Gold' },
+          { x: ['South Korea', 'China', 'Canada'], y: [13, 15, 12], type: 'bar', name: 'Silver' }
+        ], { ...getLayout(), barmode: 'group' }, {displayModeBar: false})
+      }
+    };
+    function renderMod1(mode) { updateBtns(1, Object.keys(mod1Content).indexOf(mode)); const c = mod1Content[mode]; document.getElementById('dataset1').innerHTML = c.ds; document.getElementById('code1').innerHTML = c.code; document.getElementById('insight1').innerHTML = c.insight; c.plot(); }
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, {
-      threshold: 0.12,
-      rootMargin: '0px 0px -30px 0px'
-    });
+    // ==========================================
+    // 模組二：Scatter & Trendline
+    // ==========================================
+    const mod2Content = {
+      scatter_basic: {
+        ds: `<h4>📄 tips (精確 6 筆資料)</h4><table class="df-table"><tr><th>total_bill</th><th>tip</th><th>sex</th><th>size</th></tr><tr><td>16.99</td><td>1.01</td><td>Female</td><td>2</td></tr><tr><td>8.77</td><td>2.00</td><td>Female</td><td>2</td></tr><tr><td>10.34</td><td>1.66</td><td>Male</td><td>3</td></tr><tr><td>21.01</td><td>3.50</td><td>Male</td><td>3</td></tr><tr><td>24.59</td><td>3.61</td><td>Male</td><td>4</td></tr><tr><td>30.14</td><td>4.71</td><td>Male</td><td>4</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">df = px.data.<span class="fn">tips</span>()</span>\n<span class="ln">fig = px.<span class="fn">scatter</span>(df, x=<span class="str">'total_bill'</span>, y=<span class="str">'tip'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 散佈圖 (Scatter Plot)</h4><ul><li><b>解讀重點：</b>若呈現左下到右上的趨勢，代表「正相關」；同時用來尋找偏離群體的「離群值」。</li></ul>`,
+        plot: () => Plotly.newPlot('plot2', [{ x: [16.99, 8.77, 10.34, 21.01, 24.59, 30.14], y: [1.01, 2.00, 1.66, 3.50, 3.61, 4.71], type: 'scatter', mode: 'markers', marker: {size: 10} }], { ...getLayout(), xaxis:{title:'total_bill'}, yaxis:{title:'tip'} }, {displayModeBar: false})
+      },
+      scatter_color: {
+        ds: `<h4>📄 tips (精確 6 筆資料)</h4><table class="df-table"><tr><th>total_bill</th><th>tip</th><th>sex</th><th>size</th></tr><tr><td>16.99</td><td>1.01</td><td>Female</td><td>2</td></tr><tr><td>8.77</td><td>2.00</td><td>Female</td><td>2</td></tr><tr><td>10.34</td><td>1.66</td><td>Male</td><td>3</td></tr><tr><td>21.01</td><td>3.50</td><td>Male</td><td>3</td></tr><tr><td>24.59</td><td>3.61</td><td>Male</td><td>4</td></tr><tr><td>30.14</td><td>4.71</td><td>Male</td><td>4</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">df = px.data.<span class="fn">tips</span>()</span>\n<span class="ln">fig = px.<span class="fn">scatter</span>(df, x=<span class="str">'total_bill'</span>, y=<span class="str">'tip'</span>,\n                 color=<span class="str">'sex'</span>, size=<span class="str">'size'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 多維度散佈圖 (Bubble Chart)</h4><ul><li><b>解讀重點：</b>透過 <code>color</code> (性別) 觀察不同群體分佈差異；透過 <code>size</code> 看出點的資料權重。</li></ul>`,
+        plot: () => Plotly.newPlot('plot2', [
+          { x: [16.99, 8.77], y: [1.01, 2.00], type: 'scatter', mode: 'markers', name: 'Female', marker: {size: [15, 15]} },
+          { x: [10.34, 21.01, 24.59, 30.14], y: [1.66, 3.50, 3.61, 4.71], type: 'scatter', mode: 'markers', name: 'Male', marker: {size: [20, 20, 25, 25]} }
+        ], { ...getLayout(), xaxis:{title:'total_bill'}, yaxis:{title:'tip'} }, {displayModeBar: false})
+      },
+      scatter_trend: {
+        ds: `<h4>📄 tips (精確 6 筆資料)</h4><table class="df-table"><tr><th>total_bill</th><th>tip</th><th>sex</th><th>size</th></tr><tr><td>16.99</td><td>1.01</td><td>Female</td><td>2</td></tr><tr><td>8.77</td><td>2.00</td><td>Female</td><td>2</td></tr><tr><td>10.34</td><td>1.66</td><td>Male</td><td>3</td></tr><tr><td>21.01</td><td>3.50</td><td>Male</td><td>3</td></tr><tr><td>24.59</td><td>3.61</td><td>Male</td><td>4</td></tr><tr><td>30.14</td><td>4.71</td><td>Male</td><td>4</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln"><span class="cm"># 需安裝 statsmodels</span></span>\n<span class="ln">fig = px.<span class="fn">scatter</span>(df, x=<span class="str">'total_bill'</span>, y=<span class="str">'tip'</span>,\n                 trendline=<span class="str">'ols'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 線性迴歸趨勢線 (Trendline)</h4><ul><li><b>解讀重點：</b><code>ols</code> (普通最小平方法) 畫出最佳配適線。線的斜率代表：消費每增加 1 元，預期小費增加多少。</li></ul>`,
+        plot: () => Plotly.newPlot('plot2', [
+          { x: [16.99, 8.77, 10.34, 21.01, 24.59, 30.14], y: [1.01, 2.00, 1.66, 3.50, 3.61, 4.71], type: 'scatter', mode: 'markers', marker: {size: 10}, name: 'Data' },
+          { x: [8.77, 30.14], y: [1.4, 4.5], type: 'scatter', mode: 'lines', name: 'OLS Trend', line: {color: 'red', width: 3} }
+        ], { ...getLayout(), xaxis:{title:'total_bill'}, yaxis:{title:'tip'} }, {displayModeBar: false})
+      }
+    };
+    function renderMod2(mode) { updateBtns(2, Object.keys(mod2Content).indexOf(mode)); const c = mod2Content[mode]; document.getElementById('dataset2').innerHTML = c.ds; document.getElementById('code2').innerHTML = c.code; document.getElementById('insight2').innerHTML = c.insight; c.plot(); }
 
-    observeTargets.forEach(el => {
-      if (el) observer.observe(el);
-    });
+    // ==========================================
+    // 模組三：Histogram & Pie
+    // ==========================================
+    const mod3Content = {
+      hist_basic: {
+        ds: `<h4>📄 tips (精確 8 筆連續數值)</h4><table class="df-table"><tr><th>total_bill</th></tr><tr><td>12</td></tr><tr><td>15</td></tr><tr><td>15</td></tr><tr><td>20</td></tr><tr><td>25</td></tr><tr><td>25</td></tr><tr><td>25</td></tr><tr><td>35</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">df = px.data.<span class="fn">tips</span>()</span>\n<span class="ln">fig = px.<span class="fn">histogram</span>(df, x=<span class="str">'total_bill'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 直方圖 (Histogram)</h4><ul><li><b>解讀重點：</b>了解資料密集度。右圖顯示 25 這個區間集中了最多的資料 (共 3 筆)。</li></ul>`,
+        plot: () => Plotly.newPlot('plot3', [{ x: [12,15,15,20,25,25,25,35], type: 'histogram' }], getLayout(), {displayModeBar: false})
+      },
+      hist_marginal: {
+        ds: `<h4>📄 tips (精確 8 筆連續數值)</h4><table class="df-table"><tr><th>total_bill</th></tr><tr><td>12</td></tr><tr><td>15</td></tr><tr><td>15</td></tr><tr><td>20</td></tr><tr><td>25</td></tr><tr><td>25</td></tr><tr><td>25</td></tr><tr><td>35</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">df = px.data.<span class="fn">tips</span>()</span>\n<span class="ln">fig = px.<span class="fn">histogram</span>(df, x=<span class="str">'total_bill'</span>,\n                   marginal=<span class="str">'box'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 邊緣圖與離群值</h4><ul><li><b>解讀重點：</b>上方的箱型圖清晰呈現了中位數。這在探索性資料分析 (EDA) 非常實用！</li></ul>`,
+        plot: () => Plotly.newPlot('plot3', [
+          { x: [12,15,15,20,25,25,25,35], type: 'histogram', yaxis: 'y2', name: 'Hist' },
+          { x: [12,15,15,20,25,25,25,35], type: 'box', name: 'Box' }
+        ], { ...getLayout(), yaxis: {domain: [0, 0.2]}, yaxis2: {domain: [0.3, 1]} }, {displayModeBar: false})
+      },
+      pie_basic: {
+        ds: `<h4>📄 DataFrame (精確 3 筆資料)</h4><table class="df-table"><tr><th>Region</th><th>Sales</th></tr><tr><td>Asia</td><td>40</td></tr><tr><td>Europe</td><td>25</td></tr><tr><td>NA</td><td>35</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">fig = px.<span class="fn">pie</span>(df, values=<span class="str">'Sales'</span>, names=<span class="str">'Region'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 圓餅圖 (Pie Chart)</h4><ul><li><b>解讀重點：</b>展示佔比。實務建議：類別最好少於 5 個，切分太細請改用長條圖。</li></ul>`,
+        plot: () => Plotly.newPlot('plot3', [{ values: [40, 25, 35], labels: ['Asia', 'Europe', 'NA'], type: 'pie' }], getLayout(), {displayModeBar: false})
+      },
+      pie_donut: {
+        ds: `<h4>📄 DataFrame (精確 3 筆資料)</h4><table class="df-table"><tr><th>Region</th><th>Sales</th></tr><tr><td>Asia</td><td>40</td></tr><tr><td>Europe</td><td>25</td></tr><tr><td>NA</td><td>35</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">fig = px.<span class="fn">pie</span>(df, values=<span class="str">'Sales'</span>, names=<span class="str">'Region'</span>,\n             hole=<span class="num">0.4</span>) <span class="cm"># 中間挖空變甜甜圈</span></span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 甜甜圈圖 (Donut Chart)</h4><ul><li><b>解讀重點：</b>視覺焦點從面積轉移到「弧長」，閱讀更容易。中間空白常標示「總計數值」。</li></ul>`,
+        plot: () => Plotly.newPlot('plot3', [{ values: [40, 25, 35], labels: ['Asia', 'Europe', 'NA'], type: 'pie', hole: 0.4 }], getLayout(), {displayModeBar: false})
+      }
+    };
+    function renderMod3(mode) { updateBtns(3, Object.keys(mod3Content).indexOf(mode)); const c = mod3Content[mode]; document.getElementById('dataset3').innerHTML = c.ds; document.getElementById('code3').innerHTML = c.code; document.getElementById('insight3').innerHTML = c.insight; c.plot(); }
 
-    // ── 鍵盤無障礙：Enter 觸發卡片連結 ──
-    document.querySelectorAll('.chart-card').forEach(card => {
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') card.click();
-      });
-      card.setAttribute('tabindex', '0');
-      card.setAttribute('role', 'link');
-    });
+    // ==========================================
+    // 模組四：Heatmap & Ternary
+    // ==========================================
+    const mod4Content = {
+      heatmap: {
+        ds: `<h4>📄 df.corr() (精確 3x3 矩陣)</h4><table class="df-table"><tr><th></th><th>total_bill</th><th>tip</th><th>size</th></tr><tr><th>total_bill</th><td>1.0</td><td>0.67</td><td>0.59</td></tr><tr><th>tip</th><td>0.67</td><td>1.0</td><td>0.48</td></tr><tr><th>size</th><td>0.59</td><td>0.48</td><td>1.0</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">df_corr = df[[<span class="str">'total_bill'</span>, <span class="str">'tip'</span>, <span class="str">'size'</span>]].<span class="fn">corr</span>()</span>\n<span class="ln">fig = px.<span class="fn">imshow</span>(df_corr, text_auto=<span class="kw">True</span>,\n                color_continuous_scale=<span class="str">'RdBu_r'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 相關係數熱力圖 (Heatmap)</h4><ul><li><b>解讀重點：</b>深紅代表正相關，深藍代表負相關。若兩特徵高度相關（>0.8），通常可考慮在模型中捨棄其中一個。</li></ul>`,
+        plot: () => Plotly.newPlot('plot4', [{ z: [[1, 0.67, 0.59], [0.67, 1, 0.48], [0.59, 0.48, 1]], x: ['total_bill', 'tip', 'size'], y: ['total_bill', 'tip', 'size'], type: 'heatmap', colorscale: 'RdBu', reversescale: true }], getLayout(), {displayModeBar: false})
+      },
+      ternary: {
+        ds: `<h4>📄 election (精確 3 筆資料)</h4><table class="df-table"><tr><th>district</th><th>Joly</th><th>Coderre</th><th>Bergeron</th></tr><tr><td>101</td><td>20</td><td>40</td><td>40</td></tr><tr><td>102</td><td>50</td><td>25</td><td>25</td></tr><tr><td>103</td><td>33</td><td>33</td><td>34</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">df = px.data.<span class="fn">election</span>()</span>\n<span class="ln">fig = px.<span class="fn">scatter_ternary</span>(df, a=<span class="str">"Joly"</span>,\n                         b=<span class="str">"Coderre"</span>, c=<span class="str">"Bergeron"</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 三元相圖 (Ternary Plot)</h4><ul><li><b>解讀重點：</b>點越靠近三角形某個頂點，代表該成分越高。觀察整體群聚的位置，就能掌握三方勢力的平衡狀態。</li></ul>`,
+        plot: () => Plotly.newPlot('plot4', [{ type: 'scatterternary', mode: 'markers', a: [20, 50, 33], b: [40, 25, 33], c: [40, 25, 34], marker: { size: 14, color: '#6366f1' } }], { ...getLayout(), ternary: { aaxis:{title: 'Joly'}, baxis:{title: 'Coderre'}, caxis:{title: 'Bergeron'} } }, {displayModeBar: false})
+      }
+    };
+    function renderMod4(mode) { updateBtns(4, Object.keys(mod4Content).indexOf(mode)); const c = mod4Content[mode]; document.getElementById('dataset4').innerHTML = c.ds; document.getElementById('code4').innerHTML = c.code; document.getElementById('insight4').innerHTML = c.insight; c.plot(); }
+
+    // ==========================================
+    // 模組五：Geo & Map (全面更新為 map 引擎與 carto-positron)
+    // ==========================================
+    const mod5Content = {
+      geo: {
+        ds: `<h4>📄 gapminder (精確 3 筆資料)</h4><table class="df-table"><tr><th>iso_alpha</th><th>country</th><th>pop</th></tr><tr><td>TWN</td><td>Taiwan</td><td>23M</td></tr><tr><td>JPN</td><td>Japan</td><td>127M</td></tr><tr><td>USA</td><td>United States</td><td>301M</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">df = px.data.<span class="fn">gapminder</span>().<span class="fn">query</span>(<span class="str">"year==2007"</span>)</span>\n<span class="ln">fig = px.<span class="fn">scatter_geo</span>(df, locations=<span class="str">'iso_alpha'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 氣泡地圖 (Bubble Map)</h4><ul><li><b>解讀重點：</b>探索具備「國家代碼 (ISO)」的跨國數據。圓圈大小能輕易揭露全球資源分配的集中度。</li></ul>`,
+        plot: () => Plotly.newPlot('plot5', [{ type: 'scattergeo', locations: ['TWN', 'JPN', 'USA'], text: ['Taiwan', 'Japan', 'USA'], mode: 'markers', marker: {size: 15, color: '#f59e0b'} }], { margin: {t:0,b:0,l:0,r:0}, geo: { projection: {type: 'natural earth'} } }, {displayModeBar: false})
+      },
+      geo_ortho: {
+        ds: `<h4>📄 gapminder (精確 3 筆資料)</h4><table class="df-table"><tr><th>iso_alpha</th><th>country</th><th>pop</th></tr><tr><td>TWN</td><td>Taiwan</td><td>23M</td></tr><tr><td>JPN</td><td>Japan</td><td>127M</td></tr><tr><td>USA</td><td>United States</td><td>301M</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln">fig = px.<span class="fn">scatter_geo</span>(df, locations=<span class="str">'iso_alpha'</span>,\n                     projection=<span class="str">'orthographic'</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 3D 正交投影 (Orthographic)</h4><ul><li><b>解讀重點：</b>雖然 3D 視覺震撼，但會遮蔽背面資料，適合可互動旋轉的網頁儀表板。靜態報告仍以 2D 地圖為主。</li></ul>`,
+        plot: () => Plotly.newPlot('plot5', [{ type: 'scattergeo', locations: ['TWN', 'JPN', 'USA'], text: ['Taiwan', 'Japan', 'USA'], mode: 'markers', marker: {size: 15, color: '#10b981'} }], { margin: {t:0,b:0,l:0,r:0}, geo: { projection: {type: 'orthographic'}, showcoastlines: true } }, {displayModeBar: false})
+      },
+      map: {
+        ds: `<h4>📄 經緯度資料 (精確 3 筆資料)</h4><table class="df-table"><tr><th>lat</th><th>lon</th><th>name</th></tr><tr><td>25.033</td><td>121.565</td><td>Taipei 101</td></tr><tr><td>35.658</td><td>139.745</td><td>Tokyo Tower</td></tr><tr><td>40.748</td><td>-73.985</td><td>Empire State</td></tr></table>`,
+        code: `<span class="ln"><span class="kw">import</span> plotly.express <span class="kw">as</span> px</span>\n<span class="ln"><span class="cm"># 註：Plotly v5.24+ 推薦改用 map 取代 mapbox</span></span>\n<span class="ln">fig = px.<span class="fn">scatter_map</span>(df, lat=<span class="str">"lat"</span>, lon=<span class="str">"lon"</span>,\n                     map_style=<span class="str">"carto-positron"</span>)</span>\n<span class="ln">fig.<span class="fn">show</span>()</span>`,
+        insight: `<h4>🧠 街道層級地圖 (MapLibre)</h4><ul><li><b>解讀重點：</b>平滑縮放至街道層級，<code>carto-positron</code> 樣式無須 API Token 且色彩乾淨，最適合呈現密集點位尋找「熱區 (Hotspots)」。</li></ul>`,
+        plot: () => Plotly.newPlot('plot5', [{ type: 'scattermap', lat: [25.033, 35.658, 40.748], lon: [121.565, 139.745, -73.985], text: ['Taipei 101', 'Tokyo Tower', 'Empire State'], mode: 'markers', marker: {size: 14, color: '#ef4444'} }], { margin: {t:0,b:0,l:0,r:0}, map: { style: 'carto-positron', center: {lat: 35.0, lon: 130}, zoom: 1 } }, {displayModeBar: false})
+      }
+    };
+    function renderMod5(mode) { updateBtns(5, Object.keys(mod5Content).indexOf(mode)); const c = mod5Content[mode]; document.getElementById('dataset5').innerHTML = c.ds; document.getElementById('code5').innerHTML = c.code; document.getElementById('insight5').innerHTML = c.insight; c.plot(); }
+
+    window.onload = () => { renderMod1('line_basic'); renderMod2('scatter_basic'); renderMod3('hist_basic'); renderMod4('heatmap'); renderMod5('geo'); };
   </script>
 </body>
 </html>
