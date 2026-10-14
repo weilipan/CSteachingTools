@@ -8,10 +8,26 @@
   <link rel="stylesheet" href="../../theme.css" />
   <script src="../../layout.js" defer></script>
   <style>
+    /* 修正跳轉遮擋與平滑滾動 */
+    html { scroll-behavior: smooth; }
     body { padding: 0; margin: 0; background-color: #f8f9fa; font-family: sans-serif; }
 
+    /* 置頂導覽列 */
+    .top-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+      padding: 12px 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+    }
+    .nav-link {
+      text-decoration: none; font-size: 0.8rem; font-weight: 600; color: #475569;
+      padding: 6px 12px; background: #f1f5f9; border-radius: 20px; transition: all 0.2s;
+      border: 1px solid #e2e8f0;
+    }
+    .nav-link:hover { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; transform: translateY(-1px); }
+
     .container {
-      padding-top: 80px;
+      padding-top: 40px;
       padding-bottom: 60px;
       max-width: 1000px;
       margin: 0 auto;
@@ -25,28 +41,22 @@
       box-shadow: 0 2px 12px rgba(0,0,0,0.10);
       margin-bottom: 30px;
       padding: 28px 28px 24px;
+      /* 動畫預設隱藏 */
       opacity: 0;
       transform: translateY(24px);
       transition: opacity 0.5s ease, transform 0.5s ease;
+      /* 關鍵修復：跳轉時保留頂部空間，避免被導覽列遮擋 */
+      scroll-margin-top: 100px; 
     }
     .card.visible { opacity: 1; transform: translateY(0); }
 
     .section-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #2d3748;
-      margin: 0 0 12px 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-size: 1.25rem; font-weight: 700; color: #2d3748; margin: 0 0 12px 0;
+      display: flex; align-items: center; gap: 8px;
     }
     .section-title .badge {
-      background: linear-gradient(135deg,#667eea,#764ba2);
-      color: #fff;
-      font-size: 0.75rem;
-      padding: 2px 10px;
-      border-radius: 20px;
-      font-weight: 600;
+      background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; font-size: 0.75rem;
+      padding: 2px 10px; border-radius: 20px; font-weight: 600;
     }
 
     .doc-link {
@@ -56,19 +66,16 @@
     }
     .doc-link:hover { background: #dbeafe; color: #1d4ed8; transform: translateY(-1px); }
 
-    /* Console Output */
+    /* Console Output & Code */
     .console-output { white-space: pre-wrap; font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; line-height: 1.5; min-height: 60px; }
-
-    /* Indentation & Code Block */
     .ind-1 { padding-left: 1.5rem !important; }
-    .ind-2 { padding-left: 3rem !important; }
     .code-block { background: #282c34; border-radius: 8px; padding: 14px 16px; margin: 12px 0; overflow-x: auto; }
     .ln { display: block; white-space: nowrap; font-family: 'Courier New', monospace; font-size: 0.88rem; color: #abb2bf; line-height: 1.7; }
     .ln .kw { color: #c678dd; } .ln .fn { color: #61afef; } .ln .str { color: #98c379; } .ln .cm { color: #5c6370; font-style: italic; } .ln .num { color: #d19a66; }
     .highlight { background-color: #fff3cd !important; color: #856404 !important; font-weight: bold; transition: background-color 0.3s; border-radius: 4px; }
 
     /* Buttons */
-    .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
     .btn { padding: 7px 16px; border: none; border-radius: 6px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 0.82rem; font-weight: 600; transition: all 0.2s; }
     .btn-blue { background: #3b82f6; color: #fff; } .btn-blue:hover { background: #2563eb; transform: translateY(-1px); }
     .btn-green { background: #10b981; color: #fff; } .btn-green:hover { background: #059669; transform: translateY(-1px); }
@@ -83,7 +90,7 @@
     .csv-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     .csv-table td, .csv-table th { border: 1px solid #ddd; padding: 7px 10px; text-align: left; }
     .row-noise { background: #fee2e2; color: #991b1b; transition: opacity 0.5s ease, max-height 0.5s ease, padding 0.4s ease; max-height: 60px; overflow: hidden; }
-    .row-noise.hidden { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; }
+    .row-noise.hidden { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; border-width: 0; font-size:0;}
     .row-noise td { transition: padding 0.4s ease; } .row-noise.hidden td { padding: 0; border-width: 0; }
     .row-header { background: #fef9c3; font-weight: bold; transition: background 0.3s; }
     .row-header.active-header { background: #d1fae5; box-shadow: inset 0 0 0 2px #10b981; }
@@ -99,7 +106,7 @@
     .dataset-row .row-lbl { color: #64748b; width: 50px; }
     .dataset-row.lit { background: #fef3c7; font-weight: 600; }
     .dataset-row.rand-lit { background: #d1fae5; font-weight: 600; }
-    .info-popup { display: none; position: absolute; right: -200px; top: 50%; transform: translateY(-50%); background: #1e293b; color: #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 0.8rem; font-family: monospace; min-width: 160px; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .info-popup { display: none; position: absolute; right: -210px; top: 50%; transform: translateY(-50%); background: #1e293b; color: #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 0.8rem; font-family: monospace; min-width: 170px; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.3); white-space: pre-wrap; line-height: 1.4; }
     .info-popup.show { display: block; animation: popIn 0.2s ease; }
     @keyframes popIn { from { transform: translateY(-50%) scale(0.8); opacity: 0; } to { transform: translateY(-50%) scale(1); opacity: 1; } }
     .m2-layout { display: flex; gap: 16px; align-items: flex-start; }
@@ -118,13 +125,17 @@
     /* ───── MODULE 5 (NaN) ───── */
     .nan-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 10px 0; table-layout: fixed; }
     .nan-table th { background: #f1f5f9; padding: 7px 10px; border: 1px solid #e2e8f0; transition: all 0.4s ease; }
-    .nan-table td { padding: 7px 10px; border: 1px solid #e2e8f0; transition: all 0.4s ease; }
-    .nan-cell { background: #fee2e2 !important; color: #991b1b; font-weight: 700; border-radius: 4px; text-align: center; }
+    .nan-table td { padding: 7px 10px; border: 1px solid #e2e8f0; transition: all 0.4s ease; text-align: center; }
+    .nan-cell { background: #fee2e2 !important; color: #991b1b; font-weight: 700; border-radius: 4px; }
     .nan-cell.filled { background: #d1fae5 !important; color: #065f46; animation: flip 0.4s ease; }
+    .nan-cell.bool-true { background: #ef4444 !important; color: white !important; font-family: monospace; }
+    .nan-cell.bool-false { background: #f1f5f9 !important; color: #94a3b8 !important; font-family: monospace; font-weight: normal;}
     .nan-row { transition: opacity 0.5s ease, max-height 0.5s ease; }
     .nan-row.collapsing td { padding-top: 0 !important; padding-bottom: 0 !important; border-top-width: 0; border-bottom-width: 0; opacity: 0; font-size: 0; white-space: nowrap; }
     .collapsing-col { opacity: 0 !important; padding-left: 0 !important; padding-right: 0 !important; border-left-width: 0 !important; border-right-width: 0 !important; font-size: 0 !important; white-space: nowrap; }
     .scan-highlight { background: #fef9c3 !important; transition: background 0.3s; }
+    .m5-group-title { font-size: 0.8rem; font-weight: 700; color: #64748b; margin: 12px 0 4px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+    .tip-box { background:#fffbeb; border:1px solid #fcd34d; border-radius:8px; padding:12px; font-size:0.85rem; color:#92400e; margin-top:12px; line-height:1.5; }
 
     /* ───── MODULE 6 (Duplicates) ───── */
     .student-list { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; transition: all 0.5s ease; }
@@ -138,7 +149,6 @@
     .student-row.dimmed { opacity: 0.3; filter: grayscale(100%); }
     .student-row.highlight-loc { box-shadow: 0 0 0 3px #0d9488; background: #ccfbf1; border-color: #0d9488;}
     .dup-badge { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; border-radius: 12px; font-size: 0.72rem; padding: 1px 8px; font-weight: 700; }
-    .m6-tip { display:none; background:#fffbeb; border:1px solid #fcd34d; border-radius:8px; padding:12px; font-size:0.85rem; color:#92400e; margin-top:8px; line-height:1.5; }
 
     /* ───── MODULE 7 (Rename) ───── */
     .m7-rename-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; background: #fff; }
@@ -149,12 +159,13 @@
     /* ───── MODULE 8 (Dtypes) ───── */
     .m8-dtype-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
     .m8-dtype-col { font-weight: 700; color: #334155; font-family: monospace; font-size: 0.95rem; width: 60px; }
-    .m8-dtype-val { color: #64748b; font-size: 0.85rem; margin: 0 16px; flex: 1; font-family: monospace; }
+    .m8-dtype-val { color: #64748b; font-size: 0.85rem; margin: 0 16px; flex: 1; font-family: monospace; transition: all 0.3s; }
     .m8-dtype-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; font-family: monospace; transition: all 0.3s; min-width: 60px; text-align: center; }
     .type-obj { background: #fef3c7; color: #b45309; border: 1px solid #fde68a;}
     .type-int { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe;}
     .type-float { background: #fce7f3; color: #be185d; border: 1px solid #fbcfe8;}
     .type-Int64 { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; box-shadow: 0 0 8px rgba(52,211,153,0.3);}
+    .val-error { color: #991b1b; text-decoration: line-through; }
 
     /* ───── MODULE 9 (Filtering) ───── */
     .m9-filter-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; background: #fff; text-align: center;}
@@ -211,6 +222,23 @@
   </style>
 </head>
 <body>
+
+<nav class="top-nav">
+  <a href="#card1" class="nav-link">1. 載入防線</a>
+  <a href="#card2" class="nav-link">2. 資料觀察</a>
+  <a href="#card3" class="nav-link">3. iloc 定位</a>
+  <a href="#card4" class="nav-link">4. loc 定位</a>
+  <a href="#card5" class="nav-link">5. NaN 醫療站</a>
+  <a href="#card6" class="nav-link">6. 消除分身</a>
+  <a href="#card7" class="nav-link">7. 欄位命名</a>
+  <a href="#card8" class="nav-link">8. 型態轉換</a>
+  <a href="#card9" class="nav-link">9. 多重篩選</a>
+  <a href="#card10" class="nav-link">10. .isin 魔法</a>
+  <a href="#card11" class="nav-link">11. 統計概況</a>
+  <a href="#card12" class="nav-link">12. Inplace</a>
+  <a href="#card13" class="nav-link">13. 實戰腳本</a>
+</nav>
+
 <div class="container">
 
   <div class="page-hero">
@@ -262,6 +290,7 @@
         <button class="btn btn-purple" onclick="m2_action('shape')">df.shape</button>
         <button class="btn btn-purple" onclick="m2_action('columns')">df.columns</button>
         <div style="font-size:0.72rem;font-weight:700;color:#6b7280;margin-top:8px;margin-bottom:4px;border-bottom:1px solid #e5e7eb;">⚡ 方法（加括號）</div>
+        <button class="btn btn-dark" onclick="m2_action('info')" style="background:#1e293b;color:#fff;">df.info()</button>
         <button class="btn btn-blue" onclick="m2_action('head')">df.head(3)</button>
         <button class="btn btn-blue" onclick="m2_action('tail')">df.tail(3)</button>
         <button class="btn btn-green" onclick="m2_action('sample')">df.sample(3)</button>
@@ -291,7 +320,6 @@
 
   <div class="card" id="card3">
     <h2 class="section-title">🔪 模組三：數字座標切蛋糕 <span class="badge">iloc 精準定位</span></h2>
-    <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.iloc.html#pandas.DataFrame.iloc" target="_blank" class="doc-link">📚 df.iloc 官方文件</a>
     <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;"><code>iloc[列位置, 欄位置]</code> <b>認數字不認人</b>，從 0 開始計算。切片 <code>[A:B]</code> <b>不包含</b> 結尾的 B。</p>
 
     <div class="btn-group">
@@ -306,7 +334,6 @@
 
   <div class="card" id="card4">
     <h2 class="section-title">🏷️ 模組四：標籤名稱找資料 <span class="badge">loc 具名定位</span></h2>
-    <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.loc.html#pandas.DataFrame.loc" target="_blank" class="doc-link">📚 df.loc 官方文件</a>
     <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;"><code>loc[列標籤, 欄標籤]</code> <b>認標籤名稱</b>。最大差異：切片 <code>['A':'C']</code> <b>會包含</b> 結尾的 'C'！</p>
 
     <div class="btn-group">
@@ -319,26 +346,42 @@
   </div>
 
   <div class="card" id="card5">
-    <h2 class="section-title">🏥 模組五：NaN 醫療站 <span class="badge">缺失值急救與進階參數</span></h2>
+    <h2 class="section-title">🏥 模組五：NaN 醫療站 <span class="badge">缺失值檢測與急救</span></h2>
     <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.dropna.html#pandas.DataFrame.dropna" target="_blank" class="doc-link">📚 df.dropna 官方文件</a>
-    <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">斷尾求生 (dropna) 與填補修補 (fillna) 的決策邏輯。</p>
+    <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">實務上的處理邏輯：<b>先診斷探測 (isna) ➜ 再決定要刪除 (dropna) 還是修補 (fillna)</b>。</p>
+    
+    <div class="m5-group-title">🔍 1. 診斷探測 (回傳布林值/統計量)</div>
     <div class="btn-group">
-      <button class="btn btn-red" onclick="nanAction('dropna_all_rows')">df.dropna()</button>
+      <button class="btn btn-purple" onclick="nanAction('isna')">df.isna()</button>
+      <button class="btn btn-purple" onclick="nanAction('isna_sum')">df.isna().sum()</button>
+    </div>
+
+    <div class="m5-group-title">✂️ 2. 斷尾求生 (刪除)</div>
+    <div class="btn-group">
+      <button class="btn btn-red" onclick="nanAction('dropna_any')">df.dropna(how='any')</button>
       <button class="btn btn-orange" onclick="nanAction('dropna_how_all')">df.dropna(how='all')</button>
-      <button class="btn btn-purple" onclick="nanAction('dropna_subset')">df.dropna(subset=['iso_code'])</button>
-      <button class="btn btn-blue" onclick="nanAction('dropna_axis_col')">df.dropna(axis='columns')</button>
-      <button class="btn btn-dark" onclick="nanAction('dropna_inplace')">df.dropna(inplace=True)</button>
-      <button class="btn btn-green" onclick="nanAction('fillna')">df.fillna(0)</button>
-      <button class="btn btn-gray" onclick="nanReset()">↺ 重置表格</button>
+      <button class="btn btn-teal" onclick="nanAction('dropna_subset')">df.dropna(subset=['iso_code'])</button>
+      <button class="btn btn-dark" onclick="nanAction('dropna_axis_col')">df.dropna(axis='columns')</button>
+    </div>
+
+    <div class="m5-group-title">🩹 3. 填補修補</div>
+    <div class="btn-group">
+      <button class="btn btn-blue" onclick="nanAction('fillna')">df.fillna(0)</button>
+      <button class="btn btn-green" onclick="nanAction('ffill')">df.ffill()</button>
+      <button class="btn btn-gray" onclick="nanAction('reset')" style="margin-left:auto;">↺ 重置表格</button>
     </div>
 
     <div id="nan-table-wrap"></div>
     <div id="nan-status" style="font-size:0.85rem;color:#1e293b;background:#f1f5f9;padding:8px 12px;border-radius:6px;margin-top:6px;min-height:20px;font-weight:600;">點擊上方按鈕查看完整方法呼叫的效果</div>
+    
+    <div class="tip-box" id="m5-tip">
+      💡 <b>觀念釐清：<code>isna()</code> 與 <code>isnull()</code> 有什麼不同？</b><br>
+      在 Pandas 中，這兩個方法的功能 <b>100% 完全相同</b>（互為別名）。但官方社群目前更推薦使用 <code>isna()</code>，因為它與 <code>dropna()</code>、<code>fillna()</code> 的命名邏輯較為一致。
+    </div>
   </div>
 
   <div class="card" id="card6">
     <h2 class="section-title">👻 模組六：消除分身 <span class="badge">幽靈數據退散</span></h2>
-    <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.duplicated.html#pandas.DataFrame.duplicated" target="_blank" class="doc-link">📚 df.duplicated 官方文件</a>
     <div class="btn-group">
       <button class="btn btn-red" onclick="dupAction('warn')">df.duplicated().sum()</button>
       <button class="btn btn-teal" onclick="dupAction('show_all')">df.loc[df.duplicated(keep=False)]</button>
@@ -354,14 +397,11 @@
     </div>
     <div class="student-list" id="student-list"></div>
     <div id="dup-status" style="font-size:0.85rem;color:#1e293b;background:#f1f5f9;padding:8px 12px;border-radius:6px;margin-top:6px;min-height:20px;font-weight:600;">點擊上方按鈕查看效果</div>
-    <div id="m6-tip" class="m6-tip"></div>
+    <div id="m6-tip" class="m6-tip tip-box" style="display:none;"></div>
   </div>
 
   <div class="card" id="card7">
     <h2 class="section-title">🏷️ 模組七：欄位重新命名 <span class="badge">df.rename</span></h2>
-    <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rename.html" target="_blank" class="doc-link">📚 df.rename 官方文件</a>
-    <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">真實世界的資料欄位常帶有不規則的大小寫與多餘空白。利用 <code>rename</code> 可以精準或批次修改欄位名稱。</p>
-    
     <div class="btn-group">
       <button class="btn btn-blue" onclick="renameAction('dict')">rename(columns={'Full Name': 'name'})</button>
       <button class="btn btn-teal" onclick="renameAction('lower')">rename(columns=str.lower)</button>
@@ -371,29 +411,21 @@
 
     <table class="m7-rename-table">
       <thead>
-        <tr>
-          <th>Id</th>
-          <th id="th-fullname">Full Name</th>
-          <th id="th-age">AGE </th>
-          <th id="th-salary">Salary(USD)</th>
-        </tr>
+        <tr><th>Id</th><th id="th-fullname">Full Name</th><th id="th-age">AGE </th><th id="th-salary">Salary(USD)</th></tr>
       </thead>
-      <tbody>
-        <tr><td>01</td><td>John Doe</td><td>28</td><td>4500</td></tr>
-      </tbody>
+      <tbody><tr><td>01</td><td>John Doe</td><td>28</td><td>4500</td></tr></tbody>
     </table>
     <div id="m7-status" style="font-size:0.85rem;color:#1e293b;background:#f1f5f9;padding:8px 12px;border-radius:6px;margin-top:12px;min-height:20px;font-weight:600;">點擊上方按鈕查看效果</div>
   </div>
 
   <div class="card" id="card8">
-    <h2 class="section-title">🧬 模組八：資料型態轉換 <span class="badge">dtype & astype</span></h2>
-    <a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.dtype.html#pandas.Series.dtype" target="_blank" class="doc-link">📚 Series.dtype 官方文件</a>
-    <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">理解每一欄的資料型別 (dtype) 非常重要。字串數字無法運算，帶有 NaN 的整數欄位預設會被迫轉為浮點數 (float64)。特別注意：<b>轉換型態後必須「重新賦值」才會生效！</b></p>
+    <h2 class="section-title">🧬 模組八：資料型態轉換 <span class="badge">強迫轉型與錯誤處理</span></h2>
+    <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">理解每一欄的資料型別 (dtype) 非常重要。轉換型態後必須「重新賦值」才會生效！若遇到髒字串，可善用 <code>pd.to_numeric</code> 強制忽略錯誤。</p>
 
     <div class="btn-group">
       <button class="btn btn-purple" onclick="dtypeAction('dtype')">df.dtypes</button>
-      <button class="btn btn-orange" onclick="dtypeAction('astype_no_assign')">df['Col_A'].astype(int)</button>
-      <button class="btn btn-blue" onclick="dtypeAction('astype_assign')">df['Col_A'] = df['Col_A'].astype(int)</button>
+      <button class="btn btn-orange" onclick="dtypeAction('astype_assign')">df['Col_A'] = df['Col_A'].astype(int)</button>
+      <button class="btn btn-red" onclick="dtypeAction('to_numeric_coerce')">pd.to_numeric(df['Col_C'], errors='coerce')</button>
       <button class="btn btn-green" onclick="dtypeAction('convert_dtypes')">df = df.convert_dtypes()</button>
       <button class="btn btn-gray" onclick="dtypeAction('reset')">↺ 重置</button>
     </div>
@@ -409,27 +441,26 @@
         <span class="m8-dtype-val" id="val-col-b">[1.0, 2.0, NaN]</span>
         <span class="m8-dtype-badge type-float" id="badge-col-b">float64</span>
       </div>
+      <div class="m8-dtype-row">
+        <span class="m8-dtype-col" style="color:#b91c1c;">Col_C</span>
+        <span class="m8-dtype-val" id="val-col-c">['10', '12x', '20']</span>
+        <span class="m8-dtype-badge type-obj" id="badge-col-c">object</span>
+      </div>
     </div>
     <div id="m8-status" style="font-size:0.85rem;color:#1e293b;background:#f1f5f9;padding:8px 12px;border-radius:6px;margin-top:12px;min-height:20px;font-weight:600;">點擊上方按鈕查看效果</div>
   </div>
 
   <div class="card" id="card9">
     <h2 class="section-title">🔍 模組九：多重條件篩選 <span class="badge">符號與括號的鐵則</span></h2>
-    <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">在 Pandas 中，多條件篩選必須使用位元運算子 <code>&amp;</code> (且)、<code>|</code> (或)、<code>~</code> (反)。<span style="color:#b91c1c;font-weight:bold;">絕對不能使用 Python 原生的 and、or、not</span>，否則會觸發 ValueError。此外，每個獨立條件都必須用圓括號 <code>()</code> 包裝起來！</p>
-    
     <div class="btn-group">
       <button class="btn btn-blue" onclick="filterAction('and')">df[ (df['Math'] >= 80) &amp; (df['Science'] >= 80) ]</button>
       <button class="btn btn-orange" onclick="filterAction('or')">df[ (df['Math'] &lt; 60) | (df['English'] &lt; 60) ]</button>
       <button class="btn btn-purple" onclick="filterAction('not')">df[ ~(df['Math'] >= 60) ]</button>
       <button class="btn btn-gray" onclick="filterAction('reset')">↺ 顯示全部</button>
     </div>
-
     <div class="m9-warn-box" id="m9-warn">⚠️ 錯誤示範：df[ df['Math'] >= 80 and df['Science'] >= 80 ] 會產生 ValueError!</div>
-
     <table class="m9-filter-table">
-      <thead>
-        <tr><th>Name</th><th>Math</th><th>Science</th><th>English</th></tr>
-      </thead>
+      <thead><tr><th>Name</th><th>Math</th><th>Science</th><th>English</th></tr></thead>
       <tbody>
         <tr class="m9-row" id="m9-r1"><td>Alice</td><td>85</td><td>90</td><td>75</td></tr>
         <tr class="m9-row" id="m9-r2"><td>Bob</td><td>50</td><td>65</td><td>80</td></tr>
@@ -442,32 +473,25 @@
 
   <div class="card" id="card10">
     <h2 class="section-title">🎫 模組十：VIP 通關名單 <span class="badge">.isin() 魔法</span></h2>
-    <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">當條件很多時，不要再用 <code>|</code> 瘋狂串接了！先建立名單再丟給 <code>.isin()</code>，程式碼瞬間變優雅。</p>
-    
     <div class="code-block" style="margin-bottom:8px; min-height: 110px;">
       <span class="ln"><span class="cm"># 1. 先準備一份 VIP 名單 (List)</span></span>
       <span class="ln" id="m10-code-list">name_list = [<span class="str">'Alice'</span>, <span class="str">'Charlie'</span>]</span>
-      
       <div id="m10-code-trad" style="display:none; margin-top:12px;">
         <span class="ln"><span class="cm"># 2. 傳統寫法 (容易漏寫括號)：</span></span>
         <span class="ln" id="m10-line-trad">df[ (df[<span class="str">'Name'</span>] == <span class="str">'Alice'</span>) | (df[<span class="str">'Name'</span>] == <span class="str">'Charlie'</span>) ]</span>
       </div>
-      
       <div id="m10-code-isin" style="display:none; margin-top:12px;">
         <span class="ln"><span class="cm"># 3. .isin() 魔法 (直接傳入名單)：</span></span>
         <span class="ln" id="m10-line-isin">df[ df[<span class="str">'Name'</span>].<span class="fn">isin</span>(name_list) ]</span>
       </div>
     </div>
-    
     <div id="m10-vip-pass" class="vip-pass hidden">🎟️ VIP 通行證：['Alice', 'Charlie']</div>
-
     <div class="btn-group">
-      <button class="btn btn-dark" onclick="isinAction('create')">1. 建立名單變數</button>
-      <button class="btn btn-red" onclick="isinAction('traditional')">2. 傳統寫法：用 | 串接</button>
-      <button class="btn btn-green" onclick="isinAction('isin')">3. 優雅通關：.isin()</button>
+      <button class="btn btn-dark" onclick="isinAction('create')">1. 建立名單</button>
+      <button class="btn btn-red" onclick="isinAction('traditional')">2. 傳統寫法 (|串接)</button>
+      <button class="btn btn-green" onclick="isinAction('isin')">3. 優雅通關 (.isin)</button>
       <button class="btn btn-gray" onclick="isinAction('reset')">↺ 重新開始</button>
     </div>
-
     <table class="m9-filter-table" id="m10-table">
       <thead><tr><th>Name</th><th>Math</th><th>Science</th></tr></thead>
       <tbody>
@@ -482,61 +506,66 @@
 
   <div class="card" id="card11">
     <h2 class="section-title">📊 模組十一：資料統計概況 <span class="badge">describe</span></h2>
-    <a href="https://pandas.pydata.org/docs/user_guide/basics.html" target="_blank" class="doc-link">📚 Pandas Basics 官方指南</a>
-    <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">利用 <code>describe()</code> 可以一鍵產生數值型欄位的統計摘要，包含筆數、平均數、標準差、最大最小值與四分位數，幫助你快速掌握資料分布輪廓。</p>
+    <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">一鍵產生數值型欄位的統計摘要。若想連同類別（字串）欄位一起分析，可加上 <code>include='all'</code>。</p>
     
     <div class="btn-group">
       <button class="btn btn-purple" onclick="descAction('describe')">df.describe()</button>
+      <button class="btn btn-teal" onclick="descAction('all')">df.describe(include='all')</button>
       <button class="btn btn-gray" onclick="descAction('reset')">↺ 重置檢視</button>
     </div>
 
     <div class="m11-desc-container">
       <div class="m11-box" id="m11-raw-box" style="flex:1;">
-        <h4>📄 原始資料 (部分展示)</h4>
+        <h4>📄 原始資料 (部分)</h4>
         <table class="m11-table" style="width:100%;">
-          <thead><tr><th>Name</th><th>Age</th><th>Salary</th></tr></thead>
+          <thead><tr><th>Dept</th><th>Age</th><th>Salary</th></tr></thead>
           <tbody>
-            <tr><td>Alice</td><td>28</td><td>45000</td></tr>
-            <tr><td>Bob</td><td>35</td><td>60000</td></tr>
-            <tr><td>Charlie</td><td>42</td><td>85000</td></tr>
-            <tr><td>David</td><td>25</td><td>38000</td></tr>
+            <tr><td>IT</td><td>28</td><td>45000</td></tr>
+            <tr><td>Sales</td><td>35</td><td>60000</td></tr>
+            <tr><td>IT</td><td>42</td><td>85000</td></tr>
+            <tr><td>HR</td><td>25</td><td>38000</td></tr>
           </tbody>
         </table>
       </div>
 
       <div class="m11-box" id="m11-desc-box" style="display:none; flex:1;">
         <h4 style="color:#6d28d9;">📈 統計摘要結果</h4>
-        <table class="m11-table" style="width:100%;">
+        <table class="m11-table" id="m11-tbl-num" style="width:100%;">
           <thead><tr><th></th><th>Age</th><th>Salary</th></tr></thead>
           <tbody>
-            <tr><td>count</td><td>4.000000</td><td>4.000000</td></tr>
-            <tr><td>mean</td><td>32.500000</td><td>57000.000000</td></tr>
-            <tr><td>std</td><td>7.593857</td><td>20880.613018</td></tr>
-            <tr><td>min</td><td>25.000000</td><td>38000.000000</td></tr>
-            <tr><td>25%</td><td>27.250000</td><td>43250.000000</td></tr>
-            <tr><td>50%</td><td>31.500000</td><td>52500.000000</td></tr>
-            <tr><td>75%</td><td>36.750000</td><td>66250.000000</td></tr>
-            <tr><td>max</td><td>42.000000</td><td>85000.000000</td></tr>
+            <tr><td>count</td><td>4.000</td><td>4.000</td></tr>
+            <tr><td>mean</td><td>32.500</td><td>57000.0</td></tr>
+            <tr><td>std</td><td>7.593</td><td>20880.6</td></tr>
+            <tr><td>min</td><td>25.000</td><td>38000.0</td></tr>
+            <tr><td>max</td><td>42.000</td><td>85000.0</td></tr>
+          </tbody>
+        </table>
+        <table class="m11-table" id="m11-tbl-all" style="width:100%; display:none;">
+          <thead><tr><th></th><th>Dept</th><th>Age</th><th>Salary</th></tr></thead>
+          <tbody>
+            <tr><td>count</td><td>4</td><td>4.000</td><td>4.000</td></tr>
+            <tr style="background:#fef9c3"><td>unique</td><td>3</td><td>NaN</td><td>NaN</td></tr>
+            <tr style="background:#fef9c3"><td>top</td><td>IT</td><td>NaN</td><td>NaN</td></tr>
+            <tr style="background:#fef9c3"><td>freq</td><td>2</td><td>NaN</td><td>NaN</td></tr>
+            <tr><td>mean</td><td>NaN</td><td>32.500</td><td>57000.0</td></tr>
+            <tr><td>max</td><td>NaN</td><td>42.000</td><td>85000.0</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-    <div id="m11-status" style="font-size:0.85rem;color:#1e293b;background:#f1f5f9;padding:8px 12px;border-radius:6px;margin-top:12px;min-height:20px;font-weight:600;">預設只針對數值型欄位 (Age, Salary) 進行計算，自動略過字串欄位 (Name)。</div>
+    <div id="m11-status" style="font-size:0.85rem;color:#1e293b;background:#f1f5f9;padding:8px 12px;border-radius:6px;margin-top:12px;min-height:20px;font-weight:600;">點擊按鈕查看運算結果。</div>
   </div>
 
   <div class="card" id="card12">
     <h2 class="section-title">🪄 模組十二：Inplace 的魔法 <span class="badge">影印機 vs 橡皮擦</span></h2>
-    <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">理解 <code>inplace</code> 的運作原理。業界實務通常建議使用影印機模式 (<code>inplace=False</code>) 以保留原始資料的安全。</p>
-    
     <div class="btn-group">
       <button class="btn btn-blue" onclick="runInplace(false)">df_clean = df.dropna()</button>
       <button class="btn btn-red" onclick="runInplace(true)">df.dropna(inplace=True)</button>
       <button class="btn btn-gray" onclick="resetInplace()">↺ 重置</button>
     </div>
-
     <div class="m12-container">
       <div class="m12-table-box" id="m12-orig-box">
-        <h4>📄 原始 df (記憶體 A)</h4>
+        <h4>📄 原始 df</h4>
         <table class="m12-mini-table">
           <tr><th>ID</th><th>Score</th></tr>
           <tr><td>A01</td><td>88</td></tr>
@@ -545,7 +574,7 @@
         </table>
       </div>
       <div class="m12-table-box" id="m12-copy-box" style="display:none; opacity:0; transform:translateX(-20px);">
-        <h4 style="color:#1d4ed8;">✨ df_clean (記憶體 B)</h4>
+        <h4 style="color:#1d4ed8;">✨ df_clean</h4>
         <table class="m12-mini-table">
           <tr><th>ID</th><th>Score</th></tr>
           <tr><td>A01</td><td>88</td></tr>
@@ -562,28 +591,20 @@
       <button class="btn btn-green" id="m13-run-btn" onclick="m13RunScript()">▶ 執行自動化腳本</button>
       <button class="btn btn-gray" onclick="m13Reset()">↺ 重置</button>
     </div>
-
     <div class="m13-layout">
       <div>
         <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;">📄 data_pipeline.py</div>
         <div class="code-block">
           <span class="ln"><span class="kw">import</span> pandas <span class="kw">as</span> pd</span>
-          <span class="ln" id="m13-l1">df = pd.<span class="fn">read_csv</span>(</span>
-          <span class="ln ind-1 " id="m13-l1b"><span class="str">'energy_data.csv'</span>,</span>
-          <span class="ln ind-1 " id="m13-l1c"><span class="str">encoding='utf-8-sig'</span>,</span>
-          <span class="ln ind-1" id="m13-l1d">skiprows=<span class="num">3</span>,</span>
-          <span class="ln ind-1" id="m13-l1e"><span class="str">header=<span class="num">0</span></span></span>
-          <span class="ln">)</span>
+          <span class="ln" id="m13-l1">df = pd.<span class="fn">read_csv</span>(<span class="str">'energy_data.csv'</span>,</span>
+          <span class="ln ind-1" id="m13-l1b">skiprows=<span class="num">3</span>, header=<span class="num">0</span>)</span>
           <span class="ln"> </span>
           <span class="ln" id="m13-l2">df.<span class="fn">rename</span>(columns=str.lower, inplace=<span class="str">True</span>)</span>
           <span class="ln" id="m13-l3">df = df.<span class="fn">convert_dtypes</span>()</span>
           <span class="ln" id="m13-l4">df.<span class="fn">dropna</span>(how=<span class="str">'all'</span>, inplace=<span class="str">True</span>)</span>
-          <span class="ln" id="m13-l4b">df.<span class="fn">fillna</span>(<span class="num">0</span>, inplace=<span class="str">True</span>)</span>
           <span class="ln" id="m13-l5">df.<span class="fn">drop_duplicates</span>(inplace=<span class="str">True</span>)</span>
-          <span class="ln"> </span>
-          <span class="ln" id="m13-l6">df = df[df[<span class="str">'country'</span>].<span class="fn">isin</span>([<span class="str">'Taiwan'</span>, <span class="str">'Japan'</span>])]</span>
-          <span class="ln" id="m13-l7">summary = df.<span class="fn">describe</span>()</span>
-          <span class="ln" id="m13-l8"><span class="fn">print</span>(summary)</span>
+          <span class="ln" id="m13-l6">df = df[df[<span class="str">'country'</span>].<span class="fn">isin</span>([<span class="str">'Taiwan'</span>])]</span>
+          <span class="ln" id="m13-l7"><span class="fn">print</span>(df.<span class="fn">describe</span>())</span>
         </div>
       </div>
       <div>
@@ -598,6 +619,7 @@
 <script>
   const delay = ms => new Promise(res => setTimeout(res, ms));
 
+  // IntersectionObserver for animation
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
@@ -612,7 +634,23 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.card').forEach(c => io.observe(c));
 
-  /* ── M1: Read CSV ── */
+  // Fix Navbar Anchor Jump Blank Screen
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+      const targetId = this.getAttribute('href'); 
+      const targetCard = document.querySelector(targetId);
+      if (targetCard) {
+        // Force rendering to prevent blank screen issue caused by intersection skip
+        targetCard.classList.add('visible');
+        if (targetId === '#card3') buildIlocGrid();
+        if (targetId === '#card4') buildLocGrid();
+        if (targetId === '#card5') buildNanTable();
+        if (targetId === '#card6') buildStudentList();
+      }
+    });
+  });
+
+  /* ── M1 ── */
   let m1_skipped = false, m1_encoded = false;
   function m1_skiprows() {
     if (m1_skipped) return; m1_skipped = true;
@@ -640,7 +678,7 @@
     document.getElementById('m1-tip').style.display = 'none';
   }
 
-  /* ── M2: Attributes vs Methods ── */
+  /* ── M2 ── */
   function m2_reset() {
     document.querySelectorAll('#m2-dataset .dataset-row').forEach(r => r.classList.remove('lit','rand-lit'));
     const pop = document.getElementById('m2-pop'); pop.classList.remove('show'); pop.textContent = '';
@@ -651,6 +689,10 @@
     const pop = document.getElementById('m2-pop');
     if (type === 'shape') { pop.innerHTML = '(100, 7)'; pop.classList.add('show'); }
     else if (type === 'columns') { pop.innerHTML = "['年份', '月份', '發電量',<br>'類型', 'iso_code', '地區', 'id']"; pop.classList.add('show'); }
+    else if (type === 'info') { 
+        pop.innerHTML = `<span style="color:#93c5fd">&lt;class 'pandas.core.frame.DataFrame'&gt;</span>\nRangeIndex: 100 entries\nData columns (total 7 columns):\n #   Column   Non-Null Count  Dtype\n---  ------   --------------  -----\n 0   年份       100 non-null    int64\n 1   月份       100 non-null    int64\n 2   發電量      98 non-null     float64\n... (略)\nmemory usage: 5.6 KB`; 
+        pop.classList.add('show'); 
+    }
     else if (type === 'head') { rows.forEach(r => { if (['0','1','2'].includes(r.dataset.idx)) r.classList.add('lit'); }); }
     else if (type === 'tail') { rows.forEach(r => { if (['97','98','99'].includes(r.dataset.idx)) r.classList.add('lit'); }); }
     else if (type === 'sample') {
@@ -659,7 +701,7 @@
     }
   }
 
-  /* ── M3: iloc (Integer based) ── */
+  /* ── M3 & M4 ── */
   let ilocBuilt = false;
   function buildIlocGrid() {
     if (ilocBuilt) return; ilocBuilt = true;
@@ -669,32 +711,28 @@
     for (let r = 0; r < 5; r++) {
       grid.appendChild(createCell('row-header-cell', `[${r}]`));
       for (let c = 0; c < 7; c++) {
-        const cell = createCell('', `${r},${c}`);
-        cell.dataset.r = r; cell.dataset.c = c;
+        const cell = createCell('', `${r},${c}`); cell.dataset.r = r; cell.dataset.c = c;
         grid.appendChild(cell);
       }
     }
   }
   function createCell(cls, txt) { const d = document.createElement('div'); d.className = 'grid-cell '+cls; d.textContent=txt; return d; }
-  
   function ilocSelect(mode) {
     document.querySelectorAll('#iloc-grid .grid-cell[data-r]').forEach(c => c.classList.remove('selected'));
     if (mode === 'none') return;
     document.querySelectorAll('#iloc-grid .grid-cell[data-r]').forEach(c => {
-      const r = parseInt(c.dataset.r), col = parseInt(c.dataset.c);
-      let sel = false;
+      const r = parseInt(c.dataset.r), col = parseInt(c.dataset.c); let sel = false;
       if (mode === 'single') sel = (r === 3 && col === 5);
       if (mode === 'row3')   sel = (r === 3);
-      if (mode === 'slice')  sel = (r >= 2 && r < 4 && col >= 3 && col < 6); // [2:4, 3:6]
+      if (mode === 'slice')  sel = (r >= 2 && r < 4 && col >= 3 && col < 6); 
       if (mode === 'list')   sel = [1,3,5].includes(col);
       if (sel) c.classList.add('selected');
     });
   }
 
-  /* ── M4: loc (Label based) ── */
   let locBuilt = false;
   const LOC_ROWS = ['row_A','row_B','row_C','row_D','row_E'];
-  const LOC_COLS = ['Name','Math','English','Science','History'];
+  const LOC_COLS = ['Name','Math','Eng','Sci','His'];
   function buildLocGrid() {
     if (locBuilt) return; locBuilt = true;
     const grid = document.getElementById('loc-grid');
@@ -703,8 +741,7 @@
     LOC_ROWS.forEach(r => {
       grid.appendChild(createCell('row-header-cell', `'${r}'`));
       LOC_COLS.forEach(c => {
-        const cell = createCell('', `${r.replace('row_','')},${c.substring(0,3)}`);
-        cell.dataset.r = r; cell.dataset.c = c;
+        const cell = createCell('', `${r.replace('row_','')},${c}`); cell.dataset.r = r; cell.dataset.c = c;
         grid.appendChild(cell);
       });
     });
@@ -713,14 +750,13 @@
     document.querySelectorAll('#loc-grid .grid-cell[data-r]').forEach(c => c.classList.remove('selected'));
     if (mode === 'none') return;
     document.querySelectorAll('#loc-grid .grid-cell[data-r]').forEach(c => {
-      const r = c.dataset.r, col = c.dataset.c;
-      let sel = false;
+      const r = c.dataset.r, col = c.dataset.c; let sel = false;
       if (mode === 'single') sel = (r === 'row_B' && col === 'Math');
       if (mode === 'slice') {
         const rIdx = LOC_ROWS.indexOf(r), cIdx = LOC_COLS.indexOf(col);
         sel = (rIdx >= 1 && rIdx <= 3 && cIdx >= 0 && cIdx <= 1); 
       }
-      if (mode === 'list') sel = (['row_A','row_D'].includes(r) && ['Name','Science'].includes(col));
+      if (mode === 'list') sel = (['row_A','row_D'].includes(r) && ['Name','Sci'].includes(col));
       if (sel) c.classList.add('selected');
     });
   }
@@ -731,20 +767,20 @@
     { id:'nr1', vals:['NaN','NaN','NaN','NaN','NaN','NaN','NaN'], sp:'all-nan' },
     { id:'nr2', vals:['NaN','Japan','2021','6000','1200','2000','900'], sp:'iso-nan' },
     { id:'nr3', vals:['CHN','China','2022','9000','2000','4000','800'], sp:'' },
-    { id:'nr4', vals:['USA','United States','2022','10000','3000','3500','NaN'], sp:'' },
+    { id:'nr4', vals:['USA','US','2022','10000','3000','3500','NaN'], sp:'' },
   ];
   let nanBuilt = false;
   function buildNanTable(reset = false) {
     if (nanBuilt && !reset) return; nanBuilt = true;
     const wrap = document.getElementById('nan-table-wrap'); wrap.innerHTML = '';
     const tbl = document.createElement('table'); tbl.className = 'nan-table';
-    tbl.innerHTML = `<thead><tr>${['iso_code','country','year','electricity','renewables','coal','oil'].map(c=>`<th>${c}</th>`).join('')}</tr></thead>`;
+    tbl.innerHTML = `<thead><tr>${['iso_code','country','year','electricity','renew','coal','oil'].map(c=>`<th>${c}</th>`).join('')}</tr></thead>`;
     const tbody = document.createElement('tbody');
     NAN_ROWS_DATA.forEach(rd => {
       const tr = document.createElement('tr'); tr.className = 'nan-row'; tr.dataset.sp = rd.sp;
       rd.vals.forEach(v => {
         const td = document.createElement('td');
-        if (v==='NaN') { td.className='nan-cell'; }
+        if (v==='NaN') { td.className='nan-cell'; td.dataset.isnan='1'; }
         td.textContent = v; tr.appendChild(td);
       });
       tbody.appendChild(tr);
@@ -753,40 +789,66 @@
     document.getElementById('nan-status').textContent = '點擊上方按鈕查看完整方法呼叫的效果';
   }
   function nanReset() { nanBuilt = false; buildNanTable(); }
+  
   async function nanAction(type) {
-    nanReset(); await delay(100);
+    if (type === 'reset') { nanReset(); return; }
+    // 重置畫面，確保每次動作乾淨
+    nanReset(); await delay(50);
     const rows = document.querySelectorAll('#nan-table-wrap .nan-row');
     const status = document.getElementById('nan-status');
     
-    if (type === 'dropna_all_rows') {
-      rows.forEach(r => { if (r.querySelector('.nan-cell')) r.classList.add('collapsing'); });
-      status.innerHTML = '📋 <b>df.dropna()</b>：預設為 <code>how="any"</code>。只要有任一儲存格是 NaN，整列刪除。';
+    if (type === 'isna') {
+      document.querySelectorAll('#nan-table-wrap td').forEach(td => {
+        if (td.dataset.isnan) { td.textContent = 'True'; td.className = 'nan-cell bool-true'; }
+        else { td.textContent = 'False'; td.className = 'nan-cell bool-false'; }
+      });
+      status.innerHTML = '🔍 <b>df.isna()</b>：將整個表格轉化為布林透視鏡！有缺失值的格子會顯示 <span style="color:#ef4444">True</span>。';
+    } else if (type === 'isna_sum') {
+      document.querySelectorAll('#nan-table-wrap td').forEach(td => {
+        if (td.dataset.isnan) { td.className = 'nan-cell bool-true'; }
+      });
+      status.innerHTML = '📊 <b>df.isna().sum()</b>：統計各欄缺失總數。結果為：<code>iso_code:2, country:1, year:1, electricity:1, renew:1, coal:2, oil:2</code>';
+    } else if (type === 'dropna_any') {
+      rows.forEach(r => { if (r.querySelector('[data-isnan="1"]')) r.classList.add('collapsing'); });
+      status.innerHTML = "✂️ <b>df.dropna(how='any')</b>：預設模式。只要該列出現「任何一個」NaN，整筆資料斷尾刪除。";
     } else if (type === 'dropna_how_all') {
       rows.forEach(r => { if (r.dataset.sp === 'all-nan') r.classList.add('collapsing'); });
-      status.innerHTML = '📋 <b>df.dropna(how="all")</b>：必須「整列的每一個欄位都是 NaN」，該列才會被移除。';
+      status.innerHTML = "✂️ <b>df.dropna(how='all')</b>：必須「整列的每一個欄位都是 NaN」，該列才會被移除（如 Row 1）。";
     } else if (type === 'dropna_subset') {
       document.querySelectorAll('.nan-row td:first-child').forEach(c => c.classList.add('scan-highlight'));
       await delay(600);
       document.querySelectorAll('.nan-row td:first-child').forEach(c => c.classList.remove('scan-highlight'));
       rows.forEach(r => { if (['all-nan','iso-nan'].includes(r.dataset.sp)) r.classList.add('collapsing'); });
-      status.innerHTML = "📋 <b>df.dropna(subset=['iso_code'])</b>：畫面雷達只掃描 iso_code，該欄為空即刪除整列。";
+      status.innerHTML = "✂️ <b>df.dropna(subset=['iso_code'])</b>：畫面雷達只掃描 iso_code，該欄為空即刪除整列。";
     } else if (type === 'dropna_axis_col') {
       let colsToDrop = new Set();
-      document.querySelectorAll('.nan-cell').forEach(cell => colsToDrop.add(Array.from(cell.parentNode.children).indexOf(cell)));
+      document.querySelectorAll('[data-isnan="1"]').forEach(cell => colsToDrop.add(Array.from(cell.parentNode.children).indexOf(cell)));
       document.querySelectorAll('#nan-table-wrap tr').forEach(tr => {
         Array.from(tr.children).forEach((c, idx) => { if (colsToDrop.has(idx)) c.classList.add('collapsing-col'); });
       });
-      status.innerHTML = "📋 <b>df.dropna(axis='columns')</b>：只要垂直的「欄位」有任何 NaN，整欄全毀！";
-    } else if (type === 'dropna_inplace') {
-      rows.forEach(r => { if (r.querySelector('.nan-cell')) r.classList.add('collapsing'); });
-      status.innerHTML = '📋 <b>df.dropna(inplace=True)</b>：加上 inplace，Pandas 直接覆寫原始記憶體資料。';
+      status.innerHTML = "✂️ <b>df.dropna(axis='columns')</b>：只要垂直的「欄位」有任何 NaN，整欄全毀！";
     } else if (type === 'fillna') {
-      document.querySelectorAll('.nan-cell').forEach(c => { c.textContent='0'; c.classList.add('filled'); });
-      status.innerHTML = '📋 <b>df.fillna(0)</b>：畫面上所有殘留的 NaN 翻轉填補為 0。';
+      document.querySelectorAll('[data-isnan="1"]').forEach(c => { c.textContent='0'; c.classList.add('filled'); });
+      status.innerHTML = '🩹 <b>df.fillna(0)</b>：畫面上所有殘缺的 NaN 翻轉填補為 0。';
+    } else if (type === 'ffill') {
+      // 模擬前向填補
+      const trs = document.querySelectorAll('#nan-table-wrap tbody tr');
+      for (let c = 0; c < 7; c++) {
+        let lastVal = null;
+        for (let r = 0; r < trs.length; r++) {
+          const td = trs[r].children[c];
+          if (td.dataset.isnan) {
+            if (lastVal) { td.textContent = lastVal; td.classList.add('filled'); }
+          } else {
+            lastVal = td.textContent;
+          }
+        }
+      }
+      status.innerHTML = '🩹 <b>df.ffill() (Forward Fill)</b>：向下延續填補！抓取同欄「上一筆」的有效數值來補上空缺（若最上方就是 NaN 則無法填補）。實務常用於時序資料。';
     }
   }
 
-  /* ── M6: Duplicates ── */
+  /* ── M6 ── */
   const STUS = [
     { sid:'D49001', name:'Alice',  s:88 },
     { sid:'D49457', name:'Peter',  s:76, dup:true },
@@ -800,10 +862,8 @@
     const list = document.getElementById('student-list'); list.innerHTML = '';
     STUS.forEach(s => {
       const row = document.createElement('div'); row.className = 'student-row';
-      if (s.dup) row.dataset.dup = '1';
-      if (s.later) row.dataset.later = '1';
-      if (s.nameLater) row.dataset.namelater = '1';
-      if (s.nameDup) row.dataset.namedup = '1';
+      if (s.dup) row.dataset.dup = '1'; if (s.later) row.dataset.later = '1';
+      if (s.nameLater) row.dataset.namelater = '1'; if (s.nameDup) row.dataset.namedup = '1';
       row.innerHTML = `<span class="sid">${s.sid}</span><span class="sname">${s.name}</span><span class="sscore">分數: ${s.s}</span>
         ${s.dup ? '<span class="dup-badge" style="display:none">🔴 完全重複</span>' : ''}`;
       list.appendChild(row);
@@ -812,7 +872,6 @@
     document.getElementById('m6-tip').style.display = 'none';
   }
   function dupReset() { dupBuilt = false; buildStudentList(); }
-  
   async function dupAction(type) {
     dupReset(); await delay(100);
     const status = document.getElementById('dup-status');
@@ -821,278 +880,152 @@
 
     if (type === 'warn') {
       rows.forEach(r => { if(r.dataset.dup) { r.classList.add('dup-warn'); r.querySelector('.dup-badge').style.display = ''; }});
-      status.innerHTML = '⚠️ <b>df.duplicated().sum()</b>：發現 1 組「整列資料完全一模一樣」的重複分身 (Peter)。';
+      status.innerHTML = '⚠️ <b>df.duplicated().sum()</b>：發現 1 組「整列完全一模一樣」的重複分身 (Peter)。';
     } else if (type === 'keepFirst') {
-      const later = document.querySelector('.student-row[data-later]');
-      if (later) { later.classList.add('removing'); }
-      status.innerHTML = "✅ <b>df.drop_duplicates(keep='first')</b>：保留出現的第一筆 Peter，刪除排在後面的分身。";
+      const later = document.querySelector('.student-row[data-later]'); if (later) later.classList.add('removing');
+      status.innerHTML = "✅ <b>keep='first'</b>：保留出現的第一筆，刪除排在後面的分身。";
     } else if (type === 'keepLast') {
-      const first = document.querySelector('.student-row[data-dup]:not([data-later])');
-      if (first) { first.classList.add('removing'); }
-      status.innerHTML = "✅ <b>df.drop_duplicates(keep='last')</b>：喜新厭舊！保留最後一筆 Peter，刪除第一筆。";
+      const first = document.querySelector('.student-row[data-dup]:not([data-later])'); if (first) first.classList.add('removing');
+      status.innerHTML = "✅ <b>keep='last'</b>：喜新厭舊！保留最後一筆，刪除第一筆。";
     } else if (type === 'keepFalse') {
       document.querySelectorAll('.student-row[data-dup]').forEach(r => r.classList.add('removing'));
-      status.innerHTML = "✅ <b>df.drop_duplicates(keep=False)</b>：斬草除根！只要有重複，不管前後「全部刪除」。";
+      status.innerHTML = "✅ <b>keep=False</b>：斬草除根！只要有重複，不管前後全部刪除。";
     } else if (type === 'subset') {
       document.querySelectorAll('.student-row[data-later], .student-row[data-namelater]').forEach(r => r.classList.add('removing'));
-      status.innerHTML = "✅ <b>df.drop_duplicates(subset=['Name'])</b>：檢查器只看姓名！學號不同但同名的 Alice 也被視為重複而刪除。";
-      tip.innerHTML = `💡 <b>解說</b>：當你使用 <code>subset=['Name']</code> 時，Pandas 的檢查器只會盯著姓名看，並預設 <code>keep='first'</code>。因此，第 1 筆的 Alice 和第 2 筆的 Peter 通關了；當掃描到第 4 筆的 Peter 和第 5 筆的 Alice 時，<b>即使他們的學號不同</b>，在檢查器的眼裡依然是「名字重複」的幽靈，所以直接被刪除！`;
+      status.innerHTML = "✅ <b>subset=['Name']</b>：檢查器只看姓名！學號不同但同名的 Alice 也被視為重複而刪除。";
+      tip.innerHTML = `💡 當使用 <code>subset=['Name']</code> 時，只檢查姓名。因此第 4 筆 Peter 與第 5 筆 Alice 皆因「名字重複」被刪除！`;
       tip.style.display = 'block';
     } else if (type === 'show_all') {
-      rows.forEach(r => {
-        if (r.dataset.dup) r.classList.add('highlight-loc');
-        else r.classList.add('dimmed');
-      });
-      status.innerHTML = "🔎 <b>df.loc[df.duplicated(keep=False)]</b>：這招超強！在刪除前，先透過 loc 把「所有重複的資料」獨立過濾出來審視。";
+      rows.forEach(r => { if (r.dataset.dup) r.classList.add('highlight-loc'); else r.classList.add('dimmed'); });
+      status.innerHTML = "🔎 <b>loc[df.duplicated(keep=False)]</b>：在刪除前，獨立把「所有重複資料」過濾出來審視。";
     }
   }
 
-  /* ── M7: Rename ── */
+  /* ── M7 ── */
   function renameAction(type) {
-    const th1 = document.getElementById('th-fullname');
-    const th2 = document.getElementById('th-age');
-    const th3 = document.getElementById('th-salary');
+    const th1 = document.getElementById('th-fullname'), th2 = document.getElementById('th-age'), th3 = document.getElementById('th-salary');
     const status = document.getElementById('m7-status');
-
-    th1.textContent = 'Full Name'; th1.className = '';
-    th2.textContent = 'AGE '; th2.className = '';
-    th3.textContent = 'Salary(USD)'; th3.className = '';
-
-    if (type === 'dict') {
-        th1.textContent = 'name'; th1.classList.add('renamed-col');
-        status.innerHTML = "✅ <b>rename(columns={'Full Name': 'name'})</b>：使用字典精準修改特定欄位名稱。";
-    } else if (type === 'lower') {
-        th1.textContent = 'full name'; th1.classList.add('renamed-col');
-        th2.textContent = 'age '; th2.classList.add('renamed-col');
-        th3.textContent = 'salary(usd)'; th3.classList.add('renamed-col');
-        status.innerHTML = "✅ <b>rename(columns=str.lower)</b>：傳入函數（如 str.lower），將所有欄位名稱一次轉為小寫。";
-    } else if (type === 'strip') {
-        th2.textContent = 'AGE'; th2.classList.add('renamed-col');
-        status.innerHTML = "✅ <b>rename(columns=lambda x: x.strip())</b>：一鍵清除所有欄位名稱頭尾的多餘空白（移除了 AGE 後面的空格）。";
-    } else {
-        status.innerHTML = "點擊上方按鈕查看效果";
-    }
+    th1.textContent = 'Full Name'; th1.className = ''; th2.textContent = 'AGE '; th2.className = ''; th3.textContent = 'Salary(USD)'; th3.className = '';
+    
+    if (type === 'dict') { th1.textContent = 'name'; th1.classList.add('renamed-col'); status.innerHTML = "✅ 精準修改特定欄位名稱。"; }
+    else if (type === 'lower') { [th1, th2, th3].forEach(t => { t.textContent = t.textContent.toLowerCase(); t.classList.add('renamed-col');}); status.innerHTML = "✅ 傳入 <code>str.lower</code> 一次轉為小寫。"; }
+    else if (type === 'strip') { th2.textContent = 'AGE'; th2.classList.add('renamed-col'); status.innerHTML = "✅ 清除所有頭尾空白（移除了 AGE 後面的空格）。"; }
+    else { status.innerHTML = "點擊上方按鈕查看效果"; }
   }
 
-  /* ── M8: Dtypes ── */
+  /* ── M8 ── */
   function dtypeAction(type) {
-    const b1 = document.getElementById('badge-col-a');
-    const b2 = document.getElementById('badge-col-b');
-    const v1 = document.getElementById('val-col-a');
-    const v2 = document.getElementById('val-col-b');
+    const b1 = document.getElementById('badge-col-a'), b2 = document.getElementById('badge-col-b'), b3 = document.getElementById('badge-col-c');
+    const v1 = document.getElementById('val-col-a'), v2 = document.getElementById('val-col-b'), v3 = document.getElementById('val-col-c');
     const status = document.getElementById('m8-status');
 
-    // Reset styles & values
-    b1.className = 'm8-dtype-badge type-obj'; b1.textContent = 'object';
-    b2.className = 'm8-dtype-badge type-float'; b2.textContent = 'float64';
-    v1.textContent = "['1', '2', '3']";
-    v2.textContent = "[1.0, 2.0, NaN]";
+    b1.className = 'm8-dtype-badge type-obj'; b1.textContent = 'object'; v1.textContent = "['1', '2', '3']"; v1.classList.remove('val-error');
+    b2.className = 'm8-dtype-badge type-float'; b2.textContent = 'float64'; v2.textContent = "[1.0, 2.0, NaN]";
+    b3.className = 'm8-dtype-badge type-obj'; b3.textContent = 'object'; v3.textContent = "['10', '12x', '20']"; v3.classList.remove('val-error');
 
-    if (type === 'dtype') {
-        status.innerHTML = "🔍 <b>Series.dtype</b>：查看欄位型態。A 欄是字串 (object)，B 欄因為包含 NaN，被 Pandas 預設轉為浮點數 (float64)。";
-    } else if (type === 'astype_no_assign') {
-        status.innerHTML = "⚠️ <b>df['Col_A'].astype(int)</b>：轉換無效！雖然執行了轉換，但<b>沒有將結果「賦值」存回原本的欄位</b>，所以 Col_A 的值和型態依然沒有改變。";
-    } else if (type === 'astype_assign') {
-        b1.className = 'm8-dtype-badge type-int'; b1.textContent = 'int32';
-        v1.textContent = "[1, 2, 3]";
-        status.innerHTML = "✅ <b>df['Col_A'] = df['Col_A'].astype(int)</b>：成功！透過等號 <code>=</code> 將轉換結果覆寫回原欄位，A 欄的引號消失，正式變成整數 <code>int32</code>。";
-    } else if (type === 'convert_dtypes') {
-        b1.className = 'm8-dtype-badge type-int'; b1.textContent = 'Int32';
-        b2.className = 'm8-dtype-badge type-Int64'; b2.textContent = 'Int64';
-        v1.textContent = "[1, 2, 3]";
-        v2.textContent = "[1, 2, <NA>]";
-        status.innerHTML = "✨ <b>df = df.convert_dtypes()</b>：Pandas 智慧轉換！A 欄轉為 Int32，B 欄則完美使用支援 NaN 的現代整數型態 (Int64)。<br><span style='color:#b91c1c;'>⚠️ 注意這裡也使用了 df = 將結果存回原變數！</span>";
-    } else {
-        status.innerHTML = "點擊上方按鈕查看效果";
+    if (type === 'dtype') { status.innerHTML = "🔍 <b>Series.dtype</b>：字串為 object，包含 NaN 的數值預設為 float64。"; }
+    else if (type === 'astype_assign') { b1.className = 'm8-dtype-badge type-int'; b1.textContent = 'int32'; v1.textContent = "[1, 2, 3]"; status.innerHTML = "✅ 透過 <code>=</code> 重新賦值，成功將 Col_A 轉為整數。"; }
+    else if (type === 'to_numeric_coerce') {
+        b3.className = 'm8-dtype-badge type-float'; b3.textContent = 'float64'; 
+        v3.innerHTML = "[10.0, <span class='val-error'>NaN</span>, 20.0]";
+        status.innerHTML = "🚨 <b>errors='coerce'</b>：Col_C 夾雜了髒字串 '12x'。這個參數能將無法轉換的值強制變為 <code>NaN</code>，避免程式崩潰！";
     }
+    else if (type === 'convert_dtypes') {
+        b1.className = 'm8-dtype-badge type-int'; b1.textContent = 'Int32'; v1.textContent = "[1, 2, 3]";
+        b2.className = 'm8-dtype-badge type-Int64'; b2.textContent = 'Int64'; v2.textContent = "[1, 2, <NA>]";
+        status.innerHTML = "✨ <b>convert_dtypes()</b>：Pandas 智慧轉換！自動套用支援缺失值的最佳現代型態 (Int64)。";
+    }
+    else { status.innerHTML = "點擊上方按鈕查看效果"; }
   }
 
-  /* ── M9: Data Filtering ── */
+  /* ── M9 ── */
   function filterAction(type) {
-    const r1 = document.getElementById('m9-r1'); // Alice: M85, S90, E75
-    const r2 = document.getElementById('m9-r2'); // Bob: M50, S65, E80
-    const r3 = document.getElementById('m9-r3'); // Charlie: M95, S85, E95
-    const r4 = document.getElementById('m9-r4'); // David: M40, S45, E50
+    const rs = [document.getElementById('m9-r1'), document.getElementById('m9-r2'), document.getElementById('m9-r3'), document.getElementById('m9-r4')];
     const status = document.getElementById('m9-status');
-    const warn = document.getElementById('m9-warn');
-
-    // Reset
-    [r1, r2, r3, r4].forEach(r => { r.classList.remove('dimmed', 'highlighted'); });
-    warn.style.display = 'block';
-
-    if (type === 'and') {
-        r2.classList.add('dimmed'); r4.classList.add('dimmed');
-        r1.classList.add('highlighted'); r3.classList.add('highlighted');
-        status.innerHTML = "✅ <b>& (交集)</b>：找出數學 >= 80 <b>且</b> 科學 >= 80 的學生 (Alice, Charlie)。";
-    } else if (type === 'or') {
-        r1.classList.add('dimmed'); r3.classList.add('dimmed');
-        r2.classList.add('highlighted'); r4.classList.add('highlighted');
-        status.innerHTML = "✅ <b>| (聯集)</b>：找出數學 < 60 <b>或</b> 英文 < 60 的學生 (Bob 數學不格，David 兩科都不及格，皆符合)。";
-    } else if (type === 'not') {
-        r1.classList.add('dimmed'); r3.classList.add('dimmed');
-        r2.classList.add('highlighted'); r4.classList.add('highlighted');
-        status.innerHTML = "✅ <b>~ (反向)</b>：找出<b>不是</b>數學 >= 60 的學生 (等同數學 < 60)。符合的有 Bob, David。";
-    } else {
-        status.innerHTML = "點擊上方按鈕查看資料篩選結果";
-    }
+    rs.forEach(r => r.classList.remove('dimmed', 'highlighted'));
+    
+    if (type === 'and') { rs[1].classList.add('dimmed'); rs[3].classList.add('dimmed'); rs[0].classList.add('highlighted'); rs[2].classList.add('highlighted'); status.innerHTML = "✅ <b>& (且)</b>：兩科都 >= 80 的學生。"; }
+    else if (type === 'or') { rs[0].classList.add('dimmed'); rs[2].classList.add('dimmed'); rs[1].classList.add('highlighted'); rs[3].classList.add('highlighted'); status.innerHTML = "✅ <b>| (或)</b>：任一科 < 60 的學生。"; }
+    else if (type === 'not') { rs[0].classList.add('dimmed'); rs[2].classList.add('dimmed'); rs[1].classList.add('highlighted'); rs[3].classList.add('highlighted'); status.innerHTML = "✅ <b>~ (反)</b>：非 Math >= 60 的學生。"; }
+    else { status.innerHTML = "點擊按鈕查看篩選結果"; }
   }
 
-  /* ── M10: ISIN Magic ── */
+  /* ── M10 ── */
   async function isinAction(type) {
-    const pass = document.getElementById('m10-vip-pass');
-    const status = document.getElementById('m10-status');
-    const codeList = document.getElementById('m10-code-list');
-    const codeTrad = document.getElementById('m10-code-trad');
-    const codeIsin = document.getElementById('m10-code-isin');
-    const lineTrad = document.getElementById('m10-line-trad');
-    const lineIsin = document.getElementById('m10-line-isin');
-
-    const r1 = document.getElementById('m10-r1');
-    const r2 = document.getElementById('m10-r2');
-    const r3 = document.getElementById('m10-r3');
-    const r4 = document.getElementById('m10-r4');
-
-    // Reset Table and Animation
-    [r1, r2, r3, r4].forEach(r => r.classList.remove('dimmed', 'highlighted'));
-    pass.classList.remove('scan-anim');
-
-    if (type === 'create') {
-      codeTrad.style.display = 'none';
-      codeIsin.style.display = 'none';
-      
-      codeList.classList.add('highlight');
-      setTimeout(() => codeList.classList.remove('highlight'), 800);
-      pass.classList.remove('hidden');
-      status.innerHTML = "✅ 第一步：用中括號 <code>[]</code> 建立 List 名單，存入 <code>name_list</code> 變數。";
+    const pass = document.getElementById('m10-vip-pass'), status = document.getElementById('m10-status');
+    const codeList = document.getElementById('m10-code-list'), codeTrad = document.getElementById('m10-code-trad'), codeIsin = document.getElementById('m10-code-isin');
+    const rs = [document.getElementById('m10-r1'), document.getElementById('m10-r2'), document.getElementById('m10-r3'), document.getElementById('m10-r4')];
     
-    } else if (type === 'traditional') {
-      codeTrad.style.display = 'block';
-      codeIsin.style.display = 'none';
-      
-      lineTrad.classList.add('highlight');
-      setTimeout(() => lineTrad.classList.remove('highlight'), 800);
-      pass.classList.add('hidden');
-      
-      r2.classList.add('dimmed'); r4.classList.add('dimmed');
-      r1.classList.add('highlighted'); 
-      await delay(400); 
-      r3.classList.add('highlighted');
-      status.innerHTML = "⚠️ 傳統寫法：不用名單，逐一比對 <code>|</code>，條件越多越容易寫錯。";
-    
-    } else if (type === 'isin') {
-      codeTrad.style.display = 'block';
-      codeIsin.style.display = 'block';
-      
-      lineIsin.classList.add('highlight');
-      setTimeout(() => lineIsin.classList.remove('highlight'), 800);
-      
-      pass.classList.remove('hidden');
-      pass.classList.add('scan-anim');
-      await delay(250);
-      
-      r2.classList.add('dimmed'); r4.classList.add('dimmed');
-      r1.classList.add('highlighted'); r3.classList.add('highlighted');
-      status.innerHTML = "✨ <b>.isin() 魔法</b>：拿著建好的名單一次掃描，瞬間通關！乾淨俐落！";
-    
-    } else {
-      codeTrad.style.display = 'none';
-      codeIsin.style.display = 'none';
-      pass.classList.add('hidden');
-      status.innerHTML = "跟著步驟點擊，體驗 .isin() 的威力！";
-    }
+    rs.forEach(r => r.classList.remove('dimmed', 'highlighted')); pass.classList.remove('scan-anim');
+
+    if (type === 'create') { codeTrad.style.display='none'; codeIsin.style.display='none'; pass.classList.remove('hidden'); codeList.classList.add('highlight'); setTimeout(()=>codeList.classList.remove('highlight'),800); status.innerHTML = "✅ 建立 List 名單。"; }
+    else if (type === 'traditional') { codeTrad.style.display='block'; codeIsin.style.display='none'; pass.classList.add('hidden'); document.getElementById('m10-line-trad').classList.add('highlight'); setTimeout(()=>document.getElementById('m10-line-trad').classList.remove('highlight'),800); rs[1].classList.add('dimmed'); rs[3].classList.add('dimmed'); rs[0].classList.add('highlighted'); await delay(400); rs[2].classList.add('highlighted'); status.innerHTML = "⚠️ 傳統寫法：逐一比對容易出錯。"; }
+    else if (type === 'isin') { codeTrad.style.display='block'; codeIsin.style.display='block'; document.getElementById('m10-line-isin').classList.add('highlight'); setTimeout(()=>document.getElementById('m10-line-isin').classList.remove('highlight'),800); pass.classList.remove('hidden'); pass.classList.add('scan-anim'); await delay(250); rs[1].classList.add('dimmed'); rs[3].classList.add('dimmed'); rs[0].classList.add('highlighted'); rs[2].classList.add('highlighted'); status.innerHTML = "✨ <b>.isin() 魔法</b>：拿著名單一次掃描，乾淨俐落！"; }
+    else { codeTrad.style.display='none'; codeIsin.style.display='none'; pass.classList.add('hidden'); status.innerHTML = "跟著步驟點擊！"; }
   }
 
-  /* ── M11: Describe ── */
+  /* ── M11 ── */
   function descAction(type) {
-    const rawBox = document.getElementById('m11-raw-box');
-    const descBox = document.getElementById('m11-desc-box');
+    const rawBox = document.getElementById('m11-raw-box'), descBox = document.getElementById('m11-desc-box');
+    const tblNum = document.getElementById('m11-tbl-num'), tblAll = document.getElementById('m11-tbl-all');
     const status = document.getElementById('m11-status');
 
     if (type === 'describe') {
-        rawBox.classList.remove('active');
-        descBox.style.display = 'block';
-        setTimeout(() => { descBox.classList.add('active'); }, 50);
-        status.innerHTML = "📈 <b>df.describe()</b>：成功！自動幫你算出平均值 (mean)、標準差 (std) 等重要數值。這能快速檢查資料是否有極端異常值。";
+        rawBox.classList.remove('active'); tblAll.style.display = 'none'; tblNum.style.display = 'table';
+        descBox.style.display = 'block'; setTimeout(() => descBox.classList.add('active'), 50);
+        status.innerHTML = "📈 預設計算數值欄位，幫助快速掌握資料分布。";
+    } else if (type === 'all') {
+        rawBox.classList.remove('active'); tblNum.style.display = 'none'; tblAll.style.display = 'table';
+        descBox.style.display = 'block'; setTimeout(() => descBox.classList.add('active'), 50);
+        status.innerHTML = "🌟 <b>include='all'</b>：字串欄位也能分析！額外顯示 unique (相異值)、top (最常出現)、freq (出現次數)。";
     } else {
-        descBox.classList.remove('active');
-        setTimeout(() => { descBox.style.display = 'none'; }, 400);
-        status.innerHTML = "預設只針對數值型欄位 (Age, Salary) 進行計算，自動略過字串欄位 (Name)。";
+        descBox.classList.remove('active'); setTimeout(() => descBox.style.display = 'none', 400);
+        status.innerHTML = "點擊按鈕查看運算結果。";
     }
   }
 
-  /* ── M12: Inplace ── */
+  /* ── M12 ── */
   function resetInplace() {
     document.getElementById('m12-orig-nan').classList.remove('erased');
-    document.getElementById('m12-copy-box').style.display = 'none';
-    document.getElementById('m12-copy-box').style.opacity = '0';
+    document.getElementById('m12-copy-box').style.display = 'none'; document.getElementById('m12-copy-box').style.opacity = '0';
     document.getElementById('m12-copy-box').style.transform = 'translateX(-20px)';
     document.getElementById('m12-orig-box').classList.remove('active-copy');
-    const desc = document.getElementById('m12-desc');
-    desc.className = 'm12-desc'; desc.innerHTML = '';
+    document.getElementById('m12-desc').className = 'm12-desc'; document.getElementById('m12-desc').innerHTML = '';
   }
   async function runInplace(isInplace) {
-    resetInplace(); await delay(100);
-    const desc = document.getElementById('m12-desc');
+    resetInplace(); await delay(100); const desc = document.getElementById('m12-desc');
     if (!isInplace) {
       document.getElementById('m12-orig-box').classList.add('active-copy');
-      const copyBox = document.getElementById('m12-copy-box');
-      copyBox.style.display = 'block';
-      await delay(50);
-      copyBox.style.opacity = '1';
-      copyBox.style.transform = 'translateX(0)';
-      desc.innerHTML = '<b>【官方推薦】影印機模式 (<code>inplace=False</code>)</b>：產生一份乾淨的副本，原始資料安全保留，防呆防錯最佳選擇！';
-      desc.className = 'm12-desc show-copy';
+      const copyBox = document.getElementById('m12-copy-box'); copyBox.style.display = 'block'; await delay(50);
+      copyBox.style.opacity = '1'; copyBox.style.transform = 'translateX(0)';
+      desc.innerHTML = '<b>【官方推薦】影印機模式 (inplace=False)</b>：產生副本，原始資料安全保留！'; desc.className = 'm12-desc show-copy';
     } else {
       document.getElementById('m12-orig-nan').classList.add('erased');
-      desc.innerHTML = '<b>【風險警告】橡皮擦模式 (<code>inplace=True</code>)</b>：直接修改原始記憶體資料。省去賦值步驟，但一旦刪錯只能重讀檔案！';
-      desc.className = 'm12-desc show-inplace';
+      desc.innerHTML = '<b>【風險警告】橡皮擦模式 (inplace=True)</b>：直接修改原始記憶體資料。'; desc.className = 'm12-desc show-inplace';
     }
   }
 
-  /* ── M13: Async Script ── */
+  /* ── M13 ── */
   let m13Running = false;
   function m13Reset() {
-    m13Running = false;
-    document.getElementById('m13-console').textContent = '';
-    ['m13-l1','m13-l1b','m13-l1c','m13-l1d','m13-l1e','m13-l2','m13-l3','m13-l4','m13-l4b','m13-l5','m13-l6','m13-l7','m13-l8'].forEach(id => {
+    m13Running = false; document.getElementById('m13-console').textContent = '';
+    ['m13-l1','m13-l1b','m13-l2','m13-l3','m13-l4','m13-l5','m13-l6','m13-l7'].forEach(id => {
       const el = document.getElementById(id); if (el) el.classList.remove('highlight');
-    });
-    document.getElementById('m13-run-btn').disabled = false;
+    }); document.getElementById('m13-run-btn').disabled = false;
   }
-
-  async function typeWriter(el, text, speed = 20) {
-    for (const ch of text) { el.textContent += ch; await delay(speed); }
-    el.textContent += '\n';
-  }
-
+  async function typeWriter(el, text, speed = 20) { for (const ch of text) { el.textContent += ch; await delay(speed); } el.textContent += '\n'; }
   async function m13RunScript() {
-    if (m13Running) return; m13Running = true;
-    document.getElementById('m13-run-btn').disabled = true;
+    if (m13Running) return; m13Running = true; document.getElementById('m13-run-btn').disabled = true;
     const con = document.getElementById('m13-console'); con.textContent = '';
-    const hl = (ids, on) => ids.forEach(id => {
-      const el = document.getElementById(id); if (el) on ? el.classList.add('highlight') : el.classList.remove('highlight');
-    });
+    const hl = (ids, on) => ids.forEach(id => { const el = document.getElementById(id); if(el) on?el.classList.add('highlight'):el.classList.remove('highlight'); });
 
-    hl(['m13-l1','m13-l1b','m13-l1c','m13-l1d','m13-l1e'], true); await delay(400);
-    await typeWriter(con, '$ python data_pipeline.py\n[1/6] 讀取資料中 (包含 header=0)...\n✔️ 讀取成功，維度: (17135, 130)'); await delay(300);
-
-    hl(['m13-l1','m13-l1b','m13-l1c','m13-l1d','m13-l1e'], false); hl(['m13-l2'], true); await delay(300);
-    await typeWriter(con, '[2/6] 統一欄位名稱為小寫 (rename)... ✔️'); await delay(300);
-
-    hl(['m13-l2'], false); hl(['m13-l3'], true); await delay(300);
-    await typeWriter(con, '[3/6] 轉換最佳型態 (convert_dtypes)... ✔️'); await delay(300);
-
-    hl(['m13-l3'], false); hl(['m13-l4','m13-l4b','m13-l5'], true); await delay(300);
-    await typeWriter(con, '[4/6] 清理 NaN 與重複值...\n✔️ 清除完成，目前維度: (17123, 130)'); await delay(300);
-
-    hl(['m13-l4','m13-l4b','m13-l5'], false); hl(['m13-l6'], true); await delay(300);
-    await typeWriter(con, '[5/6] 篩選 2020 年後且具發電量資料...\n✔️ 條件套用成功，殘留維度: (325, 130)'); await delay(300);
-
-    hl(['m13-l6'], false); hl(['m13-l7','m13-l8'], true); await delay(300);
-    await typeWriter(con, '[6/6] 產生統計摘要 (describe):\n       electricity         year\ncount   325.000000   325.000000\nmean   4210.500000  2021.500000\nstd     150.210000     1.120000\n\n🎉 資料準備完成，隨時可輸出圖表！');
-
-    hl(['m13-l7','m13-l8'], false);
-    document.getElementById('m13-run-btn').disabled = false; m13Running = false;
+    hl(['m13-l1','m13-l1b'], true); await delay(400); await typeWriter(con, '$ python data_pipeline.py\n[1/6] 讀取資料中...\n✔️ 讀取成功'); await delay(300);
+    hl(['m13-l1','m13-l1b'], false); hl(['m13-l2'], true); await delay(300); await typeWriter(con, '[2/6] 統一欄位名稱為小寫... ✔️'); await delay(300);
+    hl(['m13-l2'], false); hl(['m13-l3'], true); await delay(300); await typeWriter(con, '[3/6] 轉換最佳型態... ✔️'); await delay(300);
+    hl(['m13-l3'], false); hl(['m13-l4','m13-l5'], true); await delay(300); await typeWriter(con, '[4/6] 清理 NaN 與重複值... ✔️'); await delay(300);
+    hl(['m13-l4','m13-l5'], false); hl(['m13-l6'], true); await delay(300); await typeWriter(con, '[5/6] 篩選特定資料... ✔️'); await delay(300);
+    hl(['m13-l6'], false); hl(['m13-l7'], true); await delay(300); await typeWriter(con, '[6/6] 統計摘要:\n🎉 資料準備完成！');
+    hl(['m13-l7'], false); document.getElementById('m13-run-btn').disabled = false; m13Running = false;
   }
 </script>
 </body>
