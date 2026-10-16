@@ -4,1041 +4,499 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>C++ std::string 字串互動教學</title>
+  
   <link rel="stylesheet" href="../../theme.css" />
   <script src="../../layout.js" defer></script>
+  
   <style>
-    /* ── Reset & base ── */
-    body { padding: 0; margin: 0; }
-    .container { padding-top: 80px; padding-bottom: 60px; }
+    /* ── Base & Layout ── */
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }
+    .container { max-width: 1100px; margin: 0 auto; padding-top: 60px; padding-bottom: 60px; }
+    
+    .page-hero { text-align: center; margin-bottom: 40px; }
+    .page-hero h1 { font-size: 2.2rem; font-weight: 800; color: #58a6ff; margin-bottom: 8px; }
+    .page-hero p { color: #8b949e; font-size: 1rem; }
 
-    /* ── Section titles ── */
-    .section-title { margin-bottom: 1.5rem; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px 24px; margin-bottom: 30px; }
+    .section-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 15px; color: #f1f5f9; display: flex; align-items: center; gap: 8px; }
+    .section-desc { font-size: 0.9rem; color: #8b949e; margin-bottom: 15px; line-height: 1.6; }
+    
+    /* ── Grid Layout ── */
+    .mod-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; align-items: start; }
+    @media(max-width:850px){ .mod-grid { grid-template-columns: 1fr; } }
+    
+    /* ── Code blocks ── */
+    .code-block { font-family: 'Courier New', monospace; font-size: 0.85rem; background: #010409; border-radius: 8px; padding: 12px 16px; line-height: 1.6; border: 1px solid #30363d; overflow-x: auto; margin-bottom:15px; }
+    .code-line { display: block; padding: 1px 4px; border-radius: 4px; transition: all .2s;}
+    .code-line.active-green { background: #1a4a1e; color: #56d364; font-weight: bold; }
+    .code-line.active-blue { background: #0d2a4a; color: #58a6ff; font-weight: bold; }
+    .code-line.active-red { background: #4a1a1a; color: #f85149; font-weight: bold; }
+    .code-line.active-yellow { background: #3a2f00; color: #e3b341; font-weight: bold; }
+    
+    /* ── Controls & Inputs ── */
+    .ctrl-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; justify-content:center;}
+    .btn-run { background: #238636; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: .2s; }
+    .btn-run:hover { background: #2ea043; }
+    .btn-run:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-red { background: #da3633; } .btn-red:hover { background: #f85149; }
+    .btn-blue { background: #1f6feb; } .btn-blue:hover { background: #388bfd; }
+    .btn-yellow { background: #d29922; } .btn-yellow:hover { background: #e3b341; }
+    .input-box { background: #0f172a; border: 1px solid #475569; color: #f1f5f9; padding: 6px 10px; border-radius: 6px; font-family: monospace; outline: none; width:100%; box-sizing:border-box;}
+    .input-box:focus { border-color: #58a6ff; }
+    
+    /* ── Output & Visuals ── */
+    .visual-box { background: #010409; border: 1px dashed #58a6ff; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; position:relative; overflow:hidden;}
+    .out-box { background: #0d1117; border-left: 4px solid #8b949e; padding: 10px 14px; font-family: monospace; font-size: 0.9rem; color: #c9d1d9; margin-top: 12px; border-radius: 0 6px 6px 0; min-height: 40px; white-space: pre-wrap; width:100%; box-sizing:border-box;}
 
-    /* ── Two-column compare ── */
-    .compare-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.2rem;
-    }
-    @media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } }
+    /* ── Watch Box ── */
+    .watch-container { display:flex; justify-content:center; gap:15px; margin-bottom:10px; flex-wrap:wrap; }
+    .watch-box { background: #010409; border: 1px solid #30363d; border-radius: 6px; padding: 5px 10px; font-family: monospace; font-size: 0.8rem; color: #8b949e; text-align:center; min-width: 50px; }
+    .watch-title { font-size: 0.65rem; text-transform: uppercase; color: #58a6ff; margin-bottom: 2px; }
+    .watch-val { color: #e3b341; font-weight: bold; font-size: 0.95rem; }
 
-    .compare-box {
-      background: var(--bg-secondary, #1e1e2e);
-      border: 2px solid var(--border-color, #333);
-      border-radius: 12px;
-      padding: 1rem;
-    }
-    .compare-box h4 {
-      margin: 0 0 .8rem;
-      font-family: monospace;
-      font-size: .95rem;
-      color: var(--accent, #7c9cfc);
-    }
-
-    /* ── Memory cells ── */
-    .mem-row {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-      min-height: 40px;
-      align-items: center;
-    }
-    .mem-cell {
-      width: 36px; height: 36px;
-      display: flex; align-items: center; justify-content: center;
-      border: 2px solid var(--accent, #7c9cfc);
-      border-radius: 6px;
-      background: transparent;
-      font-family: monospace;
-      font-size: .85rem;
-      font-weight: bold;
-      color: var(--text-primary, #cdd6f4);
-      transition: all .35s ease;
-    }
-    .mem-cell.fill { background: rgba(124,156,252,.18); }
-    .mem-cell.overflow {
-      border-color: #f38ba8;
-      background: rgba(243,139,168,.25);
-      color: #f38ba8;
-      animation: shake .4s ease;
-    }
-    .mem-cell.dynamic {
-      border-color: #a6e3a1;
-      background: rgba(166,227,161,.18);
-      color: #a6e3a1;
-      animation: pop .3s ease;
-    }
-    @keyframes shake {
-      0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)}
-    }
-    @keyframes pop {
-      0%{transform:scale(0);opacity:0} 70%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1}
-    }
-    .overflow-badge {
-      color: #f38ba8; font-size: .8rem; font-weight: bold;
-      margin-top: .4rem; min-height:1em;
-    }
-
-    /* ── Common controls ── */
-    .ctrl { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; align-items: center; }
-    .ctrl input {
-      flex: 1; min-width: 140px; max-width: 280px;
-      padding: .45rem .8rem;
-      border-radius: 8px;
-      border: 2px solid var(--border-color, #333);
-      background: var(--bg-secondary, #1e1e2e);
-      color: var(--text-primary, #cdd6f4);
-      font-family: monospace; font-size: .9rem;
-    }
-    .ctrl input:focus { outline: none; border-color: var(--accent, #7c9cfc); }
-    .btn {
-      padding: .45rem 1.1rem;
-      border-radius: 8px; border: none; cursor: pointer;
-      font-weight: 600; font-size: .88rem;
-      background: var(--accent, #7c9cfc);
-      color: #1e1e2e;
-      transition: opacity .2s, transform .1s;
-    }
-    .btn:active { transform: scale(.96); }
-    .btn:hover { opacity: .88; }
-    .btn.green { background: #a6e3a1; }
-    .btn.red   { background: #f38ba8; }
-    .btn.yellow{ background: #f9e2af; }
-    .btn.teal  { background: #89dceb; }
-
-    .result-box {
-      margin-top: 1rem;
-      padding: .7rem 1rem;
-      border-radius: 10px;
-      background: var(--bg-secondary, #1e1e2e);
-      border-left: 4px solid var(--accent, #7c9cfc);
-      font-family: monospace; font-size: .92rem;
-      white-space: pre-wrap;
-      min-height: 2.5rem;
-      color: var(--text-primary, #cdd6f4);
-    }
-
-    /* ── Module 2 – Train ── */
-    .train-track {
-      display: flex;
-      gap: 0; align-items: center;
-      min-height: 64px;
-      flex-wrap: wrap;
-    }
-    .train-car {
-      display: flex; align-items: center; justify-content: center;
-      padding: .5rem .9rem;
-      border: 3px solid var(--accent, #7c9cfc);
-      border-radius: 10px;
-      font-family: monospace; font-size:.9rem; font-weight:bold;
-      background: rgba(124,156,252,.15);
-      color: var(--text-primary, #cdd6f4);
-      position: relative;
-      transition: transform .3s ease;
-    }
-    .train-car::after {
-      content: '🔗';
-      position: absolute; right: -18px;
-      font-size: .8rem; z-index:1;
-    }
+    /* ── Common Cell Styles ── */
+    .cell-wrap { display: flex; flex-direction: column; align-items: center; margin: 0 2px; }
+    .str-cell { width: 36px; height: 36px; border: 2px solid #30363d; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: monospace; font-size: 1.1rem; font-weight: bold; background: #161b22; color: #c9d1d9; transition: .3s; }
+    .str-idx { font-size: 0.7rem; color: #8b949e; margin-top: 3px; font-family: monospace; }
+    .str-cell.active { border-color: #58a6ff; background: rgba(88,166,255,0.15); color: #58a6ff; transform:scale(1.1); }
+    .str-cell.match { border-color: #56d364; background: rgba(86,211,100,0.15); color: #56d364; }
+    .str-cell.error { border-color: #f85149; background: rgba(248,81,73,0.15); color: #f85149; }
+    .str-cell.fade { opacity: 0.3; border-style: dashed; }
+    
+    /* Module Specific */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width:100%; margin-bottom:15px; }
+    .compare-box { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 10px; text-align:center;}
+    .compare-box h4 { margin: 0 0 10px 0; color: #58a6ff; font-family:monospace; font-size:0.9rem;}
+    .mem-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px; min-height: 40px; }
+    
+    .train-track { display: flex; align-items: center; justify-content:center; flex-wrap: wrap; gap: 5px; min-height: 50px; margin-bottom:10px; }
+    .train-car { padding: 6px 12px; border: 2px solid #58a6ff; border-radius: 6px; background: rgba(88,166,255,0.1); font-family: monospace; color: #c9d1d9; transition: .3s; display:flex; align-items:center;}
+    .train-car::after { content: '+'; margin-left: 10px; color:#8b949e; font-weight:bold;}
     .train-car:last-child::after { display:none; }
-    .train-car.linked { border-color: #a6e3a1; background: rgba(166,227,161,.2); }
-    .train-inputs { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom:.8rem; }
-    .train-inputs input { width: 120px; }
+    .train-car.merged { border-color:#56d364; background:rgba(86,211,100,0.15); }
+    .train-car.merged::after { display:none; }
 
-    /* ── Module 3 – Terminal ── */
-    .terminal {
-      background: #0d0d16; border-radius: 10px; padding: 1rem;
-      font-family: monospace; font-size: .9rem;
-      border: 2px solid #333; min-height: 100px;
-      white-space: pre-wrap;
-      color: #a6e3a1;
-      position: relative; overflow: hidden;
-    }
-    .scan-line {
-      position: absolute; top:0; left:0;
-      width: 3px; height: 100%;
-      background: #f9e2af; opacity: .9;
-      transition: left .6s linear;
-    }
-    .stop-wall {
-      position: absolute; top:0;
-      width: 4px; height: 100%;
-      background: #f38ba8;
-      opacity: 0; transition: opacity .2s;
-    }
-    .term-label { color: #89dceb; margin-right:.4rem; }
-    .term-result { color: #cba6f7; }
-
-    /* ── Module 4 – Safe Access ── */
-    .str-cells {
-      display: flex; gap: 4px; flex-wrap: wrap; align-items: flex-start;
-    }
-    .str-cell {
-      position: relative;
-      width: 48px;
-      display: flex; flex-direction: column; align-items: center;
-    }
-    .str-cell .ch {
-      width: 44px; height: 44px;
-      display: flex; align-items:center; justify-content:center;
-      border: 2px solid var(--accent, #7c9cfc);
-      border-radius: 8px;
-      font-family: monospace; font-size: 1.1rem; font-weight:bold;
-      background: rgba(124,156,252,.1);
-      color: var(--text-primary, #cdd6f4);
-      transition: all .3s;
-    }
-    .str-cell .idx { font-size:.7rem; color:#888; margin-top:2px; }
-    .str-cell.active .ch { border-color:#f9e2af; background:rgba(249,226,175,.2); color:#f9e2af; }
-    .str-cell.error .ch  { border-color:#f38ba8; background:rgba(243,139,168,.2); }
-    .shield {
-      display:none; position:absolute; top:-4px; right:-6px;
-      font-size:1.2rem;
-    }
-    .str-cell.shielded .shield { display:block; animation: bounceIn .4s ease; }
-    @keyframes bounceIn {
-      0%{transform:scale(0)} 60%{transform:scale(1.3)} 100%{transform:scale(1)}
-    }
-    .garbage-bug {
-      display:none; position:absolute; top:-8px; right:-8px; font-size:1.1rem;
-    }
-    .str-cell.bugged .garbage-bug { display:block; animation: wiggle .4s ease; }
-    @keyframes wiggle {
-      0%,100%{transform:rotate(0)} 25%{transform:rotate(-15deg)} 75%{transform:rotate(15deg)}
-    }
-    .exception-box {
-      display:none; margin-top:.8rem; padding:.6rem 1rem;
-      border-radius:10px; border:2px solid #f38ba8;
-      background:rgba(243,139,168,.12);
-      color:#f38ba8; font-family:monospace; font-size:.9rem;
-    }
-
-    /* ── Module 5 – Radar ── */
-    .radar-str {
-      display:flex; gap:4px; flex-wrap:wrap; position:relative;
-    }
-    .radar-cell {
-      width:36px; height:36px;
-      display:flex; align-items:center; justify-content:center;
-      border:2px solid var(--border-color,#333); border-radius:6px;
-      font-family:monospace; font-size:.9rem; font-weight:bold;
-      color: var(--text-primary,#cdd6f4);
-      background: transparent;
-      transition: all .25s;
-    }
-    .radar-cell.scanning { border-color:#f9e2af; background:rgba(249,226,175,.2); }
-    .radar-cell.found    { border-color:#a6e3a1; background:rgba(166,227,161,.3); color:#a6e3a1; }
-
-    /* ── Module 6 – Surgery ── */
-    .surgery-str {
-      display:flex; gap:3px; flex-wrap:wrap; min-height:44px;
-    }
-    .surg-cell {
-      width: 34px; height: 34px;
-      display:flex; align-items:center; justify-content:center;
-      border:2px solid var(--border-color,#333); border-radius:6px;
-      font-family: monospace; font-size:.9rem; font-weight:bold;
-      color: var(--text-primary,#cdd6f4);
-      background: transparent;
-      transition: all .3s;
-    }
-    .surg-cell.clip    { border-color:#f9e2af; background:rgba(249,226,175,.25); }
-    .surg-cell.erasing { border-color:#f38ba8; background:rgba(243,139,168,.2); animation: fadeOut .4s forwards; }
-    @keyframes fadeOut { to { opacity:0; transform: scale(.5); } }
-    .surg-cell.inserting { border-color:#a6e3a1; background:rgba(166,227,161,.25); animation: slideIn .35s ease; }
-    @keyframes slideIn { from{ transform:translateY(-18px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
-
-    /* ── Module 7 – Caesar ── */
-    .cipher-chars {
-      display:flex; gap:6px; flex-wrap:wrap; min-height:52px;
-    }
-    .cipher-char {
-      width:42px; height:52px;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      border:2px solid var(--border-color,#333); border-radius:8px;
-      font-family:monospace; font-size:1rem; font-weight:bold;
-      color: var(--text-primary,#cdd6f4);
-      background: transparent;
-      gap:2px;
-      transition: all .3s;
-    }
-    .cipher-char .orig { font-size:.75rem; color:#888; }
-    .cipher-char .shifted { font-size:1rem; }
-    .cipher-char.processing { border-color:#f9e2af; background:rgba(249,226,175,.2); }
-    .cipher-char.done-alpha { border-color:#a6e3a1; background:rgba(166,227,161,.2); color:#a6e3a1; }
-    .cipher-char.done-pass  { border-color:#89dceb; background:rgba(137,220,235,.1); color:#89dceb; }
-    .cipher-char.wrap-hint  { border-color:#cba6f7; background:rgba(203,166,247,.2); color:#cba6f7; }
-    .cipher-step-log {
-      margin-top:.6rem; padding:.5rem .8rem;
-      background: #0d0d16; border-radius:8px;
-      font-family:monospace; font-size:.82rem;
-      white-space:pre-wrap; max-height:140px; overflow-y:auto;
-      color:#cdd6f4;
-    }
-    .step-alpha { color:#a6e3a1; }
-    .step-wrap  { color:#cba6f7; }
-    .step-pass  { color:#89dceb; }
-
-    /* ── misc ── */
-    .tag {
-      display:inline-block; padding:1px 7px; border-radius:5px;
-      font-size:.78rem; font-weight:700; margin-left:.4rem;
-      background: rgba(124,156,252,.18); color:var(--accent,#7c9cfc);
-    }
+    .terminal-box { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 10px; font-family: monospace; color: #e3b341; min-height: 60px; width:100%; box-sizing:border-box; position:relative; overflow:hidden;}
+    .cursor-line { position: absolute; width: 2px; height: 16px; background: #58a6ff; animation: blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+    
   </style>
 </head>
 <body>
 <div class="container">
 
-  <!-- ─────────────────────────────────────────────
-       Module 1: C-style vs std::string
-  ───────────────────────────────────────────────── -->
-  <section id="mod1">
-    <h2 class="section-title">① 字串宣告與底層彈性<span class="tag">C-style vs std::string</span></h2>
-    <div class="card">
-      <p>傳統 <code>char str[5]</code> 容量<strong>固定</strong>，塞超過就溢出（Overflow）；
-         而 <code>std::string</code> 像橡皮筋，會<strong>動態擴充</strong>記憶體。</p>
-      <div class="compare-grid">
-        <!-- Left: fixed char array -->
-        <div class="compare-box">
-          <h4>char str[5] = "Hi";</h4>
-          <div id="m1-fixed-row" class="mem-row"></div>
-          <div id="m1-fixed-msg" class="overflow-badge"></div>
-        </div>
-        <!-- Right: std::string -->
-        <div class="compare-box">
-          <h4>string s = "Hi";</h4>
-          <div id="m1-dynamic-row" class="mem-row"></div>
-          <div id="m1-dynamic-msg" class="overflow-badge" style="color:#a6e3a1;"></div>
+  <div class="page-hero">
+    <h1>🔡 C++ std::string 字串互動教學</h1>
+    <p>透過雙欄視覺化，深入理解 C++ 強大的動態字串類別，告別 C-style char array 的煩惱。</p>
+  </div>
+
+  <!-- Module 1: C-style vs string -->
+  <div class="card">
+    <div class="section-title">① 記憶體彈性：char array vs std::string</div>
+    <div class="mod-grid">
+      <div>
+        <p class="section-desc">傳統 <code>char str[5]</code> 容量固定，塞入過多字元會導致**溢位 (Overflow)**；而 <code>std::string</code> 具備動態配置能力，會隨內容自動拉伸。</p>
+        <div class="code-block">
+          <span class="code-line">char str[5] = "Hi"; <span style="color:#6e7681;">// 容量固定為 5</span></span>
+          <span class="code-line">string s = "Hi";    <span style="color:#6e7681;">// 動態容量</span></span>
+          <span class="code-line"><span style="color:#6e7681;">// 嘗試塞入 "Hello World" ...</span></span>
         </div>
       </div>
-      <div class="ctrl">
-        <button class="btn" id="m1-btn-hi">① 初始化 "Hi"</button>
-        <button class="btn red" id="m1-btn-long">② 塞入 "Hello World"</button>
-        <button class="btn yellow" id="m1-btn-reset">↺ 重置</button>
+      <div class="visual-box">
+        <div class="compare-grid">
+          <div class="compare-box">
+            <h4>char str[5]</h4>
+            <div class="mem-row" id="m1-char-row"></div>
+            <div id="m1-char-msg" style="color:#f85149; font-size:0.8rem; margin-top:5px; min-height:1em;"></div>
+          </div>
+          <div class="compare-box">
+            <h4>std::string s</h4>
+            <div class="mem-row" id="m1-str-row"></div>
+            <div id="m1-str-msg" style="color:#56d364; font-size:0.8rem; margin-top:5px; min-height:1em;"></div>
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <button class="btn-run" onclick="runM1(true)">初始化 "Hi"</button>
+          <button class="btn-run btn-red" onclick="runM1(false)">塞入 "Hello World"</button>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ─────────────────────────────────────────────
-       Module 2: Concatenation train
-  ───────────────────────────────────────────────── -->
-  <section id="mod2">
-    <h2 class="section-title">② 字串串接<span class="tag">+ 與 +=</span></h2>
-    <div class="card">
-      <p>字串可以直接用 <code>+</code> 運算子串接，結果會組成一個新字串。<br>
-         輸入三節「車廂」，點按鈕讓它們「喀嚓」相連。</p>
-      <div class="train-inputs">
-        <input id="m2-s1" value="Hello" placeholder="s1" />
-        <input id="m2-s2" value=", " placeholder="s2" />
-        <input id="m2-s3" value="World!" placeholder="s3" />
+  <!-- Module 2: Concatenation -->
+  <div class="card">
+    <div class="section-title">② 直覺的字串串接 (+ / +=)</div>
+    <div class="mod-grid">
+      <div>
+        <p class="section-desc">不同於 C 語言需要使用 `strcat`，`std::string` 允許直接使用 `+` 號將字串像火車車廂一樣串接起來。</p>
+        <div class="code-block">
+          <span class="code-line" id="m2-c0">string s1 = "<span id="c-m2-s1">C++</span>";</span>
+          <span class="code-line" id="m2-c1">string s2 = "<span id="c-m2-s2"> is </span>";</span>
+          <span class="code-line" id="m2-c2">string s3 = "<span id="c-m2-s3">Fun!</span>";</span>
+          <span class="code-line" id="m2-c3">string result = s1 + s2 + s3;</span>
+        </div>
       </div>
-      <div id="m2-track" class="train-track"></div>
-      <div class="ctrl">
-        <button class="btn" id="m2-btn-link">🚂 s1 + s2 + s3 串接！</button>
-        <button class="btn yellow" id="m2-btn-reset">↺ 重置</button>
-      </div>
-      <div id="m2-result" class="result-box" style="display:none;"></div>
-    </div>
-  </section>
-
-  <!-- ─────────────────────────────────────────────
-       Module 3: cin vs getline
-  ───────────────────────────────────────────────── -->
-  <section id="mod3">
-    <h2 class="section-title">③ 輸入大魔王<span class="tag">cin vs getline</span></h2>
-    <div class="card">
-      <p><code>cin</code> 遇到<strong>空白就停止</strong>；<code>getline</code> 讀取<strong>整行</strong>直到換行。</p>
-      <div class="ctrl" style="margin-bottom:.8rem;">
-        <input id="m3-input" value="Hello World" placeholder="模擬輸入文字…" style="max-width:320px;" />
-      </div>
-      <div id="m3-terminal" class="terminal" style="min-height:80px; margin-bottom:.4rem;">
-        <span class="term-label">Input &gt;</span><span id="m3-display-text"></span>
-        <div id="m3-scan" class="scan-line" style="display:none;"></div>
-        <div id="m3-wall" class="stop-wall" style="display:none;"></div>
-      </div>
-      <div id="m3-result" class="result-box" style="display:none; white-space:pre-wrap;"></div>
-      <div class="ctrl">
-        <button class="btn red" id="m3-btn-cin">用 cin 讀取</button>
-        <button class="btn green" id="m3-btn-getline">用 getline 讀取</button>
-        <button class="btn yellow" id="m3-btn-reset">↺ 重置</button>
+      <div class="visual-box">
+        <div class="ctrl-row">
+          <input type="text" class="input-box" id="m2-s1" value="C++" style="width:30%;">
+          <input type="text" class="input-box" id="m2-s2" value=" is " style="width:30%;">
+          <input type="text" class="input-box" id="m2-s3" value="Fun!" style="width:30%;">
+        </div>
+        <div class="train-track" id="m2-track"></div>
+        <div class="ctrl-row"><button class="btn-run btn-blue" id="btn-m2" onclick="runM2()">▶ 執行 s1 + s2 + s3</button></div>
+        <div class="out-box" id="m2-out">— 等待串接 —</div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ─────────────────────────────────────────────
-       Module 4: s[i] vs s.at(i)
-  ───────────────────────────────────────────────── -->
-  <section id="mod4">
-    <h2 class="section-title">④ 安全存取<span class="tag">s[i] vs s.at(i)</span></h2>
-    <div class="card">
-      <p>字串 <code>s = "C++"</code>（合法 index：0 ~ 2）<br>
-         <code>s[i]</code> 越界時讀到「垃圾值」；<code>s.at(i)</code> 越界時拋出例外保護你。</p>
-      <div id="m4-cells" class="str-cells" style="margin-bottom:.8rem;"></div>
-      <div class="ctrl">
-        <label style="color:var(--text-secondary,#888); font-size:.9rem;">輸入 index：</label>
-        <input id="m4-idx" type="number" value="5" style="width:80px; min-width:60px;" />
-        <button class="btn" id="m4-btn-bracket">s[i] 存取</button>
-        <button class="btn green" id="m4-btn-at">s.at(i) 存取</button>
-        <button class="btn yellow" id="m4-btn-reset">↺ 重置</button>
+  <!-- Module 3: cin vs getline -->
+  <div class="card">
+    <div class="section-title">③ 輸入的陷阱：cin vs getline</div>
+    <div class="mod-grid">
+      <div>
+        <p class="section-desc"><code>cin &gt;&gt; s</code> 遇到空白(Space/Tab)或換行就會停止讀取；若要讀取包含空白的整行文字，必須使用 <code>getline(cin, s)</code>。</p>
+        <div class="code-block">
+          <span class="code-line" id="m3-c0">string s;</span>
+          <span class="code-line" id="m3-c1">cin &gt;&gt; s; <span style="color:#6e7681;">// 遇到空白就停</span></span>
+          <span class="code-line" id="m3-c2">getline(cin, s); <span style="color:#6e7681;">// 讀到換行才停</span></span>
+        </div>
       </div>
-      <div id="m4-exception" class="exception-box"></div>
-      <div id="m4-result" class="result-box" style="display:none; margin-top:.6rem;"></div>
+      <div class="visual-box">
+        <div class="ctrl-row" style="width:100%;">
+          <input type="text" class="input-box" id="m3-input" value="Hello C++ World" placeholder="輸入測試字串...">
+        </div>
+        <div class="terminal-box">
+          <span style="color:#8b949e;">Input &gt; </span>
+          <span id="m3-term-text"></span><span class="cursor-line" id="m3-cursor"></span>
+        </div>
+        <div class="ctrl-row" style="margin-top:15px;">
+          <button class="btn-run btn-red" id="btn-m3-cin" onclick="runM3('cin')">使用 cin</button>
+          <button class="btn-run" id="btn-m3-get" onclick="runM3('getline')">使用 getline</button>
+        </div>
+        <div class="out-box" id="m3-out">— 選擇讀取方式 —</div>
+      </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ─────────────────────────────────────────────
-       Module 5: s.find / string::npos
-  ───────────────────────────────────────────────── -->
-  <section id="mod5">
-    <h2 class="section-title">⑤ 字串搜尋<span class="tag">s.find &amp; string::npos</span></h2>
-    <div class="card">
-      <p>主字串 <code>"Programming"</code>，輸入目標子字串。
-         雷達由左向右掃描，找到時亮起；找不到則回傳 <code>string::npos</code>（代表「不存在」）。</p>
-      <div id="m5-cells" class="radar-str" style="margin-bottom:.8rem;"></div>
-      <div class="ctrl">
-        <input id="m5-target" value="gram" placeholder="搜尋目標…" style="max-width:200px;" />
-        <button class="btn" id="m5-btn-search">🔍 Search</button>
-        <button class="btn yellow" id="m5-btn-reset">↺ 重置</button>
+  <!-- Module 4: Safe Access -->
+  <div class="card">
+    <div class="section-title">④ 安全存取：s[i] vs s.at(i)</div>
+    <div class="mod-grid">
+      <div>
+        <p class="section-desc">存取字串元素時，<code>s[i]</code> 不會檢查邊界，越界會產生未定義行為(讀垃圾值)；<code>s.at(i)</code> 越界時會拋出 <code>out_of_range</code> 例外，較為安全。</p>
+        <div class="code-block">
+          <span class="code-line">string s = "C++"; <span style="color:#6e7681;">// size: 3</span></span>
+          <span class="code-line" id="m4-c1">char c1 = s[<span id="c-m4-idx1">5</span>]; <span style="color:#6e7681;">// 越界：不會報錯，危險！</span></span>
+          <span class="code-line" id="m4-c2">char c2 = s.at(<span id="c-m4-idx2">5</span>); <span style="color:#6e7681;">// 越界：拋出異常，安全！</span></span>
+        </div>
       </div>
-      <div id="m5-result" class="result-box" style="display:none;"></div>
+      <div class="visual-box">
+        <div class="mem-row" id="m4-cells" style="margin-bottom:15px;"></div>
+        <div class="ctrl-row">
+          <span style="color:#8b949e;">Index:</span>
+          <input type="number" class="input-box" id="m4-idx" value="5" style="width:60px;">
+          <button class="btn-run btn-red" id="btn-m4-b" onclick="runM4('bracket')">s[i]</button>
+          <button class="btn-run" id="btn-m4-at" onclick="runM4('at')">s.at(i)</button>
+        </div>
+        <div class="out-box" id="m4-out">— 點擊按鈕測試存取 —</div>
+      </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ─────────────────────────────────────────────
-       Module 6: substr / insert / erase
-  ───────────────────────────────────────────────── -->
-  <section id="mod6">
-    <h2 class="section-title">⑥ 字串手術刀<span class="tag">substr · insert · erase</span></h2>
-    <div class="card">
-      <p>操作字串 <code>"I love Bugs"</code>，三把手術刀示範擷取、刪除與插入。</p>
-      <div id="m6-cells" class="surgery-str" style="margin-bottom:.8rem;"></div>
-      <div class="ctrl">
-        <button class="btn yellow" id="m6-btn-substr">✂️ substr(7,4)</button>
-        <button class="btn red"    id="m6-btn-erase" >🧹 erase(7,4)</button>
-        <button class="btn green"  id="m6-btn-insert">📌 insert(7,"Coding ")</button>
-        <button class="btn teal"   id="m6-btn-reset" >↺ 重置</button>
+  <!-- Module 5: Search -->
+  <div class="card">
+    <div class="section-title">⑤ 字串搜尋 (s.find)</div>
+    <div class="mod-grid">
+      <div>
+        <p class="section-desc">使用 <code>s.find("目標")</code> 來搜尋子字串。若找到，回傳起始索引；若找不到，回傳一個特殊常數 <code>string::npos</code>。</p>
+        <div class="code-block">
+          <span class="code-line">string s = "Programming";</span>
+          <span class="code-line" id="m5-c1">size_t pos = s.find("<span id="c-m5-target">gram</span>");</span>
+          <span class="code-line" id="m5-c2">if (pos != string::npos) {</span>
+          <span class="code-line" id="m5-c3">&nbsp;&nbsp;cout &lt;&lt; "Found at: " &lt;&lt; pos;</span>
+          <span class="code-line" id="m5-c4">} else {</span>
+          <span class="code-line" id="m5-c5">&nbsp;&nbsp;cout &lt;&lt; "Not found";</span>
+          <span class="code-line" id="m5-c6">}</span>
+        </div>
       </div>
-      <div id="m6-result" class="result-box" style="display:none;"></div>
+      <div class="visual-box">
+        <div class="watch-container">
+          <div class="watch-box"><div class="watch-title">Current Index</div><span class="watch-val" id="w-m5-idx">—</span></div>
+        </div>
+        <div class="mem-row" id="m5-cells" style="margin-bottom:15px;"></div>
+        <div class="ctrl-row">
+          <input type="text" class="input-box" id="m5-target" value="gram" style="width:120px;" oninput="document.getElementById('c-m5-target').textContent=this.value;">
+          <button class="btn-run btn-blue" id="btn-m5" onclick="runM5()">🔍 s.find()</button>
+        </div>
+        <div class="out-box" id="m5-out">— 等待搜尋 —</div>
+      </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ─────────────────────────────────────────────
-       Module 7: Caesar Cipher
-  ───────────────────────────────────────────────── -->
-  <section id="mod7">
-    <h2 class="section-title">⑦ 綜合實作<span class="tag">凱薩加解密 Caesar Cipher</span></h2>
-    <div class="card">
-      <p>結合字串走訪、<code>isalpha()</code> 字元判斷與 ASCII 數學，實作凱薩加密。
-         大寫 Z + 3 → 繞回 C（mod 26）！</p>
-      <div class="ctrl" style="margin-bottom:.6rem;">
-        <input id="m7-plain" value="Hello Z" placeholder="明文…" style="max-width:260px;" />
-        <label style="color:var(--text-secondary,#888); font-size:.9rem;">位移量：</label>
-        <input id="m7-shift" type="number" value="3" min="1" max="25" style="width:60px; min-width:50px;" />
+  <!-- Module 6: Surgery (substr, erase, insert) -->
+  <div class="card">
+    <div class="section-title">⑥ 字串手術刀 (substr, erase, insert)</div>
+    <div class="mod-grid">
+      <div>
+        <p class="section-desc"><code>std::string</code> 提供了強大的修改功能。參數通常是 <code>(起始位置 pos, 長度 len)</code>。</p>
+        <div class="code-block">
+          <span class="code-line">string s = "I love Bugs";</span>
+          <span class="code-line" id="m6-c1">string sub = s.substr(<span class="c-m6-p">7</span>, <span class="c-m6-l">4</span>);</span>
+          <span class="code-line" id="m6-c2">s.erase(<span class="c-m6-p">7</span>, <span class="c-m6-l">4</span>);</span>
+          <span class="code-line" id="m6-c3">s.insert(<span class="c-m6-p">7</span>, "Coding ");</span>
+        </div>
       </div>
-      <div id="m7-chars" class="cipher-chars" style="margin-bottom:.6rem;"></div>
-      <div id="m7-log" class="cipher-step-log" style="display:none;"></div>
-      <div class="ctrl">
-        <button class="btn" id="m7-btn-encrypt">🔐 開始加密</button>
-        <button class="btn teal" id="m7-btn-decrypt">🔓 解密（反向）</button>
-        <button class="btn yellow" id="m7-btn-reset">↺ 重置</button>
+      <div class="visual-box">
+        <div class="mem-row" id="m6-cells" style="margin-bottom:15px;"></div>
+        <div class="ctrl-row" style="margin-bottom:10px;">
+          <span style="color:#8b949e;">pos:</span><input type="number" class="input-box" id="m6-pos" value="7" style="width:50px;">
+          <span style="color:#8b949e;">len:</span><input type="number" class="input-box" id="m6-len" value="4" style="width:50px;">
+        </div>
+        <div class="ctrl-row">
+          <button class="btn-run btn-yellow" id="btn-m6-s" onclick="runM6('substr')" style="color:#000;">✂️ substr</button>
+          <button class="btn-run btn-red" id="btn-m6-e" onclick="runM6('erase')">🧹 erase</button>
+          <button class="btn-run" id="btn-m6-i" onclick="runM6('insert')">📌 insert</button>
+          <button class="btn-run btn-blue" onclick="initM6()">↺ Reset</button>
+        </div>
+        <div class="out-box" id="m6-out" style="min-height:50px;">— 選擇操作 —</div>
       </div>
-      <div id="m7-result" class="result-box" style="display:none;"></div>
     </div>
-  </section>
+  </div>
 
-</div><!-- /.container -->
+</div>
 
 <script>
-/* ══════════════════════════════════════════════════════
-   UTILITIES
-══════════════════════════════════════════════════════ */
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+const sleep = ms => new Promise(res => setTimeout(res, ms));
+function hl(id, cls) { let el = document.getElementById(id); if(el) el.className = 'code-line ' + cls; }
+function clr(prefix, max) { for(let i=0; i<=max; i++) { let el = document.getElementById(prefix + i); if(el) el.className = 'code-line'; } }
+function disableBtn(id, dis) { let btn = document.getElementById(id); if(btn) btn.disabled = dis; }
 
-function makeCell(ch, extra = '') {
-  const d = document.createElement('div');
-  d.className = 'mem-cell' + (extra ? ' ' + extra : '');
-  d.textContent = ch;
-  return d;
+// 修復 ID 生成與調用不一致的 Bug，加上 prefix 自動抓取
+function createCells(containerId, str, asCharArr=false) {
+  const c = document.getElementById(containerId); c.innerHTML = '';
+  const prefix = containerId.substring(0, 2); // 例如 "m4", "m5", "m6"
+  for(let i=0; i<str.length; i++) {
+    c.innerHTML += `<div class="cell-wrap"><div class="str-cell" id="${prefix}-c${i}">${str[i]===' '?'␣':str[i]}</div><div class="str-idx">${i}</div></div>`;
+  }
+  if(asCharArr) c.innerHTML += `<div class="cell-wrap"><div class="str-cell" style="color:#8b949e;">\\0</div><div class="str-idx">${str.length}</div></div>`;
 }
 
-function disableButtons(...ids) {
-  ids.forEach(id => { const el = document.getElementById(id); if(el) el.disabled = true; });
+// ── Module 1 ──
+async function runM1(isHi) {
+  const cRow = document.getElementById('m1-char-row'); const sRow = document.getElementById('m1-str-row');
+  cRow.innerHTML = ''; sRow.innerHTML = '';
+  const text = isHi ? "Hi" : "Hello World";
+  
+  // char array (cap 5)
+  for(let i=0; i<5; i++) {
+    let char = i < text.length ? text[i] : (i===text.length ? '\\0' : '');
+    cRow.innerHTML += `<div class="str-cell ${isHi && char ? 'match' : (!isHi && i===4 ? 'error':'')}">${char}</div>`;
+  }
+  if(!isHi) {
+    cRow.innerHTML += `<div class="str-cell error">W</div><div class="str-cell error">o</div>...`;
+    document.getElementById('m1-char-msg').textContent = '⚠️ 緩衝區溢位 (Buffer Overflow)！程式崩潰！';
+  } else {
+    document.getElementById('m1-char-msg').textContent = '';
+  }
+  
+  // string
+  for(let i=0; i<text.length; i++) {
+    sRow.innerHTML += `<div class="str-cell match">${text[i]}</div>`;
+    await sleep(50);
+  }
+  document.getElementById('m1-str-msg').textContent = `✅ 自動擴充至 ${text.length} 個字元`;
 }
-function enableButtons(...ids) {
-  ids.forEach(id => { const el = document.getElementById(id); if(el) el.disabled = false; });
-}
+runM1(true);
 
-/* ══════════════════════════════════════════════════════
-   MODULE 1 – C-style vs std::string
-══════════════════════════════════════════════════════ */
-(function() {
-  const CAP = 5;
-  const fixedRow   = document.getElementById('m1-fixed-row');
-  const dynamicRow = document.getElementById('m1-dynamic-row');
-  const fixedMsg   = document.getElementById('m1-fixed-msg');
-  const dynamicMsg = document.getElementById('m1-dynamic-msg');
-
-  function clearAll() {
-    fixedRow.innerHTML = '';
-    dynamicRow.innerHTML = '';
-    fixedMsg.textContent = '';
-    dynamicMsg.textContent = '';
-  }
-
-  async function showHi() {
-    clearAll();
-    // Fixed array: show 5 slots with "Hi\0" then empty
-    const hi = ['H','i','\\0',' ',' '];
-    for(let i=0; i<CAP; i++){
-      const c = makeCell(hi[i], hi[i] !== ' ' ? 'fill' : '');
-      fixedRow.appendChild(c);
-      await sleep(120);
-    }
-    // Dynamic: same but shown as one flex group
-    const hi2 = ['H','i','\\0'];
-    for(const ch of hi2){
-      const c = makeCell(ch,'fill');
-      c.style.borderColor='#a6e3a1'; c.style.color='#a6e3a1';
-      dynamicRow.appendChild(c);
-      await sleep(120);
-    }
-    dynamicMsg.textContent = '✅ std::string 自動管理記憶體';
-  }
-
-  async function showLong() {
-    const text = 'Hello World';
-    // Fixed: fill 5 slots, overflow the rest red
-    fixedRow.innerHTML = '';
-    fixedMsg.textContent = '';
-    for(let i=0; i<text.length; i++){
-      const cls = i < CAP ? 'fill' : 'overflow';
-      const c = makeCell(text[i], cls);
-      fixedRow.appendChild(c);
-      await sleep(100);
-    }
-    fixedMsg.textContent = '⚠️ Buffer Overflow！超出 char[5] 範圍！';
-
-    // Dynamic: grow smoothly
-    dynamicRow.innerHTML = '';
-    for(let i=0; i<text.length; i++){
-      const c = makeCell(text[i],'dynamic');
-      dynamicRow.appendChild(c);
-      await sleep(80);
-    }
-    dynamicMsg.textContent = '✅ std::string 自動擴充至 ' + text.length + ' 格！';
-  }
-
-  document.getElementById('m1-btn-hi').addEventListener('click', showHi);
-  document.getElementById('m1-btn-long').addEventListener('click', showLong);
-  document.getElementById('m1-btn-reset').addEventListener('click', clearAll);
-})();
-
-/* ══════════════════════════════════════════════════════
-   MODULE 2 – Train concatenation
-══════════════════════════════════════════════════════ */
-(function() {
-  const track  = document.getElementById('m2-track');
-  const result = document.getElementById('m2-result');
-  let running  = false;
-
-  function reset() {
-    track.innerHTML = '';
-    result.style.display = 'none';
-    running = false;
-    enableButtons('m2-btn-link');
-  }
-
-  function makeCar(text, label) {
-    const div = document.createElement('div');
-    div.className = 'train-car';
-    div.innerHTML = `<span style="font-size:.7rem;color:#888;margin-right:.3rem;">${label}</span>${text}`;
-    return div;
-  }
-
-  async function link() {
-    if(running) return;
-    running = true;
-    disableButtons('m2-btn-link');
-
-    const s1 = document.getElementById('m2-s1').value || 's1';
-    const s2 = document.getElementById('m2-s2').value || 's2';
-    const s3 = document.getElementById('m2-s3').value || 's3';
-
-    track.innerHTML = '';
-    result.style.display = 'none';
-
-    // Show three separate cars
-    const car1 = makeCar(s1, 's1 =');
-    const car2 = makeCar(s2, 's2 =');
-    const car3 = makeCar(s3, 's3 =');
-    track.appendChild(car1);
-    await sleep(300);
-    track.appendChild(car2);
-    await sleep(300);
-    track.appendChild(car3);
-    await sleep(700);
-
-    // Animate link
-    [car1, car2, car3].forEach(c => c.classList.add('linked'));
-    await sleep(500);
-
-    const combined = s1 + s2 + s3;
-    result.style.display = 'block';
-    result.textContent = `result = s1 + s2 + s3\n       = "${combined}"\nresult.length() = ${combined.length}`;
-  }
-
-  document.getElementById('m2-btn-link').addEventListener('click', link);
-  document.getElementById('m2-btn-reset').addEventListener('click', reset);
-})();
-
-/* ══════════════════════════════════════════════════════
-   MODULE 3 – cin vs getline
-══════════════════════════════════════════════════════ */
-(function() {
-  const terminal   = document.getElementById('m3-terminal');
-  const displayEl  = document.getElementById('m3-display-text');
-  const scanEl     = document.getElementById('m3-scan');
-  const wallEl     = document.getElementById('m3-wall');
-  const resultEl   = document.getElementById('m3-result');
-  let   running    = false;
-
-  function reset() {
-    displayEl.textContent = '';
-    scanEl.style.display  = 'none';
-    wallEl.style.display  = 'none';
-    resultEl.style.display = 'none';
-    running = false;
-    enableButtons('m3-btn-cin','m3-btn-getline');
-  }
-
-  function getInput() { return document.getElementById('m3-input').value || 'Hello World'; }
-
-  async function runCin() {
-    if(running) return;
-    running = true;
-    disableButtons('m3-btn-cin','m3-btn-getline');
-    const text = getInput();
-    const spaceIdx = text.indexOf(' ');
-
-    displayEl.textContent = text;
-    scanEl.style.display = 'block';
-    scanEl.style.left = '16px';
-    wallEl.style.display = 'none';
-    resultEl.style.display = 'none';
-
-    // Estimate char width in terminal (~9px per char for monospace)
-    const charW = 9;
-    const baseX = 84; // offset for "Input > "
-
-    if(spaceIdx === -1) {
-      // No space – scan to end
-      await sleep(200);
-      scanEl.style.left = (baseX + text.length * charW) + 'px';
-      await sleep(700);
-      resultEl.style.display = 'block';
-      resultEl.textContent = `cin >> s;\n// s = "${text}"  (找不到空白，整行讀完)`;
-    } else {
-      // Scan to space position
-      await sleep(200);
-      scanEl.style.left = (baseX + spaceIdx * charW) + 'px';
-      await sleep(700);
-      // Wall appears
-      wallEl.style.left  = scanEl.style.left;
-      wallEl.style.display = 'block';
-      wallEl.style.opacity = '1';
-      await sleep(600);
-      resultEl.style.display = 'block';
-      resultEl.textContent =
-        `cin >> s;\n// 掃到空白「 」→ 撞牆停止！\n// s = "${text.substring(0, spaceIdx)}"  (空白後的 "${text.substring(spaceIdx+1)}" 被遺留在緩衝區)`;
-    }
-    running = false;
-    enableButtons('m3-btn-cin','m3-btn-getline');
-  }
-
-  async function runGetline() {
-    if(running) return;
-    running = true;
-    disableButtons('m3-btn-cin','m3-btn-getline');
-    const text = getInput();
-    displayEl.textContent = text + '↵';
-    scanEl.style.display = 'block';
-    scanEl.style.left = '16px';
-    wallEl.style.display = 'none';
-    resultEl.style.display = 'none';
-
-    const charW = 9;
-    const baseX = 84;
-
-    await sleep(200);
-    // Sweep slowly across entire string
-    const steps = text.length + 1;
-    for(let i=0; i<=steps; i++){
-      scanEl.style.left = (baseX + i * charW) + 'px';
-      await sleep(60);
-    }
-    await sleep(300);
-    resultEl.style.display = 'block';
-    resultEl.textContent =
-      `getline(cin, s);\n// 掃過空白，繼續讀取…\n// 遇到 \\n 停止\n// s = "${text}"  ✅ 完整讀取！`;
-    running = false;
-    enableButtons('m3-btn-cin','m3-btn-getline');
-  }
-
-  document.getElementById('m3-btn-cin').addEventListener('click', runCin);
-  document.getElementById('m3-btn-getline').addEventListener('click', runGetline);
-  document.getElementById('m3-btn-reset').addEventListener('click', reset);
-})();
-
-/* ══════════════════════════════════════════════════════
-   MODULE 4 – s[i] vs s.at(i)
-══════════════════════════════════════════════════════ */
-(function() {
-  const STR = 'C++';
-  const cellsEl    = document.getElementById('m4-cells');
-  const exceptionEl= document.getElementById('m4-exception');
-  const resultEl   = document.getElementById('m4-result');
-
-  function buildCells() {
-    cellsEl.innerHTML = '';
-    for(let i=0; i<STR.length; i++){
-      const wrap = document.createElement('div');
-      wrap.className = 'str-cell';
-      wrap.id = `m4-cell-${i}`;
-      wrap.innerHTML = `<div class="ch">${STR[i]}</div><div class="idx">[${i}]</div>
-                        <span class="shield">🛡️</span>
-                        <span class="garbage-bug">🐛</span>`;
-      cellsEl.appendChild(wrap);
-    }
-  }
-
-  function reset() {
-    buildCells();
-    exceptionEl.style.display = 'none';
-    resultEl.style.display    = 'none';
-    enableButtons('m4-btn-bracket','m4-btn-at');
-  }
-
-  async function accessBracket() {
-    disableButtons('m4-btn-bracket','m4-btn-at');
-    exceptionEl.style.display='none';
-    resultEl.style.display='none';
-    // Reset cell classes
-    document.querySelectorAll('.str-cell').forEach(c=>{c.className='str-cell';});
-
-    const idx = parseInt(document.getElementById('m4-idx').value);
-    if(idx >= 0 && idx < STR.length) {
-      const cell = document.getElementById(`m4-cell-${idx}`);
-      if(cell) { cell.classList.add('active'); }
-      resultEl.style.display='block';
-      resultEl.textContent = `s[${idx}] = '${STR[idx]}' ✅ (合法 index)`;
-    } else {
-      // Out of bounds – show bug
-      const ghost = document.createElement('div');
-      ghost.className = 'str-cell';
-      ghost.innerHTML = `<div class="ch" style="border-color:#f38ba8; background:rgba(243,139,168,.2);">?</div>
-                         <div class="idx">[${idx}]</div>
-                         <span class="garbage-bug" style="display:block;">🐛</span>`;
-      cellsEl.appendChild(ghost);
-      await sleep(300);
-      resultEl.style.display='block';
-      resultEl.textContent = `s[${idx}] → 越界！讀到「垃圾值」🐛\n未定義行為 (Undefined Behavior)！\n程式可能崩潰或讀到隨機記憶體。`;
-    }
-    enableButtons('m4-btn-bracket','m4-btn-at');
-  }
-
-  async function accessAt() {
-    disableButtons('m4-btn-bracket','m4-btn-at');
-    exceptionEl.style.display='none';
-    resultEl.style.display='none';
-    document.querySelectorAll('.str-cell').forEach(c=>{c.className='str-cell';});
-
-    const idx = parseInt(document.getElementById('m4-idx').value);
-    if(idx >= 0 && idx < STR.length) {
-      const cell = document.getElementById(`m4-cell-${idx}`);
-      if(cell) { cell.classList.add('active'); }
-      resultEl.style.display='block';
-      resultEl.textContent = `s.at(${idx}) = '${STR[idx]}' ✅ (合法 index)`;
-    } else {
-      // Show shield bounce on last cell
-      const lastCell = document.getElementById(`m4-cell-${STR.length-1}`);
-      if(lastCell) lastCell.classList.add('shielded');
-      await sleep(300);
-      exceptionEl.style.display='block';
-      exceptionEl.innerHTML =
-        `🛡️ <strong>std::out_of_range Exception！</strong><br>
-         s.at(${idx}) → index ${idx} 超出範圍 [0, ${STR.length-1}]<br>
-         程式安全拋出例外，不會讀到垃圾值！<br>
-         <code>try { s.at(${idx}); } catch(const out_of_range& e) { ... }</code>`;
-    }
-    enableButtons('m4-btn-bracket','m4-btn-at');
-  }
-
-  buildCells();
-  document.getElementById('m4-btn-bracket').addEventListener('click', accessBracket);
-  document.getElementById('m4-btn-at').addEventListener('click', accessAt);
-  document.getElementById('m4-btn-reset').addEventListener('click', reset);
-})();
-
-/* ══════════════════════════════════════════════════════
-   MODULE 5 – s.find / string::npos
-══════════════════════════════════════════════════════ */
-(function() {
-  const SRC = 'Programming';
-  const cellsEl = document.getElementById('m5-cells');
-  const resultEl= document.getElementById('m5-result');
-  let   running = false;
-
-  function buildCells() {
-    cellsEl.innerHTML = '';
-    for(let i=0; i<SRC.length; i++){
-      const d = document.createElement('div');
-      d.className = 'radar-cell';
-      d.id = `m5-cell-${i}`;
-      d.textContent = SRC[i];
-      cellsEl.appendChild(d);
-    }
-  }
-
-  function reset() {
-    buildCells();
-    resultEl.style.display='none';
-    running = false;
-    enableButtons('m5-btn-search');
-  }
-
-  async function search() {
-    if(running) return;
-    running = true;
-    disableButtons('m5-btn-search');
-    buildCells();
-    resultEl.style.display='none';
-
-    const target = document.getElementById('m5-target').value;
-    if(!target){ running=false; enableButtons('m5-btn-search'); return; }
-
-    const idx = SRC.indexOf(target);
-
-    for(let i=0; i<SRC.length; i++){
-      const cell = document.getElementById(`m5-cell-${i}`);
-      cell.classList.add('scanning');
-      await sleep(110);
-      if(idx === -1 || i < idx) cell.classList.remove('scanning');
-    }
-
-    if(idx !== -1){
-      for(let i=idx; i<idx+target.length && i<SRC.length; i++){
-        document.getElementById(`m5-cell-${i}`).classList.add('found');
-      }
-      resultEl.style.display='block';
-      resultEl.textContent = `s.find("${target}") = ${idx}\n找到了！起始位置 index = ${idx}`;
-    } else {
-      resultEl.style.display='block';
-      resultEl.textContent = `s.find("${target}") = string::npos\n找不到！npos = 18446744073709551615 (≈∞)`;
-    }
-    running = false;
-    enableButtons('m5-btn-search');
-  }
-
-  buildCells();
-  document.getElementById('m5-btn-search').addEventListener('click', search);
-  document.getElementById('m5-btn-reset').addEventListener('click', reset);
-})();
-
-/* ══════════════════════════════════════════════════════
-   MODULE 6 – substr / insert / erase
-══════════════════════════════════════════════════════ */
-(function() {
-  const ORIG = 'I love Bugs';
-  const cellsEl = document.getElementById('m6-cells');
-  const resultEl= document.getElementById('m6-result');
-  let   running = false;
-
-  function buildCells(text) {
-    cellsEl.innerHTML = '';
-    for(const ch of text){
-      const d = document.createElement('div');
-      d.className = 'surg-cell';
-      d.textContent = ch === ' ' ? '·' : ch;
-      cellsEl.appendChild(d);
-    }
-  }
-
-  function reset() {
-    buildCells(ORIG);
-    resultEl.style.display='none';
-    running=false;
-    enableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
-  }
-
-  async function doSubstr() {
-    if(running) return; running=true;
-    disableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
-    buildCells(ORIG);
-    resultEl.style.display='none';
-    // Highlight index 7..10
-    const cells = cellsEl.querySelectorAll('.surg-cell');
-    for(let i=7; i<11 && i<cells.length; i++){
-      cells[i].classList.add('clip');
-      await sleep(120);
-    }
+// ── Module 2 ──
+async function runM2() {
+  disableBtn('btn-m2', true);
+  const s1 = document.getElementById('m2-s1').value; document.getElementById('c-m2-s1').textContent = s1;
+  const s2 = document.getElementById('m2-s2').value; document.getElementById('c-m2-s2').textContent = s2;
+  const s3 = document.getElementById('m2-s3').value; document.getElementById('c-m2-s3').textContent = s3;
+  const t = document.getElementById('m2-track'); t.innerHTML = '';
+  
+  hl('m2-c3', 'active-yellow');
+  const arr = [s1, s2, s3];
+  for(let i=0; i<3; i++) {
+    t.innerHTML += `<div class="train-car" id="m2-tc${i}">${arr[i]}</div>`;
     await sleep(400);
-    const sub = ORIG.substr(7, 4);
-    resultEl.style.display='block';
-    resultEl.textContent = `✂️ s.substr(7, 4)\n→ 從 index 7 開始，擷取 4 個字元\n→ "${sub}"`;
-    running=false;
-    enableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
   }
+  
+  hl('m2-c3', 'active-green');
+  document.getElementById('m2-tc0').innerHTML = s1+s2+s3;
+  document.getElementById('m2-tc0').className = 'train-car merged';
+  document.getElementById('m2-tc1').style.display = 'none';
+  document.getElementById('m2-tc2').style.display = 'none';
+  
+  document.getElementById('m2-out').innerHTML = `> Result: "${s1+s2+s3}"<br>> Length: ${(s1+s2+s3).length}`;
+  await sleep(1000); clr('m2-c', 3); disableBtn('btn-m2', false);
+}
+document.getElementById('m2-s1').addEventListener('input', runM2);
 
-  async function doErase() {
-    if(running) return; running=true;
-    disableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
-    buildCells(ORIG);
-    resultEl.style.display='none';
-    const cells = Array.from(cellsEl.querySelectorAll('.surg-cell'));
-    for(let i=7; i<11 && i<cells.length; i++){
-      cells[i].classList.add('erasing');
-      await sleep(120);
+// ── Module 3 ──
+async function runM3(mode) {
+  disableBtn('btn-m3-cin', true); disableBtn('btn-m3-get', true);
+  clr('m3-c', 2);
+  const text = document.getElementById('m3-input').value;
+  const term = document.getElementById('m3-term-text');
+  const cursor = document.getElementById('m3-cursor');
+  term.textContent = ''; cursor.style.display = 'inline-block';
+  
+  for(let i=0; i<text.length; i++) {
+    term.textContent += text[i];
+    await sleep(50);
+  }
+  await sleep(300);
+  
+  let res = "";
+  if(mode === 'cin') {
+    hl('m3-c1', 'active-yellow');
+    let spIdx = text.indexOf(' ');
+    res = spIdx === -1 ? text : text.substring(0, spIdx);
+    document.getElementById('m3-out').innerHTML = `> cin >> s;<br>> 讀取到空白停止。<br>> s = "${res}"`;
+    hl('m3-c1', 'active-green');
+  } else {
+    hl('m3-c2', 'active-yellow');
+    res = text;
+    document.getElementById('m3-out').innerHTML = `> getline(cin, s);<br>> 讀取整行直到遇到換行符號。<br>> s = "${res}"`;
+    hl('m3-c2', 'active-green');
+  }
+  disableBtn('btn-m3-cin', false); disableBtn('btn-m3-get', false);
+}
+
+// ── Module 4 ──
+const m4Str = "C++";
+createCells('m4-cells', m4Str);
+async function runM4(mode) {
+  disableBtn('btn-m4-b', true); disableBtn('btn-m4-at', true);
+  clr('m4-c', 2); createCells('m4-cells', m4Str);
+  const idx = parseInt(document.getElementById('m4-idx').value);
+  document.getElementById('c-m4-idx1').textContent = idx;
+  document.getElementById('c-m4-idx2').textContent = idx;
+  const isOOB = idx < 0 || idx >= m4Str.length;
+  
+  if(mode === 'bracket') {
+    hl('m4-c1', 'active-yellow'); await sleep(400);
+    if(isOOB) {
+      hl('m4-c1', 'active-red');
+      document.getElementById('m4-cells').innerHTML += `<div class="cell-wrap"><div class="str-cell error">🐛</div><div class="str-idx">[${idx}]</div></div>`;
+      document.getElementById('m4-out').innerHTML = `> s[${idx}]<br>> ⚠️ 越界存取！程式沒有報錯，但讀取到了記憶體垃圾值，可能導致崩潰！`;
+    } else {
+      hl('m4-c1', 'active-green');
+      document.getElementById(`m4-c${idx}`).classList.add('match');
+      document.getElementById('m4-out').innerHTML = `> s[${idx}]<br>> ✅ 合法存取，字元為 '${m4Str[idx]}'`;
+    }
+  } else {
+    hl('m4-c2', 'active-yellow'); await sleep(400);
+    if(isOOB) {
+      hl('m4-c2', 'active-red');
+      document.getElementById('m4-out').innerHTML = `> s.at(${idx})<br>> 🛡️ 拋出例外：std::out_of_range<br>> 安全擋下越界操作，程式可透過 try-catch 處理。`;
+    } else {
+      hl('m4-c2', 'active-green');
+      document.getElementById(`m4-c${idx}`).classList.add('match');
+      document.getElementById('m4-out').innerHTML = `> s.at(${idx})<br>> ✅ 合法存取，字元為 '${m4Str[idx]}'`;
+    }
+  }
+  disableBtn('btn-m4-b', false); disableBtn('btn-m4-at', false);
+}
+
+// ── Module 5 ──
+const m5Str = "Programming";
+createCells('m5-cells', m5Str);
+async function runM5() {
+  disableBtn('btn-m5', true); clr('m5-c', 6); createCells('m5-cells', m5Str);
+  const target = document.getElementById('m5-target').value;
+  if(!target) { disableBtn('btn-m5', false); return; }
+  
+  hl('m5-c1', 'active-yellow');
+  let foundIdx = -1;
+  for(let i=0; i<=m5Str.length - target.length; i++) {
+    document.getElementById('w-m5-idx').textContent = i;
+    for(let j=0; j<target.length; j++) document.getElementById(`m5-c${i+j}`).classList.add('active');
+    await sleep(300);
+    
+    if(m5Str.substring(i, i + target.length) === target) { foundIdx = i; break; }
+    
+    for(let j=0; j<target.length; j++) document.getElementById(`m5-c${i+j}`).classList.remove('active');
+  }
+  
+  if(foundIdx !== -1) {
+    hl('m5-c1', 'active-green'); hl('m5-c2', 'active-blue'); hl('m5-c3', 'active-green');
+    for(let j=0; j<target.length; j++) {
+      document.getElementById(`m5-c${foundIdx+j}`).classList.remove('active');
+      document.getElementById(`m5-c${foundIdx+j}`).classList.add('match');
+    }
+    document.getElementById('m5-out').innerHTML = `> s.find("${target}")<br>> 成功找到！起始 index = ${foundIdx}`;
+  } else {
+    hl('m5-c1', 'active-red'); hl('m5-c2', 'active-blue'); hl('m5-c5', 'active-red');
+    document.getElementById('w-m5-idx').textContent = 'N/A';
+    document.getElementById('m5-out').innerHTML = `> s.find("${target}")<br>> 找不到！回傳 string::npos (極大值)`;
+  }
+  disableBtn('btn-m5', false);
+}
+
+// ── Module 6 ──
+let m6Str = "I love Bugs";
+function initM6() { m6Str = "I love Bugs"; createCells('m6-cells', m6Str); clr('m6-c',3); document.getElementById('m6-out').innerHTML='— 選擇操作 —';}
+initM6();
+
+async function runM6(op) {
+  disableBtn('btn-m6-s', true); disableBtn('btn-m6-e', true); disableBtn('btn-m6-i', true);
+  clr('m6-c', 3);
+  let pos = parseInt(document.getElementById('m6-pos').value);
+  let len = parseInt(document.getElementById('m6-len').value);
+  
+  if(pos < 0 || pos > m6Str.length) { 
+    document.getElementById('m6-out').innerHTML="<span style='color:#f85149;'>❌ pos 超出目前字串範圍！</span>"; 
+    initM6(); 
+    disableBtn('btn-m6-s', false); disableBtn('btn-m6-e', false); disableBtn('btn-m6-i', false); 
+    return;
+  }
+  
+  document.querySelectorAll('.c-m6-p').forEach(e=>e.textContent=pos);
+  document.querySelectorAll('.c-m6-l').forEach(e=>e.textContent=len);
+
+  // 防呆：避免要求操作的長度超過字串剩餘長度
+  let safeLen = Math.min(len, m6Str.length - pos);
+
+  if(op === 'substr') {
+    hl('m6-c1', 'active-yellow');
+    let sub = m6Str.substring(pos, pos + safeLen);
+    for(let i=pos; i<pos+safeLen; i++) document.getElementById(`m6-c${i}`).classList.add('active');
+    await sleep(600);
+    hl('m6-c1', 'active-green');
+    document.getElementById('m6-out').innerHTML = `> s.substr(${pos}, ${len})<br>> 回傳新字串: "${sub}"<br>> 原字串不變。`;
+  } else if (op === 'erase') {
+    hl('m6-c2', 'active-yellow');
+    for(let i=pos; i<pos+safeLen; i++) {
+      document.getElementById(`m6-c${i}`).classList.add('error');
+      document.getElementById(`m6-c${i}`).classList.add('fade');
     }
     await sleep(600);
-    buildCells(ORIG.slice(0,7) + ORIG.slice(11));
-    const res = ORIG.slice(0,7) + ORIG.slice(11);
-    resultEl.style.display='block';
-    resultEl.textContent = `🧹 s.erase(7, 4)\n→ 從 index 7 刪除 4 個字元\n→ "${res}"`;
-    running=false;
-    enableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
+    m6Str = m6Str.slice(0, pos) + m6Str.slice(pos + safeLen);
+    createCells('m6-cells', m6Str);
+    hl('m6-c2', 'active-red');
+    document.getElementById('m6-out').innerHTML = `> s.erase(${pos}, ${len})<br>> 原字串改變為: "${m6Str}"`;
+  } else if (op === 'insert') {
+    hl('m6-c3', 'active-yellow');
+    let ins = "Coding ";
+    m6Str = m6Str.slice(0, pos) + ins + m6Str.slice(pos);
+    createCells('m6-cells', m6Str);
+    for(let i=pos; i<pos+ins.length; i++) document.getElementById(`m6-c${i}`).classList.add('match');
+    await sleep(600);
+    hl('m6-c3', 'active-green');
+    document.getElementById('m6-out').innerHTML = `> s.insert(${pos}, "${ins}")<br>> 原字串改變為: "${m6Str}"`;
   }
-
-  async function doInsert() {
-    if(running) return; running=true;
-    disableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
-    buildCells(ORIG);
-    resultEl.style.display='none';
-    await sleep(300);
-    const ins = 'Coding ';
-    const newStr = ORIG.slice(0,7) + ins + ORIG.slice(7);
-    // Rebuild with insert cells highlighted
-    cellsEl.innerHTML = '';
-    for(let i=0; i<newStr.length; i++){
-      const d = document.createElement('div');
-      d.className = 'surg-cell' + (i>=7 && i<7+ins.length ? ' inserting' : '');
-      d.textContent = newStr[i] === ' ' ? '·' : newStr[i];
-      cellsEl.appendChild(d);
-      if(i>=7 && i<7+ins.length) await sleep(80);
+  
+  setTimeout(()=> {
+    for(let i=0; i<m6Str.length; i++) {
+        let el = document.getElementById(`m6-c${i}`);
+        if(el) { el.classList.remove('active'); el.classList.remove('match'); el.classList.remove('error'); el.classList.remove('fade'); }
     }
-    resultEl.style.display='block';
-    resultEl.textContent = `📌 s.insert(7, "Coding ")\n→ 在 index 7 插入字串\n→ "${newStr}"`;
-    running=false;
-    enableButtons('m6-btn-substr','m6-btn-erase','m6-btn-insert');
-  }
-
-  buildCells(ORIG);
-  document.getElementById('m6-btn-substr').addEventListener('click', doSubstr);
-  document.getElementById('m6-btn-erase').addEventListener('click', doErase);
-  document.getElementById('m6-btn-insert').addEventListener('click', doInsert);
-  document.getElementById('m6-btn-reset').addEventListener('click', reset);
-})();
-
-/* ══════════════════════════════════════════════════════
-   MODULE 7 – Caesar Cipher
-══════════════════════════════════════════════════════ */
-(function() {
-  const charsEl  = document.getElementById('m7-chars');
-  const logEl    = document.getElementById('m7-log');
-  const resultEl = document.getElementById('m7-result');
-  let   running  = false;
-
-  function reset() {
-    charsEl.innerHTML  = '';
-    logEl.style.display='none';
-    logEl.textContent  = '';
-    resultEl.style.display='none';
-    running=false;
-    enableButtons('m7-btn-encrypt','m7-btn-decrypt');
-  }
-
-  function shiftChar(ch, n, forwards) {
-    if(!/[a-zA-Z]/.test(ch)) return ch;
-    const base = ch === ch.toUpperCase() ? 65 : 97;
-    const code = ch.charCodeAt(0) - base;
-    const shifted = forwards
-      ? (code + n) % 26
-      : (code - n + 260) % 26;
-    return String.fromCharCode(shifted + base);
-  }
-
-  async function runCipher(forwards) {
-    if(running) return;
-    running = true;
-    disableButtons('m7-btn-encrypt','m7-btn-decrypt');
-    const plain = document.getElementById('m7-plain').value || 'Hello Z';
-    const shift = Math.abs(parseInt(document.getElementById('m7-shift').value) || 3) % 26;
-
-    charsEl.innerHTML = '';
-    logEl.textContent = '';
-    logEl.style.display = 'block';
-    resultEl.style.display = 'none';
-
-    const cards = [];
-    for(const ch of plain){
-      const d = document.createElement('div');
-      d.className = 'cipher-char';
-      d.innerHTML = `<span class="orig">${ch === ' ' ? '(sp)' : ch}</span><span class="shifted">…</span>`;
-      charsEl.appendChild(d);
-      cards.push({el: d, ch});
-    }
-
-    let cipher = '';
-    for(const {el, ch} of cards){
-      el.classList.add('processing');
-      await sleep(380);
-
-      const shifted = shiftChar(ch, shift, forwards);
-      const isAlpha = /[a-zA-Z]/.test(ch);
-
-      let logLine = '';
-      if(!isAlpha){
-        el.classList.remove('processing');
-        el.classList.add('done-pass');
-        el.querySelector('.shifted').textContent = ch === ' ' ? '(sp)' : ch;
-        logLine = `<span class="step-pass">'${ch === ' ' ? ' ' : ch}' → 非字母，原封不動</span>\n`;
-      } else {
-        const base    = ch === ch.toUpperCase() ? 65 : 97;
-        const origCode= ch.charCodeAt(0);
-        const newCode = shifted.charCodeAt(0);
-        const wrapFlag= forwards
-          ? (origCode + shift) > (base + 25)
-          : (origCode - shift) < base ;
-
-        el.querySelector('.shifted').textContent = shifted;
-        if(wrapFlag){
-          el.classList.remove('processing');
-          el.classList.add('wrap-hint');
-          logLine = `<span class="step-wrap">'${ch}'(${origCode}) ${forwards?'+':'-'}${shift} → 超出邊界，繞回 → '${shifted}'(${newCode}) 🔄</span>\n`;
-        } else {
-          el.classList.remove('processing');
-          el.classList.add('done-alpha');
-          logLine = `<span class="step-alpha">'${ch}'(${origCode}) ${forwards?'+':'-'}${shift} = '${shifted}'(${newCode})</span>\n`;
-        }
-      }
-      logEl.innerHTML += logLine;
-      logEl.scrollTop = logEl.scrollHeight;
-      cipher += shifted;
-      await sleep(80);
-    }
-
-    resultEl.style.display='block';
-    resultEl.textContent =
-      `${forwards ? '🔐 加密' : '🔓 解密'}完成！\n明文  : "${plain}"\n${forwards?'密文':'還原'}: "${cipher}"\n位移量: ${forwards?'+':'-'}${shift}`;
-    running=false;
-    enableButtons('m7-btn-encrypt','m7-btn-decrypt');
-  }
-
-  document.getElementById('m7-btn-encrypt').addEventListener('click', () => runCipher(true));
-  document.getElementById('m7-btn-decrypt').addEventListener('click', () => runCipher(false));
-  document.getElementById('m7-btn-reset').addEventListener('click', reset);
-})();
+    disableBtn('btn-m6-s', false); disableBtn('btn-m6-e', false); disableBtn('btn-m6-i', false);
+  }, 1000);
+}
 </script>
 </body>
 </html>

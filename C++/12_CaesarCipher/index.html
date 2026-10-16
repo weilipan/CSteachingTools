@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>C++ 凱撒密碼加解密 — 互動教學</title>
+    <!-- 保留的資源連結 -->
     <link rel="stylesheet" href="../../theme.css" />
     <script src="../../layout.js" defer></script>
     <style>
@@ -16,10 +17,15 @@
         .container {
             padding-top: 80px;
             padding-bottom: 60px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
         }
 
         .section-title {
             margin-bottom: 1.2rem;
+            color: var(--text-primary, #cdd6f4);
         }
 
         .tag {
@@ -31,6 +37,15 @@
             margin-left: .4rem;
             background: rgba(124, 156, 252, .18);
             color: var(--accent, #7c9cfc);
+        }
+
+        .card {
+            background: var(--bg-primary, #11111b);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #333;
+            color: var(--text-primary, #cdd6f4);
         }
 
         /* Buttons */
@@ -59,21 +74,10 @@
             cursor: not-allowed;
         }
 
-        .btn.green {
-            background: #a6e3a1;
-        }
-
-        .btn.red {
-            background: #f38ba8;
-        }
-
-        .btn.yellow {
-            background: #f9e2af;
-        }
-
-        .btn.teal {
-            background: #89dceb;
-        }
+        .btn.green { background: #a6e3a1; }
+        .btn.red { background: #f38ba8; }
+        .btn.yellow { background: #f9e2af; }
+        .btn.teal { background: #89dceb; }
 
         .ctrl {
             display: flex;
@@ -97,20 +101,6 @@
             color: var(--text-primary, #cdd6f4);
         }
 
-        .terminal {
-            background: #0d0d16;
-            border-radius: 10px;
-            padding: 1rem;
-            font-family: monospace;
-            font-size: .9rem;
-            border: 2px solid #333;
-            min-height: 80px;
-            white-space: pre-wrap;
-            color: #a6e3a1;
-            position: relative;
-            overflow: hidden;
-        }
-
         /* ── MOD 1: Alphabet Slider ── */
         .alpha-row {
             display: flex;
@@ -120,6 +110,7 @@
             border-radius: 10px;
             background: var(--bg-secondary, #1e1e2e);
             padding: .3rem 0;
+            overflow-x: auto;
         }
 
         .alpha-track {
@@ -142,493 +133,85 @@
             flex-shrink: 0;
         }
 
-        .alpha-cell.active {
-            background: rgba(124, 156, 252, .3);
-            color: #7c9cfc;
-        }
+        .alpha-cell.active { background: rgba(124, 156, 252, .3); color: #7c9cfc; }
+        .alpha-cell.matched { background: rgba(166, 227, 161, .25); color: #a6e3a1; }
 
-        .alpha-cell.matched {
-            background: rgba(166, 227, 161, .25);
-            color: #a6e3a1;
-        }
-
-        .alpha-label {
-            font-size: .75rem;
-            color: #888;
-            margin-bottom: .3rem;
-            font-family: monospace;
-        }
-
+        .alpha-label { font-size: .75rem; color: #888; margin-bottom: .3rem; font-family: monospace; }
         .alpha-frame {
-            position: absolute;
-            top: 0;
-            width: 36px;
-            height: 100%;
-            border: 3px solid #f9e2af;
-            box-sizing: border-box;
-            pointer-events: none;
-            border-radius: 4px;
-            left: 0;
+            position: absolute; top: 0; width: 36px; height: 100%; border: 3px solid #f9e2af; box-sizing: border-box; pointer-events: none; border-radius: 4px; left: 0;
         }
 
-        input[type=range] {
-            flex: 1;
-            accent-color: var(--accent, #7c9cfc);
-        }
-
-        .key-display {
-            font-family: monospace;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #f9e2af;
-            min-width: 30px;
-            text-align: center;
-        }
+        input[type=range] { flex: 1; accent-color: var(--accent, #7c9cfc); }
+        .key-display { font-family: monospace; font-size: 1.1rem; font-weight: bold; color: #f9e2af; min-width: 30px; text-align: center; }
 
         /* ── MOD 2: ASCII Bug Bar ── */
-        .ascii-bar {
-            display: flex;
-            gap: 2px;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            padding: .5rem 0;
-        }
-
-        .ascii-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            flex-shrink: 0;
-        }
-
-        .ascii-box {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #444;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: .8rem;
-            font-weight: bold;
-            color: var(--text-primary, #cdd6f4);
-            transition: all .3s;
-        }
-
-        .ascii-box.alpha-zone {
-            border-color: #7c9cfc;
-            background: rgba(124, 156, 252, .1);
-        }
-
-        .ascii-box.danger-zone {
-            border-color: #f38ba8;
-            background: rgba(243, 139, 168, .15);
-            color: #f38ba8;
-        }
-
-        .ascii-box.cursor-pos {
-            border-color: #f9e2af;
-            background: #f9e2af;
-            color: #1e1e2e;
-            transform: scale(1.2);
-            z-index: 2;
-        }
-
-        .ascii-lbl {
-            font-size: .65rem;
-            color: #666;
-            font-family: monospace;
-        }
-
-        .warn-badge {
-            margin-top: .8rem;
-            padding: .5rem 1rem;
-            border-radius: 8px;
-            background: rgba(243, 139, 168, .15);
-            border: 2px solid #f38ba8;
-            color: #f38ba8;
-            font-family: monospace;
-            font-size: .9rem;
-            display: none;
-        }
+        .ascii-bar { display: flex; gap: 2px; flex-wrap: nowrap; overflow-x: auto; padding: .5rem 0; }
+        .ascii-item { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
+        .ascii-box { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 2px solid #444; border-radius: 6px; font-family: monospace; font-size: .8rem; font-weight: bold; color: var(--text-primary, #cdd6f4); transition: all .3s; }
+        .ascii-box.alpha-zone { border-color: #7c9cfc; background: rgba(124, 156, 252, .1); }
+        .ascii-box.danger-zone { border-color: #f38ba8; background: rgba(243, 139, 168, .15); color: #f38ba8; }
+        .ascii-box.cursor-pos { border-color: #f9e2af; background: #f9e2af; color: #1e1e2e; transform: scale(1.2); z-index: 2; }
+        .ascii-lbl { font-size: .65rem; color: #666; font-family: monospace; }
+        .warn-badge { margin-top: .8rem; padding: .5rem 1rem; border-radius: 8px; background: rgba(243, 139, 168, .15); border: 2px solid #f38ba8; color: #f38ba8; font-family: monospace; font-size: .9rem; display: none; }
 
         /* ── MOD 3: Step Animation ── */
-        .step-stages {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: .6rem;
-            margin-top: 1rem;
-        }
-
-        @media(max-width:640px) {
-            .step-stages {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        .stage-box {
-            border: 2px solid #444;
-            border-radius: 10px;
-            padding: .8rem .6rem;
-            text-align: center;
-            transition: all .4s;
-            opacity: .35;
-            font-family: monospace;
-        }
-
-        .stage-box.active {
-            opacity: 1;
-            border-color: #f9e2af;
-            background: rgba(249, 226, 175, .1);
-        }
-
-        .stage-box.done {
-            opacity: 1;
-            border-color: #a6e3a1;
-            background: rgba(166, 227, 161, .1);
-        }
-
-        .stage-num {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #f9e2af;
-        }
-
-        .stage-title {
-            font-size: .72rem;
-            color: #888;
-            margin: .2rem 0;
-        }
-
-        .stage-formula {
-            font-size: .78rem;
-            color: #cdd6f4;
-            margin: .3rem 0;
-        }
-
-        .mod3-circle {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 3px solid #444;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto .5rem;
-            font-family: monospace;
-            font-size: 1.2rem;
-            font-weight: bold;
-            transition: all .5s;
-        }
+        .step-stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; margin-top: 1rem; }
+        @media(max-width:640px) { .step-stages { grid-template-columns: 1fr 1fr; } }
+        .stage-box { border: 2px solid #444; border-radius: 10px; padding: .8rem .6rem; text-align: center; transition: all .4s; opacity: .35; font-family: monospace; }
+        .stage-box.active { opacity: 1; border-color: #f9e2af; background: rgba(249, 226, 175, .1); }
+        .stage-box.done { opacity: 1; border-color: #a6e3a1; background: rgba(166, 227, 161, .1); }
+        .stage-num { font-size: 1.4rem; font-weight: bold; color: #f9e2af; }
+        .stage-title { font-size: .72rem; color: #888; margin: .2rem 0; }
+        .stage-formula { font-size: .78rem; color: #cdd6f4; margin: .3rem 0; }
+        .mod3-circle { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #444; display: flex; align-items: center; justify-content: center; margin: 0 auto .5rem; font-family: monospace; font-size: 1.2rem; font-weight: bold; transition: all .5s; }
 
         /* ── MOD 4: Conveyor ── */
-        .conveyor-wrap {
-            position: relative;
-            overflow: hidden;
-            border: 2px solid #444;
-            border-radius: 10px;
-            background: var(--bg-secondary, #1e1e2e);
-            padding: 1rem;
-        }
-
-        .conveyor-belt {
-            display: flex;
-            gap: .6rem;
-            align-items: center;
-            min-height: 80px;
-            flex-wrap: wrap;
-        }
-
-        .char-token {
-            width: 54px;
-            height: 64px;
-            border: 2px solid #444;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: monospace;
-            font-weight: bold;
-            transition: all .4s;
-            position: relative;
-            font-size: 1.1rem;
-        }
-
-        .char-token.scanning {
-            border-color: #f9e2af;
-            background: rgba(249, 226, 175, .15);
-        }
-
-        .char-token.upper-ch {
-            border-color: #7c9cfc;
-            background: rgba(124, 156, 252, .2);
-            color: #7c9cfc;
-        }
-
-        .char-token.lower-ch {
-            border-color: #a6e3a1;
-            background: rgba(166, 227, 161, .2);
-            color: #a6e3a1;
-        }
-
-        .char-token.pass-ch {
-            border-color: #89dceb;
-            background: rgba(137, 220, 235, .1);
-            color: #89dceb;
-        }
-
-        .char-route {
-            font-size: .65rem;
-            margin-top: .3rem;
-            color: #888;
-        }
+        .conveyor-wrap { position: relative; overflow: hidden; border: 2px solid #444; border-radius: 10px; background: var(--bg-secondary, #1e1e2e); padding: 1rem; }
+        .conveyor-belt { display: flex; gap: .6rem; align-items: center; min-height: 80px; flex-wrap: wrap; }
+        .char-token { width: 54px; height: 64px; border: 2px solid #444; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; transition: all .4s; position: relative; font-size: 1.1rem; }
+        .char-token.scanning { border-color: #f9e2af; background: rgba(249, 226, 175, .15); }
+        .char-token.upper-ch { border-color: #7c9cfc; background: rgba(124, 156, 252, .2); color: #7c9cfc; }
+        .char-token.lower-ch { border-color: #a6e3a1; background: rgba(166, 227, 161, .2); color: #a6e3a1; }
+        .char-token.pass-ch { border-color: #89dceb; background: rgba(137, 220, 235, .1); color: #89dceb; }
+        .char-route { font-size: .65rem; margin-top: .3rem; color: #888; }
 
         /* ── MOD 5: String Iteration ── */
-        .iter-wrap {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 1rem;
-            align-items: start;
-            margin-top: .8rem;
-        }
-
-        .iter-chars {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-
-        .iter-cell {
-            width: 40px;
-            height: 48px;
-            border: 2px solid #444;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: monospace;
-            font-weight: bold;
-            transition: all .3s;
-            font-size: 1rem;
-            gap: 2px;
-        }
-
-        .iter-cell .ch {
-            font-size: 1rem;
-        }
-
-        .iter-cell .idx {
-            font-size: .65rem;
-            color: #666;
-        }
-
-        .iter-cell.scanning {
-            border-color: #f9e2af;
-            background: rgba(249, 226, 175, .15);
-        }
-
-        .iter-cell.done {
-            border-color: #7c9cfc;
-            background: rgba(124, 156, 252, .15);
-        }
-
-        .iter-arrow {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: #888;
-            padding-top: 1rem;
-        }
-
-        .cipher-cells {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-            min-height: 52px;
-        }
-
-        .cipher-cell {
-            width: 40px;
-            height: 48px;
-            border: 2px solid #a6e3a1;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: monospace;
-            font-weight: bold;
-            color: #a6e3a1;
-            font-size: 1rem;
-            animation: popIn .3s ease;
-        }
-
-        @keyframes popIn {
-            0% {
-                transform: scale(0);
-                opacity: 0;
-            }
-
-            70% {
-                transform: scale(1.2);
-            }
-
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
+        .iter-wrap { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: start; margin-top: .8rem; }
+        @media(max-width:640px) { .iter-wrap { grid-template-columns: 1fr; } .iter-arrow { transform: rotate(90deg); padding: 0.5rem 0; } }
+        .iter-chars, .cipher-cells { display: flex; gap: 4px; flex-wrap: wrap; }
+        .iter-cell { width: 40px; height: 48px; border: 2px solid #444; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; transition: all .3s; font-size: 1rem; gap: 2px; }
+        .iter-cell .ch { font-size: 1rem; }
+        .iter-cell .idx { font-size: .65rem; color: #666; }
+        .iter-cell.scanning { border-color: #f9e2af; background: rgba(249, 226, 175, .15); }
+        .iter-cell.done { border-color: #7c9cfc; background: rgba(124, 156, 252, .15); }
+        .iter-arrow { display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #888; padding-top: 1rem; }
+        .cipher-cells { min-height: 52px; }
+        .cipher-cell { width: 40px; height: 48px; border: 2px solid #a6e3a1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #a6e3a1; font-size: 1rem; animation: popIn .3s ease; }
+        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
 
         /* ── MOD 6: Clock ── */
-        .clock-wrap {
-            display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
-            margin-top: 1rem;
-        }
+        .clock-wrap { display: flex; gap: 2rem; flex-wrap: wrap; align-items: center; justify-content: center; margin-top: 1rem; }
+        .clock-svg-wrap { position: relative; width: 180px; height: 180px; }
+        .clock-label { text-align: center; font-family: monospace; font-size: .9rem; margin-top: .5rem; }
+        .clock-info { font-size: .9rem; line-height: 1.8; font-family: monospace; color: var(--text-primary, #cdd6f4); }
 
-        .clock-svg-wrap {
-            position: relative;
-            width: 180px;
-            height: 180px;
-        }
+        /* ── MOD 7: Dual Column & Code ── */
+        .dual-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media(max-width:720px) { .dual-col { grid-template-columns: 1fr; } }
+        .sim-label { font-size: .85rem; color: #888; margin-bottom: .3rem; }
+        .sim-input { width: 100%; box-sizing: border-box; padding: .5rem .8rem; border-radius: 8px; border: 2px solid var(--border-color, #333); background: var(--bg-secondary, #1e1e2e); color: var(--text-primary, #cdd6f4); font-family: monospace; font-size: .95rem; }
+        .sim-input:focus { outline: none; border-color: var(--accent, #7c9cfc); }
+        .console-out { background: #0d0d16; border-radius: 10px; padding: 1rem; font-family: monospace; font-size: .88rem; white-space: pre-wrap; color: #a6e3a1; min-height: 60px; margin-top: .8rem; border: 2px solid #333; }
+        .code-panel { position: relative; border-radius: 10px; overflow: hidden; }
+        .code-panel pre { margin: 0; padding: 1rem; background: #0d0d16; color: #cdd6f4; font-family: monospace; font-size: .8rem; white-space: pre-wrap; line-height: 1.6; overflow-x: auto; border: 2px solid #333; border-radius: 10px; }
+        .copy-btn { position: absolute; top: 8px; right: 8px; padding: .25rem .65rem; border-radius: 6px; border: 1px solid #444; background: #1a1a2e; color: #cdd6f4; font-size: .75rem; cursor: pointer; transition: all .2s; z-index: 2; }
+        .copy-btn:hover { background: #7c9cfc; color: #1e1e2e; border-color: #7c9cfc; }
+        .inc { color: #f38ba8; } .str { color: #a6e3a1; } .kw { color: #cba6f7; } .fn { color: #89dceb; } .num { color: #fab387; } .cmt { color: #585b70; font-style: italic; }
 
-        .clock-label {
-            text-align: center;
-            font-family: monospace;
-            font-size: .9rem;
-            margin-top: .5rem;
-        }
-
-        .clock-info {
-            font-size: .9rem;
-            line-height: 1.8;
-            font-family: monospace;
-            color: var(--text-primary, #cdd6f4);
-        }
-
-        /* ── MOD 7: Dual Column ── */
-        .dual-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-
-        @media(max-width:720px) {
-            .dual-col {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .sim-label {
-            font-size: .85rem;
-            color: #888;
-            margin-bottom: .3rem;
-        }
-
-        .sim-input {
-            width: 100%;
-            box-sizing: border-box;
-            padding: .5rem .8rem;
-            border-radius: 8px;
-            border: 2px solid var(--border-color, #333);
-            background: var(--bg-secondary, #1e1e2e);
-            color: var(--text-primary, #cdd6f4);
-            font-family: monospace;
-            font-size: .95rem;
-        }
-
-        .sim-input:focus {
-            outline: none;
-            border-color: var(--accent, #7c9cfc);
-        }
-
-        .console-out {
-            background: #0d0d16;
-            border-radius: 10px;
-            padding: 1rem;
-            font-family: monospace;
-            font-size: .88rem;
-            white-space: pre-wrap;
-            color: #a6e3a1;
-            min-height: 60px;
-            margin-top: .8rem;
-            border: 2px solid #333;
-        }
-
-        /* Code panel */
-        .code-panel {
-            position: relative;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .code-panel pre {
-            margin: 0;
-            padding: 1rem;
-            background: #0d0d16;
-            color: #cdd6f4;
-            font-family: monospace;
-            font-size: .8rem;
-            white-space: pre-wrap;
-            line-height: 1.6;
-            overflow-x: auto;
-            border: 2px solid #333;
-            border-radius: 10px;
-        }
-
-        .copy-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            padding: .25rem .65rem;
-            border-radius: 6px;
-            border: 1px solid #444;
-            background: #1a1a2e;
-            color: #cdd6f4;
-            font-size: .75rem;
-            cursor: pointer;
-            transition: all .2s;
-            z-index: 2;
-        }
-
-        .copy-btn:hover {
-            background: #7c9cfc;
-            color: #1e1e2e;
-            border-color: #7c9cfc;
-        }
-
-        /* Syntax highlight */
-        .kw {
-            color: #cba6f7;
-        }
-
-        .fn {
-            color: #89dceb;
-        }
-
-        .str {
-            color: #a6e3a1;
-        }
-
-        .cmt {
-            color: #585b70;
-            font-style: italic;
-        }
-
-        .num {
-            color: #fab387;
-        }
-
-        .inc {
-            color: #f38ba8;
-        }
+        /* ── MOD 8: Brute Force (新增) ── */
+        .brute-force-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 1rem; max-height: 250px; overflow-y: auto; padding: 0.5rem; background: var(--bg-secondary, #1e1e2e); border: 2px solid #444; border-radius: 8px; }
+        .bf-item { padding: 0.5rem; border: 1px solid #555; border-radius: 6px; font-family: monospace; font-size: 0.85rem; background: #181825; color: #cdd6f4; }
+        .bf-item.highlight { border-color: #f38ba8; background: rgba(243, 139, 168, 0.1); color: #f38ba8; font-weight: bold; }
     </style>
 </head>
 
@@ -711,8 +294,7 @@
         <section id="mod4">
             <h2 class="section-title">④ 大小寫與標點符號過濾<span class="tag">The Filter</span></h2>
             <div class="card">
-                <p>使用 <code>&lt;cctype&gt;</code>
-                    的函式進行分揀：<code>isupper()</code>、<code>islower()</code>、<code>isalpha()</code>。</p>
+                <p>使用 <code>&lt;cctype&gt;</code> 的函式進行分揀：<code>isupper()</code>、<code>islower()</code>、<code>isalpha()</code>。</p>
                 <div class="conveyor-wrap">
                     <div style="font-size:.8rem;color:#888;margin-bottom:.5rem;">▶ 字元分揀輸送帶 — 字串 "Hi, C++"</div>
                     <div class="conveyor-belt" id="m4-belt"></div>
@@ -753,9 +335,7 @@
         <section id="mod6">
             <h2 class="section-title">⑥ 解密大魔王：負數處理<span class="tag">Negative Key</span></h2>
             <div class="card">
-                <p>解密時 <code>- key</code> 可能產生負數，C++ 取餘數會出錯。<br>解法：將 <code>- key</code> 改為
-                    <code>+ (26 - key)</code>，等效且安全。
-                </p>
+                <p>解密時 <code>- key</code> 可能產生負數，C++ 取餘數會出錯。<br>解法：將 <code>- key</code> 改為 <code>+ (26 - key)</code>，等效且安全。</p>
                 <div class="clock-wrap">
                     <div>
                         <svg id="m6-clock-a" width="180" height="180" viewBox="0 0 180 180"></svg>
@@ -767,8 +347,7 @@
                         <div class="clock-label" style="color:#a6e3a1;">✅ +23（順時針）</div>
                     </div>
                 </div>
-                <div class="clock-info" id="m6-info" style="text-align:center;margin-top:.8rem;color:#888;">點擊按鈕查看動畫
-                </div>
+                <div class="clock-info" id="m6-info" style="text-align:center;margin-top:.8rem;color:#888;">點擊按鈕查看動畫</div>
                 <div class="ctrl" style="justify-content:center;">
                     <button class="btn" id="m6-btn-run">🕐 播放時鐘動畫</button>
                     <button class="btn yellow" id="m6-btn-reset">↺ 重置</button>
@@ -776,9 +355,26 @@
             </div>
         </section>
 
+        <!-- ════════════════ MOD 8 (新增): 暴力破解 ════════════════ -->
+        <section id="mod8">
+            <h2 class="section-title">⑦ 為什麼現在不用凱撒密碼？<span class="tag">暴力破解 (Brute Force)</span></h2>
+            <div class="card">
+                <p>凱撒密碼的致命傷在於 <strong>金鑰空間（Key Space）太小</strong>。英文只有 26 個字母，扣除不位移的 0，只有 25 種可能。攻擊者只需嘗試這 25 種結果，就能靠肉眼找出一句合理的英文！</p>
+                <div class="sim-label">輸入攔截到的密文：</div>
+                <input class="sim-input" id="m8-text" value="Khoor, Zruog!" placeholder="輸入密文…" />
+                <div class="ctrl" style="margin-top:.6rem;">
+                    <button class="btn red" id="m8-btn-run">🗡️ 執行暴力破解</button>
+                </div>
+                <div class="brute-force-grid" id="m8-grid">
+                    <!-- 破解結果會動態顯示於此 -->
+                    <div style="color:#888; padding:0.5rem; font-size:0.85rem;">點擊上方按鈕開始窮舉 1~25 種金鑰...</div>
+                </div>
+            </div>
+        </section>
+
         <!-- ════════════════ MOD 7 ════════════════ -->
         <section id="mod7">
-            <h2 class="section-title">⑦ 🌟 終極實戰<span class="tag">Interactive Simulator + Full Code</span></h2>
+            <h2 class="section-title">⑧ 🌟 終極實戰<span class="tag">Interactive Simulator + Full Code</span></h2>
             <div class="card">
                 <div class="dual-col">
                     <!-- Left: Simulator -->
@@ -788,8 +384,7 @@
                         <div class="ctrl" style="margin-top:.6rem;">
                             <span style="font-family:monospace;font-size:.9rem;color:#888;">Key =</span>
                             <span class="key-display" id="m7-key-val">3</span>
-                            <input type="range" id="m7-slider" min="1" max="25" value="3"
-                                style="flex:1;accent-color:var(--accent,#7c9cfc);" />
+                            <input type="range" id="m7-slider" min="1" max="25" value="3" style="flex:1;accent-color:var(--accent,#7c9cfc);" />
                         </div>
                         <div class="ctrl">
                             <button class="btn" id="m7-btn-enc">🔐 執行加密</button>
@@ -879,7 +474,6 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 const k = parseInt(slider.value);
                 keyVal.textContent = k;
                 buildRow(plainTrack, ALPHA, 'active');
-                // Rotate alphabet by k
                 const rotated = ALPHA.slice(k) + ALPHA.slice(0, k);
                 buildRow(cipherTrack, rotated, 'matched');
                 result.textContent = `Key = ${k} ｜ 'A' → '${rotated[0]}' ｜ 'Z' → '${rotated[25]}'\n明文 ${ALPHA[0]}${ALPHA[1]}${ALPHA[2]}…${ALPHA[25]} 對應密文 ${rotated[0]}${rotated[1]}${rotated[2]}…${rotated[25]}`;
@@ -893,7 +487,6 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
         (function () {
             const bar = document.getElementById('m2-ascii-bar');
             const warn = document.getElementById('m2-warn');
-            // Show chars from 'W'(87) to ']'(93)
             const CHARS = [];
             for (let i = 87; i <= 95; i++) CHARS.push(i);
 
@@ -920,9 +513,9 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
             async function runBug() {
                 document.getElementById('m2-btn-run').disabled = true;
                 warn.style.display = 'none';
-                buildBar(90); // 'Z'
+                buildBar(90);
                 await delay(700);
-                buildBar(93); // ']'
+                buildBar(93);
                 await delay(500);
                 warn.style.display = 'block';
                 document.getElementById('m2-btn-run').disabled = false;
@@ -970,7 +563,6 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 reset();
                 running = true;
 
-                // Stage 0 light up
                 const s0 = document.getElementById('m3-s0');
                 const c0 = document.getElementById('m3-c0');
                 s0.className = 'stage-box active';
@@ -1146,14 +738,12 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
             function drawClock(svg, highlightIdx, color, sweepDeg, trail) {
                 svg.innerHTML = '';
                 const cx = 90, cy = 90, r = 72, innerR = 58;
-                // Outer circle
                 const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 circle.setAttribute('cx', cx); circle.setAttribute('cy', cy);
                 circle.setAttribute('r', r); circle.setAttribute('fill', '#0d0d16');
                 circle.setAttribute('stroke', '#333'); circle.setAttribute('stroke-width', '2');
                 svg.appendChild(circle);
 
-                // Letter dots
                 const N = 26;
                 for (let i = 0; i < N; i++) {
                     const angle = (i / N) * 2 * Math.PI - Math.PI / 2;
@@ -1186,7 +776,6 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
 
             function reset() {
                 running = false;
-                // Z is index 25
                 drawClock(svgA, 25, '#f38ba8', 0, null);
                 drawClock(svgB, 25, '#a6e3a1', 0, null);
                 info.style.color = '#888';
@@ -1199,13 +788,10 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 running = true;
                 document.getElementById('m6-btn-run').disabled = true;
 
-                // Clock A: -3 (counterclockwise from Z=25 → 22=W)
-                // But in alphabet terms: Z-3 = W
                 info.textContent = "起始位置：Z (index 25)";
                 info.style.color = '#cdd6f4';
                 await delay(600);
 
-                // Animate clockA going backwards 3 steps
                 const trailA = [];
                 for (let step = 1; step <= 3; step++) {
                     const idx = (25 - step + 26) % 26;
@@ -1219,7 +805,6 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 info.style.color = '#f38ba8';
                 await delay(1200);
 
-                // Clock B: +23 (clockwise 23 steps from Z=25)
                 const trailB = [];
                 info.style.color = '#cdd6f4';
                 info.textContent = "✅ 改用 +(26-3)=+23，順時針走 23 格";
@@ -1239,6 +824,42 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
             document.getElementById('m6-btn-run').addEventListener('click', run);
             document.getElementById('m6-btn-reset').addEventListener('click', reset);
             reset();
+        })();
+
+        /* ══ MOD 8: Brute Force (新增) ══ */
+        (function () {
+            const btn = document.getElementById('m8-btn-run');
+            const grid = document.getElementById('m8-grid');
+            const txt = document.getElementById('m8-text');
+
+            function decChar(c, key) {
+                const C = c.charCodeAt(0);
+                if (C >= 65 && C <= 90) return String.fromCharCode((C - 65 + 26 - key) % 26 + 65);
+                if (C >= 97 && C <= 122) return String.fromCharCode((C - 97 + 26 - key) % 26 + 97);
+                return c;
+            }
+
+            btn.addEventListener('click', async () => {
+                const input = txt.value;
+                grid.innerHTML = '';
+                btn.disabled = true;
+
+                for (let key = 1; key <= 25; key++) {
+                    const output = input.split('').map(c => decChar(c, key)).join('');
+                    const item = document.createElement('div');
+                    item.className = 'bf-item';
+                    item.innerHTML = `<span style="color:#888;">Key ${key.toString().padStart(2, '0')}:</span><br>${output}`;
+                    grid.appendChild(item);
+                    
+                    // 簡單的關鍵字偵測來 Highlight (假設使用者輸入的是常見打招呼)
+                    const lowerOutput = output.toLowerCase();
+                    if(lowerOutput.includes('hello') || lowerOutput.includes('world') || lowerOutput.includes('cat')) {
+                        item.classList.add('highlight');
+                    }
+                    await delay(50); // 動畫感
+                }
+                btn.disabled = false;
+            });
         })();
 
         /* ══ MOD 7: Simulator + Copy ══ */

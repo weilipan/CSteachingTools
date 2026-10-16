@@ -49,7 +49,7 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
 /* ═══════════════════════════════════════════
    MODULE 1 – Boolean Basics
 ═══════════════════════════════════════════ */
-.switch-wrapper { display: flex; align-items: center; gap: 3rem; justify-content: center; margin: 1.5rem 0; }
+.switch-wrapper { display: flex; align-items: center; gap: 3rem; justify-content: center; margin: 1.5rem 0; flex-wrap: wrap; }
 .switch-label { font-size: .9rem; color: var(--text-muted); margin-bottom: .5rem; font-weight: bold; text-align: center; }
 
 /* Toggle */
@@ -68,6 +68,8 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
 .bool-badge .val-num { font-size: 1rem; color: var(--text-muted); margin-left: .5rem; font-family: sans-serif; font-weight: normal; }
 .bool-cpp { margin-top: 1rem; background: var(--surface); border-radius: 8px; padding: 1rem; font-family: monospace; border-left: 4px solid var(--accent-color); }
 
+.c-rule-box { background: #fff3e0; border-left: 4px solid #ff9800; padding: 1rem; border-radius: 8px; margin-top: 1rem; font-size: 0.95rem; }
+
 /* ═══════════════════════════════════════════
    MODULE 2 – Relational Operators
 ═══════════════════════════════════════════ */
@@ -77,15 +79,17 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
 .rel-result.true { border-color: var(--green); background: #f0fdf4; }
 .rel-result.false { border-color: var(--red); background: #fef2f2; }
 
-/* = vs == warning */
+/* Warnings */
 .eq-warning { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
 @media(max-width:520px){ .eq-warning { grid-template-columns: 1fr; } }
 .eq-card { border-radius: 8px; padding: 1rem; font-family: monospace; font-size: .9rem; border: 1px solid var(--border-color); background: #fff; }
 .eq-card.compare { border-left: 4px solid var(--green); }
 .eq-card.assign  { border-left: 4px solid var(--red); }
+.eq-card.float-warn { border-left: 4px solid var(--accent3); grid-column: 1 / -1; }
 .eq-card .eq-op { font-size: 1.5rem; font-weight: 700; margin-bottom: .3rem; }
 .eq-card.compare .eq-op { color: var(--green); }
 .eq-card.assign  .eq-op { color: var(--red); }
+.eq-card.float-warn .eq-op { color: var(--accent3); font-size: 1.2rem; }
 .eq-card .eq-desc { color: var(--text-muted); font-size: .85rem; font-family: sans-serif; margin-top: .5rem; line-height: 1.5; }
 
 /* ═══════════════════════════════════════════
@@ -136,6 +140,7 @@ td.result-false { color: var(--red); font-weight: bold; }
 .sc-msg { margin-top: 1rem; padding: .8rem; border-radius: 6px; font-size: .9rem; font-weight: bold; transition: all .3s; }
 .sc-msg.blocked { background: #f8d7da; color: var(--red); border: 1px solid #f5c6cb; }
 .sc-msg.pass    { background: #d4edda; color: var(--green); border: 1px solid #c3e6cb; }
+.sc-practical { margin-top: 1.5rem; padding: 1.2rem; background: var(--surface); border-left: 4px solid var(--accent-color); border-radius: 8px; }
 
 /* ═══════════════════════════════════════════
    MODULE 5 – Sandbox (Roller Coaster)
@@ -168,22 +173,18 @@ td.result-false { color: var(--red); font-weight: bold; }
 
   <div class="card">
     <h2>💡 1. 布林基礎 (Boolean Basics)</h2>
-    <p>true / false &nbsp;|&nbsp; 底層數值 1 / 0</p>
+    <p>true / false &nbsp;|&nbsp; 任何非零數值皆為 true</p>
 
     <div class="switch-wrapper">
-      <div>
-        <div class="switch-label">電燈開關</div>
-        <button class="toggle-track on" id="lightSwitch" onclick="toggleLight()" aria-label="Toggle light">
-          <div class="toggle-thumb"></div>
-        </button>
-        <div style="margin-top:.5rem;font-size:.85rem;color:var(--text-muted);text-align:center;">點我切換</div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        <label style="font-weight: bold; font-size: 0.95rem;">輸入任意整數測試：</label>
+        <input type="number" id="boolIntInput" value="1" oninput="updateBoolInt()" style="text-align: center; font-size: 1.2rem; width: 100px;">
       </div>
 
       <div class="bulb-area">
         <div class="bulb-icon lit" id="bulbIcon">💡</div>
         <div class="bool-badge">
           <span class="val-word" id="boolWord">true</span>
-          <span class="val-num" id="boolNum">( 值 = 1 )</span>
         </div>
       </div>
     </div>
@@ -191,10 +192,14 @@ td.result-false { color: var(--red); font-weight: bold; }
     <div class="bool-cpp mono" id="boolCpp">
       <span style="color:var(--accent2);font-weight:bold;">bool</span> light = <span style="color:var(--green);font-weight:bold;" id="cppVal">true</span>;
       <br><br>
-      <span style="color:var(--text-muted)">// 底層整數值：</span>
+      <span style="color:var(--text-muted)">// 您輸入的底層整數值：</span>
       <span style="color:var(--accent3);font-weight:bold;font-size:1.1rem;" id="cppInt">1</span>
-      <br>
-      <span style="color:var(--text-muted)">// C++ 規定：true → 1（非零），false → 0</span>
+    </div>
+
+    <div class="c-rule-box">
+      <strong>⚠️ C++ 重要觀念：</strong> 在 C++ 中，不僅僅只有 <code>1</code> 是 true。<br>
+      <strong>「任何非零的值（例如 42, -5）都會被轉換為 true，只有 0 是 false。」</strong><br>
+      試著在上方輸入 <code>42</code> 或 <code>0</code> 看看結果！
     </div>
   </div>
 
@@ -217,7 +222,7 @@ td.result-false { color: var(--red); font-weight: bold; }
     <div class="rel-result fade-in" id="relResult"></div>
 
     <div class="divider"></div>
-    <div style="font-size:.95rem; font-weight:bold; margin-bottom:.6rem; color: var(--text-main);">⚠️ 初學者常犯錯誤：搞混 <code>==</code> 與 <code>=</code></div>
+    <div style="font-size:.95rem; font-weight:bold; margin-bottom:.6rem; color: var(--text-main);">⚠️ 初學者常犯錯誤</div>
     <div class="eq-warning">
       <div class="eq-card compare">
         <div class="eq-op">==</div>
@@ -228,6 +233,10 @@ td.result-false { color: var(--red); font-weight: bold; }
         <div class="eq-op">=</div>
         <div class="mono" style="font-size:1rem; font-weight:bold; margin-bottom:5px;">a = b;</div>
         <div class="eq-desc"><strong>賦值運算子</strong>：把 b 的值「存進」a 裡面。<br>這不是比較！常見 Bug 來源：誤打成 <code>if (a = b)</code></div>
+      </div>
+      <div class="eq-card float-warn">
+        <div class="eq-op">⚠️ 浮點數比較陷阱</div>
+        <div class="eq-desc">C++ 中比較浮點數（float/double）時，因為二進位精確度誤差，<code>0.1 + 0.2 == 0.3</code> 往往會是 <strong>false</strong>。請避免直接使用 <code>==</code> 比較浮點數，應改用誤差範圍（epsilon）來判斷！</div>
       </div>
     </div>
   </div>
@@ -291,6 +300,16 @@ td.result-false { color: var(--red); font-weight: bold; }
         <div class="sc-msg" id="scB_msg"></div>
       </div>
     </div>
+
+    <div class="sc-practical">
+      <strong style="color: var(--accent-color); font-size: 1.1rem;">💡 C++ 實務應用：防止程式崩潰 (Segmentation Fault)</strong>
+      <div class="mono" style="margin: 10px 0; background: #fff; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <span style="color: var(--accent2)">if</span> (ptr != <span style="color: var(--accent2)">nullptr</span> <span style="font-weight: bold;">&&</span> ptr->value == 10) { ... }
+      </div>
+      <p style="margin: 0; font-size: 0.95rem; line-height: 1.5; color: var(--text-main);">
+        利用 <code>&&</code> 的短路特性，當 <code>ptr</code> 為空指標時，第一項判斷為 <code>false</code>，程式便會<strong>立即停止檢查</strong>，絕對不會執行第二項 <code>ptr->value</code>，從而完美避免了存取空指標引發的嚴重當機錯誤。
+      </p>
+    </div>
   </div>
 
   <div class="card">
@@ -323,32 +342,28 @@ td.result-false { color: var(--red); font-weight: bold; }
 /* ═══════════════════════════════════════════
    MODULE 1 – Boolean Basics
 ═══════════════════════════════════════════ */
-let lightOn = true;
-function toggleLight() {
-  lightOn = !lightOn;
-  const sw   = document.getElementById('lightSwitch');
+function updateBoolInt() {
+  const inputVal = parseInt(document.getElementById('boolIntInput').value) || 0;
+  const isTrue = (inputVal !== 0);
+
   const bulb = document.getElementById('bulbIcon');
   const word = document.getElementById('boolWord');
-  const num  = document.getElementById('boolNum');
   const cv   = document.getElementById('cppVal');
   const ci   = document.getElementById('cppInt');
 
-  if (lightOn) {
-    sw.classList.add('on');
+  if (isTrue) {
     bulb.classList.add('lit');
     word.textContent = 'true';  word.className = 'val-word';
-    num.textContent  = '( 值 = 1 )';
     cv.textContent   = 'true';  cv.style.color = 'var(--green)';
-    ci.textContent   = '1';
+    ci.textContent   = inputVal;
   } else {
-    sw.classList.remove('on');
     bulb.classList.remove('lit');
     word.textContent = 'false'; word.className = 'val-word off';
-    num.textContent  = '( 值 = 0 )';
     cv.textContent   = 'false'; cv.style.color = 'var(--red)';
     ci.textContent   = '0';
   }
 }
+updateBoolInt(); // 初始載入
 
 /* ═══════════════════════════════════════════
    MODULE 2 – Relational Operators

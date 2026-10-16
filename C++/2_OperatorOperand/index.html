@@ -11,12 +11,12 @@
 <style>
 /* ── 本頁專用的元件與互動樣式 ── */
 :root {
-  /* 配合 theme.css 增設的輔助色彩 (明亮模式) */
-  --surface: #f6f8fa;       /* 淺灰底色，用於輸入框或次要區塊 */
-  --accent2: #005cc5;       /* 輔助藍色 */
-  --accent3: #e36209;       /* 輔助橘色 */
-  --green: #28a745;         /* 成功/True 的綠色 */
-  --red: #d73a49;           /* 失敗/False 的紅色 */
+  --surface: #f6f8fa;
+  --accent2: #005cc5;
+  --accent3: #e36209;
+  --green: #28a745;
+  --red: #d73a49;
+  --dark-surface: #1e1e2e;
 }
 
 code, .mono { font-family: 'Courier New', Courier, monospace; }
@@ -59,11 +59,12 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
 .highlight { background: #cce5ff; border-radius: 4px; padding: 1px 4px; color: var(--accent2); font-weight: bold; }
 .hi-green { background: #d4edda; color: var(--green); border-radius: 4px; padding: 1px 4px; font-weight: bold; }
 .hi-red { background: #f8d7da; color: var(--red); border-radius: 4px; padding: 1px 4px; font-weight: bold; }
+.short-circuit-badge { background: var(--accent3); color: #fff; border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; margin-left: 8px; vertical-align: middle; }
 
 /* ── Module Specifics ── */
-#arith-results .arith-row { display: grid; grid-template-columns: 60px 1fr; gap: .5rem; align-items: center; padding: .35rem 0; border-bottom: 1px solid var(--border-color); }
-#arith-results .arith-row:last-child { border-bottom: none; }
-#arith-results .op { color: var(--accent3); font-weight: 700; font-size: 1rem; }
+.arith-row { display: grid; grid-template-columns: 65px 1fr; gap: .5rem; align-items: center; padding: .35rem 0; border-bottom: 1px solid var(--border-color); }
+.arith-row:last-child { border-bottom: none; }
+.op { color: var(--accent3); font-weight: 700; font-size: 1rem; }
 
 .inc-demo { background: var(--surface); border-radius: 8px; padding: 1.2rem; border: 1px solid var(--border-color); }
 .inc-vars { display: flex; gap: 2rem; justify-content: center; margin: 1rem 0; }
@@ -110,10 +111,14 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
 .expand-step.active-step { color: var(--text-main); font-weight: bold; }
 
 .prec-expr { font-family: monospace; font-size: 1.3rem; text-align: center; padding: 1rem; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; line-height: 2.2; word-break: break-all; margin-top: 10px; }
-.prec-token { padding: 3px 6px; border-radius: 5px; transition: all .3s; cursor: default; }
-.prec-token.focused { background: #cce5ff; color: var(--accent-color); box-shadow: 0 0 0 2px var(--accent-color); font-weight: 700; }
 .prec-step-info { margin-top: 1rem; padding: 1rem; background: #fff; border: 1px solid var(--border-color); border-radius: 8px; border-left: 4px solid var(--accent3); font-size: .95rem; }
-.prec-step-info .step-desc { margin-top: .3rem; font-family: monospace; }
+
+/* ── Relational Grid ── */
+.rel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+.rel-cell { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; text-align: center; font-family: monospace; transition: all 0.2s; }
+.rel-cell.rel-true { border-color: var(--green); box-shadow: 0 0 5px rgba(40,167,69,0.3); }
+.rel-cell.rel-false { border-color: var(--red); opacity: 0.7; }
+.rel-cell .rel-val { font-weight: bold; font-size: 1.2rem; margin-top: 5px; }
 
 @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
 .fade-in { animation: fadeIn .35s ease; }
@@ -125,22 +130,34 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
   
   <div style="text-align: center; margin-bottom: 40px;">
     <h1 class="section-title" style="border-bottom: none; margin-bottom: 5px; font-size: 2rem;">C++ 運算元與運算子</h1>
-    <p style="color: var(--text-muted);">七大運算子主題 · 全互動式視覺化教學</p>
+    <p style="color: var(--text-muted);">八大運算子主題 · 全互動式視覺化教學</p>
   </div>
 
+  <!-- 1. 算術運算子 -->
   <div class="card">
     <h2>➕ 1. 算術運算子</h2>
     <p>+, -, *, /, % &nbsp;|&nbsp; 整數除法與餘數特別說明</p>
     <div class="row" style="margin-top: 15px;">
-      <label>a = <input type="number" id="a1" value="17" step="1"></label>
-      <label>b = <input type="number" id="b1" value="5" step="1"></label>
-      <button class="btn btn-primary" onclick="calcArith()">計算全部</button>
+      <label>a = <input type="number" id="a1" value="17" step="1" oninput="calcArith()"></label>
+      <label>b = <input type="number" id="b1" value="5" step="1" oninput="calcArith()"></label>
     </div>
     <div id="arith-results" class="result-box"></div>
   </div>
 
+  <!-- 2. 關係運算子 (新增) -->
   <div class="card">
-    <h2>🔢 2. 遞增 / 遞減運算子</h2>
+    <h2>⚖️ 2. 關係 (比較) 運算子</h2>
+    <p>==, !=, <, >, <=, >= &nbsp;|&nbsp; 回傳布林值 (true / false)</p>
+    <div class="row" style="margin-top: 15px;">
+      <label>A = <input type="number" id="relA" value="10" oninput="calcRel()"></label>
+      <label>B = <input type="number" id="relB" value="10" oninput="calcRel()"></label>
+    </div>
+    <div class="rel-grid" id="rel-results"></div>
+  </div>
+
+  <!-- 3. 遞增 / 遞減運算子 -->
+  <div class="card">
+    <h2>🔢 3. 遞增 / 遞減運算子</h2>
     <p>前置 (Prefix) vs 後置 (Postfix) 兩步驟拆解動畫</p>
     <div class="grid2" style="margin-top: 15px;">
       <div class="inc-demo">
@@ -174,9 +191,10 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
     </div>
   </div>
 
+  <!-- 4. 邏輯運算子 (含短路求值) -->
   <div class="card">
-    <h2>🔀 3. 邏輯運算子</h2>
-    <p>&amp;&amp;, ||, ! &nbsp;|&nbsp; 切換 A / B 即時觀察結果</p>
+    <h2>🔀 4. 邏輯運算子與短路求值</h2>
+    <p>&amp;&amp;, ||, ! &nbsp;|&nbsp; 注意：C++ 具備「短路求值 (Short-Circuit Evaluation)」特性</p>
     <div class="row" style="gap:1.5rem; margin-top: 15px;">
       <div>
         <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:.4rem;font-weight:bold;">變數 A</div>
@@ -190,8 +208,9 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
     <div class="logic-results" id="logic-results"></div>
   </div>
 
+  <!-- 5. 位元運算子 -->
   <div class="card">
-    <h2>⚙️ 4. 位元運算子</h2>
+    <h2>⚙️ 5. 位元運算子</h2>
     <p>&amp;, |, ^, ~, &lt;&lt;, &gt;&gt; &nbsp;|&nbsp; 8-bit 方塊可視化</p>
     <div class="row" style="margin-top: 15px;">
       <label>A = <input type="number" id="bw-a" value="60" min="0" max="255" oninput="updateBitwise()"></label>
@@ -214,8 +233,9 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
     <div id="bw-explain" style="font-size:.9rem;color:var(--text-main);padding:.8rem;background:#e1f5fe;border-radius:6px; border-left: 4px solid var(--accent2);"></div>
   </div>
 
+  <!-- 6. 條件運算子 -->
   <div class="card">
-    <h2>❓ 5. 條件運算子（三元運算子）</h2>
+    <h2>❓ 6. 條件運算子（三元運算子）</h2>
     <p>condition ? value_if_true : value_if_false</p>
     <div class="ternary-visual" style="margin-top: 15px;">
       <span style="color:var(--accent2); font-weight:bold;">score &gt;= 60</span>
@@ -233,8 +253,9 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
     </div>
   </div>
 
+  <!-- 7. 複合指派運算子 -->
   <div class="card">
-    <h2>📝 6. 複合指派運算子</h2>
+    <h2>📝 7. 複合指派運算子</h2>
     <p>+=, -=, *=, /=, %= &nbsp;|&nbsp; 展開語法視覺化</p>
     <div class="row" style="align-items: flex-start; margin-top: 15px;">
       <div>
@@ -263,8 +284,9 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
     </div>
   </div>
 
+  <!-- 8. 運算子優先順序 -->
   <div class="card">
-    <h2>📊 7. 運算子優先順序</h2>
+    <h2>📊 8. 運算子優先順序</h2>
     <p>逐步高亮解析複雜運算式</p>
     <div style="margin-top: 15px; margin-bottom:1rem; background: var(--surface); padding: 15px; border-radius: 8px;">
       <label style="font-size:.9rem; font-weight:bold;">選擇情境：</label>
@@ -310,7 +332,28 @@ function calcArith() {
 }
 calcArith();
 
-// ═══════════════════ Module 2: Inc/Dec ═══════════════════
+// ═══════════════════ Module 2: Relational (新增) ═══════════════════
+function calcRel() {
+  const a = parseInt(document.getElementById('relA').value) || 0;
+  const b = parseInt(document.getElementById('relB').value) || 0;
+  const checks = [
+    { op: 'A == B', res: a === b },
+    { op: 'A != B', res: a !== b },
+    { op: 'A > B',  res: a > b },
+    { op: 'A < B',  res: a < b },
+    { op: 'A >= B', res: a >= b },
+    { op: 'A <= B', res: a <= b }
+  ];
+  document.getElementById('rel-results').innerHTML = checks.map(c => `
+    <div class="rel-cell ${c.res ? 'rel-true' : 'rel-false'}">
+      <div>${c.op}</div>
+      <div class="rel-val" style="color: ${c.res ? 'var(--green)' : 'var(--red)'}">${c.res}</div>
+    </div>
+  `).join('');
+}
+calcRel();
+
+// ═══════════════════ Module 3: Inc/Dec ═══════════════════
 let preY = 5, preX = null, postY = 5, postX = null;
 function resetInc(mode) {
   if (mode === 'pre') {
@@ -361,7 +404,7 @@ function runPostfix() {
   setTimeout(() => { log.innerHTML += `<br><span style="color:var(--accent3); font-weight:bold; margin-top:5px; display:inline-block;">✅ 結果：x = ${postX}（舊值），y = ${postY}</span>`; }, 2200);
 }
 
-// ═══════════════════ Module 3: Logic ═══════════════════
+// ═══════════════════ Module 4: Logic & Short-Circuit ═══════════════════
 let logicA = true, logicB = false;
 function toggleLogic(v) {
   if (v === 'A') { logicA = !logicA; const b = document.getElementById('togA'); b.textContent = logicA ? 'true' : 'false'; b.className = 'toggle-btn ' + (logicA ? 'on' : 'off'); }
@@ -369,21 +412,39 @@ function toggleLogic(v) {
   renderLogic();
 }
 function renderLogic() {
+  const shortAnd = !logicA; // If A is false, AND is short-circuited
+  const shortOr = logicA;   // If A is true, OR is short-circuited
+
   const cells = [
-    { op: 'A &amp;&amp; B', val: logicA && logicB, desc: `${logicA} && ${logicB}` },
-    { op: 'A || B',   val: logicA || logicB, desc: `${logicA} || ${logicB}` },
-    { op: '!A',       val: !logicA,           desc: `!${logicA}` },
+    { 
+      op: 'A &amp;&amp; B', 
+      val: logicA && logicB, 
+      desc: `${logicA} && ${shortAnd ? '<span style="opacity:0.5">B</span>' : logicB}`,
+      badge: shortAnd ? '<span class="short-circuit-badge">短路</span>' : ''
+    },
+    { 
+      op: 'A || B',   
+      val: logicA || logicB, 
+      desc: `${logicA} || ${shortOr ? '<span style="opacity:0.5">B</span>' : logicB}`,
+      badge: shortOr ? '<span class="short-circuit-badge">短路</span>' : ''
+    },
+    { 
+      op: '!A',       
+      val: !logicA,           
+      desc: `!${logicA}`,
+      badge: ''
+    },
   ];
   document.getElementById('logic-results').innerHTML = cells.map(c => `
     <div class="logic-cell ${c.val ? 'true-cell' : 'false-cell'} fade-in">
-      <div class="lc-op">${c.op}</div>
+      <div class="lc-op">${c.op} ${c.badge}</div>
       <div class="lc-val" style="color:${c.val ? 'var(--green)' : 'var(--red)'}">${c.val}</div>
-      <div style="font-size:.8rem;color:var(--text-main);margin-top:.2rem;font-family:monospace;">${c.desc}</div>
+      <div style="font-size:.8rem;color:var(--text-main);margin-top:.4rem;font-family:monospace;">${c.desc}</div>
     </div>`).join('');
 }
 renderLogic();
 
-// ═══════════════════ Module 4: Bitwise ═══════════════════
+// ═══════════════════ Module 5: Bitwise ═══════════════════
 let bwOp = '&';
 function toBits(n, bits=8) { return (((n % 256) + 256) % 256).toString(2).padStart(bits, '0').split(''); }
 function renderBits(elId, bits, cls) {
@@ -418,7 +479,7 @@ function setBwOp(btn, op) {
 }
 updateBitwise();
 
-// ═══════════════════ Module 5: Ternary ═══════════════════
+// ═══════════════════ Module 6: Ternary ═══════════════════
 function updateTernary() {
   const s = parseInt(document.getElementById('score-range').value);
   const disp = document.getElementById('score-display');
@@ -437,7 +498,7 @@ function updateTernary() {
 }
 updateTernary();
 
-// ═══════════════════ Module 6: Compound Assignment ═══════════════════
+// ═══════════════════ Module 7: Compound Assignment ═══════════════════
 let cxVal = 10;
 function resetCompound() { cxVal = 10; document.getElementById('cx-val').textContent = cxVal; document.getElementById('expand-box').innerHTML = '<div style="color:var(--text-muted);font-size:.9rem;">選擇上方一個運算子查看展開步驟</div>'; }
 function doCompound(op) {
@@ -462,7 +523,7 @@ function doCompound(op) {
   });
 }
 
-// ═══════════════════ Module 7: Operator Precedence ═══════════════════
+// ═══════════════════ Module 8: Operator Precedence ═══════════════════
 const precScenarios = [
   {
     label: 'a + b * c > d && e',
