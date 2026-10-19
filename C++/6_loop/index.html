@@ -6,110 +6,128 @@
   <title>C++ 重複結構 (Loops) 互動式教學</title>
   <meta name="description" content="透過動畫與互動，學習 C++ 重複結構：for、while、do-while、無窮迴圈、break/continue、決策樹與巢狀迴圈。"/>
   
-  <!-- 保留全站共用框架與樣式 -->
   <link rel="stylesheet" href="../../theme.css">
   <script src="../../layout.js" defer></script>
 
   <style>
+    /* ── 本頁專用的元件與互動樣式 (淺色化) ── */
+    :root {
+      --surface: #f1f5f9;
+      --code-bg: #f8fafc;
+      --accent2: #0284c7;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+    }
+    
     /* ── Base & Layout ── */
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }
-    .container { max-width: 1000px; margin: 0 auto; }
-    .section-title { color: #58a6ff; font-size: 1.8rem; margin-bottom: 5px; }
-    .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-bottom: 30px; }
+    body { padding-top: 40px; padding-bottom: 60px; }
+    .section-title { 
+      font-size: 2rem; margin-bottom: 5px; background: linear-gradient(90deg, #0366d6, #28a745, #005cc5); 
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: bold;
+    }
+    .card h2 { color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px; margin-top: 0; }
     
     /* ── Grid Layout ── */
-    .mod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+    .mod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; margin-top: 15px; }
     @media(max-width:768px){ .mod-grid { grid-template-columns: 1fr; } }
     
     /* ── Code blocks ── */
     .code-block {
       font-family: 'Courier New', monospace; font-size: 0.9rem;
-      background: #010409; border-radius: 10px; padding: 14px 18px;
-      line-height: 1.7; border: 1px solid #30363d; overflow-x: auto;
+      background: var(--code-bg); border-radius: 10px; padding: 14px 18px;
+      line-height: 1.7; border: 1px solid var(--border-color); overflow-x: auto;
+      color: var(--text-main); box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
     }
     .code-line { display: block; padding: 2px 6px; border-radius: 4px; transition: all .2s; }
-    .code-line.active-green { background: #1a4a1e; color: #56d364; font-weight: bold; }
-    .code-line.active-red { background: #4a1a1a; color: #f85149; font-weight: bold; }
-    .code-line.active-blue { background: #0d2a4a; color: #58a6ff; font-weight: bold; }
-    .code-line.active-yellow { background: #3a2f00; color: #e3b341; font-weight: bold; }
-    .code-line.skipped { color: #484f58; opacity: 0.5; }
-    .code-line.cursor { background: #1f2937; outline: 2px solid #58a6ff; color: #fff; }
+    .code-line.active-green { background: #dcfce7; color: #15803d; font-weight: bold; border-left: 3px solid var(--green); }
+    .code-line.active-red { background: #fee2e2; color: #b91c1c; font-weight: bold; border-left: 3px solid var(--red); }
+    .code-line.active-blue { background: #e0f2fe; color: #0369a1; font-weight: bold; border-left: 3px solid var(--accent2); }
+    .code-line.active-yellow { background: #fef3c7; color: #b45309; font-weight: bold; border-left: 3px solid var(--yellow); }
+    .code-line.skipped { color: #94a3b8; opacity: 0.6; text-decoration: line-through; }
+    .code-line.cursor { background: #f1f5f9; outline: 2px solid var(--accent-color); color: var(--text-main); }
 
     /* ── Controls & Watch Box ── */
-    .ctrl-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
-    input[type=range] { flex:1; min-width:100px; }
-    .num-input { width: 80px; padding: 6px 10px; border-radius: 6px; border: 1px solid #30363d; background:#0d1117; color:#c9d1d9; font-size:0.9rem; }
+    .ctrl-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; color: var(--text-main); font-weight: bold; }
+    input[type=range] { flex:1; min-width:100px; accent-color: var(--accent-color); cursor: pointer; }
+    .num-input { width: 80px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background:#ffffff; color:var(--text-main); font-size:0.9rem; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+    .num-input:focus { border-color: var(--accent-color); }
+    
     .btn-run {
       padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer;
-      background: #238636; color: #fff; font-size: 0.9rem; font-weight: 600;
+      background: var(--green); color: #fff; font-size: 0.9rem; font-weight: 600;
       transition: background .2s, transform .1s; width: 100%; margin-bottom: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .btn-run:hover { background: #2ea043; }
-    .btn-run:active { transform: scale(.98); }
+    .btn-run:hover { filter: brightness(1.1); }
+    .btn-run:active { transform: scale(.98); box-shadow: none; }
     .btn-run:disabled { opacity:.5; cursor:not-allowed; }
-    .btn-red { background: #da3633; } .btn-red:hover { background: #f85149; }
+    .btn-red { background: var(--red); } .btn-red:hover { filter: brightness(1.1); }
 
     .watch-box {
-      background: #010409; border: 1px dashed #58a6ff; border-radius: 8px;
-      padding: 10px 14px; font-family: monospace; font-size: 0.85rem; color: #8b949e;
-      margin-bottom: 12px;
+      background: #ffffff; border: 1px dashed var(--accent-color); border-radius: 8px;
+      padding: 10px 14px; font-family: monospace; font-size: 0.85rem; color: var(--text-main);
+      margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    .watch-title { font-size: 0.75rem; text-transform: uppercase; color: #58a6ff; margin-bottom: 4px; font-weight: bold; }
-    .watch-var { color: #c9d1d9; }
-    .watch-val { color: #e3b341; font-weight: bold; }
+    .watch-title { font-size: 0.75rem; text-transform: uppercase; color: var(--accent-color); margin-bottom: 4px; font-weight: bold; }
+    .watch-var { color: var(--text-main); }
+    .watch-val { color: var(--accent3); font-weight: bold; }
 
     /* ── Output ── */
     .out-box {
-      background:#0d1117; border-left: 4px solid #8b949e; border-radius: 0 6px 6px 0;
-      padding:10px 14px; min-height:20px; font-family:monospace; font-size:0.9rem; color:#c9d1d9; margin-top:12px;
+      background:#ffffff; border-left: 4px solid var(--border-color); border-radius: 0 6px 6px 0;
+      padding:10px 14px; min-height:20px; font-family:monospace; font-size:0.95rem; color:var(--text-main); margin-top:12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
-    .danger-out { border-color: #f85149; color: #f85149; animation: shake .3s; }
+    .danger-out { border-color: var(--red); color: var(--red); animation: shake .3s; background: #fef2f2; }
     @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
 
     /* ── Specific Visuals ── */
-    .hp-bar-wrap { background:#21262d; border-radius:10px; height:22px; margin-bottom:12px; overflow:hidden; }
-    .hp-bar { height:100%; border-radius:10px; transition:width .5s, background .5s; background:#56d364; }
+    .hp-bar-wrap { background:#e2e8f0; border-radius:10px; height:22px; margin-bottom:12px; overflow:hidden; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+    .hp-bar { height:100%; border-radius:10px; transition:width .5s, background .5s; background:var(--green); }
     
     .card-draw-area { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; min-height:60px; }
     .draw-card {
       width:45px; height:60px; border-radius:6px; display:flex; align-items:center; justify-content:center;
-      font-size:1.4rem; border:2px solid #30363d; background:#1c2128; flex-shrink:0; transition:all .3s;
+      font-size:1.4rem; border:2px solid var(--border-color); background:#ffffff; flex-shrink:0; transition:all .3s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-    .draw-card.winner { border-color:#e3b341; background:#3a2f00; transform:scale(1.1); }
+    .draw-card.winner { border-color:var(--yellow); background:#fef3c7; transform:scale(1.1); box-shadow: 0 4px 8px rgba(245, 158, 11, 0.2); }
     
     .loop-steps { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
     .step-box {
       width:40px; height:40px; border-radius:8px; display:flex; align-items:center; justify-content:center;
-      font-size:1rem; font-weight:700; border:2px solid #30363d; background:#1c2128; transition:all .3s;
+      font-size:1rem; font-weight:700; border:2px solid var(--border-color); background:#ffffff; transition:all .3s; color: var(--text-muted);
     }
-    .step-box.active { border-color:#58a6ff; background:#0d2a4a; }
-    .step-box.done { border-color:#56d364; background:#1a4a1e; color:#56d364; }
-    .step-box.skipped { border-color:#e3b341; background:#3a2f00; color:#e3b341; }
-    .step-box.broken { border-color:#f85149; background:#4a1a1a; color:#f85149; }
+    .step-box.active { border-color:var(--accent-color); background:#e0f2fe; color: #0369a1; }
+    .step-box.done { border-color:var(--green); background:#dcfce7; color:#15803d; }
+    .step-box.skipped { border-color:var(--yellow); background:#fef3c7; color:#b45309; }
+    .step-box.broken { border-color:var(--red); background:#fee2e2; color:#b91c1c; }
 
-    /* Decision Tree */
-    .dt-node { background:#1c2128; border:2px solid #30363d; border-radius:8px; padding:12px; text-align:center; font-size:.9rem; margin-bottom:10px; }
-    .dt-node.active { border-color:#58a6ff; background:#0d2a4a; }
-    .dt-btn { padding:6px 14px; border-radius:15px; border:1px solid #30363d; background:#21262d; color:#c9d1d9; cursor:pointer; }
-    .dt-btn:hover { background:#30363d; }
+    /* Decision Tree (If you have it) */
+    .dt-node { background:#ffffff; border:2px solid var(--border-color); border-radius:8px; padding:12px; text-align:center; font-size:.9rem; margin-bottom:10px; color: var(--text-main); }
+    .dt-node.active { border-color:var(--accent-color); background:#e0f2fe; color: #0369a1; }
+    .dt-btn { padding:6px 14px; border-radius:15px; border:1px solid var(--border-color); background:#f1f5f9; color:var(--text-main); cursor:pointer; font-weight: bold; }
+    .dt-btn:hover { background:#e2e8f0; }
   </style>
 </head>
 <body>
 <div class="container">
-  <h1 class="section-title">🔁 C++ 重複結構 (Loops) 互動式教學</h1>
-  <p style="color:#8b949e; margin-bottom:28px;">雙欄對照模式：透過右側控制面板啟動自動執行動畫，觀察程式碼執行順序與變數狀態。</p>
+  <div style="text-align: center; margin-bottom: 40px;">
+    <h1 class="section-title">C++ 重複結構 (Loops) 互動式教學</h1>
+    <p style="color:var(--text-muted);">雙欄對照模式：透過右側控制面板啟動自動執行動畫，觀察程式碼執行順序與變數狀態。</p>
+  </div>
 
   <!-- Module 1 -->
   <div class="card">
-    <h2 style="margin-top:0;">🔢 1. 經典 <code>for</code> 迴圈（計次迴圈）</h2>
+    <h2>🔢 1. 經典 <code>for</code> 迴圈（計次迴圈）</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
-          <span class="code-line" id="m1-l0" style="color:#6e7681;">// 初始化 ; 條件 ; 更新步進</span>
+          <span class="code-line" id="m1-l0" style="color:#64748b;">// 初始化 ; 條件 ; 更新步進</span>
           <span class="code-line" id="m1-l1">for (int i = 0; i &lt; 3; i++) {</span>
           <span class="code-line" id="m1-l2">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "第 " &lt;&lt; i &lt;&lt; " 圈！" &lt;&lt; endl;</span>
           <span class="code-line" id="m1-l3">}</span>
-          <span class="code-line" id="m1-l4" style="color:#6e7681;">// ← 執行到此，才會觸發 i++</span>
+          <span class="code-line" id="m1-l4" style="color:#64748b;">// ← 執行到此，才會觸發 i++</span>
         </div>
       </div>
       <div>
@@ -119,20 +137,20 @@
           <span class="watch-var">i</span> = <span class="watch-val" id="w-m1-i">—</span><br>
           <span class="watch-var">i < 3</span> : <span class="watch-val" id="w-m1-cond">—</span>
         </div>
-        <div class="out-box" id="m1-out">— 等待執行 —</div>
+        <div class="out-box" id="m1-out" style="color:var(--text-muted); font-style:italic;">— 等待執行 —</div>
       </div>
     </div>
   </div>
 
   <!-- Module 2 -->
   <div class="card">
-    <h2 style="margin-top:0;">❤️ 2. <code>while</code> 迴圈（條件迴圈）—— HP 扣血機制</h2>
+    <h2>❤️ 2. <code>while</code> 迴圈（條件迴圈）—— HP 扣血機制</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
-          <span class="code-line" id="m2-l0">int hp = <span id="m2-hp-inline">3</span>;</span>
+          <span class="code-line" id="m2-l0">int hp = <span id="m2-hp-inline" style="font-weight:bold; color:var(--accent2);">3</span>;</span>
           <span class="code-line" id="m2-l1">while (hp &gt; 0) {</span>
-          <span class="code-line" id="m2-l2">&nbsp;&nbsp;&nbsp;&nbsp;hp--;  <span style="color:#6e7681;">// 扣血</span></span>
+          <span class="code-line" id="m2-l2">&nbsp;&nbsp;&nbsp;&nbsp;hp--;  <span style="color:#64748b;">// 扣血</span></span>
           <span class="code-line" id="m2-l3">}</span>
           <span class="code-line" id="m2-l4">cout &lt;&lt; "Game Over!";</span>
         </div>
@@ -149,44 +167,44 @@
           <span class="watch-var">hp > 0</span> : <span class="watch-val" id="w-m2-cond">—</span>
         </div>
         <div class="hp-bar-wrap"><div class="hp-bar" id="m2-hp-bar" style="width:60%;"></div></div>
-        <div class="out-box" id="m2-out">— 設定 HP 並執行 —</div>
+        <div class="out-box" id="m2-out" style="color:var(--text-muted); font-style:italic;">— 設定 HP 並執行 —</div>
       </div>
     </div>
   </div>
 
   <!-- Module 3 -->
   <div class="card">
-    <h2 style="margin-top:0;">💥 3. 無窮迴圈（Infinite Loop）大魔王</h2>
+    <h2>💥 3. 無窮迴圈（Infinite Loop）大魔王</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
           <span class="code-line" id="m3-l0">int i = 0;</span>
           <span class="code-line" id="m3-l1">while (i &lt; 5) {</span>
           <span class="code-line" id="m3-l2">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; i &lt;&lt; endl;</span>
-          <span class="code-line" id="m3-l3" style="color:#f85149; text-decoration:line-through;">&nbsp;&nbsp;&nbsp;&nbsp;// i++; ← 忘記寫了！</span>
+          <span class="code-line" id="m3-l3" style="color:var(--red); text-decoration:line-through; font-weight:bold;">&nbsp;&nbsp;&nbsp;&nbsp;// i++; ← 忘記寫了！</span>
           <span class="code-line" id="m3-l4">}</span>
         </div>
       </div>
       <div>
         <button class="btn-run btn-red" id="btn-m3" onclick="runM3()">💣 觸發無窮迴圈</button>
-        <button class="btn-run" id="btn-m3-stop" style="display:none; background:#555;" onclick="stopM3()">🛑 強制停止</button>
+        <button class="btn-run" id="btn-m3-stop" style="display:none; background:#64748b;" onclick="stopM3()">🛑 強制停止</button>
         <div class="watch-box">
           <div class="watch-title">Watch Box</div>
           <span class="watch-var">i</span> = <span class="watch-val" id="w-m3-i">0</span> (永遠不變)
         </div>
-        <div class="out-box" id="m3-out" style="max-height:100px; overflow-y:auto;">— 等待執行 —</div>
+        <div class="out-box" id="m3-out" style="max-height:100px; overflow-y:auto; color:var(--text-muted); font-style:italic;">— 等待執行 —</div>
       </div>
     </div>
   </div>
 
   <!-- Module 4 -->
   <div class="card">
-    <h2 style="margin-top:0;">🎁 4. <code>do-while</code> 迴圈 —— 盲盒抽卡機</h2>
+    <h2>🎁 4. <code>do-while</code> 迴圈 —— 盲盒抽卡機</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
           <span class="code-line" id="m4-l0">do {</span>
-          <span class="code-line" id="m4-l1">&nbsp;&nbsp;&nbsp;&nbsp;card = 抽卡();  <span style="color:#6e7681;">// 先執行至少一次</span></span>
+          <span class="code-line" id="m4-l1">&nbsp;&nbsp;&nbsp;&nbsp;card = 抽卡();  <span style="color:#64748b;">// 先執行至少一次</span></span>
           <span class="code-line" id="m4-l2">} while (card != "🌟");</span>
         </div>
       </div>
@@ -198,20 +216,20 @@
           <span class="watch-var">card != "🌟"</span> : <span class="watch-val" id="w-m4-cond">—</span>
         </div>
         <div class="card-draw-area" id="m4-cards"></div>
-        <div class="out-box" id="m4-out">— 等待執行 —</div>
+        <div class="out-box" id="m4-out" style="color:var(--text-muted); font-style:italic;">— 等待執行 —</div>
       </div>
     </div>
   </div>
 
   <!-- Module 5 -->
   <div class="card">
-    <h2 style="margin-top:0;">🚦 5. <code>break</code> vs <code>continue</code></h2>
+    <h2>🚦 5. <code>break</code> vs <code>continue</code></h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
           <span class="code-line" id="m5-l0">for (int i = 1; i &lt;= 5; i++) {</span>
           <span class="code-line" id="m5-l1">&nbsp;&nbsp;&nbsp;&nbsp;if (i == 3) {</span>
-          <span class="code-line" id="m5-l2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="m5-action">continue;</span></span>
+          <span class="code-line" id="m5-l2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="m5-action" style="font-weight:bold; color:var(--accent2);">continue;</span></span>
           <span class="code-line" id="m5-l3">&nbsp;&nbsp;&nbsp;&nbsp;}</span>
           <span class="code-line" id="m5-l4">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; i;</span>
           <span class="code-line" id="m5-l5">}</span>
@@ -219,21 +237,21 @@
       </div>
       <div>
         <div class="ctrl-row">
-          <button class="btn-run" id="btn-m5-cont" onclick="runM5('continue')" style="width:48%;">⏩ continue</button>
+          <button class="btn-run" id="btn-m5-cont" onclick="runM5('continue')" style="width:48%; background:var(--accent2);">⏩ continue</button>
           <button class="btn-run btn-red" id="btn-m5-break" onclick="runM5('break')" style="width:48%;">💥 break</button>
         </div>
         <div class="loop-steps" id="m5-steps">
           <div class="step-box" id="m5-s1">1</div><div class="step-box" id="m5-s2">2</div>
           <div class="step-box" id="m5-s3">3</div><div class="step-box" id="m5-s4">4</div><div class="step-box" id="m5-s5">5</div>
         </div>
-        <div class="out-box" id="m5-out">— 選擇操作 —</div>
+        <div class="out-box" id="m5-out" style="color:var(--text-muted); font-style:italic;">— 選擇操作 —</div>
       </div>
     </div>
   </div>
 
   <!-- Module 7 (Nested) -->
   <div class="card">
-    <h2 style="margin-top:0;">⭐ 6. 巢狀迴圈 —— 星星印表機</h2>
+    <h2>⭐ 6. 巢狀迴圈 —— 星星印表機</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
@@ -255,7 +273,7 @@
           <div><span class="watch-title">外層</span><br><span class="watch-var">i</span> = <span class="watch-val" id="w-m7-i">0</span></div>
           <div><span class="watch-title">內層</span><br><span class="watch-var">j</span> = <span class="watch-val" id="w-m7-j">0</span></div>
         </div>
-        <div class="out-box" id="m7-out" style="white-space: pre-wrap; font-size:1.2rem; color:#e3b341;">— 等待執行 —</div>
+        <div class="out-box" id="m7-out" style="white-space: pre-wrap; font-size:1.2rem; color:var(--accent3); font-weight:bold; font-style:italic;">— 等待執行 —</div>
       </div>
     </div>
   </div>
@@ -271,17 +289,19 @@ function hl(id, cls) { let el = document.getElementById(id); if(el) el.className
 // ── Module 1: For ──
 async function runM1() {
   const btn = document.getElementById('btn-m1'); btn.disabled = true;
-  clearAll('m1-l', 4); document.getElementById('m1-out').textContent = '';
+  clearAll('m1-l', 4); 
+  const outBox = document.getElementById('m1-out');
+  outBox.textContent = ''; outBox.style.color = 'var(--text-main)'; outBox.style.fontStyle = 'normal';
   
   for(let i=0; i<3; i++) {
     document.getElementById('w-m1-i').textContent = i;
     
     hl('m1-l1', 'cursor'); await sleep(500);
-    document.getElementById('w-m1-cond').textContent = 'true'; document.getElementById('w-m1-cond').style.color = '#56d364';
+    document.getElementById('w-m1-cond').textContent = 'true'; document.getElementById('w-m1-cond').style.color = 'var(--green)';
     hl('m1-l1', 'active-blue'); await sleep(400);
     
     hl('m1-l2', 'cursor'); await sleep(500);
-    hl('m1-l2', 'active-green'); document.getElementById('m1-out').innerHTML += `第 ${i} 圈！<br>`; await sleep(500);
+    hl('m1-l2', 'active-green'); outBox.innerHTML += `第 ${i} 圈！<br>`; await sleep(500);
     
     hl('m1-l3', 'cursor'); await sleep(200);
     hl('m1-l4', 'active-yellow'); await sleep(400); // 模擬 i++
@@ -289,16 +309,18 @@ async function runM1() {
   
   hl('m1-l1', 'cursor'); await sleep(500);
   document.getElementById('w-m1-i').textContent = '3';
-  document.getElementById('w-m1-cond').textContent = 'false'; document.getElementById('w-m1-cond').style.color = '#f85149';
+  document.getElementById('w-m1-cond').textContent = 'false'; document.getElementById('w-m1-cond').style.color = 'var(--red)';
   hl('m1-l1', 'active-red'); await sleep(500);
-  document.getElementById('m1-out').innerHTML += `> 迴圈結束`;
+  outBox.innerHTML += `<strong style="color:var(--accent2);">> 迴圈結束</strong>`;
   btn.disabled = false;
 }
 
 // ── Module 2: While ──
 async function runM2() {
   const btn = document.getElementById('btn-m2'); btn.disabled = true;
-  clearAll('m2-l', 4); document.getElementById('m2-out').textContent = '';
+  clearAll('m2-l', 4); 
+  const outBox = document.getElementById('m2-out');
+  outBox.textContent = ''; outBox.style.color = 'var(--text-main)'; outBox.style.fontStyle = 'normal';
   let hp = parseInt(document.getElementById('m2-hp-slider').value);
   const bar = document.getElementById('m2-hp-bar');
   
@@ -306,7 +328,7 @@ async function runM2() {
     hl('m2-l1', 'cursor'); await sleep(600);
     let cond = hp > 0;
     document.getElementById('w-m2-cond').textContent = cond;
-    document.getElementById('w-m2-cond').style.color = cond ? '#56d364' : '#f85149';
+    document.getElementById('w-m2-cond').style.color = cond ? 'var(--green)' : 'var(--red)';
     
     if(!cond) {
       hl('m2-l1', 'active-red'); await sleep(500);
@@ -316,12 +338,12 @@ async function runM2() {
     
     hl('m2-l2', 'cursor'); await sleep(500);
     hp--; document.getElementById('w-m2-hp').textContent = hp;
-    bar.style.width = (hp/5*100) + '%'; bar.style.background = hp===0 ? '#f85149' : hp<=2 ? '#e3b341' : '#56d364';
-    hl('m2-l2', 'active-yellow'); document.getElementById('m2-out').innerHTML += `> 扣血，剩餘 HP: ${hp}<br>`;
+    bar.style.width = (hp/5*100) + '%'; bar.style.background = hp===0 ? 'var(--red)' : hp<=2 ? 'var(--yellow)' : 'var(--green)';
+    hl('m2-l2', 'active-yellow'); outBox.innerHTML += `> 扣血，剩餘 HP: ${hp}<br>`;
     await sleep(600);
     hl('m2-l3', 'cursor'); await sleep(300);
   }
-  hl('m2-l4', 'active-green'); document.getElementById('m2-out').innerHTML += `> Game Over!`;
+  hl('m2-l4', 'active-green'); outBox.innerHTML += `<strong style="color:var(--red);">> Game Over!</strong>`;
   btn.disabled = false;
 }
 
@@ -330,7 +352,7 @@ let m3Interval;
 function runM3() {
   document.getElementById('btn-m3').style.display = 'none'; document.getElementById('btn-m3-stop').style.display = 'block';
   hl('m3-l1', 'active-blue'); hl('m3-l2', 'active-green');
-  const out = document.getElementById('m3-out'); out.innerHTML = ''; out.classList.add('danger-out');
+  const out = document.getElementById('m3-out'); out.innerHTML = ''; out.classList.add('danger-out'); out.style.fontStyle = 'normal';
   let ticks = 0;
   m3Interval = setInterval(() => {
     ticks++; out.innerHTML += `無限輸出 0... (第 ${ticks} 次)<br>`; out.scrollTop = out.scrollHeight;
@@ -340,13 +362,15 @@ function stopM3() {
   clearInterval(m3Interval);
   document.getElementById('btn-m3').style.display = 'block'; document.getElementById('btn-m3-stop').style.display = 'none';
   clearAll('m3-l', 4); document.getElementById('m3-out').classList.remove('danger-out');
-  document.getElementById('m3-out').innerHTML += `<span style="color:#56d364;">> 🛑 強制中斷</span>`;
+  document.getElementById('m3-out').innerHTML += `<strong style="color:var(--green);">> 🛑 強制中斷</strong>`;
 }
 
 // ── Module 4: Do-While ──
 async function runM4() {
   const btn = document.getElementById('btn-m4'); btn.disabled = true;
-  clearAll('m4-l', 2); document.getElementById('m4-out').textContent = '';
+  clearAll('m4-l', 2); 
+  const outBox = document.getElementById('m4-out');
+  outBox.textContent = ''; outBox.style.color = 'var(--text-main)'; outBox.style.fontStyle = 'normal';
   const area = document.getElementById('m4-cards'); area.innerHTML = '';
   const pool = ['🃏','🃏','🃏','🌟'];
   let card = '';
@@ -357,19 +381,19 @@ async function runM4() {
     card = pool[Math.floor(Math.random()*pool.length)];
     document.getElementById('w-m4-card').textContent = card;
     area.innerHTML += `<div class="draw-card ${card==='🌟'?'winner':''}">${card}</div>`;
-    hl('m4-l1', 'active-green'); document.getElementById('m4-out').innerHTML += `> 抽到：${card}<br>`;
+    hl('m4-l1', 'active-green'); outBox.innerHTML += `> 抽到：${card}<br>`;
     await sleep(600);
     
     hl('m4-l2', 'cursor'); await sleep(500);
     let cond = (card !== "🌟");
     document.getElementById('w-m4-cond').textContent = cond;
-    document.getElementById('w-m4-cond').style.color = cond ? '#56d364' : '#f85149';
+    document.getElementById('w-m4-cond').style.color = cond ? 'var(--green)' : 'var(--red)';
     
     if(!cond) { hl('m4-l2', 'active-red'); await sleep(500); break; }
     hl('m4-l2', 'active-blue'); await sleep(500);
   } while (card !== "🌟");
   
-  document.getElementById('m4-out').innerHTML += `> 中獎！結束抽卡。`;
+  outBox.innerHTML += `<strong style="color:var(--yellow);">> 中獎！結束抽卡。</strong>`;
   btn.disabled = false;
 }
 
@@ -377,7 +401,10 @@ async function runM4() {
 async function runM5(mode) {
   const btn1 = document.getElementById('btn-m5-cont'); const btn2 = document.getElementById('btn-m5-break');
   btn1.disabled = true; btn2.disabled = true;
-  clearAll('m5-l', 5); document.getElementById('m5-out').textContent = '';
+  clearAll('m5-l', 5); 
+  const outBox = document.getElementById('m5-out');
+  outBox.textContent = ''; outBox.style.color = 'var(--text-main)'; outBox.style.fontStyle = 'normal';
+  
   document.getElementById('m5-action').textContent = mode + ";";
   for(let i=1; i<=5; i++) document.getElementById('m5-s'+i).className = 'step-box';
   
@@ -391,18 +418,18 @@ async function runM5(mode) {
       
       if(mode === 'break') {
         document.getElementById('m5-s'+i).className = 'step-box broken';
-        document.getElementById('m5-out').innerHTML += `> 💥 Break! 迴圈終止。<br>`;
+        outBox.innerHTML += `<strong style="color:var(--red);">> 💥 Break! 迴圈終止。</strong><br>`;
         break;
       } else {
         document.getElementById('m5-s'+i).className = 'step-box skipped';
-        document.getElementById('m5-out').innerHTML += `> ⏩ Continue! 跳過本次。<br>`;
+        outBox.innerHTML += `<strong style="color:var(--yellow);">> ⏩ Continue! 跳過本次。</strong><br>`;
         await sleep(400); continue;
       }
     }
     hl('m5-l4', 'cursor'); await sleep(400);
     hl('m5-l4', 'active-green');
     document.getElementById('m5-s'+i).className = 'step-box done';
-    document.getElementById('m5-out').innerHTML += `> 輸出: ${i}<br>`;
+    outBox.innerHTML += `> 輸出: ${i}<br>`;
     await sleep(400);
   }
   btn1.disabled = false; btn2.disabled = false;
@@ -411,7 +438,9 @@ async function runM5(mode) {
 // ── Module 7: Nested ──
 async function runM7() {
   const btn = document.getElementById('btn-m7'); btn.disabled = true;
-  clearAll('m7-l', 5); document.getElementById('m7-out').textContent = '';
+  clearAll('m7-l', 5); 
+  const outBox = document.getElementById('m7-out');
+  outBox.textContent = ''; outBox.style.fontStyle = 'normal';
   let r = parseInt(document.getElementById('m7-rows').value);
   let c = parseInt(document.getElementById('m7-cols').value);
   let outStr = '';
@@ -424,11 +453,11 @@ async function runM7() {
       document.getElementById('w-m7-j').textContent = j;
       hl('m7-l1', 'active-yellow'); await sleep(200);
       hl('m7-l2', 'active-green'); 
-      outStr += '* '; document.getElementById('m7-out').textContent = outStr;
+      outStr += '* '; outBox.textContent = outStr;
       await sleep(200);
     }
     document.getElementById('w-m7-j').textContent = '結束';
-    hl('m7-l4', 'active-purple'); outStr += '\n'; document.getElementById('m7-out').textContent = outStr;
+    hl('m7-l4', 'active-purple'); outStr += '\n'; outBox.textContent = outStr;
     await sleep(400);
   }
   clearAll('m7-l', 5);

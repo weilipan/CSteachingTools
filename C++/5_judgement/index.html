@@ -4,93 +4,115 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>C++ 判斷結構 互動式教學</title>
-  <!-- 加入您的全站共用檔案 -->
+  
   <link rel="stylesheet" href="../../theme.css">
   <script src="../../layout.js" defer></script>
+  
   <style>
+    /* ── 本頁專用的元件與互動樣式 (淺色化) ── */
+    :root {
+      --surface: #f1f5f9;
+      --code-bg: #f8fafc;
+      --accent2: #0284c7;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+    }
+    
     /* ── Base & Layout ── */
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }
-    .container { max-width: 1000px; margin: 0 auto; }
-    .section-title { color: #58a6ff; font-size: 1.8rem; margin-bottom: 5px; }
-    .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-bottom: 30px; }
+    body { padding-top: 40px; padding-bottom: 60px; }
+    .section-title { 
+      font-size: 2rem; margin-bottom: 5px; background: linear-gradient(90deg, #0366d6, #28a745, #005cc5); 
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: bold;
+    }
+    .card h2 { color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px; margin-top: 0; }
     
     /* ── Grid Layout (Left: Code, Right: Exec) ── */
-    .mod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+    .mod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; margin-top: 15px; }
     @media(max-width:768px){ .mod-grid { grid-template-columns: 1fr; } }
     
     /* ── Code block base ── */
     .code-block {
       font-family: 'Courier New', Courier, monospace; font-size: 0.9rem;
-      background: #010409; border-radius: 10px; padding: 14px 18px;
-      line-height: 1.7; border: 1px solid #30363d; overflow-x: auto;
+      background: var(--code-bg); border-radius: 10px; padding: 14px 18px;
+      line-height: 1.7; border: 1px solid var(--border-color); overflow-x: auto;
+      color: var(--text-main); box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
     }
     .code-line { display: block; padding: 2px 6px; border-radius: 4px; transition: all .2s; }
-    .code-line.active-green { background: #1a4a1e; color: #56d364; font-weight: bold; }
-    .code-line.active-red { background: #4a1a1a; color: #f85149; font-weight: bold; }
-    .code-line.active-blue { background: #0d2a4a; color: #58a6ff; font-weight: bold; }
-    .code-line.active-yellow { background: #3a2f00; color: #e3b341; font-weight: bold; }
-    .code-line.skipped { color: #484f58; opacity: 0.5; }
-    .code-line.cursor { background: #1f2937; outline: 2px solid #58a6ff; color: #fff; }
+    .code-line.active-green { background: #dcfce7; color: #15803d; font-weight: bold; border-left: 3px solid var(--green); }
+    .code-line.active-red { background: #fee2e2; color: #b91c1c; font-weight: bold; border-left: 3px solid var(--red); }
+    .code-line.active-blue { background: #e0f2fe; color: #0369a1; font-weight: bold; border-left: 3px solid var(--accent2); }
+    .code-line.active-yellow { background: #fef3c7; color: #b45309; font-weight: bold; border-left: 3px solid var(--yellow); }
+    .code-line.skipped { color: #94a3b8; opacity: 0.6; text-decoration: line-through; }
+    .code-line.cursor { background: #f1f5f9; outline: 2px solid var(--accent-color); color: var(--text-main); }
 
     /* ── Controls & Watch Box ── */
-    .ctrl-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
-    input[type=range] { flex:1; min-width:100px; }
+    .ctrl-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; color: var(--text-main); font-weight: bold; }
+    input[type=range] { flex:1; min-width:100px; accent-color: var(--accent-color); cursor: pointer; }
     .num-input, .select-ctrl {
       width: 100px; padding: 6px 10px; border-radius: 6px;
-      border: 1px solid #30363d; background:#0d1117; color:#c9d1d9; font-size:0.9rem;
+      border: 1px solid var(--border-color); background:#ffffff; color:var(--text-main); font-size:0.9rem;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); outline: none;
     }
+    .num-input:focus, .select-ctrl:focus { border-color: var(--accent-color); }
+    
     .btn-run {
       padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer;
-      background: #238636; color: #fff; font-size: 0.9rem; font-weight: 600;
+      background: var(--green); color: #fff; font-size: 0.9rem; font-weight: 600;
       transition: background .2s, transform .1s; width: 100%; margin-bottom: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .btn-run:hover { background: #2ea043; }
-    .btn-run:active { transform: scale(.98); }
+    .btn-run:hover { filter: brightness(1.1); }
+    .btn-run:active { transform: scale(.98); box-shadow: none; }
     .btn-run:disabled { opacity:.5; cursor:not-allowed; }
 
     .watch-box {
-      background: #010409; border: 1px dashed #58a6ff; border-radius: 8px;
-      padding: 10px 14px; font-family: monospace; font-size: 0.85rem; color: #8b949e;
-      margin-bottom: 12px;
+      background: #ffffff; border: 1px dashed var(--accent-color); border-radius: 8px;
+      padding: 10px 14px; font-family: monospace; font-size: 0.85rem; color: var(--text-main);
+      margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    .watch-title { font-size: 0.75rem; text-transform: uppercase; color: #58a6ff; margin-bottom: 4px; font-weight: bold; }
-    .watch-var { color: #c9d1d9; }
-    .watch-val { color: #e3b341; font-weight: bold; }
+    .watch-title { font-size: 0.75rem; text-transform: uppercase; color: var(--accent-color); margin-bottom: 4px; font-weight: bold; }
+    .watch-var { color: var(--text-main); }
+    .watch-val { color: var(--accent3); font-weight: bold; }
 
     /* ── Output & Visuals ── */
     .out-box {
-      background:#0d1117; border-left: 4px solid #8b949e; border-radius: 0 6px 6px 0;
-      padding:10px 14px; min-height:20px; font-family:monospace; font-size:0.9rem;
-      color:#c9d1d9; margin-top:12px;
+      background:#ffffff; border-left: 4px solid var(--border-color); border-radius: 0 6px 6px 0;
+      padding:10px 14px; min-height:20px; font-family:monospace; font-size:0.95rem;
+      color:var(--text-main); margin-top:12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     .visual-box {
-      background: #1c2128; border-radius: 8px; padding: 15px; text-align: center;
+      background: var(--surface); border-radius: 8px; padding: 15px; text-align: center;
       transition: all .3s; min-height: 50px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border-color);
     }
 
     /* Module Specific */
     .branch-viz { display:flex; gap:10px; }
-    .branch-box { flex:1; padding:10px; border-radius:6px; border:2px solid #30363d; opacity:0.5; transition:.3s; }
-    .branch-box.active { border-color:#56d364; background:#1a4a1e; opacity:1; color:#56d364;}
+    .branch-box { flex:1; padding:10px; border-radius:6px; border:2px solid var(--border-color); background:#ffffff; color:var(--text-muted); opacity:0.6; transition:.3s; font-weight: bold; }
+    .branch-box.active { border-color:var(--green); background:#dcfce7; opacity:1; color:#15803d; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     
-    .gate-outer { border:2px solid #30363d; border-radius:8px; padding:10px; transition:.3s; }
-    .gate-inner { border:2px dashed #30363d; border-radius:6px; padding:10px; margin-top:10px; transition:.3s; opacity:0.5;}
-    .gate-outer.open { border-color:#56d364; } .gate-inner.open { border-color:#58a6ff; opacity:1; }
+    .gate-outer { border:2px solid var(--border-color); border-radius:8px; padding:10px; transition:.3s; background: #ffffff; color: var(--text-muted); font-weight: bold; }
+    .gate-inner { border:2px dashed var(--border-color); border-radius:6px; padding:10px; margin-top:10px; transition:.3s; opacity:0.6; background: var(--surface); }
+    .gate-outer.open { border-color:var(--green); color: #15803d; background: #dcfce7; } 
+    .gate-inner.open { border-color:var(--accent2); color: #0369a1; background: #e0f2fe; opacity:1; }
 
   </style>
 </head>
 <body>
 <div class="container">
-  <h1 class="section-title">⚙️ C++ 判斷結構 互動式教學</h1>
-  <p style="color:#8b949e; margin-bottom:28px;">雙欄對照模式：左側觀察程式碼邏輯，右側設定變數並模擬單步執行結果。</p>
+  <div style="text-align: center; margin-bottom: 40px;">
+    <h1 class="section-title">C++ 判斷結構 互動式教學</h1>
+    <p style="color:var(--text-muted);">雙欄對照模式：左側觀察程式碼邏輯，右側設定變數並模擬單步執行結果。</p>
+  </div>
 
   <!-- Module 1 -->
   <div class="card">
-    <h2 style="margin-top:0;">🌡️ 1. 基本 <code>if</code> 語句（單向判斷）</h2>
+    <h2>🌡️ 1. 基本 <code>if</code> 語句（單向判斷）</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
-          <span class="code-line" id="m1-l0" style="color:#6e7681;">// 變數初始化</span>
+          <span class="code-line" id="m1-l0" style="color:#64748b;">// 變數初始化</span>
           <span class="code-line" id="m1-l1">if (temp &gt;= 100) {</span>
           <span class="code-line" id="m1-l2">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "水沸騰了！" &lt;&lt; endl;</span>
           <span class="code-line" id="m1-l3">}</span>
@@ -101,7 +123,7 @@
         <div class="ctrl-row">
           <span>溫度：</span>
           <input type="range" id="m1-temp" min="0" max="120" value="25" oninput="document.getElementById('m1-v').textContent=this.value">
-          <span id="m1-v" style="font-family:monospace; color:#58a6ff; width:30px;">25</span>°C
+          <span id="m1-v" style="font-family:monospace; color:var(--accent2); width:30px; font-size:1.1rem;">25</span>°C
         </div>
         <button class="btn-run" id="btn-m1" onclick="runM1()">▶ 模擬單步執行</button>
         <div class="watch-box">
@@ -109,15 +131,15 @@
           <span class="watch-var">temp</span> = <span class="watch-val" id="w-m1-temp">25</span><br>
           <span class="watch-var">temp >= 100</span> : <span class="watch-val" id="w-m1-cond">false</span>
         </div>
-        <div class="visual-box" id="m1-vis" style="font-size:2rem;">🪣</div>
-        <div class="out-box" id="m1-out">— 等待執行 —</div>
+        <div class="visual-box" id="m1-vis" style="font-size:2.5rem;">🪣</div>
+        <div class="out-box" id="m1-out" style="color:var(--text-muted); font-style:italic;">— 等待執行 —</div>
       </div>
     </div>
   </div>
 
   <!-- Module 2 -->
   <div class="card">
-    <h2 style="margin-top:0;">🔀 2. <code>if-else</code> 語句（雙向分支）</h2>
+    <h2>🔀 2. <code>if-else</code> 語句（雙向分支）</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
@@ -143,14 +165,14 @@
           <div class="branch-box" id="m2-b1" style="text-align:center;">✅ if (偶數)</div>
           <div class="branch-box" id="m2-b2" style="text-align:center;">🔁 else (奇數)</div>
         </div>
-        <div class="out-box" id="m2-out">— 等待執行 —</div>
+        <div class="out-box" id="m2-out" style="color:var(--text-muted); font-style:italic;">— 等待執行 —</div>
       </div>
     </div>
   </div>
 
   <!-- Module 5 (Nested) -->
   <div class="card">
-    <h2 style="margin-top:0;">🔒 3. 巢狀判斷（Nested Conditionals）</h2>
+    <h2>🔒 3. 巢狀判斷（Nested Conditionals）</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
@@ -181,17 +203,17 @@
             <div class="gate-inner" id="m5-g2">🔐 內層門：密碼驗證</div>
           </div>
         </div>
-        <div class="out-box" id="m5-out">— 等待執行 —</div>
+        <div class="out-box" id="m5-out" style="color:var(--text-muted); font-style:italic;">— 等待執行 —</div>
       </div>
     </div>
   </div>
 
   <!-- Module 6 (RPG) -->
   <div class="card">
-    <h2 style="margin-top:0;">⚔️ 4. else-if 綜合應用 (RPG)</h2>
+    <h2>⚔️ 4. else-if 綜合應用 (RPG)</h2>
     <div class="mod-grid">
       <div>
-        <div class="code-block" style="font-size:0.8rem;">
+        <div class="code-block" style="font-size:0.85rem;">
           <span class="code-line" id="m6-l1">if (isEvading) {</span>
           <span class="code-line" id="m6-l2">&nbsp;&nbsp;cout &lt;&lt; "閃避！";</span>
           <span class="code-line" id="m6-l3">} else if (isDefending && atk < 50) {</span>
@@ -216,7 +238,7 @@
           <span class="watch-var">isDefending</span> = <span class="watch-val" id="w-m6-def">true</span><br>
           <span class="watch-var">atk</span> = <span class="watch-val" id="w-m6-atk">60</span>
         </div>
-        <div class="out-box" id="m6-out" style="min-height:40px; font-weight:bold; font-size:1.1rem;">— 等待執行 —</div>
+        <div class="out-box" id="m6-out" style="min-height:40px; font-weight:bold; font-size:1.1rem; color:var(--text-muted); font-style:italic;">— 等待執行 —</div>
       </div>
     </div>
   </div>
@@ -248,10 +270,13 @@ async function runM1() {
   const cond = temp >= 100;
   document.getElementById('w-m1-temp').textContent = temp;
   document.getElementById('w-m1-cond').textContent = cond;
-  document.getElementById('w-m1-cond').style.color = cond ? '#56d364' : '#f85149';
-  document.getElementById('m1-out').textContent = '> 程式開始執行...';
-  document.getElementById('m1-vis').innerHTML = '🪣';
-  document.getElementById('m1-vis').style.background = '#1c2128';
+  document.getElementById('w-m1-cond').style.color = cond ? 'var(--green)' : 'var(--red)';
+  const outBox = document.getElementById('m1-out');
+  outBox.style.color = 'var(--text-main)'; outBox.style.fontStyle = 'normal';
+  outBox.innerHTML = '<strong>> 程式開始執行...</strong>';
+  
+  const visBox = document.getElementById('m1-vis');
+  visBox.innerHTML = '🪣'; visBox.style.background = 'var(--surface)'; visBox.style.borderColor = 'var(--border-color)';
 
   await sleep(600);
   hl('m1-l1', 'cursor'); // 游標停在 if 條件
@@ -263,9 +288,9 @@ async function runM1() {
     hl('m1-l2', 'cursor');
     await sleep(600);
     hl('m1-l2', 'active-green');
-    document.getElementById('m1-out').textContent += '\n> 輸出：水沸騰了！';
-    document.getElementById('m1-vis').innerHTML = '♨️ 沸騰中！';
-    document.getElementById('m1-vis').style.background = '#1a4a1e';
+    outBox.innerHTML += '<br><span style="color:var(--green)">> 輸出：水沸騰了！</span>';
+    visBox.innerHTML = '♨️ 沸騰中！';
+    visBox.style.background = '#dcfce7'; visBox.style.border = '1px solid #86efac';
     await sleep(400);
   } else {
     hl('m1-l1', 'active-red');
@@ -276,7 +301,7 @@ async function runM1() {
   hl('m1-l4', 'cursor');
   await sleep(600);
   hl('m1-l4', 'active-blue');
-  document.getElementById('m1-out').textContent += '\n> 輸出：檢查結束。';
+  outBox.innerHTML += '<br><span style="color:var(--accent2)">> 輸出：檢查結束。</span>';
   
   btn.disabled = false;
 }
@@ -290,11 +315,13 @@ async function runM2() {
   const cond = num % 2 === 0;
   document.getElementById('w-m2-num').textContent = num;
   document.getElementById('w-m2-cond').textContent = cond;
-  document.getElementById('w-m2-cond').style.color = cond ? '#56d364' : '#f85149';
+  document.getElementById('w-m2-cond').style.color = cond ? 'var(--green)' : 'var(--red)';
   
   const b1 = document.getElementById('m2-b1'); b1.className = 'branch-box';
   const b2 = document.getElementById('m2-b2'); b2.className = 'branch-box';
-  document.getElementById('m2-out').textContent = '> 判斷中...';
+  const outBox = document.getElementById('m2-out');
+  outBox.style.color = 'var(--text-main)'; outBox.style.fontStyle = 'normal';
+  outBox.innerHTML = '<strong>> 判斷中...</strong>';
 
   await sleep(600);
   hl('m2-l1', 'cursor');
@@ -307,7 +334,7 @@ async function runM2() {
     await sleep(600);
     hl('m2-l2', 'active-green');
     b1.className = 'branch-box active';
-    document.getElementById('m2-out').textContent = '> 輸出：偶數';
+    outBox.innerHTML = '<span style="color:var(--green); font-weight:bold;">> 輸出：偶數</span>';
   } else {
     hl('m2-l1', 'active-red'); hl('m2-l2', 'skipped');
     await sleep(600);
@@ -317,7 +344,7 @@ async function runM2() {
     await sleep(600);
     hl('m2-l4', 'active-blue');
     b2.className = 'branch-box active';
-    document.getElementById('m2-out').textContent = '> 輸出：奇數';
+    outBox.innerHTML = '<span style="color:var(--accent2); font-weight:bold;">> 輸出：奇數</span>';
   }
   btn.disabled = false;
 }
@@ -330,11 +357,14 @@ async function runM5() {
   const acc = document.getElementById('m5-acc').value === '1';
   const pwd = document.getElementById('m5-pwd').value === '1';
   document.getElementById('w-m5-acc').textContent = acc;
-  document.getElementById('w-m5-acc').style.color = acc ? '#56d364' : '#f85149';
+  document.getElementById('w-m5-acc').style.color = acc ? 'var(--green)' : 'var(--red)';
   document.getElementById('w-m5-pwd').textContent = pwd;
-  document.getElementById('w-m5-pwd').style.color = pwd ? '#56d364' : '#f85149';
+  document.getElementById('w-m5-pwd').style.color = pwd ? 'var(--green)' : 'var(--red)';
   
-  document.getElementById('m5-out').textContent = '> 連線中...';
+  const outBox = document.getElementById('m5-out');
+  outBox.style.color = 'var(--text-main)'; outBox.style.fontStyle = 'normal';
+  outBox.innerHTML = '<strong>> 連線中...</strong>';
+  
   const g1 = document.getElementById('m5-g1'); g1.className = 'gate-outer';
   const g2 = document.getElementById('m5-g2'); g2.className = 'gate-inner';
 
@@ -353,7 +383,7 @@ async function runM5() {
       hl('m5-l3', 'cursor'); hl('m5-l4', 'skipped'); hl('m5-l5', 'skipped'); hl('m5-l6', 'skipped'); hl('m5-l7', 'skipped'); hl('m5-l8', 'skipped'); hl('m5-l9', 'skipped');
       await sleep(600);
       hl('m5-l3', 'active-green');
-      document.getElementById('m5-out').textContent = '> 輸出：登入成功';
+      outBox.innerHTML = '<span style="color:var(--green); font-weight:bold;">> 輸出：登入成功</span>';
     } else {
       hl('m5-l2', 'active-red'); hl('m5-l3', 'skipped');
       await sleep(600);
@@ -362,7 +392,7 @@ async function runM5() {
       hl('m5-l5', 'cursor'); hl('m5-l7', 'skipped'); hl('m5-l8', 'skipped'); hl('m5-l9', 'skipped');
       await sleep(600);
       hl('m5-l5', 'active-red');
-      document.getElementById('m5-out').textContent = '> 輸出：密碼錯誤';
+      outBox.innerHTML = '<span style="color:var(--red); font-weight:bold;">> 輸出：密碼錯誤</span>';
     }
   } else {
     hl('m5-l1', 'active-red');
@@ -373,7 +403,7 @@ async function runM5() {
     hl('m5-l8', 'cursor');
     await sleep(600);
     hl('m5-l8', 'active-blue');
-    document.getElementById('m5-out').textContent = '> 輸出：無此帳號';
+    outBox.innerHTML = '<span style="color:var(--accent2); font-weight:bold;">> 輸出：無此帳號</span>';
   }
   btn.disabled = false;
 }
@@ -389,11 +419,13 @@ async function runM6() {
   
   document.getElementById('w-m6-atk').textContent = atk;
   document.getElementById('w-m6-eva').textContent = eva;
-  document.getElementById('w-m6-eva').style.color = eva ? '#56d364' : '#f85149';
+  document.getElementById('w-m6-eva').style.color = eva ? 'var(--green)' : 'var(--red)';
   document.getElementById('w-m6-def').textContent = def;
-  document.getElementById('w-m6-def').style.color = def ? '#56d364' : '#f85149';
+  document.getElementById('w-m6-def').style.color = def ? 'var(--green)' : 'var(--red)';
   
-  document.getElementById('m6-out').textContent = '> 發動攻擊...';
+  const outBox = document.getElementById('m6-out');
+  outBox.style.color = 'var(--text-main)'; outBox.style.fontStyle = 'normal';
+  outBox.innerHTML = '<strong>> 發動攻擊...</strong>';
 
   await sleep(600);
   hl('m6-l1', 'cursor');
@@ -403,8 +435,8 @@ async function runM6() {
     hl('m6-l1', 'active-green');
     await sleep(400); hl('m6-l2', 'cursor'); await sleep(400); hl('m6-l2', 'active-yellow');
     for(let i=3; i<=9; i++) hl('m6-l'+i, 'skipped');
-    document.getElementById('m6-out').textContent = '> 💨 輸出：閃避！ (傷害 0)';
-    document.getElementById('m6-out').style.color = '#e3b341';
+    outBox.innerHTML = '> 💨 輸出：閃避！ (傷害 0)';
+    outBox.style.color = 'var(--yellow)';
   } else {
     hl('m6-l1', 'active-red'); hl('m6-l2', 'skipped');
     await sleep(600); hl('m6-l3', 'cursor'); await sleep(800);
@@ -413,8 +445,8 @@ async function runM6() {
       hl('m6-l3', 'active-green');
       await sleep(400); hl('m6-l4', 'cursor'); await sleep(400); hl('m6-l4', 'active-red');
       for(let i=5; i<=9; i++) hl('m6-l'+i, 'skipped');
-      document.getElementById('m6-out').textContent = '> 🛡️ 輸出：被完全格擋 (傷害 0)';
-      document.getElementById('m6-out').style.color = '#f85149';
+      outBox.innerHTML = '> 🛡️ 輸出：被完全格擋 (傷害 0)';
+      outBox.style.color = 'var(--red)';
     } else {
       hl('m6-l3', 'active-red'); hl('m6-l4', 'skipped');
       await sleep(600); hl('m6-l5', 'cursor'); await sleep(800);
@@ -423,13 +455,13 @@ async function runM6() {
         hl('m6-l5', 'active-green');
         await sleep(400); hl('m6-l6', 'cursor'); await sleep(400); hl('m6-l6', 'active-blue');
         hl('m6-l7', 'skipped'); hl('m6-l8', 'skipped'); hl('m6-l9', 'skipped');
-        document.getElementById('m6-out').textContent = `> ⚔️ 輸出：穿盾傷害 (造成 ${atk-20} 點傷害)`;
-        document.getElementById('m6-out').style.color = '#58a6ff';
+        outBox.innerHTML = `> ⚔️ 輸出：穿盾傷害 (造成 ${atk-20} 點傷害)`;
+        outBox.style.color = 'var(--accent2)';
       } else {
         hl('m6-l5', 'active-red'); hl('m6-l6', 'skipped');
         await sleep(600); hl('m6-l7', 'cursor'); await sleep(400); hl('m6-l8', 'cursor'); await sleep(400); hl('m6-l8', 'active-green');
-        document.getElementById('m6-out').textContent = `> 💥 輸出：完整傷害 (造成 ${atk} 點傷害)`;
-        document.getElementById('m6-out').style.color = '#56d364';
+        outBox.innerHTML = `> 💥 輸出：完整傷害 (造成 ${atk} 點傷害)`;
+        outBox.style.color = 'var(--green)';
       }
     }
   }

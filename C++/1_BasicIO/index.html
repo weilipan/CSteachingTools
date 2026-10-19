@@ -9,147 +9,146 @@
   <link rel="stylesheet" href="../../theme.css">
   <script src="../../layout.js" defer></script>
   <style>
-    /* ── Reset & Base ── */
-    body { padding: 0; margin: 0; background: #0f172a; }
-    .container { padding-top: 80px; padding-bottom: 60px; max-width: 960px; margin: 0 auto; padding-left: 20px; padding-right: 20px; }
+    /* ── Reset & Base (大部分已交給 theme.css 處理) ── */
+    .container { padding-top: 40px; padding-bottom: 60px; }
 
-    /* ── Page Header ── */
-    .page-hero { text-align: center; padding: 40px 20px 20px; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); border-radius: 16px; margin-bottom: 36px; color: #fff; }
-    .page-hero h1 { font-size: 2rem; font-weight: 800; margin: 0 0 8px; background: linear-gradient(90deg, #a78bfa, #38bdf8, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .page-hero p { color: #94a3b8; font-size: 1rem; margin: 0; }
+    /* ── Page Header (淺色漸層) ── */
+    .page-hero { text-align: center; padding: 40px 20px 20px; background: linear-gradient(135deg, #f1f5f9, #e2e8f0, #cbd5e1); border-radius: 16px; margin-bottom: 36px; color: var(--text-main); border: 1px solid var(--border-color); }
+    .page-hero h1 { font-size: 2rem; font-weight: 800; margin: 0 0 8px; background: linear-gradient(90deg, #0366d6, #28a745, #005cc5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .page-hero p { color: var(--text-muted); font-size: 1rem; margin: 0; }
 
-    /* ── Cards ── */
-    .card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px 28px 24px; margin-bottom: 32px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35); }
-    .section-title { font-size: 1.25rem; font-weight: 700; color: #e2e8f0; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; }
+    /* ── Cards (繼承 theme.css，僅微調內距) ── */
+    .card { padding: 28px 28px 24px; margin-bottom: 32px; }
+    .section-title { font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin: 0 0 6px; display: flex; align-items: center; gap: 10px; border: none; }
     .section-title .badge { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 0.7rem; padding: 3px 8px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
-    .card-desc { color: #94a3b8; font-size: 0.9rem; margin: 0 0 20px; line-height: 1.6; }
+    .card-desc { color: var(--text-muted); font-size: 0.95rem; margin: 0 0 20px; line-height: 1.6; }
 
     /* ── Buttons ── */
     .btn { display: inline-block; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.18s ease; font-family: inherit; }
-    .btn:hover { transform: translateY(-1px); filter: brightness(1.15); }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.15); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     .btn:active { transform: translateY(0); }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; filter: none; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; filter: none; }
     .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; }
     .btn-green { background: linear-gradient(135deg, #059669, #34d399); color: #fff; }
     .btn-orange { background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff; }
     .btn-red { background: linear-gradient(135deg, #dc2626, #f87171); color: #fff; }
-    .btn-blue { background: linear-gradient(135deg, #0369a1, #38bdf8); color: #fff; }
-    .btn-ghost { background: transparent; color: #94a3b8; border: 1px solid #334155; }
+    .btn-blue { background: linear-gradient(135deg, #0284c7, #38bdf8); color: #fff; }
+    .btn-ghost { background: #f6f8fa; color: var(--text-main); border: 1px solid var(--border-color); }
     .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 
-    /* ── Console box ── */
-    .console-box { background: #0f172a; border: 1px solid #1e3a5f; border-radius: 10px; padding: 14px 16px; font-family: 'Courier New', monospace; font-size: 0.875rem; color: #a3e635; white-space: pre-wrap; min-height: 40px; line-height: 1.6; }
-    .console-box .err { color: #f87171; }
-    .console-box .dim { color: #475569; }
-    .console-box .hi { color: #38bdf8; }
-    .console-box .warn { color: #fbbf24; }
+    /* ── Console box (淺色終端機風格) ── */
+    .console-box { background: #f6f8fa; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px 16px; font-family: 'Courier New', monospace; font-size: 0.875rem; color: #24292e; white-space: pre-wrap; min-height: 40px; line-height: 1.6; }
+    .console-box .err { color: #d73a49; font-weight: bold; }
+    .console-box .dim { color: #6a737d; }
+    .console-box .hi { color: #0366d6; font-weight: bold; }
+    .console-box .warn { color: #b08800; font-weight: bold; }
 
     /* ═══════════════════════════ CARD 1 – Memory Grid ═══════════════════════════ */
-    #mem-grid-wrap { display: flex; flex-wrap: wrap; gap: 6px; padding: 16px; background: #0f172a; border: 1px solid #1e3a5f; border-radius: 10px; margin-bottom: 14px; min-height: 90px; }
-    .mem-cell { width: 38px; height: 38px; border: 1.5px solid #334155; border-radius: 5px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-family: monospace; font-size: 0.65rem; color: #475569; transition: all 0.35s cubic-bezier(.34, 1.56, .64, 1); position: relative; flex-shrink: 0; }
-    .mem-cell.used { background: #312e81; border-color: #6366f1; color: #c7d2fe; }
-    .mem-cell.used.first { border-color: #a78bfa; }
-    .mem-cell.used.garbage { background: #450a0a; border-color: #dc2626; color: #fca5a5; }
-    .mem-cell .var-label { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; color: #a78bfa; white-space: nowrap; font-weight: 700; }
+    #mem-grid-wrap { display: flex; flex-wrap: wrap; gap: 6px; padding: 16px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 14px; min-height: 90px; }
+    .mem-cell { width: 38px; height: 38px; border: 1px solid #cbd5e1; border-radius: 5px; background: #ffffff; display: flex; align-items: center; justify-content: center; font-family: monospace; font-size: 0.65rem; color: #94a3b8; transition: all 0.35s cubic-bezier(.34, 1.56, .64, 1); position: relative; flex-shrink: 0; }
+    .mem-cell.used { background: #e0e7ff; border-color: #6366f1; color: #312e81; font-weight: bold; }
+    .mem-cell.used.first { border-color: #8b5cf6; box-shadow: 0 0 5px rgba(139, 92, 246, 0.4); }
+    .mem-cell.used.garbage { background: #fee2e2; border-color: #ef4444; color: #7f1d1d; }
+    .mem-cell .var-label { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; color: #6366f1; white-space: nowrap; font-weight: 700; }
     .mem-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 6px; }
-    .mem-legend span { font-size: 0.78rem; color: #94a3b8; display: flex; align-items: center; gap: 5px; }
+    .mem-legend span { font-size: 0.78rem; color: var(--text-main); display: flex; align-items: center; gap: 5px; }
     .mem-legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 
     /* ═══════════════════════════ NEW CARD – Overflow ═══════════════════════════ */
-    .overflow-visual { display: flex; align-items: center; gap: 20px; background: #0f172a; padding: 20px; border-radius: 10px; border: 1px solid #334155; margin-bottom: 14px; }
-    .gauge-container { flex: 1; height: 30px; background: #1e293b; border-radius: 15px; border: 2px solid #334155; position: relative; overflow: hidden; }
+    .overflow-visual { display: flex; align-items: center; gap: 20px; background: #f8fafc; padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 14px; }
+    .gauge-container { flex: 1; height: 30px; background: #e2e8f0; border-radius: 15px; border: 1px solid #cbd5e1; position: relative; overflow: hidden; }
     .gauge-fill { height: 100%; background: linear-gradient(90deg, #34d399, #facc15, #f87171); width: 0%; transition: width 0.3s, background 0.3s; }
     .gauge-fill.overflowed { background: #dc2626; width: 100% !important; }
-    .val-display { font-family: monospace; font-size: 1.2rem; color: #e2e8f0; min-width: 150px; text-align: right; }
+    .val-display { font-family: monospace; font-size: 1.2rem; color: #0f172a; min-width: 150px; text-align: right; font-weight: bold; }
 
     /* ═══════════════════════════ CARD 2 – cin Buffer ═══════════════════════════ */
     .cin-layout { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; align-items: start; }
     @media(max-width:640px) { .cin-layout { grid-template-columns: 1fr; } }
-    .cin-panel-title { font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
-    .cin-input-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 10px; width: 100%; color: #e2e8f0; font-family: monospace; font-size: 0.9rem; box-sizing: border-box; }
-    .cin-input-box:focus { outline: none; border-color: #6366f1; }
-    #cin-buffer-queue { display: flex; flex-wrap: wrap; gap: 5px; min-height: 44px; padding: 8px; background: #0f172a; border: 1px dashed #334155; border-radius: 8px; align-items: center; }
+    .cin-panel-title { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    .cin-input-box { background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 10px; width: 100%; color: var(--text-main); font-family: monospace; font-size: 0.9rem; box-sizing: border-box; }
+    .cin-input-box:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
+    #cin-buffer-queue { display: flex; flex-wrap: wrap; gap: 5px; min-height: 44px; padding: 8px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; align-items: center; }
     .token-chip { padding: 4px 9px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; font-weight: 700; transition: all 0.3s ease; }
-    .token-chip.num { background: #1e3a5f; color: #38bdf8; border: 1px solid #0ea5e9; }
-    .token-chip.sp { background: #1c1917; color: #78716c; border: 1px dashed #44403c; font-size: 0.7rem; }
-    .token-chip.str { background: #14532d; color: #86efac; border: 1px solid #22c55e; }
+    .token-chip.num { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+    .token-chip.sp { background: #f1f5f9; color: #94a3b8; border: 1px dashed #cbd5e1; font-size: 0.7rem; }
+    .token-chip.str { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
     .token-chip.fly-in { animation: flyIn 0.4s ease; }
     @keyframes flyIn { from { opacity: 0; transform: translateY(12px) scale(0.8); } to { opacity: 1; transform: none; } }
     .var-box { display: flex; flex-direction: column; gap: 10px; }
-    .var-slot { background: #0f172a; border: 1.5px solid #334155; border-radius: 8px; padding: 8px 12px; font-family: monospace; font-size: 0.85rem; color: #94a3b8; transition: all 0.4s ease; min-height: 34px; }
-    .var-slot .var-name { color: #a78bfa; font-weight: 700; margin-right: 6px; }
-    .var-slot.filled { border-color: #22c55e; background: #052e16; color: #86efac; }
+    .var-slot { background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; font-family: monospace; font-size: 0.85rem; color: var(--text-main); transition: all 0.4s ease; min-height: 34px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .var-slot .var-name { color: #6366f1; font-weight: 700; margin-right: 6px; }
+    .var-slot.filled { border-color: #10b981; background: #ecfdf5; color: #065f46; }
     .var-slot.pulse { animation: slotPulse 0.55s ease; }
-    @keyframes slotPulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); } 50% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
-
-    /* ═══════════════════════════ CARD 3 – cout Conveyor ═══════════════════════════ */
-    .conveyor-scene { background: #0f172a; border: 1px solid #1e3a5f; border-radius: 12px; padding: 20px 16px; margin-bottom: 14px; overflow: hidden; position: relative; }
-    .conveyor-track { position: relative; height: 60px; background: linear-gradient(90deg, #1e3a5f, #0f172a); border-radius: 8px; border: 1.5px solid #334155; overflow: hidden; margin: 10px 0; }
-    .conveyor-belt-lines { position: absolute; inset: 0; display: flex; gap: 0; align-items: center; }
-    .belt-stripe { height: 100%; width: 24px; background: repeating-linear-gradient(90deg, transparent 0px, transparent 10px, rgba(99, 102, 241, 0.08) 10px, rgba(99, 102, 241, 0.08) 24px); }
-    .conveyor-tokens-area { position: relative; display: flex; gap: 8px; align-items: center; padding: 0 12px; height: 100%; }
-    .cout-token { display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 8px; font-family: monospace; font-size: 0.82rem; font-weight: 700; white-space: nowrap; opacity: 0; transform: translateX(-30px); transition: all 0.5s ease; flex-shrink: 0; }
-    .cout-token.visible { opacity: 1; transform: translateX(0); }
-    .cout-token.traveling { animation: travel 0.9s ease forwards; }
-    @keyframes travel { from { opacity: 1; transform: translateX(0) scale(1); } to { opacity: 0; transform: translateX(250px) scale(0.8); } }
-    .cout-token.str-tok { background: #14532d; color: #86efac; border: 1px solid #22c55e; }
-    .cout-token.var-tok { background: #1e3a5f; color: #38bdf8; border: 1px solid #0ea5e9; }
-    .cout-token.endl-tok { background: #451a03; color: #fcd34d; border: 1px solid #f59e0b; }
-    .screen-box { background: #000; border: 2px solid #22d3ee; border-radius: 10px; padding: 12px 14px; font-family: monospace; font-size: 0.9rem; color: #22d3ee; min-height: 54px; white-space: pre-wrap; box-shadow: 0 0 18px rgba(34, 211, 238, 0.25); }
-    .cout-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: #475569; margin-top: 4px; }
+    @keyframes slotPulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); } 50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
 
     /* ═══════════════════════════ NEW CARD – Escapes ═══════════════════════════ */
     .escape-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 14px; }
-    .escape-btn { background: #0f172a; border: 1px solid #334155; color: #a78bfa; font-family: monospace; font-size: 1rem; padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; transition: 0.2s; }
-    .escape-btn:hover { border-color: #a78bfa; background: #1e293b; }
+    .escape-btn { background: #ffffff; border: 1px solid var(--border-color); color: #0366d6; font-family: monospace; font-size: 1rem; padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .escape-btn:hover { border-color: #0366d6; background: #f0f8ff; }
+
+    /* ═══════════════════════════ CARD 3 – cout Conveyor ═══════════════════════════ */
+    .conveyor-scene { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px 16px; margin-bottom: 14px; overflow: hidden; position: relative; }
+    .conveyor-track { position: relative; height: 60px; background: linear-gradient(90deg, #e2e8f0, #f8fafc); border-radius: 8px; border: 1px solid #cbd5e1; overflow: hidden; margin: 10px 0; }
+    .conveyor-belt-lines { position: absolute; inset: 0; display: flex; gap: 0; align-items: center; }
+    .belt-stripe { height: 100%; width: 24px; background: repeating-linear-gradient(90deg, transparent 0px, transparent 10px, rgba(99, 102, 241, 0.1) 10px, rgba(99, 102, 241, 0.1) 24px); }
+    .conveyor-tokens-area { position: relative; display: flex; gap: 8px; align-items: center; padding: 0 12px; height: 100%; }
+    .cout-token { display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 8px; font-family: monospace; font-size: 0.82rem; font-weight: 700; white-space: nowrap; opacity: 0; transform: translateX(-30px); transition: all 0.5s ease; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .cout-token.visible { opacity: 1; transform: translateX(0); }
+    .cout-token.traveling { animation: travel 0.9s ease forwards; }
+    @keyframes travel { from { opacity: 1; transform: translateX(0) scale(1); } to { opacity: 0; transform: translateX(250px) scale(0.8); } }
+    .cout-token.str-tok { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .cout-token.var-tok { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+    .cout-token.endl-tok { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+    .screen-box { background: #1e293b; border: 2px solid #38bdf8; border-radius: 10px; padding: 12px 14px; font-family: monospace; font-size: 0.9rem; color: #38bdf8; min-height: 54px; white-space: pre-wrap; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .cout-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
 
     /* ═══════════════════════════ CARD 4 & 5 Controls ═══════════════════════════ */
     .ctrl-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
-    .ctrl-row label { font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 8px; }
-    .ctrl-row input[type=range] { accent-color: #8b5cf6; width: 130px; }
-    .ctrl-row input[type=text] { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 5px 8px; color: #e2e8f0; font-family: monospace; width: 46px; font-size: 0.9rem; text-align: center; }
+    .ctrl-row label { font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+    .ctrl-row input[type=range] { accent-color: #6366f1; width: 130px; }
+    .ctrl-row input[type=text] { background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 5px 8px; color: var(--text-main); font-family: monospace; width: 46px; font-size: 0.9rem; text-align: center; }
     .ctrl-row input[type=text]:focus { outline: none; border-color: #6366f1; }
-    .ctrl-val-badge { display: inline-block; background: #312e81; color: #c7d2fe; padding: 3px 9px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; min-width: 28px; text-align: center; }
+    .ctrl-val-badge { display: inline-block; background: #e0e7ff; color: #312e81; padding: 3px 9px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; min-width: 28px; text-align: center; border: 1px solid #c7d2fe; }
     .setw-visual { margin-top: 8px; }
     .setw-row { display: flex; align-items: flex-end; gap: 0; margin-bottom: 6px; font-family: monospace; font-size: 0.82rem; }
-    .setw-cell { display: inline-flex; align-items: center; justify-content: center; height: 34px; min-width: 18px; padding: 0 2px; border: 1px solid #334155; border-right: none; background: #1e293b; color: #475569; }
-    .setw-cell:last-child { border-right: 1px solid #334155; }
-    .setw-cell.fill-ch { background: #1e3a5f; color: #38bdf8; }
-    .setw-cell.data-ch { background: #14532d; color: #86efac; }
-    .setw-cell.data2-ch { background: #451a03; color: #fcd34d; }
+    .setw-cell { display: inline-flex; align-items: center; justify-content: center; height: 34px; min-width: 18px; padding: 0 2px; border: 1px solid #cbd5e1; border-right: none; background: #ffffff; color: #64748b; }
+    .setw-cell:last-child { border-right: 1px solid #cbd5e1; }
+    .setw-cell.fill-ch { background: #f1f5f9; color: #475569; }
+    .setw-cell.data-ch { background: #dcfce7; color: #166534; font-weight: bold; }
+    .setw-cell.data2-ch { background: #fef3c7; color: #b45309; font-weight: bold; }
     .prec-controls { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; margin-bottom: 16px; }
     .prec-group { display: flex; flex-direction: column; gap: 6px; }
-    .prec-group label { font-size: 0.82rem; color: #94a3b8; }
+    .prec-group label { font-size: 0.82rem; color: var(--text-main); }
     .radio-group { display: flex; gap: 12px; flex-wrap: wrap; }
-    .radio-label { display: flex; align-items: center; gap: 6px; font-size: 0.865rem; color: #cbd5e1; cursor: pointer; }
-    .radio-label input[type=radio] { accent-color: #8b5cf6; }
-    .prec-input { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 6px 10px; color: #e2e8f0; font-family: monospace; width: 140px; font-size: 0.9rem; }
+    .radio-label { display: flex; align-items: center; gap: 6px; font-size: 0.865rem; color: var(--text-main); cursor: pointer; }
+    .radio-label input[type=radio] { accent-color: #6366f1; }
+    .prec-input { background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px; color: var(--text-main); font-family: monospace; width: 140px; font-size: 0.9rem; }
     .prec-input:focus { outline: none; border-color: #6366f1; }
 
     /* ── Utilities ── */
-    .step-indicator { display: flex; gap: 6px; align-items: center; font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px; }
-    .step-dot { width: 8px; height: 8px; border-radius: 50%; background: #334155; transition: background 0.3s; }
-    .step-dot.active { background: #818cf8; }
-    .step-dot.done { background: #34d399; }
-    .toggle-wrap { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #0f172a; border: 1.5px solid #334155; border-radius: 10px; margin-bottom: 14px; transition: border-color 0.3s; }
-    .toggle-wrap.danger { border-color: #dc2626; background: #1c0a0a; }
-    .toggle-label { font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; flex: 1; }
-    .toggle-label.danger-label { color: #f87171; font-weight: 700; }
+    .step-indicator { display: flex; gap: 6px; align-items: center; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; }
+    .step-dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; transition: background 0.3s; }
+    .step-dot.active { background: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+    .step-dot.done { background: #10b981; }
+    .toggle-wrap { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 14px; transition: border-color 0.3s; }
+    .toggle-wrap.danger { border-color: #ef4444; background: #fef2f2; }
+    .toggle-label { font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; flex: 1; }
+    .toggle-label.danger-label { color: #dc2626; font-weight: 700; }
     .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
     .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider { position: absolute; inset: 0; background: #334155; border-radius: 24px; transition: background 0.3s; cursor: pointer; }
-    .toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: transform 0.3s; }
-    .toggle-switch input:checked+.toggle-slider { background: #dc2626; }
+    .toggle-slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 24px; transition: background 0.3s; cursor: pointer; }
+    .toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: transform 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .toggle-switch input:checked+.toggle-slider { background: #ef4444; }
     .toggle-switch input:checked+.toggle-slider::before { transform: translateX(20px); }
-    .code-block { background: #0f172a; border: 1px solid #1e3a5f; border-radius: 10px; padding: 14px 16px; font-family: 'Courier New', monospace; font-size: 0.83rem; white-space: pre-wrap; line-height: 1.75; margin-bottom: 14px; color: #94a3b8; }
-    .hl-include { color: #c084fc; }
-    .hl-iomanip { color: #facc15; background: #3b2f00; border-radius: 3px; padding: 0 3px; box-shadow: 0 0 8px rgba(250, 204, 21, 0.4); font-weight: 700; }
-    .hl-keyword { color: #38bdf8; }
-    .hl-fn { color: #fbbf24; }
-    .hl-str { color: #86efac; }
-    .hl-num { color: #f97316; }
-    .hl-comment { color: #475569; font-style: italic; }
-    .hl-err-line { color: #f87171; background: #1c0505; border-left: 3px solid #dc2626; padding-left: 6px; display: block; border-radius: 2px; }
+    .code-block { background: #f6f8fa; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px 16px; font-family: 'Courier New', monospace; font-size: 0.83rem; white-space: pre-wrap; line-height: 1.75; margin-bottom: 14px; color: #24292e; }
+    .hl-include { color: #d73a49; }
+    .hl-iomanip { color: #b08800; background: #fffdf0; border-radius: 3px; padding: 0 3px; border: 1px solid #fceeb5; font-weight: 700; }
+    .hl-keyword { color: #d73a49; }
+    .hl-fn { color: #6f42c1; }
+    .hl-str { color: #032f62; }
+    .hl-num { color: #005cc5; }
+    .hl-comment { color: #6a737d; font-style: italic; }
+    .hl-err-line { color: #cb2431; background: #ffeef0; border-left: 3px solid #d73a49; padding-left: 6px; display: block; border-radius: 2px; }
     .fade-in { animation: fadeInUp 0.4s ease; }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
     .shake { animation: shakeX 0.45s ease; }
@@ -168,7 +167,7 @@
     <!-- ═══════════════════════════════════════════════ CARD 1 – Memory Grid ═══════════════════════════════════════════════ -->
     <div class="card" id="card-memory">
       <div class="section-title">🧠 變數宣告與記憶體配置 <span class="badge">Data Types & Memory</span></div>
-      <p class="card-desc">點擊下方按鈕，觀察不同型別佔用的 RAM 格數，以及<strong style="color:#f87171">未初始化</strong>時記憶體中殘留的垃圾值[cite: 2]。</p>
+      <p class="card-desc">點擊下方按鈕，觀察不同型別佔用的 RAM 格數，以及<strong style="color:#d73a49">未初始化</strong>時記憶體中殘留的垃圾值。</p>
       <div class="btn-group" id="mem-btns">
         <button class="btn btn-primary" onclick="declareVar('int','myInt',4,'42')">int myInt = 42</button>
         <button class="btn btn-blue" onclick="declareVar('double','pi',8,'3.14159')">double pi = 3.14159</button>
@@ -177,11 +176,11 @@
         <button class="btn btn-red" onclick="declareVar('int','x',4,null)">int x; ⚠️ 未初始化</button>
         <button class="btn btn-ghost" onclick="resetMemory()">↺ 重置</button>
       </div>
-      <div style="font-size:0.78rem;color:#475569;margin-bottom:6px;">📦 RAM 記憶體示意圖 (每格 = 1 Byte)</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:6px;">📦 RAM 記憶體示意圖 (每格 = 1 Byte)</div>
       <div id="mem-grid-wrap"></div>
       <div class="mem-legend">
-        <span><i class="mem-legend-dot" style="background:#312e81;border:1.5px solid #6366f1;"></i>已配置的記憶體</span>
-        <span><i class="mem-legend-dot" style="background:#450a0a;border:1.5px solid #dc2626;"></i>垃圾值 (未初始化)</span>
+        <span><i class="mem-legend-dot" style="background:#e0e7ff;border:1.5px solid #6366f1;"></i>已配置的記憶體</span>
+        <span><i class="mem-legend-dot" style="background:#fee2e2;border:1.5px solid #ef4444;"></i>垃圾值 (未初始化)</span>
       </div>
       <div id="mem-log" class="console-box" style="margin-top:12px;"></div>
     </div>
@@ -204,7 +203,7 @@
     <!-- ═══════════════════════════════════════════════ CARD 2 – cin Input Buffer ═══════════════════════════════════════════════ -->
     <div class="card" id="card-cin">
       <div class="section-title">⌨️ cin 輸入與緩衝區 <span class="badge">Input Buffer</span></div>
-      <p class="card-desc">在輸入框中打入數值（如 <code>10 20</code>），按「送入 Buffer」後逐步模擬 <code>cin &gt;&gt; a &gt;&gt; b;</code> 讀取過程，觀察 Buffer 佇列如何被消耗[cite: 2]。</p>
+      <p class="card-desc">在輸入框中打入數值（如 <code>10 20</code>），按「送入 Buffer」後逐步模擬 <code>cin &gt;&gt; a &gt;&gt; b;</code> 讀取過程，觀察 Buffer 佇列如何被消耗。</p>
       <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
         <input id="cin-input-field" class="cin-input-box" type="text" placeholder="例如: 10 20" value="10 20" style="width:160px;" />
         <button class="btn btn-blue" onclick="cinSendToBuffer()">📥 送入 Buffer</button>
@@ -220,8 +219,8 @@
         <div style="display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#6366f1;padding-top:24px;">➔</div>
         <div><div class="cin-panel-title">📦 變數記憶體</div>
           <div class="var-box">
-            <div class="var-slot" id="cin-var-a"><span class="var-name">a</span><span id="cin-val-a" style="color:#475569">= ?</span></div>
-            <div class="var-slot" id="cin-var-b"><span class="var-name">b</span><span id="cin-val-b" style="color:#475569">= ?</span></div>
+            <div class="var-slot" id="cin-var-a"><span class="var-name">a</span><span id="cin-val-a" style="color:var(--text-muted)">= ?</span></div>
+            <div class="var-slot" id="cin-var-b"><span class="var-name">b</span><span id="cin-val-b" style="color:var(--text-muted)">= ?</span></div>
           </div>
         </div>
       </div>
@@ -238,23 +237,23 @@
         <button class="escape-btn" onclick="testEscape('\\\" (雙引號)', 'He said \\\"Hi\\\"')">\" (雙引號)</button>
         <button class="escape-btn" onclick="testEscape('\\\\ (反斜線)', 'C:\\\\folder\\\\')">\\ (反斜線)</button>
       </div>
-      <div style="font-size:0.78rem;color:#475569;margin-bottom:4px;">📟 Console 輸出</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">📟 Console 輸出</div>
       <div class="console-box" id="escape-console"></div>
     </div>
 
     <!-- ═══════════════════════════════════════════════ CARD 3 – cout Output Conveyor ═══════════════════════════════════════════════ -->
     <div class="card" id="card-cout">
       <div class="section-title">🖥️ cout 輸出輸送帶 <span class="badge">Output Stream</span></div>
-      <p class="card-desc">觀察 <code>cout &lt;&lt; "Score: " &lt;&lt; score &lt;&lt; endl;</code> 如何將資料依序送往螢幕[cite: 2]。</p>
+      <p class="card-desc">觀察 <code>cout &lt;&lt; "Score: " &lt;&lt; score &lt;&lt; endl;</code> 如何將資料依序送往螢幕。</p>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
-        <label style="font-size:0.88rem;color:#94a3b8;">score 值：
-          <input id="cout-score-val" type="number" value="98" min="0" max="9999" style="width:72px;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:5px 8px;color:#e2e8f0;font-size:0.9rem;margin-left:6px;" />
+        <label style="font-size:0.88rem;color:var(--text-main);">score 值：
+          <input id="cout-score-val" type="number" value="98" min="0" max="9999" style="width:72px;background:#ffffff;border:1px solid var(--border-color);border-radius:6px;padding:5px 8px;color:var(--text-main);font-size:0.9rem;margin-left:6px;" />
         </label>
         <button class="btn btn-primary" id="cout-run-btn" onclick="coutRun()">▶ 執行輸送帶</button>
         <button class="btn btn-ghost" onclick="coutReset()">↺ 重置</button>
       </div>
       <div class="conveyor-scene">
-        <div style="font-size:0.75rem;color:#475569;margin-bottom:6px;">📤 operator <code style="color:#6366f1;">&lt;&lt;</code> 輸送帶</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;">📤 operator <code style="color:#0366d6;">&lt;&lt;</code> 輸送帶</div>
         <div class="conveyor-track">
           <div class="conveyor-belt-lines"></div>
           <div class="conveyor-tokens-area" id="cout-tokens-area">
@@ -265,14 +264,14 @@
         </div>
         <div class="cout-labels"><span>← 程式碼端</span><span>螢幕端 →</span></div>
       </div>
-      <div style="font-size:0.78rem;color:#475569;margin-bottom:6px;">📟 Console 螢幕</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:6px;">📟 模擬螢幕 (終端機維持深色)</div>
       <div class="screen-box" id="cout-screen"></div>
     </div>
 
     <!-- ═══════════════════════════════════════════════ CARD 4 – setw & setfill ═══════════════════════════════════════════════ -->
     <div class="card" id="card-setw">
       <div class="section-title">📐 版面編排格式化 <span class="badge">setw &amp; setfill</span></div>
-      <p class="card-desc">使用 <code>setw()</code> 與 <code>setfill()</code> 控制輸出寬度與填充字元。<strong style="color:#facc15">⚠️ 必須 <code>#include &lt;iomanip&gt;</code>！</strong>試試忘記寫會怎樣👇[cite: 2]</p>
+      <p class="card-desc">使用 <code>setw()</code> 與 <code>setfill()</code> 控制輸出寬度與填充字元。<strong style="color:#b08800">⚠️ 必須 <code>#include &lt;iomanip&gt;</code>！</strong>試試忘記寫會怎樣👇</p>
       <div class="code-block" id="setw-code-block"></div>
       <div class="toggle-wrap" id="setw-toggle-wrap">
         <label class="toggle-label" id="setw-toggle-label" for="setw-iomanip-toggle">
@@ -282,7 +281,7 @@
           <input type="checkbox" id="setw-iomanip-toggle" onchange="setwToggle()" />
           <span class="toggle-slider"></span>
         </label>
-        <span style="font-size:0.8rem;color:#475569;">← 開啟以「忘記」載入</span>
+        <span style="font-size:0.8rem;color:var(--text-muted);">← 開啟以「忘記」載入</span>
       </div>
       <div id="setw-controls">
         <div class="ctrl-row">
@@ -292,14 +291,14 @@
         <div class="setw-visual" id="setw-visual"></div>
       </div>
       <button class="btn btn-primary" style="margin-bottom:10px;" onclick="setwRun()">▶ 執行</button>
-      <div style="font-size:0.78rem;color:#475569;margin-bottom:4px;">📟 Console 輸出</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">📟 Console 輸出</div>
       <div class="console-box" id="setw-console"></div>
     </div>
 
     <!-- ═══════════════════════════════════════════════ CARD 5 – setprecision ═══════════════════════════════════════════════ -->
     <div class="card" id="card-prec">
       <div class="section-title">🔢 浮點數精確度 <span class="badge">setprecision &amp; fixed</span></div>
-      <p class="card-desc">輸入浮點數，調整精度滑桿並切換模式，即時觀察 <code>std::setprecision()</code> 的輸出差異。<br /><span style="color:#facc15;font-weight:600;">⚠️ setprecision() 也屬於 &lt;iomanip&gt;，別忘了 include！</span>[cite: 2]</p>
+      <p class="card-desc">輸入浮點數，調整精度滑桿並切換模式，即時觀察 <code>std::setprecision()</code> 的輸出差異。<br /><span style="color:#b08800;font-weight:600;">⚠️ setprecision() 也屬於 &lt;iomanip&gt;，別忘了 include！</span></p>
       <div class="code-block" id="prec-code-block"></div>
       <div class="prec-controls">
         <div class="prec-group">
@@ -308,7 +307,7 @@
         </div>
         <div class="prec-group">
           <label>精度 precision：<span class="ctrl-val-badge" id="prec-badge">6</span></label>
-          <input type="range" id="prec-range" min="0" max="10" value="6" oninput="precUpdate()" style="accent-color:#8b5cf6;width:180px;" />
+          <input type="range" id="prec-range" min="0" max="10" value="6" oninput="precUpdate()" style="accent-color:#6366f1;width:180px;" />
         </div>
         <div class="prec-group">
           <label>輸出模式</label>
@@ -319,9 +318,9 @@
           </div>
         </div>
       </div>
-      <div class="console-box" style="margin-bottom:12px;color:#94a3b8;" id="prec-code"></div>
+      <div class="console-box" style="margin-bottom:12px;color:var(--text-main);" id="prec-code"></div>
       <div id="prec-comparison" style="margin-bottom:12px;"></div>
-      <div style="font-size:0.78rem;color:#475569;margin-bottom:4px;">📟 Console 輸出</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">📟 Console 輸出</div>
       <div class="console-box" id="prec-console"></div>
     </div>
 
@@ -339,7 +338,8 @@
       const TOTAL_CELLS = 32;
       let usedCells = 0;
       let memState = new Array(TOTAL_CELLS).fill(null);
-      const typeColors = { int: { bg: '#312e81', border: '#6366f1', text: '#c7d2fe' }, double: { bg: '#0f3460', border: '#38bdf8', text: '#bae6fd' }, char: { bg: '#064e3b', border: '#34d399', text: '#a7f3d0' }, bool: { bg: '#451a03', border: '#f59e0b', text: '#fde68a' } };
+      // 替換為淺色主題配色
+      const typeColors = { int: { bg: '#e0e7ff', border: '#6366f1', text: '#312e81' }, double: { bg: '#e0f2fe', border: '#38bdf8', text: '#0c4a6e' }, char: { bg: '#dcfce7', border: '#34d399', text: '#064e3b' }, bool: { bg: '#fef3c7', border: '#f59e0b', text: '#78350f' } };
       function renderMemGrid() {
         const wrap = document.getElementById('mem-grid-wrap'); wrap.innerHTML = '';
         for (let i = 0; i < TOTAL_CELLS; i++) {
@@ -365,7 +365,7 @@
         usedCells += size; renderMemGrid();
         const sizeStr = `${size} Byte${size > 1 ? 's' : ''}`;
         if (isGarbage) logEl.innerHTML = `<span class="warn">⚠️ int ${name}; — 未初始化！</span>\n   佔用 ${sizeStr}，記憶體中的垃圾值：<span class="err">${displayVal}</span>\n   → 永遠不要使用未初始化的變數！`;
-        else { const c = typeColors[type] || typeColors.int; logEl.innerHTML = `<span style="color:${c.border}">✔ ${type} ${name} = ${value};</span>\n   佔用 ${sizeStr}，從位址 0x${startIdx.toString(16).padStart(4, '0')} 開始\n   初始值：${displayVal}`; }
+        else { const c = typeColors[type] || typeColors.int; logEl.innerHTML = `<span style="color:${c.border};font-weight:bold;">✔ ${type} ${name} = ${value};</span>\n   佔用 ${sizeStr}，從位址 0x${startIdx.toString(16).padStart(4, '0')} 開始\n   初始值：${displayVal}`; }
       };
       window.resetMemory = function () { usedCells = 0; memState = new Array(TOTAL_CELLS).fill(null); renderMemGrid(); setText('mem-log', ''); };
       renderMemGrid();
@@ -406,13 +406,13 @@
       function updateStepDots(active) { for (let i = 0; i <= 4; i++) { const d = document.getElementById('cs' + i); if (!d) continue; d.classList.remove('active', 'done'); if (i < active) d.classList.add('done'); else if (i === active) d.classList.add('active'); } }
       function renderBuffer() {
         const q = document.getElementById('cin-buffer-queue'); q.innerHTML = '';
-        if (bufferTokens.length === 0) { q.innerHTML = '<span style="color:#475569;font-size:0.78rem;padding:4px;">（空）</span>'; return; }
+        if (bufferTokens.length === 0) { q.innerHTML = '<span style="color:var(--text-muted);font-size:0.78rem;padding:4px;">（空）</span>'; return; }
         bufferTokens.forEach((t, i) => { const chip = document.createElement('span'); chip.className = 'token-chip fly-in ' + (t.type === 'space' ? 'sp' : (isNaN(t.val) ? 'str' : 'num')); chip.textContent = t.type === 'space' ? '⎵' : t.val; chip.id = 'buf-tok-' + i; q.appendChild(chip); });
       }
       window.cinSendToBuffer = function () {
         const raw = document.getElementById('cin-input-field').value; bufferTokens = [];
         for (let i = 0; i < raw.length; i++) { if (raw[i] === ' ' || raw[i] === '\t') bufferTokens.push({ type: 'space', val: ' ' }); else { let word = ''; while (i < raw.length && raw[i] !== ' ' && raw[i] !== '\t') word += raw[i++]; i--; bufferTokens.push({ type: 'val', val: word }); } }
-        cinStep = 0; document.getElementById('cin-var-a').innerHTML = '<span class="var-name">a</span><span id="cin-val-a" style="color:#475569">= ?</span>'; document.getElementById('cin-var-b').innerHTML = '<span class="var-name">b</span><span id="cin-val-b" style="color:#475569">= ?</span>'; document.getElementById('cin-log').textContent = '';
+        cinStep = 0; document.getElementById('cin-var-a').innerHTML = '<span class="var-name">a</span><span id="cin-val-a" style="color:var(--text-muted)">= ?</span>'; document.getElementById('cin-var-b').innerHTML = '<span class="var-name">b</span><span id="cin-val-b" style="color:var(--text-muted)">= ?</span>'; document.getElementById('cin-log').textContent = '';
         renderBuffer(); updateStepDots(1); document.getElementById('cin-read-btn').disabled = false; setHTML('cin-log', '<span class="hi">📬 資料已送入 Buffer，點擊「cin >> a >> b;」開始讀取。</span>'); cinStep = 1;
       };
       window.cinReadStep = async function () {
@@ -421,14 +421,14 @@
           while (bufferTokens.length > 0 && bufferTokens[0].type === 'space') { bufferTokens.shift(); renderBuffer(); log.innerHTML = `<span class="dim">   ... 略過空白字元 ...</span>`; await delay(500); }
           if (bufferTokens.length === 0) { log.innerHTML = '<span class="err">❌ Buffer 已空，cin 等待更多輸入。</span>'; return false; }
           const tok = bufferTokens.shift(); renderBuffer(); log.innerHTML = `<span class="hi">✔ cin >> ${varName}：從 Buffer 取出 "${tok.val}"</span>`; await delay(400);
-          const slot = document.getElementById(varId); slot.innerHTML = `<span class="var-name">${varName}</span><span id="${valId}" style="color:#86efac">= ${tok.val}</span>`; slot.classList.add('filled', 'pulse'); await delay(600); return true;
+          const slot = document.getElementById(varId); slot.innerHTML = `<span class="var-name">${varName}</span><span id="${valId}" style="color:#059669;font-weight:bold;">= ${tok.val}</span>`; slot.classList.add('filled', 'pulse'); await delay(600); return true;
         }
         updateStepDots(2); log.innerHTML = '<span class="dim">⏳ 讀取 a...</span>'; await delay(300); if (!await consumeNextVal('cin-var-a', 'cin-val-a', 'a')) { animating = false; return; }
         updateStepDots(3); await delay(300); log.innerHTML = '<span class="dim">⏳ 讀取 b...</span>'; await delay(300); if (!await consumeNextVal('cin-var-b', 'cin-val-b', 'b')) { animating = false; return; }
         updateStepDots(4); const aV = document.getElementById('cin-val-a').textContent.replace('= ', ''); const bV = document.getElementById('cin-val-b').textContent.replace('= ', '');
-        log.innerHTML = `<span style="color:#34d399">✅ cin 完成！</span>\n   a = ${aV}\n   b = ${bV}\n   Buffer 剩餘：${bufferTokens.filter(t => t.type !== 'space').length} 個 token`; renderBuffer(); animating = false;
+        log.innerHTML = `<span style="color:#059669;font-weight:bold;">✅ cin 完成！</span>\n   a = ${aV}\n   b = ${bV}\n   Buffer 剩餘：${bufferTokens.filter(t => t.type !== 'space').length} 個 token`; renderBuffer(); animating = false;
       };
-      window.cinReset = function () { bufferTokens = []; cinStep = 0; animating = false; document.getElementById('cin-buffer-queue').innerHTML = ''; document.getElementById('cin-var-a').innerHTML = '<span class="var-name">a</span><span id="cin-val-a" style="color:#475569">= ?</span>'; document.getElementById('cin-var-b').innerHTML = '<span class="var-name">b</span><span id="cin-val-b" style="color:#475569">= ?</span>'; document.getElementById('cin-log').textContent = ''; document.getElementById('cin-read-btn').disabled = true; updateStepDots(0); };
+      window.cinReset = function () { bufferTokens = []; cinStep = 0; animating = false; document.getElementById('cin-buffer-queue').innerHTML = ''; document.getElementById('cin-var-a').innerHTML = '<span class="var-name">a</span><span id="cin-val-a" style="color:var(--text-muted)">= ?</span>'; document.getElementById('cin-var-b').innerHTML = '<span class="var-name">b</span><span id="cin-val-b" style="color:var(--text-muted)">= ?</span>'; document.getElementById('cin-log').textContent = ''; document.getElementById('cin-read-btn').disabled = true; updateStepDots(0); };
       cinReset();
     })();
 
@@ -448,7 +448,7 @@
         if (coutRunning) return; coutRunning = true; document.getElementById('cout-run-btn').disabled = true; ['ct-str', 'ct-var', 'ct-endl'].forEach(id => { document.getElementById(id).classList.remove('visible', 'traveling'); });
         const screen = document.getElementById('cout-screen'); screen.textContent = ''; const score = parseInt(document.getElementById('cout-score-val').value) || 0; document.getElementById('ct-var').textContent = String(score);
         const tokens = [ { id: 'ct-str', text: '"Score: "', out: 'Score: ' }, { id: 'ct-var', text: String(score), out: String(score) }, { id: 'ct-endl', text: 'endl', out: '\n' } ];
-        for (const tok of tokens) { const el = document.getElementById(tok.id); el.classList.add('visible'); await delay(500); el.classList.add('traveling'); await delay(900); if (tok.out === '\n') { screen.textContent += '\n'; screen.innerHTML += '<span style="color:#fbbf24;font-size:0.75rem;">↵ (newline)</span>'; } else { screen.textContent += tok.out; } el.classList.remove('visible', 'traveling'); await delay(200); }
+        for (const tok of tokens) { const el = document.getElementById(tok.id); el.classList.add('visible'); await delay(500); el.classList.add('traveling'); await delay(900); if (tok.out === '\n') { screen.textContent += '\n'; screen.innerHTML += '<span style="color:#b08800;font-size:0.75rem;">↵ (newline)</span>'; } else { screen.textContent += tok.out; } el.classList.remove('visible', 'traveling'); await delay(200); }
         document.getElementById('cout-run-btn').disabled = false; coutRunning = false;
       };
     })();
@@ -457,10 +457,10 @@
     (function () {
       let forgotHeader = false;
       function renderCodeBlock(forgot) { const block = document.getElementById('setw-code-block'); const W = parseInt(document.getElementById('setw-range').value) || 8; const rawC = document.getElementById('setfill-char').value; const C = rawC.length > 0 ? rawC[0] : ' '; block.innerHTML = `<span class="hl-include">#include</span> <span class="hl-str">&lt;iostream&gt;</span>\n` + (forgot ? `<span class="hl-include hl-struck">#include</span> <span class="hl-str hl-struck">&lt;iomanip&gt;</span>  <span class="hl-comment">// ← 這行被刪掉了！</span>\n` : `<span class="hl-include">#include</span> <span class="hl-iomanip">&lt;iomanip&gt;</span>   <span class="hl-comment">// ← setw, setfill 都需要它！</span>\n`) + `<span class="hl-keyword">using namespace</span> std;\n\n<span class="hl-keyword">int</span> <span class="hl-fn">main</span>() {\n  cout &lt;&lt; <span class="hl-fn">setw</span>(${W}) &lt;&lt; <span class="hl-fn">setfill</span>(<span class="hl-str">'${C}'</span>) &lt;&lt; <span class="hl-str">"Apple"</span>\n       &lt;&lt; <span class="hl-fn">setw</span>(${W}) &lt;&lt; <span class="hl-num">50</span>;\n}`; }
-      function buildVisual() { const W = parseInt(document.getElementById('setw-range').value) || 8; const rawC = document.getElementById('setfill-char').value; const C = rawC.length > 0 ? rawC[0] : ' '; document.getElementById('setw-badge').textContent = W; const s1 = 'Apple', s2 = '50'; const visual = document.getElementById('setw-visual'); visual.innerHTML = ''; function buildRow(label, data, cls) { const rowWrap = document.createElement('div'); rowWrap.style.cssText = 'margin-bottom:10px;'; const rowLabel = document.createElement('div'); rowLabel.style.cssText = 'font-size:0.75rem;color:#475569;margin-bottom:3px;font-family:monospace;'; rowLabel.textContent = label; rowWrap.appendChild(rowLabel); const row = document.createElement('div'); row.className = 'setw-row'; const safePad = Math.max(0, W - data.length); for (let i = 0; i < safePad; i++) { const cell = document.createElement('span'); cell.className = 'setw-cell fill-ch'; cell.textContent = C; row.appendChild(cell); } for (let i = 0; i < data.length; i++) { const cell = document.createElement('span'); cell.className = 'setw-cell ' + cls; cell.textContent = data[i]; row.appendChild(cell); } rowWrap.appendChild(row); return rowWrap; } visual.appendChild(buildRow('setw(' + W + ') << "' + s1 + '"', s1, 'data-ch')); visual.appendChild(buildRow('setw(' + W + ') << ' + s2, s2, 'data2-ch')); }
+      function buildVisual() { const W = parseInt(document.getElementById('setw-range').value) || 8; const rawC = document.getElementById('setfill-char').value; const C = rawC.length > 0 ? rawC[0] : ' '; document.getElementById('setw-badge').textContent = W; const s1 = 'Apple', s2 = '50'; const visual = document.getElementById('setw-visual'); visual.innerHTML = ''; function buildRow(label, data, cls) { const rowWrap = document.createElement('div'); rowWrap.style.cssText = 'margin-bottom:10px;'; const rowLabel = document.createElement('div'); rowLabel.style.cssText = 'font-size:0.75rem;color:var(--text-muted);margin-bottom:3px;font-family:monospace;'; rowLabel.textContent = label; rowWrap.appendChild(rowLabel); const row = document.createElement('div'); row.className = 'setw-row'; const safePad = Math.max(0, W - data.length); for (let i = 0; i < safePad; i++) { const cell = document.createElement('span'); cell.className = 'setw-cell fill-ch'; cell.textContent = C; row.appendChild(cell); } for (let i = 0; i < data.length; i++) { const cell = document.createElement('span'); cell.className = 'setw-cell ' + cls; cell.textContent = data[i]; row.appendChild(cell); } rowWrap.appendChild(row); return rowWrap; } visual.appendChild(buildRow('setw(' + W + ') << "' + s1 + '"', s1, 'data-ch')); visual.appendChild(buildRow('setw(' + W + ') << ' + s2, s2, 'data2-ch')); }
       window.setwUpdate = function () { renderCodeBlock(forgotHeader); if (!forgotHeader) buildVisual(); };
       window.setwToggle = function () { forgotHeader = document.getElementById('setw-iomanip-toggle').checked; const wrap = document.getElementById('setw-toggle-wrap'); const lbl = document.getElementById('setw-toggle-label'); const txt = document.getElementById('setw-toggle-text'); const ctrl = document.getElementById('setw-controls'); if (forgotHeader) { wrap.classList.add('danger'); lbl.classList.add('danger-label'); txt.innerHTML = '❌ #include &lt;iomanip&gt; 已被刪除！'; ctrl.style.display = 'none'; } else { wrap.classList.remove('danger'); lbl.classList.remove('danger-label'); txt.innerHTML = '✅ #include &lt;iomanip&gt; 已載入'; ctrl.style.display = ''; document.getElementById('setw-console').textContent = ''; } renderCodeBlock(forgotHeader); if (!forgotHeader) buildVisual(); };
-      window.setwRun = function () { const W = parseInt(document.getElementById('setw-range').value) || 8; const rawC = document.getElementById('setfill-char').value; const C = rawC.length > 0 ? rawC[0] : ' '; const consoleEl = document.getElementById('setw-console'); if (forgotHeader) { consoleEl.innerHTML = `<span class="hl-err-line">error: 'setw' was not declared in this scope</span><span class="hl-err-line">error: 'setfill' was not declared in this scope</span><span style="color:#f87171;font-size:0.8rem;">\n💡 提示：需要 #include &lt;iomanip&gt; 才能使用 setw() / setfill()</span>`; consoleEl.classList.add('shake'); setTimeout(() => consoleEl.classList.remove('shake'), 500); } else { consoleEl.textContent = 'Apple'.padStart(W, C) + '50'.padStart(W, C); } };
+      window.setwRun = function () { const W = parseInt(document.getElementById('setw-range').value) || 8; const rawC = document.getElementById('setfill-char').value; const C = rawC.length > 0 ? rawC[0] : ' '; const consoleEl = document.getElementById('setw-console'); if (forgotHeader) { consoleEl.innerHTML = `<span class="hl-err-line">error: 'setw' was not declared in this scope</span><span class="hl-err-line">error: 'setfill' was not declared in this scope</span><span style="color:#d73a49;font-size:0.8rem;font-weight:bold;">\n💡 提示：需要 #include &lt;iomanip&gt; 才能使用 setw() / setfill()</span>`; consoleEl.classList.add('shake'); setTimeout(() => consoleEl.classList.remove('shake'), 500); } else { consoleEl.textContent = 'Apple'.padStart(W, C) + '50'.padStart(W, C); } };
       renderCodeBlock(false); buildVisual();
     })();
 
@@ -471,11 +471,11 @@
         const numRaw = parseFloat(document.getElementById('prec-number').value); const prec = parseInt(document.getElementById('prec-range').value) || 0; const mode = document.querySelector('input[name="prec-mode"]:checked').value; document.getElementById('prec-badge').textContent = prec;
         const modeFlag = mode === 'default' ? '' : mode === 'fixed' ? '\n  cout &lt;&lt; <span class="hl-keyword">fixed</span>;' : '\n  cout &lt;&lt; <span class="hl-keyword">scientific</span>;';
         document.getElementById('prec-code-block').innerHTML = `<span class="hl-include">#include</span> <span class="hl-str">&lt;iostream&gt;</span>\n<span class="hl-include">#include</span> <span class="hl-iomanip">&lt;iomanip&gt;</span>   <span class="hl-comment">// ← setprecision() 需要此標頭！</span>\n<span class="hl-keyword">using namespace</span> std;\n\n<span class="hl-keyword">int</span> <span class="hl-fn">main</span>() {${modeFlag}\n  cout &lt;&lt; <span class="hl-fn">setprecision</span>(<span class="hl-num">${prec}</span>) &lt;&lt; <span class="hl-num">${isNaN(numRaw) ? '…' : numRaw}</span>;\n}`;
-        const modeCode = mode === 'default' ? '' : mode === 'fixed' ? '\n<span style="color:#fbbf24">cout &lt;&lt; fixed;</span>' : '\n<span style="color:#fbbf24">cout &lt;&lt; scientific;</span>';
-        document.getElementById('prec-code').innerHTML = `<span style="color:#a78bfa">cout</span>${modeCode} &lt;&lt; <span style="color:#fbbf24">setprecision(${prec})</span> &lt;&lt; <span style="color:#38bdf8">${isNaN(numRaw) ? '…' : numRaw}</span>;`;
-        const modes = ['default', 'fixed', 'scientific']; let tableHtml = `<table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:0.85rem;"><tr style="color:#64748b;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;"><th style="text-align:left;padding:5px 10px;border-bottom:1px solid #334155;">模式</th><th style="text-align:left;padding:5px 10px;border-bottom:1px solid #334155;">輸出結果</th><th style="text-align:left;padding:5px 10px;border-bottom:1px solid #334155;">說明</th></tr>`;
+        const modeCode = mode === 'default' ? '' : mode === 'fixed' ? '\n<span style="color:#b08800;font-weight:bold;">cout &lt;&lt; fixed;</span>' : '\n<span style="color:#b08800;font-weight:bold;">cout &lt;&lt; scientific;</span>';
+        document.getElementById('prec-code').innerHTML = `<span style="color:#6f42c1">cout</span>${modeCode} &lt;&lt; <span style="color:#b08800;font-weight:bold;">setprecision(${prec})</span> &lt;&lt; <span style="color:#0366d6">${isNaN(numRaw) ? '…' : numRaw}</span>;`;
+        const modes = ['default', 'fixed', 'scientific']; let tableHtml = `<table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:0.85rem;"><tr style="color:var(--text-muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;"><th style="text-align:left;padding:5px 10px;border-bottom:1px solid #cbd5e1;">模式</th><th style="text-align:left;padding:5px 10px;border-bottom:1px solid #cbd5e1;">輸出結果</th><th style="text-align:left;padding:5px 10px;border-bottom:1px solid #cbd5e1;">說明</th></tr>`;
         const modeDescs = { default: '有效位數，自動去掉尾零', fixed: '小數點後固定位數，補零', scientific: '科學記號，固定有效位數' };
-        modes.forEach(m => { const out = formatNum(numRaw, prec, m); const isActive = (m === mode); tableHtml += `<tr style="${isActive ? 'background:#1e293b;' : ''}" ><td style="padding:6px 10px;color:${isActive ? '#a78bfa' : '#64748b'};font-weight:${isActive ? '700' : '400'};">${isActive ? '▶ ' : ''}<code>${m}</code></td><td style="padding:6px 10px;color:${isActive ? '#34d399' : '#94a3b8'};">${out}</td><td style="padding:6px 10px;color:#475569;font-size:0.78rem;">${modeDescs[m]}</td></tr>`; });
+        modes.forEach(m => { const out = formatNum(numRaw, prec, m); const isActive = (m === mode); tableHtml += `<tr style="${isActive ? 'background:#f0f8ff;' : ''}" ><td style="padding:6px 10px;color:${isActive ? '#0366d6' : 'var(--text-muted)'};font-weight:${isActive ? '700' : '400'};">${isActive ? '▶ ' : ''}<code>${m}</code></td><td style="padding:6px 10px;color:${isActive ? '#059669' : 'var(--text-main)'};font-weight:${isActive ? 'bold' : 'normal'}">${out}</td><td style="padding:6px 10px;color:var(--text-muted);font-size:0.78rem;">${modeDescs[m]}</td></tr>`; });
         document.getElementById('prec-comparison').innerHTML = tableHtml + '</table>'; document.getElementById('prec-console').textContent = formatNum(numRaw, prec, mode);
       }
       window.precUpdate = buildPrec; buildPrec();

@@ -9,56 +9,57 @@
 <script src="../../layout.js" defer></script>
 
 <style>
-/* ── 本頁專用的元件與互動樣式 ── */
+/* ── 本頁專用的元件與互動樣式 (淺色化) ── */
 :root {
-  --surface: #f6f8fa;
-  --accent2: #005cc5;
-  --accent3: #e36209;
-  --green: #28a745;
-  --red: #d73a49;
-  --dark-surface: #1e1e2e;
+  /* 介面底色與強調色微調，確保在淺色底上有足夠對比度 */
+  --surface: #f1f5f9;       /* 更輕的灰底 */
+  --accent2: #0284c7;       /* 柔和藍色 */
+  --accent3: #ea580c;       /* 橘紅色 */
+  --green: #10b981;         /* 翡翠綠 */
+  --red: #ef4444;           /* 警告紅 */
 }
 
 code, .mono { font-family: 'Courier New', Courier, monospace; }
 
 /* ── Inputs & Buttons ── */
 input[type="number"], input[type="range"], input[type="text"], select {
-  background: #fff; border: 1px solid var(--border-color); color: var(--text-main);
+  background: #ffffff; border: 1px solid var(--border-color); color: var(--text-main);
   border-radius: 6px; padding: 0.4rem 0.6rem; font-family: monospace; font-size: 0.95rem; outline: none;
   transition: border-color .2s;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); /* 加入微內陰影 */
 }
-input[type="number"]:focus, input[type="text"]:focus { border-color: var(--accent-color); }
+input[type="number"]:focus, input[type="text"]:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(3, 102, 214, 0.2); }
 input[type="number"] { width: 80px; }
 input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
 
 .btn { 
   padding: .45rem 1rem; border: none; border-radius: 6px; font-size: .85rem; font-weight: 600; cursor: pointer;
-  transition: all .2s; 
+  transition: all .2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* 淺色模式按鈕需帶點陰影 */
 }
-.btn:active { transform: scale(.96); }
+.btn:active { transform: scale(.96); box-shadow: none; }
 .btn-primary { background: var(--accent-color); color: #fff; }
-.btn-primary:hover { opacity: .85; }
+.btn-primary:hover { filter: brightness(1.1); }
 .btn-info { background: var(--accent2); color: #fff; }
-.btn-info:hover { opacity: .85; }
+.btn-info:hover { filter: brightness(1.1); }
 .btn-warn { background: var(--accent3); color: #fff; }
-.btn-warn:hover { opacity: .85; }
+.btn-warn:hover { filter: brightness(1.1); }
 .btn-success { background: var(--green); color: #fff; }
 .btn-danger { background: var(--red); color: #fff; }
-.btn-outline { background: #fff; border: 1px solid var(--border-color); color: var(--text-main); }
-.btn-outline:hover { border-color: var(--accent-color); color: var(--accent-color); }
+.btn-outline { background: #ffffff; border: 1px solid var(--border-color); color: var(--text-main); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.btn-outline:hover { border-color: var(--accent-color); color: var(--accent-color); background: #f0f8ff; }
 .btn-sm { padding: .3rem .7rem; font-size: .8rem; }
 
 /* ── Result Box & Layout Helpers ── */
-.result-box { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; font-family: monospace; font-size: .95rem; min-height: 54px; line-height: 1.8; }
+.result-box { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; font-family: monospace; font-size: .95rem; min-height: 54px; line-height: 1.8; color: var(--text-main); }
 .row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
 .row.gap-sm { gap: .5rem; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 @media(max-width:640px) { .grid2 { grid-template-columns: 1fr; } }
 
 /* ── Highlights ── */
-.highlight { background: #cce5ff; border-radius: 4px; padding: 1px 4px; color: var(--accent2); font-weight: bold; }
-.hi-green { background: #d4edda; color: var(--green); border-radius: 4px; padding: 1px 4px; font-weight: bold; }
-.hi-red { background: #f8d7da; color: var(--red); border-radius: 4px; padding: 1px 4px; font-weight: bold; }
+.highlight { background: #e0f2fe; border-radius: 4px; padding: 1px 4px; color: var(--accent2); font-weight: bold; border: 1px solid #bae6fd; }
+.hi-green { background: #dcfce7; color: #15803d; border-radius: 4px; padding: 1px 4px; font-weight: bold; border: 1px solid #86efac; }
+.hi-red { background: #fee2e2; color: #b91c1c; border-radius: 4px; padding: 1px 4px; font-weight: bold; border: 1px solid #fca5a5; }
 .short-circuit-badge { background: var(--accent3); color: #fff; border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; margin-left: 8px; vertical-align: middle; }
 
 /* ── Module Specifics ── */
@@ -68,56 +69,56 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
 
 .inc-demo { background: var(--surface); border-radius: 8px; padding: 1.2rem; border: 1px solid var(--border-color); }
 .inc-vars { display: flex; gap: 2rem; justify-content: center; margin: 1rem 0; }
-.var-box { text-align: center; background: #fff; border: 2px solid var(--border-color); border-radius: 8px; padding: .8rem 1.4rem; transition: border-color .4s; }
-.var-box.active { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(3,102,214,0.3); }
+.var-box { text-align: center; background: #ffffff; border: 2px solid var(--border-color); border-radius: 8px; padding: .8rem 1.4rem; transition: border-color .4s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.var-box.active { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(3,102,214,0.2); }
 .var-box .var-name { font-size: .85rem; color: var(--text-muted); font-weight: bold; }
 .var-box .var-val { font-size: 1.8rem; font-weight: 700; font-family: monospace; color: var(--accent2); }
-.step-log { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: .8rem; margin-top: .8rem; font-family: monospace; font-size: .85rem; min-height: 48px; border-left: 4px solid var(--accent-color); }
+.step-log { background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: .8rem; margin-top: .8rem; font-family: monospace; font-size: .85rem; min-height: 48px; border-left: 4px solid var(--accent-color); color: var(--text-main); }
 
-.toggle-btn { width: 70px; padding: .4rem; text-align: center; border-radius: 20px; border: 2px solid var(--border-color); cursor: pointer; font-weight: 700; transition: all .2s; background: var(--surface); color: var(--text-muted); }
+.toggle-btn { width: 70px; padding: .4rem; text-align: center; border-radius: 20px; border: 2px solid var(--border-color); cursor: pointer; font-weight: 700; transition: all .2s; background: #ffffff; color: var(--text-muted); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 .toggle-btn.on { background: var(--green); border-color: var(--green); color: #fff; }
 .toggle-btn.off { background: var(--red); border-color: var(--red); color: #fff; }
 .logic-results { display: grid; grid-template-columns: repeat(3,1fr); gap: .8rem; margin-top: 1rem; }
-.logic-cell { background: var(--surface); border-radius: 8px; padding: .8rem; text-align: center; border: 2px solid transparent; transition: all .25s; }
+.logic-cell { background: #ffffff; border-radius: 8px; padding: .8rem; text-align: center; border: 2px solid var(--border-color); transition: all .25s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .logic-cell .lc-op { font-size: .9rem; color: var(--accent3); font-family: monospace; font-weight: bold; }
 .logic-cell .lc-val { font-size: 1.5rem; font-weight: 700; margin-top: .25rem; }
-.logic-cell.true-cell { border-color: var(--green); background: #d4edda; }
-.logic-cell.false-cell { border-color: var(--red); background: #f8d7da; }
+.logic-cell.true-cell { border-color: var(--green); background: #f0fdf4; }
+.logic-cell.false-cell { border-color: var(--red); background: #fef2f2; }
 
 .bit-grid { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
-.bit-cell { width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: 700; font-size: .9rem; border: 1px solid var(--border-color); transition: all .3s; }
+.bit-cell { width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: 700; font-size: .9rem; border: 1px solid #cbd5e1; transition: all .3s; }
 .bit-cell.one { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
-.bit-cell.zero { background: #fff; color: var(--text-muted); }
+.bit-cell.zero { background: #ffffff; color: var(--text-muted); }
 .bit-cell.result-one { background: var(--green); color: #fff; border-color: var(--green); }
-.bit-cell.result-zero { background: var(--surface); color: var(--text-muted); }
+.bit-cell.result-zero { background: #e2e8f0; color: var(--text-muted); border-color: #cbd5e1; }
 .bit-row { display: flex; align-items: center; gap:.5rem; margin: .5rem 0; }
 .bit-label { width: 30px; color: var(--text-main); font-size: .85rem; font-family: monospace; font-weight: bold; text-align: right; }
 .bit-op-row { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem 0; }
-.bit-op-btn { padding: .35rem .75rem; border-radius: 6px; border: 1px solid var(--border-color); background: #fff; color: var(--accent3); font-family: monospace; font-weight: 700; cursor: pointer; transition: all .2s; }
+.bit-op-btn { padding: .35rem .75rem; border-radius: 6px; border: 1px solid var(--border-color); background: #ffffff; color: var(--text-main); font-family: monospace; font-weight: 700; cursor: pointer; transition: all .2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 .bit-op-btn:hover, .bit-op-btn.active { background: var(--accent3); color: #fff; border-color: var(--accent3); }
 
-.ternary-visual { background: var(--surface); border-radius: 8px; padding: 1.2rem; text-align: center; font-family: monospace; font-size: 1.1rem; border: 1px solid var(--border-color); }
-.ternary-true-part { color: var(--green); transition: all .3s; }
-.ternary-false-part { color: var(--red); transition: all .3s; }
-.ternary-true-part.active-branch { background: #d4edda; border-radius: 4px; padding: 2px 8px; font-weight: 700; }
-.ternary-false-part.active-branch { background: #f8d7da; border-radius: 4px; padding: 2px 8px; font-weight: 700; }
+.ternary-visual { background: var(--surface); border-radius: 8px; padding: 1.2rem; text-align: center; font-family: monospace; font-size: 1.1rem; border: 1px solid var(--border-color); color: var(--text-main); }
+.ternary-true-part { color: #15803d; transition: all .3s; }
+.ternary-false-part { color: #b91c1c; transition: all .3s; }
+.ternary-true-part.active-branch { background: #dcfce7; border-radius: 4px; padding: 2px 8px; font-weight: 700; border: 1px solid #86efac; }
+.ternary-false-part.active-branch { background: #fee2e2; border-radius: 4px; padding: 2px 8px; font-weight: 700; border: 1px solid #fca5a5; }
 .score-display { font-size: 2.5rem; font-weight: 700; text-align: center; font-family: monospace; margin: .5rem 0; }
 .result-label { text-align: center; font-size: 1.2rem; font-weight: 700; border-radius: 6px; padding: .5rem 1rem; }
 
-.compound-xbox { background: #fff; border: 2px solid var(--accent-color); border-radius: 8px; padding: 1rem 1.5rem; text-align: center; min-width: 100px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.compound-xbox { background: #ffffff; border: 2px solid var(--accent-color); border-radius: 8px; padding: 1rem 1.5rem; text-align: center; min-width: 100px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 .compound-xbox .cx-val { font-size: 2rem; font-weight: 700; font-family: monospace; color: var(--accent-color); }
-.expand-box { flex: 1; background: var(--surface); border-radius: 8px; padding: 1rem 1.2rem; font-family: monospace; font-size: .95rem; min-height: 80px; border-left: 4px solid var(--accent3); border: 1px solid var(--border-color); }
+.expand-box { flex: 1; background: var(--surface); border-radius: 8px; padding: 1rem 1.2rem; font-family: monospace; font-size: .95rem; min-height: 80px; border-left: 4px solid var(--accent3); border: 1px solid var(--border-color); color: var(--text-main); }
 .expand-step { color: var(--text-muted); transition: color .4s; }
 .expand-step.active-step { color: var(--text-main); font-weight: bold; }
 
-.prec-expr { font-family: monospace; font-size: 1.3rem; text-align: center; padding: 1rem; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; line-height: 2.2; word-break: break-all; margin-top: 10px; }
-.prec-step-info { margin-top: 1rem; padding: 1rem; background: #fff; border: 1px solid var(--border-color); border-radius: 8px; border-left: 4px solid var(--accent3); font-size: .95rem; }
+.prec-expr { font-family: monospace; font-size: 1.3rem; text-align: center; padding: 1rem; background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; line-height: 2.2; word-break: break-all; margin-top: 10px; color: var(--text-main); box-shadow: inset 0 1px 3px rgba(0,0,0,0.03); }
+.prec-step-info { margin-top: 1rem; padding: 1rem; background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; border-left: 4px solid var(--accent3); font-size: .95rem; color: var(--text-main); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 
 /* ── Relational Grid ── */
 .rel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
-.rel-cell { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; text-align: center; font-family: monospace; transition: all 0.2s; }
-.rel-cell.rel-true { border-color: var(--green); box-shadow: 0 0 5px rgba(40,167,69,0.3); }
-.rel-cell.rel-false { border-color: var(--red); opacity: 0.7; }
+.rel-cell { background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; text-align: center; font-family: monospace; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); color: var(--text-main); }
+.rel-cell.rel-true { border-color: var(--green); background: #f0fdf4; box-shadow: 0 0 0 2px rgba(16,185,129,0.2); }
+.rel-cell.rel-false { border-color: var(--red); opacity: 0.8; background: #fef2f2; }
 .rel-cell .rel-val { font-weight: bold; font-size: 1.2rem; margin-top: 5px; }
 
 @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
@@ -129,36 +130,37 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
 <div class="container">
   
   <div style="text-align: center; margin-bottom: 40px;">
-    <h1 class="section-title" style="border-bottom: none; margin-bottom: 5px; font-size: 2rem;">C++ 運算元與運算子</h1>
+    <!-- 替換標題為漸層淺色風格，與 index1 一致 -->
+    <h1 class="section-title" style="border-bottom: none; margin-bottom: 5px; font-size: 2rem; background: linear-gradient(90deg, #0366d6, #28a745, #005cc5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">C++ 運算元與運算子</h1>
     <p style="color: var(--text-muted);">八大運算子主題 · 全互動式視覺化教學</p>
   </div>
 
   <!-- 1. 算術運算子 -->
   <div class="card">
-    <h2>➕ 1. 算術運算子</h2>
-    <p>+, -, *, /, % &nbsp;|&nbsp; 整數除法與餘數特別說明</p>
+    <h2 style="color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px;">➕ 1. 算術運算子</h2>
+    <p style="color: var(--text-muted); margin-top: 10px;">+, -, *, /, % &nbsp;|&nbsp; 整數除法與餘數特別說明</p>
     <div class="row" style="margin-top: 15px;">
-      <label>a = <input type="number" id="a1" value="17" step="1" oninput="calcArith()"></label>
-      <label>b = <input type="number" id="b1" value="5" step="1" oninput="calcArith()"></label>
+      <label style="font-weight: bold; color: var(--text-main);">a = <input type="number" id="a1" value="17" step="1" oninput="calcArith()"></label>
+      <label style="font-weight: bold; color: var(--text-main);">b = <input type="number" id="b1" value="5" step="1" oninput="calcArith()"></label>
     </div>
     <div id="arith-results" class="result-box"></div>
   </div>
 
-  <!-- 2. 關係運算子 (新增) -->
+  <!-- 2. 關係運算子 -->
   <div class="card">
-    <h2>⚖️ 2. 關係 (比較) 運算子</h2>
-    <p>==, !=, <, >, <=, >= &nbsp;|&nbsp; 回傳布林值 (true / false)</p>
+    <h2 style="color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px;">⚖️ 2. 關係 (比較) 運算子</h2>
+    <p style="color: var(--text-muted); margin-top: 10px;">==, !=, &lt;, &gt;, &lt;=, &gt;= &nbsp;|&nbsp; 回傳布林值 (true / false)</p>
     <div class="row" style="margin-top: 15px;">
-      <label>A = <input type="number" id="relA" value="10" oninput="calcRel()"></label>
-      <label>B = <input type="number" id="relB" value="10" oninput="calcRel()"></label>
+      <label style="font-weight: bold; color: var(--text-main);">A = <input type="number" id="relA" value="10" oninput="calcRel()"></label>
+      <label style="font-weight: bold; color: var(--text-main);">B = <input type="number" id="relB" value="10" oninput="calcRel()"></label>
     </div>
     <div class="rel-grid" id="rel-results"></div>
   </div>
 
   <!-- 3. 遞增 / 遞減運算子 -->
   <div class="card">
-    <h2>🔢 3. 遞增 / 遞減運算子</h2>
-    <p>前置 (Prefix) vs 後置 (Postfix) 兩步驟拆解動畫</p>
+    <h2 style="color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px;">🔢 3. 遞增 / 遞減運算子</h2>
+    <p style="color: var(--text-muted); margin-top: 10px;">前置 (Prefix) vs 後置 (Postfix) 兩步驟拆解動畫</p>
     <div class="grid2" style="margin-top: 15px;">
       <div class="inc-demo">
         <div style="text-align:center;font-family:monospace;color:var(--accent3);font-size:.95rem;margin-bottom:.5rem;font-weight:bold;">
@@ -193,8 +195,8 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
 
   <!-- 4. 邏輯運算子 (含短路求值) -->
   <div class="card">
-    <h2>🔀 4. 邏輯運算子與短路求值</h2>
-    <p>&amp;&amp;, ||, ! &nbsp;|&nbsp; 注意：C++ 具備「短路求值 (Short-Circuit Evaluation)」特性</p>
+    <h2 style="color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px;">🔀 4. 邏輯運算子與短路求值</h2>
+    <p style="color: var(--text-muted); margin-top: 10px;">&amp;&amp;, ||, ! &nbsp;|&nbsp; 注意：C++ 具備「短路求值 (Short-Circuit Evaluation)」特性</p>
     <div class="row" style="gap:1.5rem; margin-top: 15px;">
       <div>
         <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:.4rem;font-weight:bold;">變數 A</div>
@@ -210,15 +212,15 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
 
   <!-- 5. 位元運算子 -->
   <div class="card">
-    <h2>⚙️ 5. 位元運算子</h2>
-    <p>&amp;, |, ^, ~, &lt;&lt;, &gt;&gt; &nbsp;|&nbsp; 8-bit 方塊可視化</p>
+    <h2 style="color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px;">⚙️ 5. 位元運算子</h2>
+    <p style="color: var(--text-muted); margin-top: 10px;">&amp;, |, ^, ~, &lt;&lt;, &gt;&gt; &nbsp;|&nbsp; 8-bit 方塊可視化</p>
     <div class="row" style="margin-top: 15px;">
-      <label>A = <input type="number" id="bw-a" value="60" min="0" max="255" oninput="updateBitwise()"></label>
-      <label>B = <input type="number" id="bw-b" value="35" min="0" max="255" oninput="updateBitwise()"></label>
+      <label style="font-weight: bold; color: var(--text-main);">A = <input type="number" id="bw-a" value="60" min="0" max="255" oninput="updateBitwise()"></label>
+      <label style="font-weight: bold; color: var(--text-main);">B = <input type="number" id="bw-b" value="35" min="0" max="255" oninput="updateBitwise()"></label>
     </div>
     <div style="margin-top:1rem; padding: 15px; background: var(--surface); border-radius: 8px; border: 1px solid var(--border-color);">
-      <div class="bit-row"><div class="bit-label">A</div><div class="bit-grid" id="bw-bits-a"></div><div style="margin-left:.6rem;font-size:.85rem;color:var(--accent2);font-family:monospace;" id="bw-dec-a"></div></div>
-      <div class="bit-row"><div class="bit-label">B</div><div class="bit-grid" id="bw-bits-b"></div><div style="margin-left:.6rem;font-size:.85rem;color:var(--accent2);font-family:monospace;" id="bw-dec-b"></div></div>
+      <div class="bit-row"><div class="bit-label">A</div><div class="bit-grid" id="bw-bits-a"></div><div style="margin-left:.6rem;font-size:.85rem;color:var(--accent2);font-family:monospace;font-weight:bold;" id="bw-dec-a"></div></div>
+      <div class="bit-row"><div class="bit-label">B</div><div class="bit-grid" id="bw-bits-b"></div><div style="margin-left:.6rem;font-size:.85rem;color:var(--accent2);font-family:monospace;font-weight:bold;" id="bw-dec-b"></div></div>
       <hr style="border:0; border-top:1px dashed var(--border-color); margin: 10px 0;">
       <div class="bit-row"><div class="bit-label">=</div><div class="bit-grid" id="bw-bits-r"></div><div style="margin-left:.6rem;font-size:.85rem;color:var(--green);font-family:monospace;font-weight:bold;" id="bw-dec-r"></div></div>
     </div>
@@ -230,13 +232,13 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
       <button class="bit-op-btn" data-op="<<" onclick="setBwOp(this,'<<')">A &lt;&lt; 1 (左移)</button>
       <button class="bit-op-btn" data-op=">>" onclick="setBwOp(this,'>>')">A &gt;&gt; 1 (右移)</button>
     </div>
-    <div id="bw-explain" style="font-size:.9rem;color:var(--text-main);padding:.8rem;background:#e1f5fe;border-radius:6px; border-left: 4px solid var(--accent2);"></div>
+    <div id="bw-explain" style="font-size:.9rem;color:var(--text-main);padding:.8rem;background:#f0f8ff;border-radius:6px; border-left: 4px solid var(--accent2);"></div>
   </div>
 
   <!-- 6. 條件運算子 -->
   <div class="card">
-    <h2>❓ 6. 條件運算子（三元運算子）</h2>
-    <p>condition ? value_if_true : value_if_false</p>
+    <h2 style="color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px;">❓ 6. 條件運算子（三元運算子）</h2>
+    <p style="color: var(--text-muted); margin-top: 10px;">condition ? value_if_true : value_if_false</p>
     <div class="ternary-visual" style="margin-top: 15px;">
       <span style="color:var(--accent2); font-weight:bold;">score &gt;= 60</span>
       <span style="color:var(--accent-color); font-weight:bold;"> ? </span>
@@ -246,7 +248,7 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
     </div>
     <div style="margin-top:1.5rem">
       <div class="row" style="gap:1rem">
-        <label style="flex:1; font-weight:bold;">score = <input type="range" id="score-range" min="0" max="100" value="75" oninput="updateTernary()" style="width:100%; margin-top: 5px;"></label>
+        <label style="flex:1; font-weight:bold; color: var(--text-main);">score = <input type="range" id="score-range" min="0" max="100" value="75" oninput="updateTernary()" style="width:100%; margin-top: 5px;"></label>
       </div>
       <div class="score-display" id="score-display">75</div>
       <div class="result-label" id="ternary-result"></div>
@@ -255,8 +257,8 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
 
   <!-- 7. 複合指派運算子 -->
   <div class="card">
-    <h2>📝 7. 複合指派運算子</h2>
-    <p>+=, -=, *=, /=, %= &nbsp;|&nbsp; 展開語法視覺化</p>
+    <h2 style="color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px;">📝 7. 複合指派運算子</h2>
+    <p style="color: var(--text-muted); margin-top: 10px;">+=, -=, *=, /=, %= &nbsp;|&nbsp; 展開語法視覺化</p>
     <div class="row" style="align-items: flex-start; margin-top: 15px;">
       <div>
         <div class="compound-xbox">
@@ -268,8 +270,8 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
         </div>
       </div>
       <div style="flex:1">
-        <div class="row gap-sm" style="flex-wrap:wrap; margin-bottom:1rem; padding: 10px; background: var(--surface); border-radius: 8px;">
-          <label style="font-weight:bold;">y = <input type="number" id="cy-val" value="3" style="width:70px"></label>
+        <div class="row gap-sm" style="flex-wrap:wrap; margin-bottom:1rem; padding: 10px; background: var(--surface); border-radius: 8px; border: 1px solid var(--border-color);">
+          <label style="font-weight:bold; color: var(--text-main);">y = <input type="number" id="cy-val" value="3" style="width:70px"></label>
           <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 10px;"></div>
           <button class="btn btn-primary btn-sm" onclick="doCompound('+=')">x += y</button>
           <button class="btn btn-danger btn-sm" onclick="doCompound('-=')">x -= y</button>
@@ -286,17 +288,17 @@ input[type="range"] { cursor: pointer; accent-color: var(--accent-color); }
 
   <!-- 8. 運算子優先順序 -->
   <div class="card">
-    <h2>📊 8. 運算子優先順序</h2>
-    <p>逐步高亮解析複雜運算式</p>
-    <div style="margin-top: 15px; margin-bottom:1rem; background: var(--surface); padding: 15px; border-radius: 8px;">
-      <label style="font-size:.9rem; font-weight:bold;">選擇情境：</label>
+    <h2 style="color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px;">📊 8. 運算子優先順序</h2>
+    <p style="color: var(--text-muted); margin-top: 10px;">逐步高亮解析複雜運算式</p>
+    <div style="margin-top: 15px; margin-bottom:1rem; background: var(--surface); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+      <label style="font-size:.9rem; font-weight:bold; color: var(--text-main);">選擇情境：</label>
       <select id="prec-select" onchange="loadPrecExpr()">
         <option value="0">a + b * c &gt; d &amp;&amp; e</option>
         <option value="1">!a || b &amp;&amp; c</option>
         <option value="2">(a + b) * c - d / e</option>
       </select>
       
-      <div style="margin-top: 15px; margin-bottom:.5rem; font-size:.85rem; font-weight:bold;">設定變數值：</div>
+      <div style="margin-top: 15px; margin-bottom:.5rem; font-size:.85rem; font-weight:bold; color: var(--text-main);">設定變數值：</div>
       <div class="row gap-sm" id="prec-vars" style="flex-wrap:wrap;"></div>
     </div>
     
@@ -332,7 +334,7 @@ function calcArith() {
 }
 calcArith();
 
-// ═══════════════════ Module 2: Relational (新增) ═══════════════════
+// ═══════════════════ Module 2: Relational ═══════════════════
 function calcRel() {
   const a = parseInt(document.getElementById('relA').value) || 0;
   const b = parseInt(document.getElementById('relB').value) || 0;
@@ -419,19 +421,19 @@ function renderLogic() {
     { 
       op: 'A &amp;&amp; B', 
       val: logicA && logicB, 
-      desc: `${logicA} && ${shortAnd ? '<span style="opacity:0.5">B</span>' : logicB}`,
+      desc: `<span style="font-weight:bold">${logicA}</span> && ${shortAnd ? '<span style="opacity:0.4;text-decoration:line-through;">B</span>' : '<span style="font-weight:bold">'+logicB+'</span>'}`,
       badge: shortAnd ? '<span class="short-circuit-badge">短路</span>' : ''
     },
     { 
       op: 'A || B',   
       val: logicA || logicB, 
-      desc: `${logicA} || ${shortOr ? '<span style="opacity:0.5">B</span>' : logicB}`,
+      desc: `<span style="font-weight:bold">${logicA}</span> || ${shortOr ? '<span style="opacity:0.4;text-decoration:line-through;">B</span>' : '<span style="font-weight:bold">'+logicB+'</span>'}`,
       badge: shortOr ? '<span class="short-circuit-badge">短路</span>' : ''
     },
     { 
       op: '!A',       
       val: !logicA,           
-      desc: `!${logicA}`,
+      desc: `!<span style="font-weight:bold">${logicA}</span>`,
       badge: ''
     },
   ];
@@ -488,11 +490,11 @@ function updateTernary() {
   disp.textContent = s;
   if (s >= 60) {
     disp.style.color = 'var(--green)';
-    res.innerHTML = '✅ <span style="color:var(--green)">及格</span>'; res.style.background = '#d4edda'; 
+    res.innerHTML = '✅ <span style="color:var(--green)">及格</span>'; res.style.background = '#dcfce7'; res.style.border = '1px solid #86efac';
     tT.className = 'ternary-true-part active-branch'; tF.className = 'ternary-false-part';
   } else {
     disp.style.color = 'var(--red)';
-    res.innerHTML = '❌ <span style="color:var(--red)">不及格</span>'; res.style.background = '#f8d7da'; 
+    res.innerHTML = '❌ <span style="color:var(--red)">不及格</span>'; res.style.background = '#fee2e2'; res.style.border = '1px solid #fca5a5';
     tT.className = 'ternary-true-part'; tF.className = 'ternary-false-part active-branch';
   }
 }
@@ -563,7 +565,7 @@ function loadPrecExpr() {
   precIdx = parseInt(document.getElementById('prec-select').value);
   precStep = 0; const sc = precScenarios[precIdx]; precState = { ...sc.vars };
   document.getElementById('prec-vars').innerHTML = Object.entries(sc.vars).map(([k,v]) =>
-    `<label style="font-size:.9rem; font-family:monospace; font-weight:bold;">${k} = <input type="${typeof v === 'boolean' ? 'text' : 'number'}" id="pv-${k}" value="${v}" style="width:70px" onchange="precVarChange('${k}', this.value)"></label>`
+    `<label style="font-size:.9rem; font-family:monospace; font-weight:bold; color:var(--text-main);">${k} = <input type="${typeof v === 'boolean' ? 'text' : 'number'}" id="pv-${k}" value="${v}" style="width:70px" onchange="precVarChange('${k}', this.value)"></label>`
   ).join('');
   document.getElementById('prec-expr').innerHTML = `<span class="mono">${sc.label}</span>`;
   document.getElementById('prec-step-info').innerHTML = `<div style="font-size:.85rem; color:var(--text-muted); font-weight:bold;">步驟 0 / ${sc.steps.length}</div><div class="step-desc">按「下一步」開始逐步解析</div>`;

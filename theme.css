@@ -1,24 +1,37 @@
 :root {
+    /* 原有的顏色變數 */
     --accent-color: #0366d6;
     --border-color: #e1e4e8;
     --text-main: #24292e;
     --text-muted: #586069;
+
+    /* 🌟 新增：淺色版型的背景與區塊變數 */
+    --bg-body: #f6f8fa;       /* 網頁主背景 (非常淺的灰白色，讓卡片更突出) */
+    --bg-card: #ffffff;       /* 卡片背景 (純白) */
+    
+    /* 🌟 新增：統一的陰影效果，增加立體感 */
+    --shadow-sm: 0 1px 3px rgba(27,31,35,0.12);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
 }
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.6;
     color: var(--text-main);
+    background-color: var(--bg-body); /* 套用新變數 */
     margin: 0;
     display: flex;
     flex-direction: column;
     min-height: 100vh; /* 確保頁尾能推到最下方 */
 }
+
 .container {
     max-width: 1000px;
     margin: 40px auto;
     padding: 0 20px;
     flex-grow: 1; /* 讓內容區塊自動撐開 */
 }
+
 .section-title {
     font-size: 1.5rem;
     border-bottom: 2px solid var(--accent-color);
@@ -26,23 +39,29 @@ body {
     margin-bottom: 25px;
     padding-bottom: 5px;
 }
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
 }
+
 .card {
+    background-color: var(--bg-card); /* 套用新變數 */
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 24px;
     text-decoration: none;
     color: var(--text-main);
     transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm); /* 加上微陰影提升質感 */
 }
+
 .card:hover {
     border-color: var(--accent-color);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: var(--shadow-md);
     transform: translateY(-2px);
 }
+
 .card h2 { margin: 0 0 10px 0; font-size: 1.25rem; color: var(--accent-color); }
 .card p { margin: 0; font-size: 0.95rem; color: var(--text-muted); }

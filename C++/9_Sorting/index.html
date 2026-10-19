@@ -9,107 +9,123 @@
   <script src="../../layout.js" defer></script>
   
   <style>
+    /* ── 本頁專用的元件與互動樣式 (淺色化) ── */
+    :root {
+      --surface: #f1f5f9;
+      --code-bg: #f8fafc;
+      --accent2: #0284c7;
+      --accent-purple: #8b5cf6;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+    }
+
     /* ── Base & Layout ── */
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }
-    .container { max-width: 1200px; margin: 0 auto; padding-top: 60px; padding-bottom: 60px; }
-    .section-title { color: #58a6ff; font-size: 1.8rem; margin-bottom: 5px; font-weight:bold; }
-    .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-bottom: 30px; }
+    body { padding-top: 40px; padding-bottom: 60px; }
+    .section-title { 
+      font-size: 2rem; margin-bottom: 5px; background: linear-gradient(90deg, #0366d6, #28a745, #005cc5); 
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: bold;
+    }
+    .card h2 { color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px; margin-top: 0; }
     
     /* ── Grid Layout ── */
-    .mod-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; align-items: start; }
+    .mod-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; align-items: start; margin-top: 15px;}
     @media(max-width:900px){ .mod-grid { grid-template-columns: 1fr; } }
     
     /* ── Code blocks ── */
     .code-block {
       font-family: 'Courier New', monospace; font-size: 0.85rem;
-      background: #010409; border-radius: 10px; padding: 14px 18px;
-      line-height: 1.7; border: 1px solid #30363d; overflow-x: auto;
+      background: var(--code-bg); border-radius: 10px; padding: 14px 18px;
+      line-height: 1.7; border: 1px solid var(--border-color); overflow-x: auto;
+      color: var(--text-main); box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
     }
     .code-line { display: block; padding: 2px 6px; border-radius: 4px; transition: all .2s; }
-    .code-line.active-green { background: #1a4a1e; color: #56d364; font-weight: bold; }
-    .code-line.active-red { background: #4a1a1a; color: #f85149; font-weight: bold; }
-    .code-line.active-blue { background: #0d2a4a; color: #58a6ff; font-weight: bold; }
-    .code-line.active-yellow { background: #3a2f00; color: #e3b341; font-weight: bold; }
-    .code-line.active-purple { background: #2a1a4a; color: #d2a8ff; font-weight: bold; }
+    .code-line.active-green { background: #dcfce7; color: #15803d; font-weight: bold; border-left: 3px solid var(--green); }
+    .code-line.active-red { background: #fee2e2; color: #b91c1c; font-weight: bold; border-left: 3px solid var(--red); }
+    .code-line.active-blue { background: #e0f2fe; color: #0369a1; font-weight: bold; border-left: 3px solid var(--accent2); }
+    .code-line.active-yellow { background: #fef3c7; color: #b45309; font-weight: bold; border-left: 3px solid var(--yellow); }
+    .code-line.active-purple { background: #f3e8ff; color: #6d28d9; font-weight: bold; border-left: 3px solid var(--accent-purple); }
 
     /* ── Controls & Watch Box ── */
     .ctrl-row { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
-    .btn-new  { background: #334155; color: #cbd5e1; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:600; transition: .2s; }
-    .btn-sort { background: #238636; color: #fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:600; transition: .2s; }
-    .btn-race { background: linear-gradient(135deg,#f59e0b,#ef4444); color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; }
-    button:hover { opacity:.85; } button:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-new  { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:600; transition: .2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .btn-new:hover { background: #f1f5f9; border-color: var(--accent-color); color: var(--accent-color); }
+    .btn-sort { background: var(--green); color: #fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:600; transition: .2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .btn-race { background: linear-gradient(135deg, var(--yellow), var(--red)); color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    button:hover { filter: brightness(1.05); transform: translateY(-1px); } 
+    button:active { transform: translateY(0); box-shadow: none; }
+    button:disabled { opacity:.5; cursor:not-allowed; transform: none; box-shadow: none; filter: none; }
 
     .watch-container { display:flex; justify-content:center; gap:15px; margin-bottom:10px; flex-wrap:wrap; }
     .watch-box {
-      background: #010409; border: 1px dashed #58a6ff; border-radius: 8px;
-      padding: 8px 12px; font-family: monospace; font-size: 0.85rem; color: #8b949e; text-align:center; min-width: 60px;
+      background: #ffffff; border: 1px dashed var(--accent-color); border-radius: 8px;
+      padding: 8px 12px; font-family: monospace; font-size: 0.85rem; color: var(--text-main); text-align:center; min-width: 60px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    .watch-title { font-size: 0.7rem; text-transform: uppercase; color: #58a6ff; margin-bottom: 2px; font-weight: bold; }
-    .watch-val { color: #e3b341; font-weight: bold; font-size: 1rem; }
+    .watch-title { font-size: 0.7rem; text-transform: uppercase; color: var(--accent-color); margin-bottom: 2px; font-weight: bold; }
+    .watch-val { color: var(--accent3); font-weight: bold; font-size: 1rem; }
 
     /* ── Shared visualizer styles ── */
     .viz-wrapper { display: flex; flex-direction: column; width: 100%; }
     .bar-area {
       display: flex; align-items: flex-end; justify-content: center; gap: 4px;
-      height: 180px; width: 100%; background: #010409; border: 1px solid #30363d;
+      height: 180px; width: 100%; background: #ffffff; border: 1px solid var(--border-color);
       border-radius: 10px; padding: 10px 10px 0 10px; box-sizing: border-box; margin-bottom:10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     .bar-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1; transition: all .15s ease; }
-    .bar-label { font-size: 10px; font-weight: 700; color: #c9d1d9; margin-bottom: 4px; }
-    .bar-rect { width: 100%; border-radius: 4px 4px 0 0; transition: height .2s, background .2s; min-height: 4px; }
+    .bar-label { font-size: 10px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
+    .bar-rect { width: 100%; border-radius: 4px 4px 0 0; transition: height .2s, background .2s; min-height: 4px; box-shadow: inset 0 1px 1px rgba(255,255,255,0.3); }
 
     /* Bar Colours */
     .bar-rect.default  { background: #3b82f6; }
     .bar-rect.compare  { background: #fbbf24; }
     .bar-rect.swap     { background: #ef4444; }
     .bar-rect.pivot    { background: #a855f7; }
-    .bar-rect.sorted   { background: #22c55e; }
+    .bar-rect.sorted   { background: #10b981; }
     .bar-rect.min-bar  { background: #0ea5e9; }
     .bar-rect.inserting{ background: #f97316; }
     .bar-rect.temp     { background: #8b5cf6; }
     .bar-rect.radix-hi { background: #e879f9; }
 
-    .status-line { font-size: 0.9rem; color: #c9d1d9; text-align: center; font-family: monospace; min-height: 20px; margin-bottom:10px; background:#161b22; padding:8px; border-radius:6px; border:1px solid #30363d;}
+    .status-line { font-size: 0.95rem; font-weight: bold; color: var(--text-main); text-align: center; font-family: monospace; min-height: 20px; margin-bottom:10px; background:#ffffff; padding:10px; border-radius:8px; border:1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
 
     /* ── Extra Modules ── */
-    .bucket-area { display: flex; gap: 6px; width: 100%; justify-content: center; margin-bottom:10px; }
-    .bucket { flex: 1; background: #010409; border: 1px solid #30363d; border-radius: 8px; display: flex; flex-direction: column-reverse; align-items: center; padding: 4px; gap: 2px; min-height: 70px; }
-    .bucket-label { font-size: 10px; font-weight:bold; color:#58a6ff; margin-top:4px; }
-    .bucket-item { background: #8b5cf6; border-radius: 4px; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 0; width: 90%; text-align: center; }
-
-    .merge-temp-area { display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 80px; width: 100%; background: #010409; border: 1px dashed #30363d; border-radius: 10px; padding: 4px 10px 0; box-sizing: border-box; margin-bottom:10px; }
+    .merge-temp-area { display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 80px; width: 100%; background: #ffffff; border: 1px dashed var(--border-color); border-radius: 10px; padding: 4px 10px 0; box-sizing: border-box; margin-bottom:10px; }
     
     /* ── Big-O table ── */
-    .bigo-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom:20px; }
-    .bigo-table th, .bigo-table td { border: 1px solid #30363d; padding: 10px; text-align: center; }
-    .bigo-table thead tr { background: #0d2a4a; color:#58a6ff; }
-    .bigo-table .good  { color:#56d364; font-weight:bold; }
-    .bigo-table .mid   { color:#e3b341; font-weight:bold; }
-    .bigo-table .bad   { color:#f85149; font-weight:bold; }
+    .bigo-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom:20px; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .bigo-table th, .bigo-table td { border: 1px solid var(--border-color); padding: 10px; text-align: center; }
+    .bigo-table thead tr { background: var(--surface); color: var(--text-main); }
+    .bigo-table .good  { color: var(--green); font-weight:bold; }
+    .bigo-table .mid   { color: var(--yellow); font-weight:bold; }
+    .bigo-table .bad   { color: var(--red); font-weight:bold; }
 
     /* ── Race section ── */
     .race-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; width: 100%; margin-bottom:15px; }
     @media(max-width:700px){ .race-grid { grid-template-columns: repeat(2,1fr); } }
-    .race-card { background: #010409; border: 1px solid #30363d; border-radius: 10px; padding: 10px; }
-    .race-card h4 { text-align:center; font-size:13px; margin:0 0 8px; color: #c9d1d9; }
+    .race-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .race-card h4 { text-align:center; font-size:13px; margin:0 0 8px; color: var(--text-main); font-weight: bold; }
     .race-bar-area { display: flex; align-items: flex-end; justify-content: center; gap: 2px; height: 80px; }
-    .race-bar-rect { flex:1; border-radius: 2px 2px 0 0; min-height: 2px; }
+    .race-bar-rect { flex:1; border-radius: 2px 2px 0 0; min-height: 2px; box-shadow: inset 0 1px 1px rgba(255,255,255,0.3); }
   </style>
 </head>
 <body>
 <div class="container">
 
-  <div class="section-title">🔢 C++ 排序演算法 (Sorting Algorithms)</div>
-  <p style="color:#8b949e; margin-bottom:28px;">雙欄對照視覺化教學：左側觀察 C++ 實作邏輯，右側觀看演算法即時運作狀態。</p>
+  <div style="text-align: center; margin-bottom: 40px;">
+    <h1 class="section-title">🔢 C++ 排序演算法 (Sorting Algorithms)</h1>
+    <p style="color:var(--text-muted);">雙欄對照視覺化教學：左側觀察 C++ 實作邏輯，右側觀看演算法即時運作狀態。</p>
+  </div>
 
   <!-- ════════════════════════════════════════════
        MODULE 1 — BUBBLE SORT
   ════════════════════════════════════════════ -->
   <div class="card">
-    <h2 style="margin-top:0">🫧 1. 氣泡排序 (Bubble Sort)</h2>
+    <h2>🫧 1. 氣泡排序 (Bubble Sort)</h2>
     <div class="mod-grid">
       <div>
-        <p style="font-size:0.9rem; color:#8b949e;">比較相鄰兩個元素，若左大於右則交換。每輪會把最大值「浮」到最右側。時間複雜度 <code>O(N²)</code>。</p>
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-top: 10px;">比較相鄰兩個元素，若左大於右則交換。每輪會把最大值「浮」到最右側。時間複雜度 <code>O(N²)</code>。</p>
         <div class="code-block">
           <span class="code-line" id="b-l0">for (int i = 0; i &lt; n - 1; i++) {</span>
           <span class="code-line" id="b-l1">&nbsp;&nbsp;for (int j = 0; j &lt; n - i - 1; j++) {</span>
@@ -139,10 +155,10 @@
        MODULE 2 — SELECTION SORT
   ════════════════════════════════════════════ -->
   <div class="card">
-    <h2 style="margin-top:0">🔍 2. 選擇排序 (Selection Sort)</h2>
+    <h2>🔍 2. 選擇排序 (Selection Sort)</h2>
     <div class="mod-grid">
       <div>
-        <p style="font-size:0.9rem; color:#8b949e;">在未排序區間尋找「最小值」，並將其與未排序區的第一個元素交換。時間複雜度 <code>O(N²)</code>。</p>
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-top: 10px;">在未排序區間尋找「最小值」，並將其與未排序區的第一個元素交換。時間複雜度 <code>O(N²)</code>。</p>
         <div class="code-block">
           <span class="code-line" id="s-l0">for (int i = 0; i &lt; n - 1; i++) {</span>
           <span class="code-line" id="s-l1">&nbsp;&nbsp;int minIdx = i;</span>
@@ -173,10 +189,10 @@
        MODULE 3 — INSERTION SORT
   ════════════════════════════════════════════ -->
   <div class="card">
-    <h2 style="margin-top:0">📌 3. 插入排序 (Insertion Sort)</h2>
+    <h2>📌 3. 插入排序 (Insertion Sort)</h2>
     <div class="mod-grid">
       <div>
-        <p style="font-size:0.9rem; color:#8b949e;">將未排序的元素「抽出」，並在已排序的左側區段中由右至左尋找合適的插入位置。時間複雜度 <code>O(N²)</code>。</p>
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-top: 10px;">將未排序的元素「抽出」，並在已排序的左側區段中由右至左尋找合適的插入位置。時間複雜度 <code>O(N²)</code>。</p>
         <div class="code-block">
           <span class="code-line" id="i-l0">for (int i = 1; i &lt; n; i++) {</span>
           <span class="code-line" id="i-l1">&nbsp;&nbsp;int key = arr[i];</span>
@@ -209,10 +225,10 @@
        MODULE 4 — QUICK SORT
   ════════════════════════════════════════════ -->
   <div class="card">
-    <h2 style="margin-top:0">⚡ 4. 快速排序 (Quick Sort)</h2>
+    <h2>⚡ 4. 快速排序 (Quick Sort)</h2>
     <div class="mod-grid">
       <div>
-        <p style="font-size:0.9rem; color:#8b949e;">選擇一個 Pivot，將比它小的放左邊，大的放右邊，然後對左右子陣列遞迴。平均 <code>O(N log N)</code>。</p>
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-top: 10px;">選擇一個 Pivot，將比它小的放左邊，大的放右邊，然後對左右子陣列遞迴。平均 <code>O(N log N)</code>。</p>
         <div class="code-block">
           <span class="code-line" id="q-l0">void quickSort(int arr[], int lo, int hi) {</span>
           <span class="code-line" id="q-l1">&nbsp;&nbsp;if (lo &gt;= hi) return;</span>
@@ -241,10 +257,10 @@
        MODULE 5 — MERGE SORT
   ════════════════════════════════════════════ -->
   <div class="card">
-    <h2 style="margin-top:0">🔀 5. 合併排序 (Merge Sort)</h2>
+    <h2>🔀 5. 合併排序 (Merge Sort)</h2>
     <div class="mod-grid">
       <div>
-        <p style="font-size:0.9rem; color:#8b949e;">將陣列不斷切半直到長度為1，接著兩兩合併(Merge)成排序好的大陣列。需要暫存空間，時間 <code>O(N log N)</code>。</p>
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-top: 10px;">將陣列不斷切半直到長度為1，接著兩兩合併(Merge)成排序好的大陣列。需要暫存空間，時間 <code>O(N log N)</code>。</p>
         <div class="code-block">
           <span class="code-line" id="m-l0">void mergeSort(int arr[], int lo, int hi) {</span>
           <span class="code-line" id="m-l1">&nbsp;&nbsp;if (lo &gt;= hi) return;</span>
@@ -261,7 +277,7 @@
           <button class="btn-sort" id="merge-btn" onclick="mergeStart()">▶ 開始排序</button>
         </div>
         <div class="bar-area" id="merge-bars"></div>
-        <div style="font-size:11px;color:#94a3b8;text-align:center;">Temp Buffer（暫存區）</div>
+        <div style="font-size:11px;color:var(--text-muted);text-align:center;font-weight:bold;">Temp Buffer（暫存區）</div>
         <div class="merge-temp-area" id="merge-temp"></div>
         <div class="status-line" id="merge-status">點擊「開始排序」觀看動畫</div>
       </div>
@@ -272,7 +288,7 @@
        MODULE 6 — RADIX SORT & BIG O
   ════════════════════════════════════════════ -->
   <div class="card">
-    <h2 style="margin-top:0">🏁 6. 複雜度對決 (Sorting Race & Big O)</h2>
+    <h2>🏁 6. 複雜度對決 (Sorting Race & Big O)</h2>
     <div class="mod-grid" style="grid-template-columns: 1fr;">
       <div>
         <table class="bigo-table">
@@ -290,12 +306,12 @@
         </table>
       </div>
       <div>
-        <h3 style="color:#58a6ff; text-align:center; margin-top:0;">🏎️ 終極競速 (N = 30)</h3>
+        <h3 style="color:var(--accent-color); text-align:center; margin-top:0;">🏎️ 終極競速 (N = 30)</h3>
         <div class="race-grid" id="race-grid"></div>
         <div style="text-align:center;">
           <button class="btn-race" id="race-btn" onclick="raceStart()">🚀 Start Race！</button>
         </div>
-        <div class="status-line" id="race-status" style="margin-top:10px; border:none; background:transparent;">準備就緒，點擊 Start Race！</div>
+        <div class="status-line" id="race-status" style="margin-top:10px; border:none; background:transparent; box-shadow:none;">準備就緒，點擊 Start Race！</div>
       </div>
     </div>
   </div>
@@ -305,7 +321,7 @@
 <script>
 const delay = ms => new Promise(res => setTimeout(res, ms));
 function randArray(n = 12, min = 10, max = 99) { return Array.from({ length: n }, () => Math.floor(Math.random() * (max - min + 1)) + min); }
-function setStatus(id, msg) { const el = document.getElementById(id); if (el) el.textContent = msg; }
+function setStatus(id, msg) { const el = document.getElementById(id); if (el) el.innerHTML = msg; }
 function disableBtn(id, dis) { const btn = document.getElementById(id); if (btn) btn.disabled = dis; }
 function hl(id, cls) { let el = document.getElementById(id); if(el) el.className = 'code-line ' + cls; }
 function clr(prefix, max) { for(let i=0; i<=max; i++) { let el = document.getElementById(prefix + i); if(el) el.className = 'code-line'; } }
@@ -353,7 +369,7 @@ async function bubbleStart() {
     }
   }
   buildBars('bubble-bars', arr, Object.fromEntries(arr.map((_, i) => [i, 'sorted'])));
-  setStatus('bubble-status', '✅ 排序完成！'); clr('b-l', 6);
+  setStatus('bubble-status', '<span style="color:var(--green)">✅ 排序完成！</span>'); clr('b-l', 6);
   bubbleArr = arr; bubbleRun = false; disableBtn('bubble-btn', false);
 }
 
@@ -390,7 +406,7 @@ async function selectionStart() {
     clr('s-l', 6);
   }
   buildBars('selection-bars', arr, Object.fromEntries(arr.map((_, i) => [i, 'sorted'])));
-  setStatus('selection-status', '✅ 排序完成！');
+  setStatus('selection-status', '<span style="color:var(--green)">✅ 排序完成！</span>');
   selArr = arr; selRun = false; disableBtn('selection-btn', false);
 }
 
@@ -428,7 +444,7 @@ async function insertionStart() {
     await delay(400); clr('i-l', 8);
   }
   buildBars('insertion-bars', arr, Object.fromEntries(arr.map((_, i) => [i, 'sorted'])));
-  setStatus('insertion-status', '✅ 排序完成！');
+  setStatus('insertion-status', '<span style="color:var(--green)">✅ 排序完成！</span>');
   insArr = arr; insRun = false; disableBtn('insertion-btn', false);
 }
 
@@ -440,7 +456,7 @@ async function quickStart() {
   const arr = [...quickArr]; quickSet = new Set(); clr('q-l', 5);
   await qs(arr, 0, arr.length - 1);
   buildBars('quick-bars', arr, Object.fromEntries(arr.map((_, i) => [i, 'sorted'])));
-  setStatus('quick-status', '✅ 排序完成！'); quickArr = arr; quickRun = false; disableBtn('quick-btn', false);
+  setStatus('quick-status', '<span style="color:var(--green)">✅ 排序完成！</span>'); quickArr = arr; quickRun = false; disableBtn('quick-btn', false);
 }
 async function qs(arr, lo, hi) {
   updateWatch('w-q-range', `${lo} ~ ${hi}`); hl('q-l0', 'active-blue'); await delay(300);
@@ -472,7 +488,7 @@ async function mergeStart() {
   await ms(arr, 0, arr.length - 1);
   buildBars('merge-bars', arr, Object.fromEntries(arr.map((_, i) => [i, 'sorted'])));
   document.getElementById('merge-temp').innerHTML='';
-  setStatus('merge-status', '✅ 排序完成！'); mergeArr = arr; mergeRun = false; disableBtn('merge-btn', false);
+  setStatus('merge-status', '<span style="color:var(--green)">✅ 排序完成！</span>'); mergeArr = arr; mergeRun = false; disableBtn('merge-btn', false);
 }
 async function ms(arr, lo, hi) {
   hl('m-l0', 'active-blue'); await delay(200);
@@ -503,7 +519,7 @@ function renderTemp(t) {
   const maxVal = 99;
   t.forEach(v => {
     const r = document.createElement('div'); r.className='bar-rect temp'; r.style.height=Math.max(4,(v/maxVal)*68)+'px'; r.style.flex='1'; r.style.borderRadius='3px 3px 0 0';
-    const l = document.createElement('div'); l.style.cssText='font-size:9px;color:#fff;text-align:center;margin-bottom:2px;'; l.textContent=v;
+    const l = document.createElement('div'); l.style.cssText='font-size:9px;color:var(--text-muted);text-align:center;margin-bottom:2px;font-weight:bold;'; l.textContent=v;
     const w = document.createElement('div'); w.style.cssText='display:flex;flex-direction:column;justify-content:flex-end;flex:1;'; w.appendChild(l); w.appendChild(r); c.appendChild(w);
   });
 }
@@ -529,7 +545,7 @@ function buildRaceBars(id, arr, states, c) {
   const maxVal = Math.max(...arr, 1);
   arr.forEach((v, i) => {
     const r = document.createElement('div'); r.className = 'race-bar-rect'; r.style.height = Math.max(2, (v / maxVal) * 75) + 'px';
-    r.style.background = states[i] === 'sorted' ? '#22c55e' : (states[i] === 'swap' ? '#ef4444' : c); cont.appendChild(r);
+    r.style.background = states[i] === 'sorted' ? 'var(--green)' : (states[i] === 'swap' ? 'var(--red)' : c); cont.appendChild(r);
   });
 }
 async function raceStart() {
@@ -537,7 +553,7 @@ async function raceStart() {
   initRaceGrid(); setStatus('race-status', '🏁 比賽進行中...');
   const shared = [...raceBase];
   await Promise.allSettled([ rBubble(shared), rSelection(shared), rInsertion(shared), rQuick(shared), rMerge(shared), rRadix(shared) ]);
-  setStatus('race-status', '🏆 所有排序完成！O(N log N) 與 O(N) 演算法大幅勝出！');
+  setStatus('race-status', '<span style="color:var(--accent-color)">🏆 所有排序完成！O(N log N) 與 O(N) 演算法大幅勝出！</span>');
   raceRun = false; disableBtn('race-btn', false);
 }
 async function rBubble(s) { let a=[...s], n=a.length; for(let i=0;i<n-1;i++) { for(let j=0;j<n-i-1;j++) { buildRaceBars('race-bubble',a,{[j]:'swap'},'#3b82f6'); await delay(30); if(a[j]>a[j+1]) [a[j],a[j+1]]=[a[j+1],a[j]]; } } buildRaceBars('race-bubble',a,Object.fromEntries(a.map((_,i)=>[i,'sorted'])),'#3b82f6'); }

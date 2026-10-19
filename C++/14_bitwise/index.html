@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="../../theme.css">
 <script src="../../layout.js" defer></script>
 <style>
-  /* ========== 鐵律：版面保護 ========== */
+  /* ========== 鐵律：版面保護 (淺色化) ========== */
   body { padding: 0; margin: 0; background-color: #f8f9fa; }
-  .container { padding-top: 80px; padding-bottom: 60px; max-width: 1000px; margin: 0 auto; }
+  .container { padding-top: 40px; padding-bottom: 60px; max-width: 1000px; margin: 0 auto; }
 
   :root {
-    --lab-bg: #0d1117;
-    --bit-on: #39ff14;
-    --bit-off: #2a2f3a;
-    --sign-red: #ff3b5c;
-    --accent: #00e5ff;
-    --carry: #ffd166;
+    --lab-bg: #f8fafc;
+    --bit-on: #10b981;
+    --bit-off: #ffffff;
+    --sign-red: #ef4444;
+    --accent: #0284c7;
+    --carry: #f59e0b;
     --cell: clamp(32px, 8vw, 52px);
     --mono: "JetBrains Mono", "Fira Code", Consolas, "Courier New", monospace;
   }
@@ -26,70 +26,73 @@
   .card {
     background: #ffffff;
     border-radius: 16px;
-    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03);
     padding: 28px;
     margin: 0 16px 32px;
-    color: #24292f;
+    color: #334155;
     line-height: 1.75;
+    border: 1px solid #e2e8f0;
   }
   .card.reveal { opacity: 0; translate: 0 30px; transition: opacity .7s ease, translate .7s ease; }
   .card.reveal.in-view { opacity: 1; translate: 0 0; }
   .section-title {
     font-size: 1.5rem; font-weight: 800; margin: 0 0 14px;
-    padding-left: 14px; border-left: 6px solid #00b8d4;
+    padding-left: 14px; border-left: 6px solid var(--accent); color: #0f172a;
   }
   .card p { margin: 0 0 12px; }
   .tip {
-    background: #eefcff; border-left: 4px solid #00b8d4; padding: 10px 14px;
-    border-radius: 8px; margin: 14px 0 0; font-size: .95rem;
+    background: #f0f9ff; border-left: 4px solid var(--accent); padding: 10px 14px;
+    border-radius: 8px; margin: 14px 0 0; font-size: .95rem; color: #0f172a;
   }
-  .tip.warn { background: #fff4f5; border-left-color: var(--sign-red); }
+  .tip.warn { background: #fef2f2; border-left-color: var(--sign-red); }
   .hidden { display: none !important; }
 
-  /* ========== 深色實驗室螢幕 ========== */
+  /* ========== 淺色實驗室螢幕 ========== */
   .lab-panel {
     background-color: var(--lab-bg);
     background-image:
-      linear-gradient(rgba(0, 229, 255, .05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 229, 255, .05) 1px, transparent 1px);
+      linear-gradient(rgba(2, 132, 199, .05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(2, 132, 199, .05) 1px, transparent 1px);
     background-size: 24px 24px;
-    border: 1px solid #1f2a37;
+    border: 1px solid #cbd5e1;
     border-radius: 14px;
     padding: 22px;
-    color: #e6edf3;
+    color: #1e293b;
     margin-top: 16px;
-    box-shadow: inset 0 0 40px rgba(0, 229, 255, .06);
+    box-shadow: inset 0 0 40px rgba(2, 132, 199, .03);
   }
   .lab-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
   .lab-label { font-family: var(--mono); color: var(--accent); font-weight: 700; letter-spacing: 1px; }
-  .lab-note { color: #8b949e; font-size: .9rem; }
+  .lab-note { color: #64748b; font-size: .9rem; font-weight: bold;}
 
   /* ========== 按鈕 ========== */
   .neon-btn {
     font: inherit; font-size: .95rem; cursor: pointer;
-    background: transparent; color: var(--accent);
+    background: #ffffff; color: var(--accent);
     border: 1px solid var(--accent); border-radius: 8px; padding: 8px 16px;
     transition: background .2s, box-shadow .2s, color .2s, scale .1s;
+    font-weight: bold;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   }
-  .neon-btn:hover { background: rgba(0, 229, 255, .12); box-shadow: 0 0 12px rgba(0, 229, 255, .45); }
-  .neon-btn:active { scale: .95; }
-  .neon-btn.primary { background: var(--accent); color: #0d1117; font-weight: 700; }
-  .neon-btn.primary:hover { box-shadow: 0 0 18px rgba(0, 229, 255, .8); }
+  .neon-btn:hover { background: #e0f2fe; box-shadow: 0 2px 4px rgba(2, 132, 199, .15); }
+  .neon-btn:active { scale: .95; box-shadow: none; }
+  .neon-btn.primary { background: var(--accent); color: #ffffff; font-weight: 700; }
+  .neon-btn.primary:hover { filter: brightness(1.1); box-shadow: 0 4px 6px rgba(2, 132, 199, .2); }
   .neon-btn.danger { color: var(--sign-red); border-color: var(--sign-red); }
-  .neon-btn.danger:hover { background: rgba(255, 59, 92, .12); box-shadow: 0 0 12px rgba(255, 59, 92, .5); }
-  .neon-btn.active { background: var(--accent); color: #0d1117; font-weight: 700; box-shadow: 0 0 14px rgba(0, 229, 255, .6); }
-  .neon-btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+  .neon-btn.danger:hover { background: #fef2f2; box-shadow: 0 2px 4px rgba(239, 68, 68, .15); }
+  .neon-btn.active { background: var(--accent); color: #ffffff; font-weight: 700; box-shadow: 0 2px 6px rgba(2, 132, 199, .3); }
+  .neon-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; filter: none; }
   .is-busy button, .is-busy input { pointer-events: none; }
   .is-busy .neon-btn { opacity: .5; }
 
   /* 型別切換開關 */
-  .mode-switch { display: inline-flex; border: 1px solid #30363d; border-radius: 999px; padding: 4px; background: #161b22; }
+  .mode-switch { display: inline-flex; border: 1px solid #cbd5e1; border-radius: 999px; padding: 4px; background: #ffffff; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);}
   .mode-btn {
     font: inherit; font-size: .9rem; cursor: pointer; border: none; border-radius: 999px;
-    padding: 6px 16px; background: transparent; color: #8b949e; transition: background .25s, color .25s;
+    padding: 6px 16px; background: transparent; color: #64748b; transition: background .25s, color .25s; font-weight: bold;
   }
-  .mode-btn.active { background: var(--accent); color: #0d1117; font-weight: 700; }
-  .mode-btn.active.signed { background: var(--sign-red); color: #fff; }
+  .mode-btn.active { background: var(--accent); color: #ffffff; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+  .mode-btn.active.signed { background: var(--sign-red); color: #ffffff; }
 
   /* ========== 位元面板 ========== */
   .bit-panel { position: relative; padding: 30px 0 6px; }
@@ -109,29 +112,29 @@
     display: grid; place-items: center;
     font-family: var(--mono); font-size: 1.35rem; font-weight: 800;
     border-radius: 10px;
-    background: var(--bit-off); color: #5c6370;
-    border: 1px solid #3a4150;
-    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .35);
-    transition: background .2s, color .2s, box-shadow .2s, scale .1s;
+    background: var(--bit-off); color: #94a3b8;
+    border: 2px solid #cbd5e1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: background .2s, color .2s, border-color .2s, box-shadow .2s, scale .1s;
   }
   .bit-cell.clickable:hover .bit-box { border-color: var(--accent); }
-  .bit-cell.clickable:active .bit-box { scale: .86; box-shadow: inset 0 3px 6px rgba(0, 0, 0, .6); }
+  .bit-cell.clickable:active .bit-box { scale: .9; box-shadow: none; }
   .bit-cell.on .bit-box {
-    background: var(--bit-on); color: #0d1117; border-color: #b6ff9e;
-    box-shadow: 0 0 12px var(--bit-on), 0 0 28px rgba(57, 255, 20, .4), inset 0 -4px 0 rgba(0, 0, 0, .2);
+    background: #ecfdf5; color: #065f46; border-color: var(--bit-on);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4), inset 0 2px 4px rgba(16, 185, 129, 0.1);
   }
-  .bit-weight { font-family: var(--mono); font-size: .72rem; color: #8b949e; margin-top: 6px; }
+  .bit-weight { font-family: var(--mono); font-size: .75rem; color: #64748b; margin-top: 6px; font-weight: bold;}
   .sign-tag {
     display: none; position: absolute; top: -24px; left: 50%; translate: -50% 0;
     white-space: nowrap; font-size: .7rem; font-weight: 700; color: var(--sign-red);
-    background: rgba(255, 59, 92, .12); border: 1px solid var(--sign-red); border-radius: 6px; padding: 0 6px;
+    background: #fef2f2; border: 1px solid var(--sign-red); border-radius: 6px; padding: 0 6px;
   }
   .bit-cell.sign-bit .sign-tag { display: block; }
-  .bit-cell.sign-bit .bit-box { outline: 3px solid var(--sign-red); outline-offset: 3px; }
+  .bit-cell.sign-bit .bit-box { outline: 3px solid var(--sign-red); outline-offset: 2px; }
   .bit-cell.sign-bit .bit-weight { color: var(--sign-red); font-weight: 700; }
-  .bit-cell.pending .bit-box { background: transparent; border: 1px dashed #4b5563; color: #4b5563; box-shadow: none; }
-  .bit-cell.col-focus .bit-box { box-shadow: 0 0 0 3px var(--accent), 0 0 18px var(--accent); }
-  .bit-cell.guarded .bit-box { opacity: .18; }
+  .bit-cell.pending .bit-box { background: #f8fafc; border: 2px dashed #94a3b8; color: #94a3b8; box-shadow: none; }
+  .bit-cell.col-focus .bit-box { box-shadow: 0 0 0 3px var(--accent), 0 0 10px rgba(2,132,199,0.3); }
+  .bit-cell.guarded .bit-box { opacity: .3; }
   .bit-cell.guarded::after {
     content: "🛡️"; position: absolute; top: calc(var(--cell) * .3); left: 50%; translate: -50% 0;
     font-size: 1.3rem; animation: guard-in .3s ease-out;
@@ -143,39 +146,39 @@
   .bit-box.fill-in { animation: fill-in .5s ease-out; }
   .bit-box.fill-sign { animation: fill-sign .8s ease-out; }
 
-  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.15); } 100% { transform: scale(1); } }
   @keyframes flip { 0% { transform: rotateX(0); } 50% { transform: rotateX(90deg); } 100% { transform: rotateX(0); } }
   @keyframes fill-in { from { opacity: 0; transform: translateY(-18px); } to { opacity: 1; transform: none; } }
   @keyframes fill-sign {
-    0% { opacity: 0; transform: translateY(-18px); box-shadow: 0 0 0 4px var(--sign-red), 0 0 24px var(--sign-red); }
-    60% { opacity: 1; transform: none; box-shadow: 0 0 0 4px var(--sign-red), 0 0 24px var(--sign-red); }
+    0% { opacity: 0; transform: translateY(-18px); box-shadow: 0 0 0 4px var(--sign-red), 0 0 24px rgba(239,68,68,0.4); }
+    60% { opacity: 1; transform: none; box-shadow: 0 0 0 4px var(--sign-red), 0 0 24px rgba(239,68,68,0.4); }
   }
   @keyframes guard-in { from { opacity: 0; translate: -50% -12px; } to { opacity: 1; translate: -50% 0; } }
   @keyframes spotlight {
-    0%, 100% { box-shadow: 0 0 0 3px var(--carry), 0 0 10px var(--carry); }
-    50% { box-shadow: 0 0 0 5px var(--carry), 0 0 28px var(--carry); }
+    0%, 100% { box-shadow: 0 0 0 3px var(--carry), 0 0 10px rgba(245,158,11,0.3); }
+    50% { box-shadow: 0 0 0 5px var(--carry), 0 0 20px rgba(245,158,11,0.5); }
   }
 
-  /* 黑洞 */
+  /* 黑洞 (調整為淺色背景的黑洞) */
   .bit-panel.has-void::before, .bit-panel.has-void::after {
     content: ""; position: absolute; bottom: -34px; width: 58px; height: 58px; border-radius: 50%;
-    background: radial-gradient(circle, #000 30%, #1a0629 55%, rgba(155, 89, 255, .35) 68%, transparent 72%);
-    box-shadow: 0 0 22px rgba(155, 89, 255, .35);
+    background: radial-gradient(circle, #334155 30%, #64748b 55%, rgba(139, 92, 246, .2) 68%, transparent 72%);
+    box-shadow: 0 0 22px rgba(139, 92, 246, .2);
     animation: spin 6s linear infinite;
   }
   .bit-panel.has-void::before { left: 2px; }
   .bit-panel.has-void::after { right: 2px; }
   .bit-panel.void-l::before, .bit-panel.void-r::after { animation: gulp .7s ease-in-out, spin 6s linear infinite; }
   @keyframes spin { to { rotate: 360deg; } }
-  @keyframes gulp { 50% { scale: 1.45; box-shadow: 0 0 40px rgba(155, 89, 255, .9); } }
-  .void-caption { display: flex; justify-content: space-between; font-size: .75rem; color: #9b59ff; margin-top: 40px; padding: 0 4px; }
+  @keyframes gulp { 50% { scale: 1.45; box-shadow: 0 0 40px rgba(139, 92, 246, .6); } }
+  .void-caption { display: flex; justify-content: space-between; font-size: .8rem; color: #8b5cf6; margin-top: 40px; padding: 0 4px; font-weight: bold;}
 
   /* 二補數的進位火花 */
   .carry-spark {
     position: absolute; top: 2px; translate: -50% 0; z-index: 3;
-    font-family: var(--mono); font-weight: 800; color: #0d1117; background: var(--carry);
+    font-family: var(--mono); font-weight: 800; color: #fff; background: var(--carry);
     border-radius: 999px; padding: 0 8px; font-size: .85rem;
-    box-shadow: 0 0 14px var(--carry);
+    box-shadow: 0 2px 10px rgba(245,158,11,0.4);
     transition: left .4s ease, top .6s ease-in, opacity .6s ease-in;
   }
   .carry-spark.spark-fall { top: 120px; opacity: 0; }
@@ -183,22 +186,22 @@
   /* 輸入框 */
   .dec-input {
     font-family: var(--mono); font-size: 1.15rem; font-weight: 700; width: 110px;
-    background: #161b22; color: var(--bit-on); border: 1px solid #30363d; border-radius: 8px; padding: 6px 10px;
+    background: #ffffff; color: var(--accent); border: 2px solid #cbd5e1; border-radius: 8px; padding: 6px 10px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); text-align: center;
   }
-  .dec-input:focus { outline: 2px solid var(--accent); }
-  .input-hint { color: var(--sign-red); font-size: .88rem; min-height: 1.4em; margin-top: 4px; }
+  .dec-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2); }
+  .input-hint { color: var(--sign-red); font-size: .88rem; min-height: 1.4em; margin-top: 4px; font-weight: bold; }
   .operand-block { margin-bottom: 18px; transition: opacity .3s; }
-  .operand-block.dimmed { opacity: .35; }
+  .operand-block.dimmed { opacity: .4; }
   .operand-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 
   /* 步驟指示 */
   .steps { display: flex; gap: 10px; flex-wrap: wrap; }
   .step-pill {
-    border: 1px solid #30363d; border-radius: 999px; padding: 4px 14px; font-size: .88rem; color: #8b949e;
-    transition: all .3s;
+    border: 1px solid #cbd5e1; border-radius: 999px; padding: 4px 14px; font-size: .88rem; color: #64748b; background: #ffffff;
+    transition: all .3s; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   }
-  .step-pill.active { border-color: var(--carry); color: #0d1117; background: var(--carry); font-weight: 700; box-shadow: 0 0 14px var(--carry); }
-  .step-pill.done { border-color: var(--bit-on); color: var(--bit-on); }
+  .step-pill.active { border-color: var(--carry); color: #fff; background: var(--carry); font-weight: 700; box-shadow: 0 2px 10px rgba(245,158,11,0.4); }
+  .step-pill.done { border-color: var(--green); color: var(--green); background: #ecfdf5;}
 
   /* 運算子區 */
   .op-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -206,52 +209,52 @@
   .ops-grid { margin-top: 10px; }
   .ops-row { display: grid; grid-template-columns: 80px 1fr 90px; align-items: center; }
   .ops-grid .bit-panel { padding-left: 70px; padding-right: 70px; }
-  .row-label { font-family: var(--mono); color: var(--accent); font-weight: 700; }
-  .row-dec { font-family: var(--mono); font-size: 1.2rem; font-weight: 800; color: var(--bit-on); text-align: right; }
-  .ops-divider { border-top: 2px dashed #30363d; margin: 6px 0 0; position: relative; height: 0; }
+  .row-label { font-family: var(--mono); color: var(--accent); font-weight: 700; font-size: 1.1rem; }
+  .row-dec { font-family: var(--mono); font-size: 1.2rem; font-weight: 800; color: var(--green); text-align: right; }
+  .ops-divider { border-top: 2px dashed #cbd5e1; margin: 6px 0 0; position: relative; height: 0; }
   .ops-divider span {
     position: absolute; left: 30px; top: -16px; background: var(--lab-bg); padding: 0 8px;
     font-family: var(--mono); font-size: 1.3rem; font-weight: 800; color: var(--carry);
   }
   .shift-box { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 18px 0; }
-  .shift-box input[type=range] { width: min(320px, 50vw); accent-color: var(--accent); }
+  .shift-box input[type=range] { width: min(320px, 50vw); accent-color: var(--accent); cursor: pointer;}
   .expr {
-    font-family: var(--mono); font-size: 1.25rem; font-weight: 800; text-align: center;
-    color: #fff; margin: 14px 0 6px;
+    font-family: var(--mono); font-size: 1.3rem; font-weight: 800; text-align: center;
+    color: #0f172a; margin: 14px 0 10px;
   }
-  .expr .res { color: var(--bit-on); text-shadow: 0 0 10px rgba(57, 255, 20, .6); }
-  .op-explain { background: rgba(0, 229, 255, .07); border: 1px solid rgba(0, 229, 255, .25); border-radius: 10px; padding: 12px 16px; margin-top: 12px; font-size: .95rem; }
+  .expr .res { color: var(--green); }
+  .op-explain { background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; margin-top: 12px; font-size: .95rem; color: #334155; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
   .op-explain b { color: var(--accent); }
 
-  /* ========== 鐵律：Console 輸出保護 ========== */
+  /* ========== Console 輸出保護 ========== */
   .console-output {
-    white-space: pre-wrap; font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px;
-    margin-top: 14px; max-height: 200px; overflow-y: auto; font-size: .9rem; line-height: 1.6;
+    white-space: pre-wrap; font-family: monospace; background: #1e293b; color: #34d399; padding: 15px; border-radius: 8px;
+    margin-top: 14px; max-height: 200px; overflow-y: auto; font-size: .95rem; line-height: 1.6; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
 
-  /* ========== 鐵律：程式碼排版保護 ========== */
+  /* ========== 程式碼排版保護 ========== */
   .code-block {
-    background: #1e1e1e; color: #d4d4d4; border-radius: 10px; padding: 16px 18px;
-    font-family: var(--mono); font-size: .95rem; line-height: 1.7; overflow-x: auto;
+    background: var(--code-bg); color: #1e293b; border-radius: 10px; padding: 16px 18px;
+    font-family: var(--mono); font-size: .95rem; line-height: 1.7; overflow-x: auto; border: 1px solid var(--border-color); box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
   }
   .code-block .ln { display: block; white-space: nowrap; min-height: 1.7em; border-radius: 4px; transition: background .4s, box-shadow .4s; }
   .ind-1 { padding-left: 1.5rem !important; }
   .ind-2 { padding-left: 3rem !important; }
-  .code-block .ln.hl { background: rgba(0, 229, 255, .14); box-shadow: inset 3px 0 0 var(--accent); }
-  .tok-kw { color: #569cd6; }
-  .tok-num { color: #b5cea8; }
-  .tok-pp { color: #c586c0; }
-  .tok-str { color: #ce9178; }
-  .tok-cmt { color: #6a9955; margin-left: 1.2rem; }
+  .code-block .ln.hl { background: #e0f2fe; box-shadow: inset 3px 0 0 var(--accent); }
+  .tok-kw { color: #d73a49; font-weight: bold;}
+  .tok-num { color: #005cc5; }
+  .tok-pp { color: #d73a49; }
+  .tok-str { color: #032f62; }
+  .tok-cmt { color: #6a737d; font-style: italic; }
   .code-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; flex-wrap: wrap; }
-  .type-badge { font-family: var(--mono); font-size: .85rem; padding: 3px 10px; border-radius: 6px; background: #161b22; color: var(--accent); border: 1px solid #30363d; }
+  .type-badge { font-family: var(--mono); font-size: .9rem; font-weight: bold; padding: 4px 10px; border-radius: 6px; background: #ffffff; color: var(--accent); border: 1px solid var(--border-color); box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
 
   /* 奇偶與乘除 */
   .verdict { font-size: 1.3rem; font-weight: 800; text-align: center; margin-top: 14px; min-height: 1.8em; }
-  .verdict.odd { color: var(--carry); text-shadow: 0 0 10px rgba(255, 209, 102, .5); }
-  .verdict.even { color: var(--accent); text-shadow: 0 0 10px rgba(0, 229, 255, .5); }
-  .formula { font-family: var(--mono); text-align: center; font-size: 1.05rem; margin-top: 10px; min-height: 3.2em; }
-  .formula .big { font-size: 1.3rem; font-weight: 800; color: #fff; }
+  .verdict.odd { color: var(--carry); }
+  .verdict.even { color: var(--accent); }
+  .formula { font-family: var(--mono); text-align: center; font-size: 1.05rem; margin-top: 10px; min-height: 3.2em; color: #0f172a;}
+  .formula .big { font-size: 1.3rem; font-weight: 800; color: #0f172a; }
 
   @media (max-width: 720px) {
     .card { padding: 20px 16px; margin: 0 8px 24px; }
@@ -275,13 +278,13 @@
   <!-- ===================== Card 0：開場 ===================== -->
   <section class="card" id="intro">
     <h2 class="section-title">💡 電腦其實只有一排燈泡</h2>
-    <p>你寫的 <code>int</code>、<code>char</code>，在電腦眼裡全都是一排<b>小燈泡</b>：亮 = <b>1</b>、暗 = <b>0</b>。今天我們只玩 8 顆，剛好是一個 <code>char</code> 的大小。</p>
+    <p>你寫的 <code>int</code>、<code>char</code>，在電腦眼裡全都是一排<b>小燈泡</b>：亮 = <b style="color:var(--green)">1</b>、暗 = <b style="color:var(--text-muted)">0</b>。今天我們只玩 8 顆，剛好是一個 <code>char</code> 的大小。</p>
     <p>每顆燈泡都有自己的「面額」，從右邊開始是 1、2、4、8……每往左一格就<b>翻一倍</b>。把亮著的面額加起來，就是這排燈泡代表的數字。點點看吧！</p>
     <div class="lab-panel">
       <div id="introPanel"></div>
       <div class="expr" id="introSum"></div>
       <div class="lab-row" style="justify-content:center">
-        <button class="neon-btn" id="btnIntro" type="button">▶ 再示範一次：怎麼拼出 13？</button>
+        <button class="neon-btn primary" id="btnIntro" type="button">▶ 再示範一次：怎麼拼出 13？</button>
         <button class="neon-btn danger" id="btnIntroClear" type="button">全部熄燈</button>
       </div>
     </div>
@@ -339,9 +342,9 @@
         <button class="neon-btn primary" id="btnTwos" type="button">⚡ 把 A 變成負數（取二補數）</button>
         <button class="neon-btn" id="btnApplyTwos" type="button" disabled>⬆ 套用回 Operand A</button>
       </div>
-      <div class="tip warn hidden" id="twosHint" style="color:#24292f">
+      <div class="tip warn hidden" id="twosHint" style="color:var(--text-main)">
         Unsigned 模式沒有脾氣開關，不能表示負數喔！
-        <button class="neon-btn danger" id="btnToSigned" type="button" style="margin-left:8px">幫我切到 Signed</button>
+        <button class="neon-btn danger" id="btnToSigned" type="button" style="margin-left:8px; background:#ffffff;">幫我切到 Signed</button>
       </div>
       <div class="console-output" id="twosNarr">// 按下按鈕，看燈泡怎麼「翻臉」</div>
     </div>
@@ -391,7 +394,7 @@
     <p>你在上面動的每一下，這裡都會自動寫成 C++ 程式。有變動的那一行會閃一下，按「複製」就能直接貼到編譯器上跑跑看。</p>
     <div class="code-toolbar">
       <span class="type-badge" id="typeBadge">unsigned char</span>
-      <button class="neon-btn" id="btnCopy" type="button" style="color:#0077a3;border-color:#0077a3">📋 複製程式碼</button>
+      <button class="neon-btn" id="btnCopy" type="button" style="color:var(--text-main); border-color:var(--border-color);">📋 複製程式碼</button>
     </div>
     <div class="code-block" id="codeBlock" aria-label="C++ 程式碼"></div>
     <div class="console-output" id="codeConsole"></div>
@@ -482,7 +485,7 @@ const say = (el, text, clear = false) => {
 };
 
 /* =========================================================
- *  State（單一資料來源：只存 8-bit 原始位元 0~255）
+ *  State
  * ========================================================= */
 const state = {
   mode: 'unsigned',
@@ -510,7 +513,7 @@ const bin = raw => raw.toString(2).padStart(8, '0');
 const cppType = () => (isSigned() ? 'signed char' : 'unsigned char');
 function shiftRaw(raw, dir, n, signed) {
   if (dir === '<<') return (raw << n) & 0xFF;
-  if (signed && raw >= 128) return ((raw - 256) >> n) & 0xFF;   // 算術右移：複製脾氣開關
+  if (signed && raw >= 128) return ((raw - 256) >> n) & 0xFF; 
   return raw >> n;
 }
 function computeResult() {
@@ -586,7 +589,7 @@ function renderPanel(p, raw, signed, quiet = false) {
   p.raw = raw;
 }
 
-/* 共用：位移動畫（滑動 → 掉進黑洞 → 補位） */
+/* 共用：位移動畫 */
 async function animateShift(p, fromRaw, dir, n, signed) {
   renderPanel(p, fromRaw, signed, true);
   const to = shiftRaw(fromRaw, dir, n, signed);
@@ -646,7 +649,6 @@ const pMask = createPanel($('oeMask'));
 const pOERes = createPanel($('oeRes'));
 const pMD = createPanel($('mdPanel'), { hasVoid: true, onToggle: idx => { if (state.busy.md) return; state.mdRaw ^= (1 << idx); renderMD(); } });
 
-/* 二補數進位火花 */
 const spark = document.createElement('span');
 spark.classList.add('carry-spark', 'hidden');
 spark.textContent = '+1';
@@ -725,8 +727,7 @@ function renderSandbox() {
   const s = isSigned();
   setClass($('modeU'), 'active', !s);
   setClass($('modeS'), 'active', s);
-  $('modeU').setAttribute('aria-pressed', String(!s));
-  $('modeS').setAttribute('aria-pressed', String(s));
+  $('modeU').setAttribute('aria-pressed', String(!s));$('modeS').setAttribute('aria-pressed', String(s));
   renderPanel(pA, state.rawA, s);
   renderPanel(pB, state.rawB, s);
   syncInput($('decA'), state.rawA);
@@ -741,9 +742,9 @@ const OP_INFO = {
   '|': () => '<b>| 開燈派對：只要有一邊打開，燈就亮。</b>A 或 B 誰想開燈都可以，兩個都不想開才會熄燈。',
   '^': () => '<b>^ 唱反調：兩邊不一樣才亮，一樣就熄燈。</b>這傢伙超愛唱反調：你們意見相同？那我偏要說 0！',
   '<<': () => `<b>&lt;&lt; 左滑：全部燈泡往左滑 ${state.shiftN} 格。</b>右邊空出來的位置補 0，最左邊被擠出去的燈泡會掉進黑洞。每滑一格，數字就 × 2（前提是沒有亮著的燈泡掉下去）。` +
-        (isSigned() ? '<br>⚠️ 在 C++20 以前，對<b>負數</b>做左移是「未定義行為」，不同編譯器可能給出不同答案，考試和比賽時要小心！' : ''),
+        (isSigned() ? '<br><span style="color:var(--sign-red);font-weight:bold;">⚠️ 在 C++20 以前，對負數做左移是「未定義行為」，不同編譯器可能給出不同答案，考試和比賽時要小心！</span>' : ''),
   '>>': () => `<b>&gt;&gt; 右滑：全部燈泡往右滑 ${state.shiftN} 格。</b>最右邊被擠出去的燈泡掉進黑洞，每滑一格就 ÷ 2（無條件捨去）。` +
-        (isSigned() ? '<br>🔴 Signed 模式下，左邊空出來的位置會<b>複製脾氣開關</b>：負數補 1、正數補 0，這樣負數滑完還是負數。' : '<br>Unsigned 模式下，左邊空出來的位置一律補 0。')
+        (isSigned() ? '<br><span style="color:var(--sign-red);font-weight:bold;">🔴 Signed 模式下，左邊空出來的位置會複製脾氣開關：負數補 1、正數補 0，這樣負數滑完還是負數。</span>' : '<br>Unsigned 模式下，左邊空出來的位置一律補 0。')
 };
 
 function renderOps() {
@@ -756,18 +757,15 @@ function renderOps() {
   const shift = isShiftOp();
   setClass($('rowB'), 'hidden', shift);
   setClass($('shiftCtl'), 'hidden', !shift);
-  setClass($('opsVoidCap'), 'hidden', !shift);
-  $('opSymbol').textContent = shift ? `${state.op} ${state.shiftN}` : state.op;
-  $('opExplain').innerHTML = OP_INFO[state.op]();
-  $('shiftRange').value = state.shiftN;
-  if (document.activeElement !== $('shiftNum')) $('shiftNum').value = state.shiftN;
+  setClass($('opsVoidCap'), 'hidden', !shift);$('opSymbol').textContent = shift ? `${state.op} ${state.shiftN}` : state.op;
+  $('opExplain').innerHTML = OP_INFO[state.op]();$('shiftRange').value = state.shiftN;
+  if (document.activeElement !== $('shiftNum'))$('shiftNum').value = state.shiftN;
   $('shiftDec').textContent = state.shiftN + ' 格';
 
   renderPanel(oA, state.rawA, s);
   renderPanel(oB, state.rawB, s);
-  $('opsADec').textContent = toDec(state.rawA);
-  $('opsBDec').textContent = toDec(state.rawB);
-  if (state.busy.ops) return;            // 動畫進行中，結果列交給動畫處理
+  $('opsADec').textContent = toDec(state.rawA);$('opsBDec').textContent = toDec(state.rawB);
+  if (state.busy.ops) return;            
 
   const r = computeResult();
   renderPanel(oR, r, s);
@@ -785,15 +783,14 @@ function renderTwos() {
   setClass($('step2'), 'active', false);
   setClass($('step1'), 'done', state.twosStep === 3);
   setClass($('step2'), 'done', state.twosStep === 3);
-  setClass($('step3'), 'active', state.twosStep === 3);
-  $('btnApplyTwos').disabled = state.twosStep !== 3;
+  setClass($('step3'), 'active', state.twosStep === 3);$('btnApplyTwos').disabled = state.twosStep !== 3;
   $('twosExpr').textContent = state.twosStep === 3
     ? `${toDec(state.rawA)}  →  ${toDec(state.twosRaw)}`
     : `A = ${bin(state.twosRaw)} = ${toDec(state.twosRaw)}`;
   if (s) $('twosHint').classList.add('hidden');
 }
 
-/* C++ 程式碼產生器 */
+/* C++ 程式碼產生器 (淺色版高亮) */
 let prevCodeTexts = [];
 function hlCpp(code) {
   let h = escapeHtml(code);
@@ -846,8 +843,7 @@ function renderCode() {
     block.append(span);
   });
   prevCodeTexts = texts;
-  $('typeBadge').textContent = cppType();
-  $('codeConsole').textContent = `$ g++ bitwise.cpp -o bitwise && ./bitwise\n${toDec(computeResult())}`;
+  $('typeBadge').textContent = cppType();$('codeConsole').textContent = `$ g++ bitwise.cpp -o bitwise && ./bitwise\n${toDec(computeResult())}`;
 
   const warn = $('codeWarn');
   if (isSigned() && state.op === '<<') {
@@ -905,9 +901,7 @@ function renderOE() {
   });
   const odd = (state.oeRaw & 1) === 1;
   const v = $('oeVerdict');
-  v.textContent = `${toDec(state.oeRaw)} & 1 = ${state.oeRaw & 1}  →  ${odd ? '奇數 🌟' : '偶數 💎'}`;
-  setClass(v, 'odd', odd);
-  setClass(v, 'even', !odd);
+  v.innerHTML = `${toDec(state.oeRaw)} & 1 = ${state.oeRaw & 1}  →  <span style="color:${odd ? 'var(--carry)' : 'var(--accent)'}">${odd ? '奇數 🌟' : '偶數 💎'}</span>`;
 }
 
 function renderMD() {
@@ -954,8 +948,7 @@ async function playTwos() {
   $('twosExpr').textContent = `${bin(raw)} = ${toDec(raw)}`;
   setClass($('step3'), 'active', false);
   setClass($('step1'), 'done', false);
-  setClass($('step2'), 'done', false);
-  $('btnApplyTwos').disabled = true;
+  setClass($('step2'), 'done', false);$('btnApplyTwos').disabled = true;
 
   /* Step 1：NOT */
   setClass($('step1'), 'active', true);
@@ -1023,7 +1016,7 @@ async function playTwos() {
     say(narr, `完成！${toDec(start)} → ${toDec(raw)} 🎉  再按一次「套用回 A」然後再變一次，看看會不會變回來？`);
   }
   lockModule('twos', 'twos', false);
-  if (state.rawA !== start) state.twosStep = 0;   // 動畫中 A 被改過了，結果作廢
+  if (state.rawA !== start) state.twosStep = 0;   
   renderTwos();
 }
 
@@ -1126,35 +1119,28 @@ async function mdShift(dir) {
 /* =========================================================
  *  事件綁定
  * ========================================================= */
-$('modeU').addEventListener('click', () => setMode('unsigned'));
-$('modeS').addEventListener('click', () => setMode('signed'));
-bindDecInput($('decA'), $('hintA'), () => state.rawA, raw => setRaw('A', raw));
-bindDecInput($('decB'), $('hintB'), () => state.rawB, raw => setRaw('B', raw));
+$('modeU').addEventListener('click', () => setMode('unsigned'));$('modeS').addEventListener('click', () => setMode('signed'));
+bindDecInput($('decA'),$('hintA'), () => state.rawA, raw => setRaw('A', raw));
+bindDecInput($('decB'),$('hintB'), () => state.rawB, raw => setRaw('B', raw));
 
-$('btnIntro').addEventListener('click', playIntro);
-$('btnIntroClear').addEventListener('click', () => { state.introRaw = 0; renderIntro(); });
+$('btnIntro').addEventListener('click', playIntro);$('btnIntroClear').addEventListener('click', () => { state.introRaw = 0; renderIntro(); });
 
-$('btnTwos').addEventListener('click', playTwos);
-$('btnApplyTwos').addEventListener('click', () => setRaw('A', state.twosRaw));
-$('btnToSigned').addEventListener('click', () => { setMode('signed'); $('twosHint').classList.add('hidden'); });
+$('btnTwos').addEventListener('click', playTwos);$('btnApplyTwos').addEventListener('click', () => setRaw('A', state.twosRaw));
+$('btnToSigned').addEventListener('click', () => { setMode('signed');$('twosHint').classList.add('hidden'); });
 
 document.querySelectorAll('.op-tab').forEach(btn => btn.addEventListener('click', () => setOp(btn.dataset.op)));
-$('shiftRange').addEventListener('input', e => setShift(e.target.value, false));
-$('shiftRange').addEventListener('change', e => setShift(e.target.value, true));
-$('shiftNum').addEventListener('change', e => setShift(e.target.value, true));
-$('btnPlayOps').addEventListener('click', () => (isShiftOp() ? playOpsShift() : playCompare()));
+$('shiftRange').addEventListener('input', e => setShift(e.target.value, false));$('shiftRange').addEventListener('change', e => setShift(e.target.value, true));
+$('shiftNum').addEventListener('change', e => setShift(e.target.value, true));$('btnPlayOps').addEventListener('click', () => (isShiftOp() ? playOpsShift() : playCompare()));
 
 $('btnCopy').addEventListener('click', copyCode);
 
-bindDecInput($('oeInput'), $('oeHint'), () => state.oeRaw, raw => { state.oeRaw = raw; renderOE(); });
-$('btnOE').addEventListener('click', playGuards);
+bindDecInput($('oeInput'), $('oeHint'), () => state.oeRaw, raw => { state.oeRaw = raw; renderOE(); });$('btnOE').addEventListener('click', playGuards);
 
-bindDecInput($('mdInput'), $('mdHint'), () => state.mdRaw, raw => { state.mdRaw = raw; renderMD(); });
-$('btnMul').addEventListener('click', () => mdShift('<<'));
-$('btnDiv').addEventListener('click', () => mdShift('>>'));
+bindDecInput($('mdInput'),$('mdHint'), () => state.mdRaw, raw => { state.mdRaw = raw; renderMD(); });
+$('btnMul').addEventListener('click', () => mdShift('<<'));$('btnDiv').addEventListener('click', () => mdShift('>>'));
 
 /* =========================================================
- *  Intersection Observer：卡片進入視窗才進場 / 自動示範
+ *  Intersection Observer
  * ========================================================= */
 const revealHooks = {
   intro: playIntro,

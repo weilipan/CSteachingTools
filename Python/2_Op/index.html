@@ -5,14 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Python 運算元與運算子 | 互動式教學</title>
+    <!-- 保留的資源載入 -->
     <link rel="stylesheet" href="../../theme.css">
     <script src="../../layout.js" defer></script>
     <style>
+        /* ── Base (全面淺色系) ── */
         body {
             padding: 0;
             margin: 0;
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f7f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #334155;
         }
 
         .container {
@@ -26,9 +29,9 @@
 
         h1.page-title {
             text-align: center;
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -38,19 +41,25 @@
 
         p.page-sub {
             text-align: center;
-            color: #666;
+            color: #64748b;
+            font-weight: 500;
             margin-bottom: 40px;
         }
 
         .card {
-            background: #fff;
+            background: #ffffff;
             border-radius: 16px;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
             padding: 28px;
             margin-bottom: 32px;
             opacity: 0;
             transform: translateY(30px);
-            transition: opacity .6s, transform .6s;
+            transition: opacity .6s, transform .6s, box-shadow .3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
         }
 
         .card.visible {
@@ -65,6 +74,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            color: #1e293b;
         }
 
         .badge {
@@ -73,783 +83,230 @@
             font-size: .8rem;
             font-weight: 600;
             color: #fff;
+            letter-spacing: 0.5px;
         }
 
+        /* ── 淺色版 Console 與 Code Panel ── */
         .console-output {
             white-space: pre-wrap;
-            font-family: monospace;
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 15px;
+            font-family: 'Consolas', monospace;
+            background: #f8fafc;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            padding: 16px;
             border-radius: 8px;
             min-height: 40px;
             margin-top: 12px;
+            font-size: 0.95rem;
+            position: relative;
         }
-
-        /* ── Module 1 ── */
-        #m1 .btn-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+        
+        .console-output::before {
+            content: '▶ OUTPUT'; 
+            position: absolute; top: 8px; right: 12px;
+            font-size: 0.65rem; color: #94a3b8; letter-spacing: 1px; font-weight: 700;
         }
 
         .op-btn {
-            padding: 10px 28px;
+            padding: 10px 24px;
             border: none;
             border-radius: 10px;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             cursor: pointer;
-            transition: .2s;
+            transition: all .2s;
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: #fff;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
         }
 
-        .op-btn:hover {
-            transform: scale(1.06);
+        .op-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
         }
 
         .op-btn:disabled {
-            opacity: .45;
+            opacity: .5;
             cursor: not-allowed;
+            box-shadow: none;
         }
 
-        #m1 .scene {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            align-items: flex-end;
-            margin-bottom: 16px;
-            min-height: 130px;
-            flex-wrap: wrap;
-        }
-
-        .basket {
-            width: 80px;
-            text-align: center;
-        }
-
-        .basket-box {
-            width: 70px;
-            height: 60px;
-            border: 3px solid #a67c52;
-            border-radius: 0 0 10px 10px;
-            background: #f5e6c8;
-            margin: 0 auto 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #5a3e1b;
-            position: relative;
-        }
-
-        .apple-pile {
-            font-size: 1.4rem;
-            position: relative;
-        }
-
-        #trash {
-            width: 70px;
-            text-align: center;
-        }
-
-        .trash-box {
-            width: 54px;
-            height: 54px;
-            border: 3px solid #e74c3c;
-            border-radius: 8px;
-            background: #fadbd8;
-            margin: 0 auto 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        #remain-box {
-            width: 80px;
-            text-align: center;
-        }
-
-        .remain-inner {
-            width: 60px;
-            height: 60px;
-            border: 3px solid #f39c12;
-            border-radius: 8px;
-            background: #fef9e7;
-            margin: 0 auto 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-        }
+        /* ── Module 1 ── */
+        #m1 .btn-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        #m1 .scene { display: flex; justify-content: center; gap: 30px; align-items: flex-end; margin-bottom: 16px; min-height: 130px; flex-wrap: wrap; }
+        .basket { width: 80px; text-align: center; }
+        .basket-box { width: 70px; height: 60px; border: 3px solid #a67c52; border-radius: 0 0 10px 10px; background: #fdf6e3; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #5a3e1b; position: relative; }
+        .apple-pile { font-size: 1.4rem; position: relative; }
+        #trash { width: 70px; text-align: center; }
+        .trash-box { width: 54px; height: 54px; border: 3px solid #ef4444; border-radius: 8px; background: #fee2e2; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        #remain-box { width: 80px; text-align: center; }
+        .remain-inner { width: 60px; height: 60px; border: 3px solid #f59e0b; border-radius: 8px; background: #fef3c7; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
 
         /* ── Module 2 ── */
-        #m2 .toggle-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .tog-btn {
-            padding: 10px 24px;
-            border-radius: 10px;
-            border: 2px solid #667eea;
-            background: #f0f4ff;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: .2s;
-        }
-
-        .tog-btn.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            border-color: transparent;
-        }
-
-        #m2 .scene2 {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 40px;
-            min-height: 130px;
-            position: relative;
-        }
-
-        .var-box {
-            width: 90px;
-            height: 90px;
-            border: 3px solid #667eea;
-            border-radius: 14px;
-            background: #f0f4ff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: .9rem;
-            font-weight: 600;
-        }
-
-        .var-box .val {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #667eea;
-        }
-
-        #arm {
-            font-size: 2.5rem;
-            transition: all .5s;
-        }
-
-        #scan-line {
-            width: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #00e5ff, transparent);
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            transition: width .5s;
-        }
-
-        #result-card {
-            padding: 10px 24px;
-            border-radius: 12px;
-            font-size: 1.4rem;
-            font-weight: 800;
-            display: none;
-            animation: popIn .3s ease;
-        }
-
-        @keyframes popIn {
-            from {
-                transform: scale(0)
-            }
-
-            to {
-                transform: scale(1)
-            }
-        }
+        #m2 .toggle-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tog-btn { padding: 10px 24px; border-radius: 10px; border: 2px solid #667eea; background: #ffffff; color: #667eea; cursor: pointer; font-size: 1rem; font-weight: 700; transition: .2s; }
+        .tog-btn.active { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-color: transparent; box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3); }
+        #m2 .scene2 { display: flex; justify-content: center; align-items: center; gap: 40px; min-height: 130px; position: relative; }
+        .var-box { width: 90px; height: 90px; border: 3px solid #667eea; border-radius: 14px; background: #eff6ff; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: .9rem; font-weight: 600; }
+        .var-box .val { font-size: 1.8rem; font-weight: 800; color: #4f46e5; }
+        #arm { font-size: 2.5rem; transition: all .5s; }
+        #scan-line { width: 0; height: 3px; background: linear-gradient(90deg, transparent, #06b6d4, transparent); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); transition: width .5s; }
+        #result-card { padding: 10px 24px; border-radius: 12px; font-size: 1.4rem; font-weight: 800; display: none; animation: popIn .3s ease; }
+        @keyframes popIn { from { transform: scale(0) } to { transform: scale(1) } }
 
         /* ── Module 3 ── */
-        #m3 .gate-scene {
-            text-align: center;
-        }
-
-        .lights-row {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
-        }
-
-        .light-unit {
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .light {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            border: 4px solid #ddd;
-            background: #eee;
-            margin: 0 auto 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            transition: .4s;
-            box-shadow: 0 0 0 transparent;
-        }
-
-        .light.on {
-            background: #2ecc71;
-            border-color: #27ae60;
-            box-shadow: 0 0 20px #2ecc71;
-        }
-
-        .light.off {
-            background: #e74c3c;
-            border-color: #c0392b;
-            box-shadow: 0 0 20px #e74c3c;
-        }
-
-        .light-label {
-            font-size: .82rem;
-            font-weight: 600;
-            color: #555;
-        }
-
-        .gate {
-            width: 120px;
-            height: 90px;
-            border: 5px solid #8e44ad;
-            border-radius: 10px 10px 0 0;
-            background: #d2b4de;
-            margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            transition: .5s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .gate.open {
-            background: #a9dfbf;
-            border-color: #27ae60;
-            box-shadow: 0 0 30px #2ecc71;
-        }
-
-        .mode-btns {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
-
-        #mirror-layer {
-            display: none;
-            width: 60px;
-            height: 80px;
-            background: linear-gradient(135deg, rgba(100, 200, 255, .35), rgba(255, 255, 255, .6));
-            border: 2px solid #00bcd4;
-            border-radius: 6px;
-            margin: 0 auto 6px;
-            font-size: .8rem;
-            text-align: center;
-            line-height: 80px;
-            color: #006064;
-            font-weight: 700;
-        }
+        #m3 .gate-scene { text-align: center; }
+        .lights-row { display: flex; justify-content: center; gap: 40px; margin-bottom: 18px; flex-wrap: wrap; }
+        .light-unit { cursor: pointer; text-align: center; }
+        .light { width: 60px; height: 60px; border-radius: 50%; border: 4px solid #e2e8f0; background: #f1f5f9; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; transition: .4s; box-shadow: 0 0 0 transparent; }
+        .light.on { background: #dcfce7; border-color: #22c55e; box-shadow: 0 0 20px rgba(34,197,94,0.5); }
+        .light.off { background: #fee2e2; border-color: #ef4444; box-shadow: 0 0 20px rgba(239,68,68,0.5); }
+        .light-label { font-size: .85rem; font-weight: 600; color: #475569; }
+        .gate { width: 120px; height: 90px; border: 5px solid #a855f7; border-radius: 10px 10px 0 0; background: #f3e8ff; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 2rem; transition: .5s; position: relative; overflow: hidden; }
+        .gate.open { background: #dcfce7; border-color: #22c55e; box-shadow: 0 0 30px rgba(34,197,94,0.4); }
+        .mode-btns { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+        #mirror-layer { display: none; width: 60px; height: 80px; background: linear-gradient(135deg, rgba(6,182,212,.15), rgba(255, 255, 255, .8)); border: 2px solid #06b6d4; border-radius: 6px; margin: 0 auto 6px; font-size: .85rem; text-align: center; line-height: 80px; color: #0891b2; font-weight: 700; }
 
         /* ── Module 4 ── */
-        #m4 .expr-row {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-
-        .block {
-            padding: 12px 18px;
-            border-radius: 10px;
-            font-size: 1.3rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: .25s;
-            user-select: none;
-        }
-
-        .num-block {
-            background: #e8f5e9;
-            border: 2px solid #4caf50;
-            color: #2e7d32;
-        }
-
-        .op-block {
-            background: #e3f2fd;
-            border: 2px solid #2196f3;
-            color: #1565c0;
-        }
-
-        .op-block:hover:not(.disabled) {
-            transform: scale(1.1);
-        }
-
-        .op-block.disabled {
-            opacity: .4;
-            cursor: not-allowed;
-        }
-
-        .op-block.pulsed {
-            animation: shake .4s;
-        }
-
-        @keyframes shake {
-
-            0%,
-            100% {
-                transform: translateX(0)
-            }
-
-            25% {
-                transform: translateX(-6px)
-            }
-
-            75% {
-                transform: translateX(6px)
-            }
-        }
-
-        #m4-hint {
-            min-height: 24px;
-            text-align: center;
-            color: #e74c3c;
-            font-weight: 600;
-            font-size: .95rem;
-            margin-bottom: 10px;
-        }
-
-        #m4-result {
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #667eea;
-            min-height: 30px;
-        }
-
-        #m4-controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+        #m4 .expr-row { display: flex; justify-content: center; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+        .block { padding: 12px 18px; border-radius: 10px; font-size: 1.3rem; font-weight: 800; cursor: pointer; transition: .25s; user-select: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .num-block { background: #f0fdf4; border: 2px solid #22c55e; color: #16a34a; }
+        .op-block { background: #eff6ff; border: 2px solid #3b82f6; color: #2563eb; }
+        .op-block:hover:not(.disabled) { transform: scale(1.1); box-shadow: 0 4px 8px rgba(59,130,246,0.3); }
+        .op-block.disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+        .op-block.pulsed { animation: shake .4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0) } 25% { transform: translateX(-6px) } 75% { transform: translateX(6px) } }
+        #m4-hint { min-height: 24px; text-align: center; color: #ef4444; font-weight: 700; font-size: .95rem; margin-bottom: 10px; }
+        #m4-result { text-align: center; font-size: 1.5rem; font-weight: 800; color: #4f46e5; min-height: 30px; margin-bottom: 10px;}
 
         /* ── Module 5 ── */
-        #m5 .split {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 16px;
-        }
-
-        @media(max-width:600px) {
-            #m5 .split {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .code-side {
-            background: #1e1e1e;
-            border-radius: 10px;
-            padding: 16px;
-            font-family: monospace;
-            color: #d4d4d4;
-            font-size: .95rem;
-            line-height: 1.8;
-        }
-
-        .code-side span.kw {
-            color: #569cd6;
-        }
-
-        .code-side span.op {
-            color: #d4a017;
-        }
-
-        .bar-wrap {
-            background: #e0e0e0;
-            border-radius: 20px;
-            height: 28px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-
-        .bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #43e97b, #38f9d7);
-            border-radius: 20px;
-            transition: width 1s ease;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 8px;
-            font-weight: 700;
-            font-size: .85rem;
-            color: #1b5e20;
-        }
-
-        #expand-eq {
-            background: #f3f4f6;
-            border-radius: 8px;
-            padding: 8px 14px;
-            font-family: monospace;
-            font-size: 1rem;
-            text-align: center;
-            transition: all .5s;
-            margin-bottom: 10px;
-            min-height: 36px;
-        }
-
-        #m5-btn {
-            display: block;
-            margin: 0 auto;
-            padding: 10px 36px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #43e97b, #38f9d7);
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            color: #1b5e20;
-        }
+        #m5 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px; }
+        @media(max-width:600px) { #m5 .split { grid-template-columns: 1fr; } }
+        
+        /* 淺色版程式碼區塊 */
+        .code-side, .code-panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; font-family: 'Consolas', monospace; color: #1e293b; font-size: .95rem; line-height: 1.8; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        .code-side span.kw, .code-panel .kw { color: #0284c7; font-weight: 600; } /* 關鍵字-藍色 */
+        .code-side span.op { color: #db2777; font-weight: 600; } /* 運算子-粉紅 */
+        
+        .bar-wrap { background: #e2e8f0; border-radius: 20px; height: 28px; overflow: hidden; margin: 10px 0; border: 1px solid #cbd5e1; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, #34d399, #10b981); border-radius: 20px; transition: width 1s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; font-weight: 800; font-size: .9rem; color: #fff; }
+        #expand-eq { background: #f1f5f9; border-radius: 8px; padding: 10px 14px; font-family: 'Consolas', monospace; font-size: 1.05rem; text-align: center; transition: all .5s; margin-bottom: 10px; min-height: 36px; color: #334155; border: 1px solid #cbd5e1; font-weight: 600;}
 
         /* ── Module 6 ── */
-        #m6 .two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media(max-width:580px) {
-            #m6 .two-col {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .str-panel {
-            background: #fafafa;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 18px;
-            text-align: center;
-        }
-
-        .str-panel h3 {
-            margin: 0 0 14px;
-            font-size: 1rem;
-            color: #555;
-        }
-
-        .str-block {
-            display: inline-block;
-            padding: 10px 18px;
-            border-radius: 8px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            border: 3px solid #667eea;
-            background: #f0f4ff;
-            color: #333;
-        }
-
-        .str-result {
-            margin-top: 14px;
-            min-height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-
-        .str-out {
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            border: 3px solid #f39c12;
-            background: #fff8e1;
-            color: #333;
-            opacity: 0;
-            transform: scale(.7);
-            transition: .35s;
-        }
-
-        .str-out.show {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .str-panel button {
-            margin-top: 12px;
-            padding: 8px 22px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer;
-        }
+        #m6 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media(max-width:580px) { #m6 .two-col { grid-template-columns: 1fr; } }
+        .str-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .str-panel h3 { margin: 0 0 16px; font-size: 1rem; color: #475569; }
+        .str-block { display: inline-block; padding: 10px 18px; border-radius: 8px; font-size: 1.2rem; font-weight: 700; border: 2px solid #6366f1; background: #eef2ff; color: #4f46e5; }
+        .str-result { margin-top: 14px; min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
+        .str-out { padding: 10px 14px; border-radius: 8px; font-size: 1.1rem; font-weight: 700; border: 2px solid #f59e0b; background: #fffbeb; color: #d97706; opacity: 0; transform: scale(.7); transition: .35s; }
+        .str-out.show { opacity: 1; transform: scale(1); }
 
         /* ── Module 7 ── */
-        #m7 .two-col-7 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
+        #m7 .two-col-7 { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; }
+        @media(max-width:620px) { #m7 .two-col-7 { grid-template-columns: 1fr; } }
+        .code-line { padding: 4px 8px; border-radius: 4px; color: #334155; white-space: pre; border-left: 3px solid transparent; }
+        .code-line.hl { background: #eef2ff; border-left-color: #4f46e5; font-weight: 600; }
+        .code-line .fn { color: #7c3aed; font-weight: 600; } /* 函式-紫色 */
+        .code-line .st { color: #16a34a; } /* 字串-綠色 */
+        
+        .var-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; font-size: .95rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .var-panel h4 { margin: 0 0 12px; color: #475569; font-size: .95rem; font-weight: 700; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        .var-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; background: #f8fafc; border: 1px solid #e2e8f0; }
+        .var-name { font-weight: 700; color: #4f46e5; font-family: 'Consolas', monospace; }
+        .var-val { font-weight: 800; color: #ef4444; font-family: 'Consolas', monospace; transition: all .3s; }
+        .var-val.flip { animation: flip .4s; }
+        @keyframes flip { 0% { transform: scaleY(1) } 50% { transform: scaleY(0) } 100% { transform: scaleY(1) } }
 
-        @media(max-width:620px) {
-            #m7 .two-col-7 {
-                grid-template-columns: 1fr;
-            }
-        }
+        .accordion { border: 1px solid #cbd5e1; border-radius: 10px; overflow: hidden; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .accordion-hdr { padding: 14px 18px; cursor: pointer; font-weight: 700; background: #f8fafc; display: flex; justify-content: space-between; user-select: none; color: #1e293b; }
+        .accordion-body { display: none; padding: 16px 18px; background: #fff; font-size: .95rem; line-height: 1.8; color: #475569; border-top: 1px solid #e2e8f0; }
+        .accordion-body.open { display: block; }
+        .desc-block { text-align: center; padding: 14px; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; margin-bottom: 16px; color: #3730a3; font-size: 1rem; font-weight: 600; line-height: 1.6; }
 
-        .code-panel {
-            background: #1e1e1e;
-            border-radius: 10px;
-            padding: 14px;
-            font-family: monospace;
-            font-size: .88rem;
-            line-height: 1.7;
-        }
-
-        .code-line {
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #d4d4d4;
-            white-space: pre;
-        }
-
-        .code-line.hl {
-            background: #264f78;
-            color: #fff;
-        }
-
-        .code-line .kw {
-            color: #569cd6;
-        }
-
-        .code-line .fn {
-            color: #dcdcaa;
-        }
-
-        .code-line .st {
-            color: #ce9178;
-        }
-
-        .code-line .cm {
-            color: #6a9955;
-        }
-
-        .var-panel {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 14px;
-            font-size: .9rem;
-        }
-
-        .var-panel h4 {
-            margin: 0 0 10px;
-            color: #555;
-            font-size: .9rem;
-        }
-
-        .var-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 10px;
-            border-radius: 6px;
-            margin-bottom: 5px;
-            background: #fff;
-            border: 1px solid #e0e0e0;
-        }
-
-        .var-name {
-            font-weight: 700;
-            color: #667eea;
-            font-family: monospace;
-        }
-
-        .var-val {
-            font-weight: 700;
-            color: #e74c3c;
-            font-family: monospace;
-            transition: all .3s;
-        }
-
-        .var-val.flip {
-            animation: flip .4s;
-        }
-
-        @keyframes flip {
-            0% {
-                transform: scaleY(1)
-            }
-
-            50% {
-                transform: scaleY(0)
-            }
-
-            100% {
-                transform: scaleY(1)
-            }
-        }
-
-        #m7-step-btn {
-            display: block;
-            margin: 14px auto 0;
-            padding: 10px 32px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-
-        .accordion {
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 16px;
-        }
-
-        .accordion-hdr {
-            padding: 12px 16px;
-            cursor: pointer;
-            font-weight: 700;
-            background: #f3f4f6;
-            display: flex;
-            justify-content: space-between;
-            user-select: none;
-        }
-
-        .accordion-body {
-            display: none;
-            padding: 14px 16px;
-            background: #fff;
-            font-size: .9rem;
-            line-height: 1.7;
-            color: #555;
-        }
-
-        .accordion-body.open {
-            display: block;
-        }
-
-        .desc-block {
-            text-align: center;
-            padding: 12px;
-            background: #f0f4ff;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            color: #444;
-            font-size: .95rem;
-            line-height: 1.6;
-        }
+        /* ── Module 8 (NEW) ── */
+        .m8-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 30px 0; position: relative; }
+        .m8-item { font-size: 2.5rem; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 12px; transition: 0.3s; z-index: 1; }
+        .m8-item.found { background: #dcfce7; border-color: #22c55e; box-shadow: 0 0 15px rgba(34,197,94,0.4); transform: scale(1.1); }
+        .m8-glass { font-size: 3rem; position: absolute; left: 0; top: -15px; z-index: 2; transition: left 0.5s ease; opacity: 0; pointer-events: none;}
+        .m8-result { font-size: 1.5rem; font-weight: bold; min-height: 36px; text-align: center; margin-top: 10px;}
     </style>
 </head>
 
 <body>
     <div class="container">
         <h1 class="page-title">⚙️ Python 運算元與運算子</h1>
-        <p class="page-sub">七個互動模組，帶你玩轉 Python 的所有運算核心</p>
+        <p class="page-sub">八個互動模組，帶您無痛理解 Python 的所有運算核心</p>
 
         <!-- ══ MODULE 1 ══ -->
         <div class="card" id="m1">
-            <div class="section-title">🍎 模組 1：算術三兄弟
-                <span class="badge" style="background:linear-gradient(135deg,#f093fb,#f5576c)">/ vs // vs %</span>
+            <div class="section-title">🍎 模組 1：算術家族
+                <span class="badge" style="background:linear-gradient(135deg,#f093fb,#f5576c)">/ vs // vs % vs **</span>
             </div>
             <div class="btn-row">
                 <button class="op-btn" id="btn-div" onclick="m1Run('/')">➗ 除法 /</button>
                 <button class="op-btn" id="btn-fdiv" onclick="m1Run('//')">⌊⌋ 整除 //</button>
                 <button class="op-btn" id="btn-mod" onclick="m1Run('%')">🔢 餘數 %</button>
-                <button class="op-btn" style="background:linear-gradient(135deg,#aaa,#888)" onclick="m1Reset()">↺
-                    重置</button>
+                <button class="op-btn" id="btn-pow" onclick="m1Run('**')" style="background:linear-gradient(135deg,#f59e0b,#d97706)">✨ 次方 **</button>
+                <button class="op-btn" style="background:linear-gradient(135deg,#94a3b8,#64748b)" onclick="m1Reset()">↺ 重置</button>
             </div>
             <div class="scene" id="m1-scene">
                 <div>
-                    <div id="m1-apples" style="font-size:2rem;margin-bottom:8px">🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎</div>
-                    <div style="text-align:center;color:#888;font-size:.85rem">10 顆蘋果</div>
+                    <div id="m1-apples" style="font-size:2rem;margin-bottom:8px; text-align:center;">🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎</div>
+                    <div id="m1-apple-text" style="text-align:center;color:#64748b;font-size:.9rem;font-weight:600;">10 顆蘋果</div>
                 </div>
-                <div style="font-size:2rem;color:#aaa">➡️</div>
-                <div style="display:flex;gap:16px;">
+                <div style="font-size:2rem;color:#cbd5e1">➡️</div>
+                <div style="display:flex;gap:16px;" id="m1-baskets">
                     <div class="basket">
                         <div class="basket-box" id="b0"><span class="apple-pile" id="b0c">🧺</span></div>
-                        <div style="font-size:.8rem;color:#888">籃子 1</div>
+                        <div style="font-size:.8rem;color:#64748b;font-weight:600;">籃子 1</div>
                     </div>
                     <div class="basket">
                         <div class="basket-box" id="b1"><span class="apple-pile" id="b1c">🧺</span></div>
-                        <div style="font-size:.8rem;color:#888">籃子 2</div>
+                        <div style="font-size:.8rem;color:#64748b;font-weight:600;">籃子 2</div>
                     </div>
-                    <div class="basket">
+                    <div class="basket" id="basket3-container">
                         <div class="basket-box" id="b2"><span class="apple-pile" id="b2c">🧺</span></div>
-                        <div style="font-size:.8rem;color:#888">籃子 3</div>
+                        <div style="font-size:.8rem;color:#64748b;font-weight:600;">籃子 3</div>
                     </div>
                 </div>
                 <div id="trash" style="display:none">
                     <div class="trash-box" id="trash-inner">🗑️</div>
-                    <div style="font-size:.8rem;color:#e74c3c;font-weight:600">垃圾桶</div>
+                    <div style="font-size:.8rem;color:#ef4444;font-weight:700">垃圾桶</div>
                 </div>
                 <div id="remain-box" style="display:none">
                     <div class="remain-inner" id="remain-inner">⭐</div>
-                    <div style="font-size:.8rem;color:#f39c12;font-weight:600">餘數收集箱</div>
+                    <div style="font-size:.8rem;color:#d97706;font-weight:700">餘數收集箱</div>
                 </div>
             </div>
-            <div class="console-output" id="m1-console">>>> 10 / 3 → 點擊上方按鈕查看結果</div>
+            <div class="console-output" id="m1-console">>>> 點擊上方按鈕查看算術結果</div>
         </div>
 
         <!-- ══ MODULE 2 ══ -->
         <div class="card" id="m2">
             <div class="section-title">💥 模組 2：世紀大陷阱
-                <span class="badge" style="background:linear-gradient(135deg,#43e97b,#38f9d7);color:#1b5e20">= 動作 vs ==
-                    提問</span>
+                <span class="badge" style="background:linear-gradient(135deg,#34d399,#059669);color:#fff">= 動作 vs == 提問</span>
             </div>
             <div class="toggle-row">
-                <button class="tog-btn active" id="tog-assign" onclick="m2Toggle('assign')">x = 5　(賦值)</button>
-                <button class="tog-btn" id="tog-eq" onclick="m2Toggle('eq')">x == 5　(比較)</button>
+                <button class="tog-btn active" id="tog-assign" onclick="m2Toggle('assign')">x = 5 (賦值)</button>
+                <button class="tog-btn" id="tog-eq" onclick="m2Toggle('eq')">x == 5 (比較)</button>
                 <button class="op-btn" onclick="m2Run()" style="padding:10px 20px;font-size:.95rem;">▶ 執行</button>
-                <button class="op-btn" onclick="m2Reset()"
-                    style="padding:10px 20px;font-size:.95rem;background:linear-gradient(135deg,#aaa,#888)">↺
-                    重置</button>
+                <button class="op-btn" onclick="m2Reset()" style="padding:10px 20px;font-size:.95rem;background:linear-gradient(135deg,#94a3b8,#64748b)">↺ 重置</button>
             </div>
             <div class="scene2">
                 <div>
-                    <div id="arm" style="font-size:3rem;margin-bottom:8px;text-align:center">🤖</div>
-                    <div id="carried" style="text-align:center;font-size:1.5rem;min-height:30px"></div>
+                    <div id="arm" style="font-size:3.5rem;margin-bottom:8px;text-align:center">🤖</div>
+                    <div id="carried" style="text-align:center;font-size:1.8rem;min-height:35px"></div>
                 </div>
                 <div class="var-box">
-                    <div style="font-size:.8rem;font-weight:600;color:#888">x</div>
+                    <div style="font-size:.85rem;font-weight:700;color:#64748b">變數 x</div>
                     <div class="val" id="box-val">?</div>
                 </div>
                 <div id="scan-line"></div>
                 <div id="result-card"></div>
             </div>
-            <div id="m2-label" style="text-align:center;font-weight:700;color:#764ba2;min-height:24px;margin-top:8px">
+            <div id="m2-label" style="text-align:center;font-weight:700;color:#7c3aed;min-height:24px;margin-top:12px;font-size:1.05rem;">
             </div>
             <div class="console-output" id="m2-console">>>> 點擊切換模式後執行</div>
         </div>
@@ -857,37 +314,29 @@
         <!-- ══ MODULE 3 ══ -->
         <div class="card" id="m3">
             <div class="section-title">🚪 模組 3：邏輯守門員
-                <span class="badge" style="background:linear-gradient(135deg,#f7971e,#ffd200);color:#5a3e00">and / or /
-                    not</span>
+                <span class="badge" style="background:linear-gradient(135deg,#fbbf24,#d97706);color:#fff">and / or / not</span>
             </div>
             <div class="gate-scene">
                 <div id="mirror-layer">🪞<br>反轉鏡</div>
                 <div class="lights-row">
                     <div class="light-unit" onclick="m3ToggleLight(0)">
                         <div class="light on" id="l0">👤</div>
-                        <div class="light-label">Age ≥ 18<br><span id="l0v" style="font-weight:800">True</span></div>
+                        <div class="light-label">年齡 ≥ 18<br><span id="l0v" style="font-weight:800;color:#16a34a">True</span></div>
                     </div>
                     <div class="light-unit" onclick="m3ToggleLight(1)">
                         <div class="light on" id="l1">🎫</div>
-                        <div class="light-label">Ticket == True<br><span id="l1v" style="font-weight:800">True</span>
+                        <div class="light-label">持有門票<br><span id="l1v" style="font-weight:800;color:#16a34a">True</span>
                         </div>
                     </div>
                 </div>
                 <div class="gate" id="gate">🚪</div>
-                <div style="font-size:.9rem;color:#555;margin-bottom:10px" id="gate-formula">and 模式：True and True = ?
+                <div style="font-size:.95rem;color:#475569;margin-bottom:12px;font-weight:600;" id="gate-formula">and 模式：True and True = ?
                 </div>
                 <div class="mode-btns">
-                    <button class="op-btn" style="padding:8px 18px;font-size:.9rem"
-                        onclick="m3SetMode('and')">and</button>
-                    <button class="op-btn"
-                        style="padding:8px 18px;font-size:.9rem;background:linear-gradient(135deg,#f7971e,#ffd200);color:#5a3e00"
-                        onclick="m3SetMode('or')">or</button>
-                    <button class="op-btn"
-                        style="padding:8px 18px;font-size:.9rem;background:linear-gradient(135deg,#e74c3c,#c0392b)"
-                        onclick="m3SetMode('not')">not</button>
-                    <button class="op-btn"
-                        style="padding:8px 18px;font-size:.9rem;background:linear-gradient(135deg,#aaa,#888)"
-                        onclick="m3Reset()">↺ 重置</button>
+                    <button class="op-btn" style="padding:8px 20px;font-size:.95rem" onclick="m3SetMode('and')">and</button>
+                    <button class="op-btn" style="padding:8px 20px;font-size:.95rem;background:linear-gradient(135deg,#fbbf24,#d97706);color:#fff" onclick="m3SetMode('or')">or</button>
+                    <button class="op-btn" style="padding:8px 20px;font-size:.95rem;background:linear-gradient(135deg,#ef4444,#b91c1c)" onclick="m3SetMode('not')">not</button>
+                    <button class="op-btn" style="padding:8px 20px;font-size:.95rem;background:linear-gradient(135deg,#94a3b8,#64748b)" onclick="m3Reset()">↺ 重置</button>
                 </div>
             </div>
         </div>
@@ -895,85 +344,102 @@
         <!-- ══ MODULE 4 ══ -->
         <div class="card" id="m4">
             <div class="section-title">🏋️ 模組 4：優先級擂台與括號魔法
-                <span class="badge" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">Precedence</span>
+                <span class="badge" style="background:linear-gradient(135deg,#38bdf8,#0284c7)">Precedence</span>
             </div>
             <div id="m4-hint"></div>
             <div class="expr-row" id="m4-expr"></div>
             <div id="m4-result"></div>
             <div id="m4-controls">
-                <button class="op-btn" style="padding:9px 20px;font-size:.9rem" onclick="m4AddParens()">➕ 加上括號</button>
-                <button class="op-btn"
-                    style="padding:9px 20px;font-size:.9rem;background:linear-gradient(135deg,#aaa,#888)"
-                    onclick="m4Reset()">↺ 重置</button>
+                <button class="op-btn" style="padding:10px 24px;font-size:.95rem" onclick="m4AddParens()">➕ 加上括號</button>
+                <button class="op-btn" style="padding:10px 24px;font-size:.95rem;background:linear-gradient(135deg,#94a3b8,#64748b)" onclick="m4Reset()">↺ 重置</button>
             </div>
         </div>
 
         <!-- ══ MODULE 5 ══ -->
         <div class="card" id="m5">
-            <div class="section-title">🐍 模組 5：複合賦值的貪吃蛇
-                <span class="badge" style="background:linear-gradient(135deg,#43e97b,#38f9d7);color:#1b5e20">+= /
-                    -=</span>
+            <div class="section-title">🐍 模組 5：複合賦值的血條
+                <span class="badge" style="background:linear-gradient(135deg,#34d399,#059669);color:#fff">+= / -=</span>
             </div>
             <div class="split">
                 <div>
-                    <h3 style="font-size:.9rem;color:#888;margin:0 0 8px">傳統寫法</h3>
-                    <div class="code-side"><span class="kw">hp</span> = 50<br><span class="kw">hp</span> <span
-                            class="op">=</span> <span class="kw">hp</span> <span class="op">+</span> 20</div>
+                    <h3 style="font-size:.95rem;color:#64748b;margin:0 0 10px;font-weight:700;">傳統寫法</h3>
+                    <div class="code-side"><span class="kw">hp</span> = 50<br><span class="kw">hp</span> <span class="op">=</span> <span class="kw">hp</span> <span class="op">+</span> 20</div>
                 </div>
                 <div>
-                    <h3 style="font-size:.9rem;color:#888;margin:0 0 8px">複合賦值</h3>
-                    <div class="code-side"><span class="kw">hp</span> = 50<br><span class="kw">hp</span> <span
-                            class="op">+=</span> 20</div>
+                    <h3 style="font-size:.95rem;color:#64748b;margin:0 0 10px;font-weight:700;">複合賦值</h3>
+                    <div class="code-side"><span class="kw">hp</span> = 50<br><span class="kw">hp</span> <span class="op">+=</span> 20</div>
                 </div>
             </div>
             <div id="expand-eq">hp += 20</div>
-            <div style="margin-bottom:6px;font-weight:600;color:#555;font-size:.9rem">❤️ HP 血條</div>
+            <div style="margin-bottom:8px;font-weight:700;color:#475569;font-size:.95rem">❤️ HP 血條 (Max: 100)</div>
             <div class="bar-wrap">
                 <div class="bar-fill" id="hp-bar" style="width:50%">50</div>
             </div>
-            <div style="display:flex;justify-content:center;gap:10px;margin-top:10px;">
-                <button id="m5-btn" onclick="m5Run()">▶ 執行 hp += 20</button>
-                <button class="op-btn" onclick="m5Reset()"
-                    style="padding:10px 20px;font-size:.95rem;background:linear-gradient(135deg,#aaa,#888)">↺
-                    重置</button>
+            <div style="display:flex;justify-content:center;gap:12px;margin-top:16px;">
+                <button id="m5-btn" class="op-btn" style="background:linear-gradient(135deg,#34d399,#059669);" onclick="m5Run()">▶ 執行 hp += 20</button>
+                <button class="op-btn" onclick="m5Reset()" style="background:linear-gradient(135deg,#94a3b8,#64748b)">↺ 重置</button>
             </div>
         </div>
 
         <!-- ══ MODULE 6 ══ -->
         <div class="card" id="m6">
             <div class="section-title">📝 模組 6：字串也能玩數學？
-                <span class="badge" style="background:linear-gradient(135deg,#f093fb,#f5576c)">str * n / str +
-                    str</span>
+                <span class="badge" style="background:linear-gradient(135deg,#f472b6,#db2777)">str * n / str + str</span>
             </div>
             <div class="two-col">
                 <div class="str-panel">
-                    <h3>"Ha" * 3　→　影印機特效</h3>
+                    <h3>"Ha" * 3 → 影印機特效</h3>
                     <div class="str-block">"Ha"</div>
-                    <div style="font-size:1.5rem;margin:6px">✖️ 3</div>
+                    <div style="font-size:1.5rem;margin:10px;color:#475569;font-weight:bold;">✖️ 3</div>
                     <div class="str-result" id="m6-mul-result"></div>
-                    <div style="display:flex;gap:8px;justify-content:center;">
-                        <button onclick="m6RunMul()">▶ 執行</button>
-                        <button onclick="m6ResetMul()"
-                            style="padding:8px 16px;border:none;border-radius:8px;background:linear-gradient(135deg,#aaa,#888);color:#fff;font-weight:700;cursor:pointer;">↺
-                            重置</button>
+                    <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+                        <button class="op-btn" style="padding:8px 20px;font-size:.95rem" onclick="m6RunMul()">▶ 執行</button>
+                        <button class="op-btn" style="padding:8px 20px;font-size:.95rem;background:linear-gradient(135deg,#94a3b8,#64748b)" onclick="m6ResetMul()">↺ 重置</button>
                     </div>
                 </div>
                 <div class="str-panel">
-                    <h3>"Python" + "3"　→　樂高卡扣</h3>
-                    <div style="display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;">
+                    <h3>"Python" + "3" → 樂高卡扣</h3>
+                    <div style="display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;">
                         <div class="str-block" id="lego1">"Python"</div>
-                        <div style="font-size:1.5rem">➕</div>
+                        <div style="font-size:1.5rem;color:#475569;font-weight:bold;">➕</div>
                         <div class="str-block" id="lego2">"3"</div>
                     </div>
                     <div class="str-result" id="m6-add-result"></div>
-                    <div style="display:flex;gap:8px;justify-content:center;">
-                        <button onclick="m6RunAdd()">▶ 執行</button>
-                        <button onclick="m6ResetAdd()"
-                            style="padding:8px 16px;border:none;border-radius:8px;background:linear-gradient(135deg,#aaa,#888);color:#fff;font-weight:700;cursor:pointer;">↺
-                            重置</button>
+                    <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+                        <button class="op-btn" style="padding:8px 20px;font-size:.95rem" onclick="m6RunAdd()">▶ 執行</button>
+                        <button class="op-btn" style="padding:8px 20px;font-size:.95rem;background:linear-gradient(135deg,#94a3b8,#64748b)" onclick="m6ResetAdd()">↺ 重置</button>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- ══ MODULE 8 (NEW) ══ -->
+        <div class="card" id="m8">
+            <div class="section-title">🕵️‍♂️ 模組 8：尋寶達人 
+                <span class="badge" style="background:linear-gradient(135deg,#14b8a6,#0f766e)">成員運算子 in</span>
+            </div>
+            <p style="text-align:center;color:#64748b;font-weight:600;">想知道某個元素是否存在於列表 (List) 中？交給 <code>in</code> 運算子！</p>
+            
+            <div style="text-align:center; font-family:'Consolas',monospace; font-size:1.1rem; color:#334155; font-weight:bold; margin-top:10px;">
+                <span class="st">"🍌"</span> <span class="kw">in</span> [<span class="st">"🍎"</span>, <span class="st">"🍌"</span>, <span class="st">"🍇"</span>, <span class="st">"🍉"</span>]
+            </div>
+
+            <div class="m8-container" id="m8-items-box">
+                <div class="m8-glass" id="m8-glass">🔍</div>
+                <div class="m8-item" id="m8-i0">🍎</div>
+                <div class="m8-item" id="m8-i1">🍌</div>
+                <div class="m8-item" id="m8-i2">🍇</div>
+                <div class="m8-item" id="m8-i3">🍉</div>
+            </div>
+            
+            <div class="m8-result" id="m8-res" style="color:#10b981;"></div>
+
+            <div style="display:flex;justify-content:center;gap:12px;margin-top:16px;">
+                <button class="op-btn" onclick="m8Run('🍌')" style="background:linear-gradient(135deg,#14b8a6,#0f766e)">▶ 尋找 "🍌"</button>
+                <button class="op-btn" onclick="m8Run('🍓')" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">▶ 尋找 "🍓"</button>
+                <button class="op-btn" onclick="m8Reset()" style="background:linear-gradient(135deg,#94a3b8,#64748b)">↺ 重置</button>
+            </div>
+            <div class="console-output" id="m8-console" style="margin-top:20px;">>>> 點擊上方按鈕開始尋找</div>
         </div>
 
         <!-- ══ MODULE 7 ══ -->
@@ -981,7 +447,7 @@
             <div class="section-title">🍽️ 模組 7：AA 制餐廳分帳計算機
                 <span class="badge" style="background:linear-gradient(135deg,#667eea,#764ba2)">綜合實戰</span>
             </div>
-            <div class="desc-block">帳單 $850，加 10% 服務費後由 4 人平分，每人需付多少？</div>
+            <div class="desc-block">情境：帳單 $850，加上 10% 服務費後由 4 人平分，每人需付多少？</div>
             <div class="two-col-7">
                 <div>
                     <div class="code-panel" id="m7-code"></div>
@@ -989,33 +455,24 @@
                 <div>
                     <div class="var-panel">
                         <h4>📊 變數狀態監控面板</h4>
-                        <div class="var-row"><span class="var-name">bill</span><span class="var-val"
-                                id="v-bill">—</span></div>
-                        <div class="var-row"><span class="var-name">tip</span><span class="var-val" id="v-tip">—</span>
-                        </div>
-                        <div class="var-row"><span class="var-name">total</span><span class="var-val"
-                                id="v-total">—</span></div>
-                        <div class="var-row"><span class="var-name">people</span><span class="var-val"
-                                id="v-people">—</span></div>
-                        <div class="var-row"><span class="var-name">share</span><span class="var-val"
-                                id="v-share">—</span></div>
+                        <div class="var-row"><span class="var-name">bill</span><span class="var-val" id="v-bill">—</span></div>
+                        <div class="var-row"><span class="var-name">tip</span><span class="var-val" id="v-tip">—</span></div>
+                        <div class="var-row"><span class="var-name">total</span><span class="var-val" id="v-total">—</span></div>
+                        <div class="var-row"><span class="var-name">people</span><span class="var-val" id="v-people">—</span></div>
+                        <div class="var-row"><span class="var-name">share</span><span class="var-val" id="v-share">—</span></div>
                     </div>
                     <div class="console-output" id="m7-console">>>> 點擊「下一步」開始逐行執行</div>
                 </div>
             </div>
-            <div style="display:flex;justify-content:center;gap:10px;">
-                <button id="m7-step-btn" onclick="m7Step()">▶ 下一步 (Step)</button>
-                <button class="op-btn" onclick="m7Reset()"
-                    style="padding:10px 20px;font-size:.95rem;background:linear-gradient(135deg,#aaa,#888)">↺
-                    重置</button>
+            <div style="display:flex;justify-content:center;gap:12px; margin-top:20px;">
+                <button id="m7-step-btn" class="op-btn" onclick="m7Step()">▶ 下一步 (Step)</button>
+                <button class="op-btn" onclick="m7Reset()" style="background:linear-gradient(135deg,#94a3b8,#64748b)">↺ 重置全段</button>
             </div>
             <div class="accordion">
-                <div class="accordion-hdr" onclick="toggleAccordion()">💡 避雷指南 <span id="acc-icon">▼</span></div>
+                <div class="accordion-hdr" onclick="toggleAccordion()">💡 避雷指南 (點擊展開) <span id="acc-icon">▼</span></div>
                 <div class="accordion-body" id="acc-body">
-                    <strong>⚠️ 型態陷阱：</strong> <code>input()</code> 回傳字串，<code>850 / "4"</code> 會 TypeError！務必用
-                    <code>int()</code> 或 <code>float()</code> 轉型。<br><br>
-                    <strong>⚠️ 括號陷阱：</strong> <code>850 + 850 * 0.1 / 4</code> ≠
-                    <code>(850 + 850 * 0.1) / 4</code>。乘除優先，要加上括號確保運算順序正確！<br><br>
+                    <strong>⚠️ 型態陷阱：</strong> <code>input()</code> 回傳字串，若寫 <code>850 / "4"</code> 會引發 TypeError！務必用 <code>int()</code> 或 <code>float()</code> 轉型。<br><br>
+                    <strong>⚠️ 括號陷阱：</strong> <code>850 + 850 * 0.1 / 4</code> ≠ <code>(850 + 850 * 0.1) / 4</code>。乘除優先，要加上括號確保先加總再平分！<br><br>
                     <strong>✅ 正確寫法：</strong> <code>share = (bill + tip) / people</code>
                 </div>
             </div>
@@ -1035,18 +492,21 @@
         // MODULE 1
         // ════════════════════════════
         let m1busy = false;
-        function m1SetBtns(dis) { ['btn-div', 'btn-fdiv', 'btn-mod'].forEach(id => { document.getElementById(id).disabled = dis; }); }
+        function m1SetBtns(dis) { ['btn-div', 'btn-fdiv', 'btn-mod', 'btn-pow'].forEach(id => { document.getElementById(id).disabled = dis; }); }
         function m1Reset() {
             m1busy = false; m1SetBtns(false);
             ['b0c', 'b1c', 'b2c'].forEach(id => document.getElementById(id).textContent = '🧺');
             document.getElementById('trash').style.display = 'none';
             document.getElementById('remain-box').style.display = 'none';
-            document.getElementById('m1-console').textContent = '>>> 10 / 3   →   點擊上方按鈕查看結果';
+            document.getElementById('m1-console').textContent = '>>> 點擊上方按鈕查看算術結果';
             document.getElementById('m1-apples').textContent = '🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎';
-            ['b0', 'b1', 'b2'].forEach(id => { document.getElementById(id).style.boxShadow = ''; document.getElementById(id).style.background = '#f5e6c8'; });
+            document.getElementById('m1-apple-text').textContent = '10 顆蘋果';
+            document.getElementById('basket3-container').style.display = 'block';
+            document.getElementById('m1-baskets').style.display = 'flex';
+            ['b0', 'b1', 'b2'].forEach(id => { document.getElementById(id).style.boxShadow = ''; document.getElementById(id).style.background = '#fdf6e3'; });
         }
         async function m1Run(op) {
-            if (m1busy) return; m1busy = true; m1SetBtns(true);
+            if (m1busy) return; m1busy = true; m1SetBtns(true); m1Reset(); m1SetBtns(true);
             const cons = document.getElementById('m1-console');
             if (op === '/') {
                 cons.textContent = '>>> 10 / 3';
@@ -1061,25 +521,38 @@
                 cons.textContent = '>>> 10 // 3';
                 await delay(500);
                 ['b0c', 'b1c', 'b2c'].forEach(id => { document.getElementById(id).textContent = '🍎🍎🍎'; });
-                ['b0', 'b1', 'b2'].forEach(id => { document.getElementById(id).style.boxShadow = '0 0 12px #2ecc71'; });
+                ['b0', 'b1', 'b2'].forEach(id => { document.getElementById(id).style.boxShadow = '0 0 12px #22c55e'; });
                 document.getElementById('trash').style.display = 'block';
                 await delay(400);
                 document.getElementById('trash-inner').textContent = '🍎🗑️';
-                document.getElementById('trash-inner').style.boxShadow = '0 0 12px #e74c3c';
+                document.getElementById('trash-inner').style.boxShadow = '0 0 12px #ef4444';
                 document.getElementById('m1-apples').innerHTML = '🍎🍎🍎🍎🍎🍎🍎🍎🍎<span style="opacity:.3">🍎</span>';
                 await delay(600);
                 cons.textContent = '>>> 10 // 3\n3';
-            } else {
+            } else if (op === '%') {
                 cons.textContent = '>>> 10 % 3';
                 await delay(500);
                 document.getElementById('m1-apples').innerHTML = '<span style="opacity:.3">🍎🍎🍎🍎🍎🍎🍎🍎🍎</span>✨🍎✨';
                 await delay(500);
                 document.getElementById('remain-box').style.display = 'block';
                 document.getElementById('remain-inner').textContent = '🌟🍎🌟';
-                document.getElementById('remain-inner').style.boxShadow = '0 0 20px #f39c12';
+                document.getElementById('remain-inner').style.boxShadow = '0 0 20px #f59e0b';
                 ['b0c', 'b1c', 'b2c'].forEach(id => { document.getElementById(id).textContent = '🍎🍎🍎'; });
                 await delay(600);
                 cons.textContent = '>>> 10 % 3\n1';
+            } else if (op === '**') {
+                // 次方特效
+                cons.textContent = '>>> 2 ** 3';
+                document.getElementById('m1-apples').textContent = '🍎🍎';
+                document.getElementById('m1-apple-text').textContent = '2 顆蘋果 (底數)';
+                document.getElementById('m1-baskets').style.display = 'none';
+                await delay(800);
+                document.getElementById('m1-apple-text').textContent = '次方爆發！ 2 × 2 × 2';
+                document.getElementById('m1-apples').textContent = '🍎🍎 🍎🍎';
+                await delay(800);
+                document.getElementById('m1-apples').textContent = '🍎🍎 🍎🍎 🍎🍎 🍎🍎';
+                await delay(600);
+                cons.textContent = '>>> 2 ** 3\n8';
             }
             m1busy = false; m1SetBtns(false);
         }
@@ -1095,6 +568,10 @@
             document.getElementById('result-card').style.display = 'none';
             document.getElementById('m2-label').textContent = '';
             document.getElementById('m2-console').textContent = '>>> 點擊切換模式後執行';
+            
+            // Adjust toggle button styles based on active state
+            document.getElementById('tog-assign').style.color = mode === 'assign' ? '#fff' : '#667eea';
+            document.getElementById('tog-eq').style.color = mode === 'eq' ? '#fff' : '#667eea';
         }
         async function m2Run() {
             const arm = document.getElementById('arm'), carried = document.getElementById('carried'),
@@ -1107,25 +584,25 @@
                 arm.textContent = '🦾'; carried.textContent = '5️⃣';
                 cons.textContent = '>>> x = 5';
                 await delay(600);
-                arm.style.transform = 'translateX(60px)';
+                arm.style.transform = 'translateX(65px)';
                 await delay(600);
                 boxVal.textContent = '5'; arm.style.transform = '';
-                carried.textContent = ''; boxVal.style.color = '#2ecc71';
-                await delay(400); boxVal.style.color = '#667eea';
-                cons.textContent = '>>> x = 5\n(賦值動作，沒有回傳值)';
+                carried.textContent = ''; boxVal.style.color = '#10b981';
+                await delay(400); boxVal.style.color = '#4f46e5';
+                cons.textContent = '>>> x = 5\n(賦值動作，不會印出任何 True/False)';
             } else {
                 label.textContent = '🔍 這是一個「提問」：x 裡的值等於 5 嗎？';
                 if (boxVal.textContent === '?') boxVal.textContent = '5';
                 arm.textContent = '🔭'; carried.textContent = '';
                 cons.textContent = '>>> x == 5';
                 await delay(500);
-                sl.style.width = '160px';
+                sl.style.width = '180px';
                 await delay(800);
                 sl.style.width = '0';
                 const val = boxVal.textContent, result = val === '5';
                 rc.style.cssText = `display:inline-block;padding:10px 24px;border-radius:12px;font-size:1.4rem;font-weight:800;
-      background:${result ? '#d4efdf' : '#fadbd8'};color:${result ? '#1e8449' : '#c0392b'};
-      border:3px solid ${result ? '#2ecc71' : '#e74c3c'};animation:popIn .3s ease;`;
+      background:${result ? '#dcfce7' : '#fee2e2'};color:${result ? '#16a34a' : '#dc2626'};
+      border:3px solid ${result ? '#22c55e' : '#ef4444'};animation:popIn .3s ease;`;
                 rc.textContent = result ? '✅ True' : '❌ False';
                 await delay(300);
                 cons.textContent = `>>> x == 5\n${result}`;
@@ -1133,15 +610,11 @@
         }
         function m2Reset() {
             m2mode = 'assign';
-            document.getElementById('tog-assign').classList.add('active');
-            document.getElementById('tog-eq').classList.remove('active');
-            document.getElementById('result-card').style.display = 'none';
-            document.getElementById('m2-label').textContent = '';
-            document.getElementById('m2-console').textContent = '>>> 點擊切換模式後執行';
+            m2Toggle('assign');
             document.getElementById('arm').textContent = '🤖';
             document.getElementById('carried').textContent = '';
             document.getElementById('box-val').textContent = '?';
-            document.getElementById('box-val').style.color = '#667eea';
+            document.getElementById('box-val').style.color = '#4f46e5';
             document.getElementById('scan-line').style.width = '0';
         }
 
@@ -1154,6 +627,7 @@
             const el = document.getElementById('l' + i), vEl = document.getElementById('l' + i + 'v');
             el.classList.toggle('on', m3lights[i]); el.classList.toggle('off', !m3lights[i]);
             vEl.textContent = m3lights[i] ? 'True' : 'False';
+            vEl.style.color = m3lights[i] ? '#16a34a' : '#ef4444';
             m3Eval();
         }
         function m3SetMode(mode) { m3mode = mode; m3Eval(); }
@@ -1178,7 +652,7 @@
             [0, 1].forEach(i => {
                 const el = document.getElementById('l' + i), vEl = document.getElementById('l' + i + 'v');
                 el.classList.add('on'); el.classList.remove('off');
-                vEl.textContent = 'True';
+                vEl.textContent = 'True'; vEl.style.color = '#16a34a';
             });
             m3Eval();
         }
@@ -1213,12 +687,11 @@
                 return;
             }
             if (!m4parens && m4state === 'mul-done') {
-                // 2 + 12 = 14
                 const res = 2 + m4left; m4state = 'done';
                 document.getElementById('m4-hint').textContent = '';
                 document.getElementById('m4-result').textContent = `✅ 2 + 3×4 = ${res}`; m4Render(); return;
             }
-            // parens mode: + fires first
+            document.getElementById('m4-hint').style.color = '#16a34a';
             document.getElementById('m4-hint').textContent = '✅ 括號先算！2+3=5，接著再乘 4';
             m4left = 5; m4state = 'added'; m4Render();
         }
@@ -1233,6 +706,7 @@
         }
         function m4AddParens() {
             m4parens = true; m4state = 'normal'; m4left = 2; m4right = 4;
+            document.getElementById('m4-hint').style.color = '#3b82f6';
             document.getElementById('m4-hint').textContent = '🛡️ 括號發出防護罩！現在可以先點 +';
             document.getElementById('m4-result').textContent = ''; m4Render();
         }
@@ -1251,9 +725,9 @@
             if (m5done) return; m5done = true;
             const eq = document.getElementById('expand-eq'), bar = document.getElementById('hp-bar'), btn = document.getElementById('m5-btn');
             btn.disabled = true;
-            eq.style.background = '#fff3cd'; eq.textContent = 'hp = hp + 20';
+            eq.style.background = '#fef3c7'; eq.style.borderColor = '#f59e0b'; eq.textContent = 'hp = hp + 20';
             await delay(1000);
-            eq.style.background = '#d4efdf'; eq.textContent = '✅ hp += 20　等同於　hp = hp + 20';
+            eq.style.background = '#dcfce7'; eq.style.borderColor = '#22c55e'; eq.textContent = '✅ hp += 20 等同於 hp = hp + 20';
             await delay(600);
             bar.style.width = '70%'; bar.textContent = '70';
             await delay(1200);
@@ -1262,7 +736,7 @@
         function m5Reset() {
             m5done = false;
             const eq = document.getElementById('expand-eq'), bar = document.getElementById('hp-bar'), btn = document.getElementById('m5-btn');
-            eq.style.background = '#f3f4f6'; eq.textContent = 'hp += 20';
+            eq.style.background = '#f1f5f9'; eq.style.borderColor = '#cbd5e1'; eq.textContent = 'hp += 20';
             bar.style.width = '50%'; bar.textContent = '50';
             btn.textContent = '▶ 執行 hp += 20'; btn.disabled = false;
         }
@@ -1286,7 +760,7 @@
             const l1 = document.getElementById('lego1'), l2 = document.getElementById('lego2'),
                 res = document.getElementById('m6-add-result');
             l1.style.transition = 'transform .5s'; l2.style.transition = 'transform .5s';
-            l1.style.transform = 'translateX(30px)'; l2.style.transform = 'translateX(-30px)';
+            l1.style.transform = 'translateX(35px)'; l2.style.transform = 'translateX(-35px)';
             await delay(600);
             l1.style.transform = ''; l2.style.transform = '';
             const s = document.createElement('div'); s.className = 'str-out'; s.textContent = '"Python3"';
@@ -1301,6 +775,61 @@
             document.getElementById('m6-add-result').innerHTML = '';
             document.getElementById('lego1').style.transform = '';
             document.getElementById('lego2').style.transform = '';
+        }
+
+        // ════════════════════════════
+        // MODULE 8 (NEW)
+        // ════════════════════════════
+        let m8busy = false;
+        async function m8Run(targetFruit) {
+            if (m8busy) return; m8busy = true;
+            const glass = document.getElementById('m8-glass');
+            const res = document.getElementById('m8-res');
+            const consoleOut = document.getElementById('m8-console');
+            
+            // 復原初始狀態
+            for(let i=0; i<4; i++) { document.getElementById('m8-i'+i).classList.remove('found'); }
+            res.textContent = '';
+            glass.style.opacity = '1';
+            glass.style.left = '-30px'; // 初始位置
+            consoleOut.textContent = `>>> "${targetFruit}" in ["🍎", "🍌", "🍇", "🍉"]`;
+            
+            const fruits = ['🍎', '🍌', '🍇', '🍉'];
+            let found = false;
+
+            for(let i=0; i<fruits.length; i++) {
+                await delay(500);
+                // 移動放大鏡
+                glass.style.left = (i * 85 + 5) + 'px'; // 估算各項目前距
+                await delay(400); // 觀察時間
+                
+                if (fruits[i] === targetFruit) {
+                    document.getElementById('m8-i'+i).classList.add('found');
+                    found = true;
+                    break;
+                }
+            }
+
+            await delay(500);
+            if(found) {
+                res.textContent = '✅ True (找到了！)';
+                res.style.color = '#10b981';
+                consoleOut.textContent += '\nTrue';
+            } else {
+                res.textContent = '❌ False (裡面沒有這個元素)';
+                res.style.color = '#ef4444';
+                consoleOut.textContent += '\nFalse';
+            }
+            glass.style.opacity = '0';
+            m8busy = false;
+        }
+
+        function m8Reset() {
+            if (m8busy) return;
+            for(let i=0; i<4; i++) { document.getElementById('m8-i'+i).classList.remove('found'); }
+            document.getElementById('m8-glass').style.opacity = '0';
+            document.getElementById('m8-res').textContent = '';
+            document.getElementById('m8-console').textContent = '>>> 點擊上方按鈕開始尋找';
         }
 
         // ════════════════════════════
@@ -1335,13 +864,13 @@
         function m7Step() {
             if (m7step > 0) document.getElementById('cl' + (m7step - 1)).classList.remove('hl');
             if (m7step >= m7lines.length) {
-                document.getElementById('m7-step-btn').textContent = '✅ 完成！';
+                document.getElementById('m7-step-btn').textContent = '✅ 執行完畢';
                 document.getElementById('m7-step-btn').disabled = true; return;
             }
             document.getElementById('cl' + m7step).classList.add('hl');
             m7lines[m7step].action();
             m7step++;
-            if (m7step >= m7lines.length) document.getElementById('m7-step-btn').textContent = '▶ 最後一步完成！';
+            if (m7step >= m7lines.length) document.getElementById('m7-step-btn').textContent = '▶ 完成！';
         }
         function m7Reset() {
             m7step = 0;

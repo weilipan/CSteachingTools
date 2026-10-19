@@ -10,126 +10,142 @@
   <script src="../../layout.js" defer></script>
 
   <style>
+    /* ── 本頁專用的元件與互動樣式 (淺色化) ── */
+    :root {
+      --surface: #f1f5f9;
+      --code-bg: #f8fafc;
+      --accent2: #0284c7;
+      --accent-purple: #8b5cf6;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+    }
+    
     /* ── Base & Layout ── */
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }
-    .container { max-width: 1100px; margin: 0 auto; }
-    .section-title { color: #58a6ff; font-size: 1.8rem; margin-bottom: 5px; }
-    .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-bottom: 30px; }
+    body { padding-top: 40px; padding-bottom: 60px; }
+    .section-title { 
+      font-size: 2rem; margin-bottom: 5px; background: linear-gradient(90deg, #0366d6, #28a745, #005cc5); 
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: bold;
+    }
+    .card h2 { color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px; margin-top: 0; }
     
     /* ── Grid Layout ── */
-    .mod-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; align-items: start; }
+    .mod-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; align-items: start; margin-top: 15px; }
     @media(max-width:850px){ .mod-grid { grid-template-columns: 1fr; } }
     
     /* ── Code blocks ── */
     .code-block {
       font-family: 'Courier New', monospace; font-size: 0.9rem;
-      background: #010409; border-radius: 10px; padding: 14px 18px;
-      line-height: 1.7; border: 1px solid #30363d; overflow-x: auto;
+      background: var(--code-bg); border-radius: 10px; padding: 14px 18px;
+      line-height: 1.7; border: 1px solid var(--border-color); overflow-x: auto;
+      color: var(--text-main); box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
     }
     .code-line { display: block; padding: 2px 6px; border-radius: 4px; transition: all .2s; }
-    .code-line.active-green { background: #1a4a1e; color: #56d364; font-weight: bold; }
-    .code-line.active-red { background: #4a1a1a; color: #f85149; font-weight: bold; }
-    .code-line.active-blue { background: #0d2a4a; color: #58a6ff; font-weight: bold; }
-    .code-line.active-yellow { background: #3a2f00; color: #e3b341; font-weight: bold; }
-    .code-line.active-purple { background: #2a1a4a; color: #d2a8ff; font-weight: bold; }
-    .code-line.cursor { background: #1f2937; outline: 2px solid #58a6ff; color: #fff; }
+    .code-line.active-green { background: #dcfce7; color: #15803d; font-weight: bold; border-left: 3px solid var(--green); }
+    .code-line.active-red { background: #fee2e2; color: #b91c1c; font-weight: bold; border-left: 3px solid var(--red); }
+    .code-line.active-blue { background: #e0f2fe; color: #0369a1; font-weight: bold; border-left: 3px solid var(--accent2); }
+    .code-line.active-yellow { background: #fef3c7; color: #b45309; font-weight: bold; border-left: 3px solid var(--yellow); }
+    .code-line.active-purple { background: #f3e8ff; color: #6d28d9; font-weight: bold; border-left: 3px solid var(--accent-purple); }
+    .code-line.cursor { background: #f1f5f9; outline: 2px solid var(--accent-color); color: var(--text-main); }
 
     /* ── Controls & Watch Box ── */
-    .ctrl-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
-    .num-input { width: 70px; padding: 6px 10px; border-radius: 6px; border: 1px solid #30363d; background:#0d1117; color:#c9d1d9; font-size:0.9rem; text-align:center;}
+    .ctrl-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; font-weight: bold; color: var(--text-main); }
+    .num-input { width: 70px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background:#ffffff; color:var(--text-main); font-size:0.9rem; text-align:center; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+    .num-input:focus { border-color: var(--accent-color); }
     .btn-run {
       padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer;
-      background: #238636; color: #fff; font-size: 0.9rem; font-weight: 600;
-      transition: background .2s, transform .1s; margin-bottom: 10px; width: 100%;
+      background: var(--green); color: #fff; font-size: 0.9rem; font-weight: 600;
+      transition: background .2s, transform .1s; margin-bottom: 10px; width: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .btn-run:hover { background: #2ea043; }
-    .btn-run:active { transform: scale(.98); }
+    .btn-run:hover { filter: brightness(1.1); }
+    .btn-run:active { transform: scale(.98); box-shadow: none; }
     .btn-run:disabled { opacity:.5; cursor:not-allowed; }
-    .btn-action { background: #1f6feb; width: auto; margin-bottom:0; }
-    .btn-action:hover { background: #388bfd; }
+    .btn-action { background: var(--accent-color); width: auto; margin-bottom:0; }
 
     .watch-box {
-      background: #010409; border: 1px dashed #58a6ff; border-radius: 8px;
-      padding: 10px 14px; font-family: monospace; font-size: 0.9rem; color: #8b949e;
-      margin-bottom: 12px; display: inline-block; min-width: 120px;
+      background: #ffffff; border: 1px dashed var(--accent-color); border-radius: 8px;
+      padding: 10px 14px; font-family: monospace; font-size: 0.9rem; color: var(--text-main);
+      margin-bottom: 12px; display: inline-block; min-width: 120px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    .watch-box.glow { border-color: #e3b341; background: #2a2300; transition: .2s; }
-    .watch-title { font-size: 0.75rem; text-transform: uppercase; color: #58a6ff; margin-bottom: 4px; font-weight: bold; }
-    .watch-var { color: #c9d1d9; }
-    .watch-val { color: #e3b341; font-weight: bold; font-size: 1.1rem;}
+    .watch-box.glow { border-color: var(--yellow); background: #fef3c7; transition: .2s; }
+    .watch-title { font-size: 0.75rem; text-transform: uppercase; color: var(--accent-color); margin-bottom: 4px; font-weight: bold; }
+    .watch-var { color: var(--text-main); }
+    .watch-val { color: var(--accent3); font-weight: bold; font-size: 1.1rem;}
 
     /* ── Output ── */
     .out-box {
-      background:#0d1117; border-left: 4px solid #8b949e; border-radius: 0 6px 6px 0;
-      padding:10px 14px; min-height:40px; font-family:monospace; font-size:0.9rem; color:#c9d1d9; margin-top:12px; white-space: pre-wrap;
+      background:#ffffff; border-left: 4px solid var(--border-color); border-radius: 0 6px 6px 0;
+      padding:10px 14px; min-height:40px; font-family:monospace; font-size:0.9rem; color:var(--text-main); margin-top:12px; white-space: pre-wrap; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
 
     /* ── Array Visuals ── */
     .array-vis-wrap { padding: 10px 0 15px; display: flex; justify-content: center; overflow-x: auto;}
-    .array-vis { display: inline-flex; position: relative; border-radius: 8px; overflow: hidden; border: 2px solid #30363d; background: #1c2128;}
-    .arr-cell-col { display: flex; flex-direction: column; align-items: center; border-right: 1px solid #30363d; padding: 10px 15px; position:relative; transition:.3s;}
+    .array-vis { display: inline-flex; position: relative; border-radius: 8px; overflow: hidden; border: 2px solid var(--border-color); background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .arr-cell-col { display: flex; flex-direction: column; align-items: center; border-right: 1px solid var(--border-color); padding: 10px 15px; position:relative; transition:.3s;}
     .arr-cell-col:last-child { border-right: none; }
-    .arr-cell-col.active { background: #0d2a4a; box-shadow: inset 0 0 10px #58a6ff; }
-    .arr-cell-col.updated { background: #1a4a1e; }
-    .arr-cell-col.max-cell { background: #2a1a4a; box-shadow: inset 0 0 10px #d2a8ff; }
-    .arr-cell-col.skip { opacity: 0.4; }
+    .arr-cell-col.active { background: #e0f2fe; box-shadow: inset 0 0 0 2px var(--accent2); }
+    .arr-cell-col.updated { background: #dcfce7; }
+    .arr-cell-col.max-cell { background: #f3e8ff; box-shadow: inset 0 0 0 2px var(--accent-purple); }
+    .arr-cell-col.skip { opacity: 0.5; background: #f1f5f9; }
     
-    .arr-idx { font-family: monospace; font-size: 0.8rem; color: #58a6ff; margin-bottom: 5px; font-weight: bold;}
-    .arr-val { font-family: monospace; font-size: 1.5rem; font-weight: bold; color: #c9d1d9; transition: .3s;}
-    .arr-cell-col.active .arr-val { color: #58a6ff; }
-    .arr-cell-col.max-cell .arr-val { color: #d2a8ff; }
-    .arr-addr { font-family: monospace; font-size: 0.7rem; color: #6e7681; margin-top: 5px; }
+    .arr-idx { font-family: monospace; font-size: 0.8rem; color: var(--accent-color); margin-bottom: 5px; font-weight: bold;}
+    .arr-val { font-family: monospace; font-size: 1.5rem; font-weight: bold; color: var(--text-main); transition: .3s;}
+    .arr-cell-col.active .arr-val { color: var(--accent2); }
+    .arr-cell-col.max-cell .arr-val { color: var(--accent-purple); }
+    .arr-addr { font-family: monospace; font-size: 0.7rem; color: var(--text-muted); margin-top: 5px; }
     
-    .ptr-arrow { position:absolute; top:-25px; left:50%; transform:translateX(-50%); color:#58a6ff; font-weight:bold; opacity:0; transition:.2s; }
+    .ptr-arrow { position:absolute; top:-25px; left:50%; transform:translateX(-50%); color:var(--accent-color); font-weight:bold; opacity:0; transition:.2s; }
     .arr-cell-col.active .ptr-arrow { opacity:1; }
 
     /* Module 4 OOB Zones */
     .oob-zone {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 10px 15px; border: 2px dashed #f85149; border-radius: 8px; background: #1a0808; margin: 0 10px; opacity: 0.3; transition: .3s;
+      padding: 10px 15px; border: 2px dashed var(--red); border-radius: 8px; background: #fef2f2; margin: 0 10px; opacity: 0.4; transition: .3s;
     }
-    .oob-zone.triggered { opacity: 1; animation: shake .4s; background: #4a1a1a; }
-    .oob-zone .arr-val { color: #f85149; font-size: 1.2rem;}
+    .oob-zone.triggered { opacity: 1; animation: shake .4s; background: #fca5a5; }
+    .oob-zone .arr-val { color: #b91c1c; font-size: 1.2rem;}
     
     @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
   </style>
 </head>
 <body>
 <div class="container">
-  <h1 class="section-title">📦 C++ 一維陣列 (1D Arrays) 互動式教學</h1>
-  <p style="color:#8b949e; margin-bottom:28px;">雙欄對照模式：透過視覺化陣列操作，深入理解記憶體連續性、迴圈走訪與邊界危險。</p>
+  <div style="text-align: center; margin-bottom: 40px;">
+    <h1 class="section-title">📦 C++ 一維陣列 (1D Arrays) 互動式教學</h1>
+    <p style="color:var(--text-muted);">雙欄對照模式：透過視覺化陣列操作，深入理解記憶體連續性、迴圈走訪與邊界危險。</p>
+  </div>
 
   <!-- Module 1: Architecture -->
   <div class="card">
-    <h2 style="margin-top:0;">🏗️ 1. 陣列架構與記憶體</h2>
+    <h2>🏗️ 1. 陣列架構與記憶體</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
           <span class="code-line" id="m1-l0">int arr[5] = {12, 45, 7, 88, 33};</span>
-          <span class="code-line" id="m1-l1" style="color:#6e7681;">// 每個 int 佔 4 bytes，記憶體連續排列</span>
-          <span class="code-line" id="m1-l2">arr[2] = 99; <span style="color:#6e7681;">// 修改指定索引的值</span></span>
+          <span class="code-line" id="m1-l1" style="color:#64748b;">// 每個 int 佔 4 bytes，記憶體連續排列</span>
+          <span class="code-line" id="m1-l2">arr[2] = 99; <span style="color:#64748b;">// 修改指定索引的值</span></span>
         </div>
       </div>
       <div>
         <div class="array-vis-wrap"><div class="array-vis" id="m1-arr"></div></div>
-        <div class="ctrl-row">
+        <div class="ctrl-row" style="justify-content: center;">
           <span>修改 arr[</span><input type="number" class="num-input" id="m1-idx" value="2" min="0" max="4"><span>] =</span>
           <input type="number" class="num-input" id="m1-val" value="99">
           <button class="btn-run btn-action" onclick="runM1()">✅ 套用修改</button>
         </div>
-        <div class="out-box" id="m1-out">— 點擊「套用修改」觀察陣列變化 —</div>
+        <div class="out-box" id="m1-out" style="color:var(--text-muted); font-style:italic;">— 點擊「套用修改」觀察陣列變化 —</div>
       </div>
     </div>
   </div>
 
   <!-- Module 2: Standard For Loop -->
   <div class="card">
-    <h2 style="margin-top:0;">🔢 2. 傳統 for 迴圈走訪</h2>
+    <h2>🔢 2. 傳統 for 迴圈走訪</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
           <span class="code-line" id="m2-l0">int arr[5] = {12, 45, 7, 88, 33};</span>
-          <span class="code-line" id="m2-l1">for(<span style="color:#58a6ff;">int i = 0</span>; <span style="color:#56d364;">i &lt; 5</span>; <span style="color:#e3b341;">i++</span>) {</span>
+          <span class="code-line" id="m2-l1">for(<span style="color:var(--accent-color);font-weight:bold;">int i = 0</span>; <span style="color:var(--green);font-weight:bold;">i &lt; 5</span>; <span style="color:var(--yellow);font-weight:bold;">i++</span>) {</span>
           <span class="code-line" id="m2-l2">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "arr[" &lt;&lt; i &lt;&lt; "] = " &lt;&lt; arr[i] &lt;&lt; endl;</span>
           <span class="code-line" id="m2-l3">}</span>
         </div>
@@ -143,23 +159,23 @@
           </div>
         </div>
         <div class="array-vis-wrap" style="padding-top:25px;"><div class="array-vis" id="m2-arr"></div></div>
-        <div class="out-box" id="m2-out" style="min-height:80px;">— 等待執行 —</div>
+        <div class="out-box" id="m2-out" style="min-height:80px; color:var(--text-muted); font-style:italic;">— 等待執行 —</div>
       </div>
     </div>
   </div>
 
   <!-- Module 3: Range-based For -->
   <div class="card">
-    <h2 style="margin-top:0;">✨ 3. 範圍 for 迴圈 (Range-based for)</h2>
+    <h2>✨ 3. 範圍 for 迴圈 (Range-based for)</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
           <span class="code-line" id="m3-l0">int arr[5] = {12, 45, 7, 88, 33};</span>
-          <span class="code-line" id="m3-l1">for(<span style="color:#d2a8ff;">int x</span> : arr) {</span>
+          <span class="code-line" id="m3-l1">for(<span style="color:var(--accent-purple);font-weight:bold;">int x</span> : arr) {</span>
           <span class="code-line" id="m3-l2">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; x &lt;&lt; endl;</span>
           <span class="code-line" id="m3-l3">}</span>
         </div>
-        <p style="font-size:0.85rem; color:#8b949e;">💡 C++11 語法：直接將元素複製給 <code>x</code>，無須手動管理索引 <code>i</code>。</p>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top: 10px;">💡 C++11 語法：直接將元素複製給 <code>x</code>，無須手動管理索引 <code>i</code>。</p>
       </div>
       <div>
         <button class="btn-run" id="btn-m3" onclick="runM3()">▶ 模擬無索引走訪</button>
@@ -170,22 +186,22 @@
           </div>
         </div>
         <div class="array-vis-wrap"><div class="array-vis" id="m3-arr"></div></div>
-        <div class="out-box" id="m3-out" style="min-height:80px;">— 等待執行 —</div>
+        <div class="out-box" id="m3-out" style="min-height:80px; color:var(--text-muted); font-style:italic;">— 等待執行 —</div>
       </div>
     </div>
   </div>
 
   <!-- Module 4: Out of Bounds -->
   <div class="card">
-    <h2 style="margin-top:0;">💀 4. 陣列越界危險 (Out of Bounds)</h2>
+    <h2>💀 4. 陣列越界危險 (Out of Bounds)</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
           <span class="code-line" id="m4-l0">int arr[5] = {12, 45, 7, 88, 33};</span>
-          <span class="code-line" id="m4-l1" style="color:#6e7681;">// 合法索引為 0 ~ 4</span>
-          <span class="code-line" id="m4-l2">cout &lt;&lt; arr[<span id="m4-code-idx">?</span>];</span>
+          <span class="code-line" id="m4-l1" style="color:#64748b;">// 合法索引為 0 ~ 4</span>
+          <span class="code-line" id="m4-l2">cout &lt;&lt; arr[<span id="m4-code-idx" style="font-weight:bold; color:var(--accent3);">?</span>];</span>
         </div>
-        <p style="font-size:0.85rem; color:#8b949e;">⚠️ C++ 為了效能，<strong>不會檢查邊界</strong>。讀取越界會取得垃圾值，寫入越界會導致崩潰！</p>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top: 10px;">⚠️ C++ 為了效能，<strong>不會檢查邊界</strong>。讀取越界會取得垃圾值，寫入越界會導致崩潰！</p>
       </div>
       <div>
         <div class="ctrl-row" style="justify-content:center;">
@@ -197,14 +213,14 @@
           <div class="array-vis" id="m4-arr"></div>
           <div class="oob-zone" id="m4-oob-right"><div class="arr-val">💀</div><div class="arr-addr">???</div></div>
         </div>
-        <div class="out-box" id="m4-out">— 輸入 index (例如 -1 或 5) 並點擊讀取 —</div>
+        <div class="out-box" id="m4-out" style="color:var(--text-muted); font-style:italic;">— 輸入 index (例如 -1 或 5) 並點擊讀取 —</div>
       </div>
     </div>
   </div>
 
   <!-- Module 5: Sum -->
   <div class="card">
-    <h2 style="margin-top:0;">➕ 5. 實戰：計算總和 (Calculate Sum)</h2>
+    <h2>➕ 5. 實戰：計算總和 (Calculate Sum)</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
@@ -228,7 +244,7 @@
 
   <!-- Module 6: Find Max -->
   <div class="card">
-    <h2 style="margin-top:0;">🏆 6. 實戰：尋找最大值 (Find Max)</h2>
+    <h2>🏆 6. 實戰：尋找最大值 (Find Max)</h2>
     <div class="mod-grid">
       <div>
         <div class="code-block">
@@ -248,7 +264,7 @@
           <div class="watch-box" id="m6-watch-max"><div class="watch-title">Watch</div><span class="watch-var">max_val</span> = <span class="watch-val" id="w-m6-max">—</span></div>
         </div>
         <div class="array-vis-wrap" style="padding-top:25px;"><div class="array-vis" id="m6-arr"></div></div>
-        <div class="out-box" id="m6-out" style="min-height:60px;">— 等待執行 —</div>
+        <div class="out-box" id="m6-out" style="min-height:60px; color:var(--text-muted); font-style:italic;">— 等待執行 —</div>
       </div>
     </div>
   </div>
@@ -295,21 +311,24 @@ function runM1() {
   const idx = parseInt(document.getElementById('m1-idx').value);
   const val = parseInt(document.getElementById('m1-val').value);
   const out = document.getElementById('m1-out');
-  if(idx < 0 || idx > 4) { out.textContent = '❌ 錯誤：Index 必須在 0~4 之間！'; return; }
+  out.style.fontStyle = 'normal'; out.style.color = 'var(--text-main)';
+  if(idx < 0 || idx > 4) { out.innerHTML = '<strong style="color:var(--red);">❌ 錯誤：Index 必須在 0~4 之間！</strong>'; return; }
   
   arr1[idx] = val;
   renderArray('m1-arr', arr1);
   document.getElementById(`m1-arr-c${idx}`).classList.add('updated');
   hl('m1-l2', 'active-yellow');
-  document.getElementById('m1-l2').innerHTML = `arr[${idx}] = ${val}; <span style="color:#6e7681;">// 已寫入記憶體 ${getAddr(idx)}</span>`;
-  out.textContent = `✅ arr[${idx}] 已成功更新為 ${val}。`;
+  document.getElementById('m1-l2').innerHTML = `arr[${idx}] = ${val}; <span style="color:#64748b;">// 已寫入記憶體 ${getAddr(idx)}</span>`;
+  out.innerHTML = `<strong style="color:var(--green);">✅ arr[${idx}] 已成功更新為 ${val}。</strong>`;
   setTimeout(() => { document.getElementById(`m1-arr-c${idx}`).classList.remove('updated'); }, 800);
 }
 
 // ── Module 2 ──
 async function runM2() {
   const btn = document.getElementById('btn-m2'); btn.disabled = true;
-  clr('m2-l', 3); document.getElementById('m2-out').textContent = '';
+  clr('m2-l', 3); 
+  const out = document.getElementById('m2-out');
+  out.textContent = ''; out.style.fontStyle = 'normal'; out.style.color = 'var(--text-main)';
   renderArray('m2-arr', BASE_ARR, true);
   
   for(let i=0; i<5; i++) {
@@ -324,11 +343,11 @@ async function runM2() {
     
     hl('m2-l2', 'cursor'); await sleep(400);
     hl('m2-l2', 'active-green');
-    document.getElementById('m2-out').textContent += `> 存取 arr[${i}]，值為 ${BASE_ARR[i]}\n`;
+    out.textContent += `> 存取 arr[${i}]，值為 ${BASE_ARR[i]}\n`;
     await sleep(500);
   }
   clr('m2-l', 3); document.getElementById('w-m2-i').textContent = '✅';
-  document.getElementById('m2-out').textContent += `> 走訪結束。`;
+  out.innerHTML += `<strong style="color:var(--accent2);">> 走訪結束。</strong>`;
   for(let k=0; k<5; k++) document.getElementById(`m2-arr-c${k}`).classList.remove('active');
   btn.disabled = false;
 }
@@ -336,7 +355,9 @@ async function runM2() {
 // ── Module 3 ──
 async function runM3() {
   const btn = document.getElementById('btn-m3'); btn.disabled = true;
-  clr('m3-l', 3); document.getElementById('m3-out').textContent = '';
+  clr('m3-l', 3); 
+  const out = document.getElementById('m3-out');
+  out.textContent = ''; out.style.fontStyle = 'normal'; out.style.color = 'var(--text-main)';
   renderArray('m3-arr', BASE_ARR, false);
   
   for(let i=0; i<5; i++) {
@@ -352,7 +373,7 @@ async function runM3() {
     
     hl('m3-l2', 'cursor'); await sleep(400);
     hl('m3-l2', 'active-green');
-    document.getElementById('m3-out').textContent += `> 拷貝元素至 x，印出 x: ${BASE_ARR[i]}\n`;
+    out.textContent += `> 拷貝元素至 x，印出 x: ${BASE_ARR[i]}\n`;
     await sleep(500);
   }
   clr('m3-l', 3); document.getElementById('w-m3-x').textContent = '✅';
@@ -364,6 +385,7 @@ async function runM3() {
 async function runM4() {
   const idx = parseInt(document.getElementById('m4-idx').value);
   const out = document.getElementById('m4-out');
+  out.style.fontStyle = 'normal';
   const lOOB = document.getElementById('m4-oob-left');
   const rOOB = document.getElementById('m4-oob-right');
   
@@ -377,15 +399,15 @@ async function runM4() {
   if(idx >= 0 && idx < 5) {
     hl('m4-l2', 'active-green');
     document.getElementById(`m4-arr-c${idx}`).classList.add('active');
-    out.style.color = '#56d364';
-    out.textContent = `✅ 安全讀取：arr[${idx}] = ${BASE_ARR[idx]}`;
+    out.style.color = 'var(--green)';
+    out.innerHTML = `<strong>✅ 安全讀取：arr[${idx}] = ${BASE_ARR[idx]}</strong>`;
   } else {
     hl('m4-l2', 'active-red');
-    out.style.color = '#f85149';
+    out.style.color = 'var(--red)';
     let trash = Math.floor(Math.random() * 99999);
     if(idx < 0) { lOOB.classList.add('triggered'); lOOB.querySelector('.arr-idx').innerHTML = `[${idx}]`; }
     else { rOOB.classList.add('triggered'); rOOB.querySelector('.arr-idx').innerHTML = `[${idx}]`; }
-    out.textContent = `💀 嚴重錯誤：存取越界！\n無法預期的記憶體區塊。讀取到垃圾值：${trash}`;
+    out.innerHTML = `<strong>💀 嚴重錯誤：存取越界！</strong>\n無法預期的記憶體區塊。讀取到垃圾值：${trash}`;
   }
 }
 
@@ -421,14 +443,16 @@ async function runM5() {
 // ── Module 6 ──
 async function runM6() {
   const btn = document.getElementById('btn-m6'); btn.disabled = true;
-  clr('m6-l', 6); document.getElementById('m6-out').textContent = '';
+  clr('m6-l', 6); 
+  const out = document.getElementById('m6-out');
+  out.textContent = ''; out.style.fontStyle = 'normal'; out.style.color = 'var(--text-main)';
   renderArray('m6-arr', BASE_ARR, true);
   
   hl('m6-l1', 'active-purple');
   let max = BASE_ARR[0];
   document.getElementById('w-m6-max').textContent = max;
   document.getElementById('m6-arr-c0').classList.add('max-cell');
-  document.getElementById('m6-out').textContent = `> 初始化 max_val = arr[0] = ${max}\n`;
+  out.innerHTML = `<span style="color:var(--accent-purple); font-weight:bold;">> 初始化 max_val = arr[0] = ${max}</span>\n`;
   await sleep(600);
   
   for(let i=1; i<5; i++) {
@@ -452,15 +476,16 @@ async function runM6() {
       document.getElementById(`m6-arr-c${i}`).classList.add('max-cell');
       
       hl('m6-l4', 'active-yellow');
-      document.getElementById('m6-out').textContent += `> 發現更大值！更新 max_val = ${max}\n`;
+      out.innerHTML += `<strong style="color:var(--yellow);">> 發現更大值！更新 max_val = ${max}</strong>\n`;
     } else {
       hl('m6-l3', 'active-red');
       document.getElementById(`m6-arr-c${i}`).classList.add('skip');
-      document.getElementById('m6-out').textContent += `> ${BASE_ARR[i]} 未超過 ${max}，跳過。\n`;
+      out.textContent += `> ${BASE_ARR[i]} 未超過 ${max}，跳過。\n`;
     }
     await sleep(600);
   }
   clr('m6-l', 6); document.getElementById('w-m6-i').textContent = '✅';
+  out.innerHTML += `<strong style="color:var(--green);">> 最終最大值：${max}</strong>`;
   for(let k=0; k<5; k++) document.getElementById(`m6-arr-c${k}`).classList.remove('active');
   btn.disabled = false;
 }

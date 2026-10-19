@@ -9,79 +9,94 @@
   <script src="../../layout.js" defer></script>
   
   <style>
+    /* ── 本頁專用的元件與互動樣式 (淺色化) ── */
+    :root {
+      --surface: #f1f5f9;
+      --code-bg: #f8fafc;
+      --accent2: #0284c7;
+      --accent-purple: #8b5cf6;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+    }
+
     /* ── Base & Layout ── */
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }
-    .container { max-width: 1100px; margin: 0 auto; padding-top: 60px; padding-bottom: 60px; }
+    body { padding-top: 40px; padding-bottom: 60px; }
     
     .page-hero { text-align: center; margin-bottom: 40px; }
-    .page-hero h1 { font-size: 2.2rem; font-weight: 800; color: #58a6ff; margin-bottom: 8px; }
-    .page-hero p { color: #8b949e; font-size: 1rem; }
+    .page-hero h1 { font-size: 2.2rem; font-weight: 800; background: linear-gradient(90deg, #0366d6, #28a745, #005cc5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; }
+    .page-hero p { color: var(--text-muted); font-size: 1rem; }
 
-    .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px 24px; margin-bottom: 30px; }
-    .section-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 15px; color: #f1f5f9; display: flex; align-items: center; gap: 8px; }
-    .section-desc { font-size: 0.9rem; color: #8b949e; margin-bottom: 15px; line-height: 1.6; }
+    .card { padding: 20px 24px; margin-bottom: 30px; }
+    .section-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 15px; color: var(--text-main); display: inline-flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--accent-color); padding-bottom: 5px;}
+    .section-desc { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.6; }
     
     /* ── Grid Layout ── */
     .mod-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; align-items: start; }
     @media(max-width:850px){ .mod-grid { grid-template-columns: 1fr; } }
     
     /* ── Code blocks ── */
-    .code-block { font-family: 'Courier New', monospace; font-size: 0.85rem; background: #010409; border-radius: 8px; padding: 12px 16px; line-height: 1.6; border: 1px solid #30363d; overflow-x: auto; margin-bottom:15px; }
+    .code-block { font-family: 'Courier New', monospace; font-size: 0.85rem; background: var(--code-bg); border-radius: 8px; padding: 12px 16px; line-height: 1.6; border: 1px solid var(--border-color); overflow-x: auto; margin-bottom:15px; color: var(--text-main); box-shadow: inset 0 1px 3px rgba(0,0,0,0.03); }
     .code-line { display: block; padding: 1px 4px; border-radius: 4px; }
     
     /* ── Controls ── */
-    .btn-run { background: #238636; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: .2s; }
-    .btn-run:hover { background: #2ea043; }
-    .input-box { background: #0f172a; border: 1px solid #475569; color: #f1f5f9; padding: 6px 10px; border-radius: 6px; font-family: monospace; text-align: center; outline: none;}
+    .btn-run { background: var(--green); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: .2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .btn-run:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-run:active { transform: translateY(0); box-shadow: none; }
+    .input-box { background: #ffffff; border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; border-radius: 6px; font-family: monospace; text-align: center; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);}
+    .input-box:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(3, 102, 214, 0.2); }
     
     /* ── Output & Visuals ── */
-    .visual-box { background: #010409; border: 1px dashed #58a6ff; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; position:relative;}
-    .out-box { background: #0d1117; border-left: 4px solid #8b949e; padding: 10px 14px; font-family: monospace; font-size: 0.9rem; color: #c9d1d9; margin-top: 12px; border-radius: 0 6px 6px 0; min-height: 40px; white-space: pre-wrap;}
+    .visual-box { background: #ffffff; border: 1px dashed var(--accent-color); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; position:relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
+    .out-box { background: #ffffff; border-left: 4px solid var(--border-color); padding: 10px 14px; font-family: monospace; font-size: 0.95rem; color: var(--text-main); margin-top: 12px; border-radius: 0 6px 6px 0; min-height: 40px; white-space: pre-wrap; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
 
     /* ── Module 1: X-Ray ── */
     .xray-row { display: flex; align-items: center; justify-content:center; gap: 15px; margin-bottom: 15px; width:100%;}
-    .xray-arrow { color: #f59e0b; font-size: 1.5rem; font-weight:bold;}
-    .xray-result { font-size: 1.5rem; font-family: monospace; font-weight: bold; color: #34d399; min-width: 50px; text-align: center; }
+    .xray-arrow { color: var(--accent3); font-size: 1.5rem; font-weight:bold;}
+    .xray-result { font-size: 1.5rem; font-family: monospace; font-weight: bold; color: var(--green); min-width: 50px; text-align: center; }
     .code-ranges { display: flex; flex-direction: column; gap: 8px; width:100%; }
-    .range-box { border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; text-align:center; transition:.3s; background: #0d1117;}
-    .range-box.active { transform: scale(1.02); }
-    .range-box.digits.active { border-color: #3b82f6; box-shadow: 0 0 10px #3b82f644; }
-    .range-box.upper.active { border-color: #f59e0b; box-shadow: 0 0 10px #f59e0b44; }
-    .range-box.lower.active { border-color: #34d399; box-shadow: 0 0 10px #34d39944; }
+    .range-box { border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; text-align:center; transition:.3s; background: #ffffff; color: var(--text-main); box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
+    .range-box.active { transform: scale(1.02); font-weight: bold; }
+    .range-box.digits.active { border-color: var(--accent2); background: #e0f2fe; color: #0369a1; }
+    .range-box.upper.active { border-color: var(--yellow); background: #fef3c7; color: #b45309; }
+    .range-box.lower.active { border-color: var(--green); background: #dcfce7; color: #15803d; }
 
     /* ── Module 2: Arithmetic ── */
-    .arith-display { font-size: 1.8rem; font-family: monospace; font-weight: bold; color: #f1f5f9; margin-bottom: 15px; }
+    .arith-display { font-size: 1.8rem; font-family: monospace; font-weight: bold; color: var(--text-main); margin-bottom: 15px; }
     .arith-chars { display: flex; gap: 8px; flex-wrap: wrap; justify-content:center; margin-bottom: 15px;}
-    .arith-btn { background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family:monospace;}
-    .arith-btn.active { border-color: #a78bfa; color: #a78bfa; background: rgba(167,139,250,0.1); }
+    .arith-btn { background: #ffffff; border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family:monospace; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
+    .arith-btn.active { border-color: var(--accent-purple); color: var(--accent-purple); background: #f3e8ff; font-weight: bold; }
+    input[type=range] { accent-color: var(--accent-purple); }
     
     /* ── Module 3: Case Conversion ── */
     .case-btns { display: flex; gap: 10px; margin-top: 15px; justify-content:center; }
-    .btn-case { padding: 8px 16px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-family: monospace; color:#fff;}
-    .btn-lower { background: #059669; } .btn-upper { background: #d97706; }
+    .btn-case { padding: 8px 16px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-family: monospace; color:#fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: .2s;}
+    .btn-case:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-case:active { transform: translateY(0); box-shadow: none; }
+    .btn-lower { background: var(--green); } .btn-upper { background: var(--yellow); }
 
     /* ── Module 4: cctype ── */
     .cctype-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
-    .filter-btn { background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size:0.85rem;}
-    .filter-btn.active { border-color: #60a5fa; color: #60a5fa; background: rgba(96,165,250,0.15); }
+    .filter-btn { background: #ffffff; border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size:0.85rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
+    .filter-btn.active { border-color: var(--accent2); color: #0369a1; background: #e0f2fe; font-weight: bold; }
     .cctype-chars { display: flex; gap: 10px; flex-wrap: wrap; justify-content:center;}
-    .char-chip { width: 50px; height: 50px; border-radius: 8px; border: 1px solid #475569; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; font-size: 1.2rem; font-weight: bold; transition:.3s; }
-    .char-chip.true { border-color: #34d399; background: rgba(52,211,153,0.15); color: #34d399; }
-    .char-chip.false { border-color: #ef4444; background: rgba(239,68,68,0.15); color: #ef4444; }
+    .char-chip { width: 50px; height: 50px; border-radius: 8px; border: 1px solid var(--border-color); background: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; font-size: 1.2rem; font-weight: bold; transition:.3s; color: var(--text-main); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .char-chip.true { border-color: var(--green); background: #dcfce7; color: #15803d; }
+    .char-chip.false { border-color: var(--red); background: #fee2e2; color: #b91c1c; }
 
     /* ── Module 5: Escape ── */
     .esc-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom:15px; justify-content:center;}
-    .esc-btn { background: #1f2937; border: 1px solid #4b5563; color: #e2e8f0; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family:monospace; }
-    .esc-btn:hover { border-color: #8b5cf6; color: #c4b5fd; }
+    .esc-btn { background: #ffffff; border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family:monospace; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
+    .esc-btn:hover { border-color: var(--accent-purple); color: var(--accent-purple); background: #f3e8ff; }
     
     /* ── Module 6: Quotes ── */
-    .mem-box { border: 2px solid #30363d; border-radius: 8px; padding: 15px; text-align: center; width: 45%; background: #0d1117;}
-    .mem-box.char { border-color: #f59e0b; } .mem-box.str { border-color: #60a5fa; }
+    .mem-box { border: 2px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: center; width: 45%; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
+    .mem-box.char { border-color: var(--yellow); } .mem-box.str { border-color: var(--accent2); }
     .mem-cell-wrap { display: flex; gap: 5px; justify-content: center; margin-top:10px; min-height:45px;}
-    .mem-cell { width: 40px; height: 40px; border: 1px solid #475569; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight:bold; opacity:0; transform:translateY(10px); transition:.3s;}
+    .mem-cell { width: 40px; height: 40px; border: 1px solid var(--border-color); background: #f8fafc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight:bold; opacity:0; transform:translateY(10px); transition:.3s; color: var(--text-main);}
     .mem-cell.show { opacity:1; transform:translateY(0); }
-    .mem-cell.val { border-color: #f59e0b; color: #f59e0b; }
-    .mem-cell.null { border-color: #ef4444; color: #ef4444; background:rgba(239,68,68,0.1); }
+    .mem-cell.val { border-color: var(--yellow); color: #b45309; background: #fef3c7; }
+    .mem-cell.null { border-color: var(--red); color: #b91c1c; background: #fee2e2; }
   </style>
 </head>
 <body>
@@ -97,25 +112,25 @@
     <div class="section-title">🔬 1. 字元與 ASCII 轉換 (X-Ray)</div>
     <div class="mod-grid">
       <div>
-        <p class="section-desc">在 C++ 中，字元 (`char`) 在記憶體底層實際上是儲存為一個 **0~127 的整數**。這個對應關係稱為 ASCII 碼。</p>
+        <p class="section-desc">在 C++ 中，字元 (<code>char</code>) 在記憶體底層實際上是儲存為一個 <strong>0~127 的整數</strong>。這個對應關係稱為 ASCII 碼。</p>
         <div class="code-ranges">
-          <div class="range-box digits" id="r-digits"><span style="color:#3b82f6;">'0' – '9'</span> → 48 – 57</div>
-          <div class="range-box upper" id="r-upper"><span style="color:#f59e0b;">'A' – 'Z'</span> → 65 – 90</div>
-          <div class="range-box lower" id="r-lower"><span style="color:#34d399;">'a' – 'z'</span> → 97 – 122</div>
+          <div class="range-box digits" id="r-digits"><span style="color:var(--accent2); font-weight:bold;">'0' – '9'</span> → 48 – 57</div>
+          <div class="range-box upper" id="r-upper"><span style="color:var(--yellow); font-weight:bold;">'A' – 'Z'</span> → 65 – 90</div>
+          <div class="range-box lower" id="r-lower"><span style="color:var(--green); font-weight:bold;">'a' – 'z'</span> → 97 – 122</div>
         </div>
       </div>
       <div class="visual-box">
         <div class="xray-row">
-          <span style="color:#94a3b8; width:60px;">字元</span>
+          <span style="color:var(--text-muted); width:60px; font-weight:bold;">字元</span>
           <input type="text" class="input-box" id="m1-char" maxlength="1" value="A" style="width:40px;">
           <span class="xray-arrow">→</span>
-          <div class="xray-result" id="m1-int-res">65</div>
+          <div class="xray-result" id="m1-int-res" style="color:var(--accent2);">65</div>
         </div>
         <div class="xray-row">
-          <span style="color:#94a3b8; width:60px;">整數</span>
+          <span style="color:var(--text-muted); width:60px; font-weight:bold;">整數</span>
           <input type="number" class="input-box" id="m1-int" min="0" max="127" value="65" style="width:50px;">
           <span class="xray-arrow">→</span>
-          <div class="xray-result" id="m1-char-res" style="color:#f59e0b;">'A'</div>
+          <div class="xray-result" id="m1-char-res" style="color:var(--yellow);">'A'</div>
         </div>
         <div class="out-box" id="m1-out" style="width:90%; margin-top:5px;">✅ 'A' 是大寫字母</div>
       </div>
@@ -129,9 +144,9 @@
       <div>
         <p class="section-desc">因為字元本質是整數，所以可以直接進行加減法。這在處理密碼學（如凱薩密碼）或大小寫轉換時非常實用。</p>
         <div class="code-block">
-          <span class="code-line">char c = 'A';</span>
-          <span class="code-line">char result = c + 3; </span>
-          <span class="code-line">// 'A'(65) + 3 = 68 ('D')</span>
+          <span class="code-line"><span style="color:var(--accent-color);font-weight:bold;">char</span> c = <span style="color:var(--yellow);">'A'</span>;</span>
+          <span class="code-line"><span style="color:var(--accent-color);font-weight:bold;">char</span> result = c + <span style="color:var(--accent2);">3</span>; </span>
+          <span class="code-line" style="color:var(--text-muted);">// 'A'(65) + 3 = 68 ('D')</span>
         </div>
         <div class="arith-chars" id="m2-btns">
           <button class="arith-btn active" onclick="setM2('A')">'A'</button>
@@ -142,12 +157,12 @@
       </div>
       <div class="visual-box">
         <div class="arith-display" id="m2-display">
-          <span style="color:#f59e0b;">'A'</span> <span style="color:#a78bfa;">+3</span> = <span style="color:#34d399;">'D'</span>
+          <span style="color:var(--yellow);">'A'</span> <span style="color:var(--accent-purple);">+3</span> = <span style="color:var(--green);">'D'</span>
         </div>
         <div style="display:flex; align-items:center; gap:10px; width:80%;">
-          <span style="color:#94a3b8; font-size:0.85rem;">偏移量</span>
+          <span style="color:var(--text-muted); font-size:0.85rem; font-weight:bold;">偏移量</span>
           <input type="range" id="m2-slider" min="-10" max="10" value="3" style="flex:1;" oninput="updateM2()">
-          <span style="color:#a78bfa; font-family:monospace; font-weight:bold; width:30px;" id="m2-offset">+3</span>
+          <span style="color:var(--accent-purple); font-family:monospace; font-weight:bold; width:30px;" id="m2-offset">+3</span>
         </div>
         <div class="out-box" id="m2-out" style="width:90%;">步驟 1：'A' 的 ASCII 是 65<br>步驟 2：65 + 3 = 68<br>步驟 3：轉回字元 (char)68 = 'D'</div>
       </div>
@@ -159,22 +174,22 @@
     <div class="section-title">🔄 3. 大小寫轉換的秘密</div>
     <div class="mod-grid">
       <div>
-        <p class="section-desc">大小寫字母在 ASCII 表中相差恰好 **32**。加上 32 變小寫，減去 32 變大寫。C++ 提供了 `<cctype>` 函式庫來簡化此操作。</p>
+        <p class="section-desc">大小寫字母在 ASCII 表中相差恰好 <strong>32</strong>。加上 32 變小寫，減去 32 變大寫。C++ 提供了 <code>&lt;cctype&gt;</code> 函式庫來簡化此操作。</p>
         <div class="code-block">
-          <span class="code-line">#include &lt;cctype&gt;</span>
-          <span class="code-line">char lower = tolower('A'); // +32</span>
-          <span class="code-line">char upper = toupper('b'); // -32</span>
+          <span class="code-line" style="color:var(--red);">#include &lt;cctype&gt;</span>
+          <span class="code-line"><span style="color:var(--accent-color);font-weight:bold;">char</span> lower = <span style="color:var(--accent2);font-weight:bold;">tolower</span>(<span style="color:var(--yellow);">'A'</span>); <span style="color:var(--text-muted);">// +32</span></span>
+          <span class="code-line"><span style="color:var(--accent-color);font-weight:bold;">char</span> upper = <span style="color:var(--accent2);font-weight:bold;">toupper</span>(<span style="color:var(--yellow);">'b'</span>); <span style="color:var(--text-muted);">// -32</span></span>
         </div>
       </div>
       <div class="visual-box">
         <div style="display:flex; align-items:center; gap:10px;">
-          <input type="text" class="input-box" id="m3-input" maxlength="1" value="G" style="font-size:1.5rem; width:50px;">
+          <input type="text" class="input-box" id="m3-input" maxlength="1" value="G" style="font-size:1.5rem; width:50px; font-weight:bold;">
         </div>
         <div class="case-btns">
           <button class="btn-case btn-lower" onclick="runM3('lower')">tolower() (+32)</button>
           <button class="btn-case btn-upper" onclick="runM3('upper')">toupper() (-32)</button>
         </div>
-        <div class="out-box" id="m3-out" style="width:90%; text-align:center;">— 輸入字母並點擊按鈕 —</div>
+        <div class="out-box" id="m3-out" style="width:90%; text-align:center; color:var(--text-muted); font-style:italic;">— 輸入字母並點擊按鈕 —</div>
       </div>
     </div>
   </div>
@@ -184,7 +199,7 @@
     <div class="section-title">🔍 4. 字元判斷函式 (&lt;cctype&gt;)</div>
     <div class="mod-grid">
       <div>
-        <p class="section-desc">C++ `<cctype>` 提供了一系列判斷字元屬性的函式。點擊下方按鈕，觀察不同函式對一組混合字元的掃描結果。</p>
+        <p class="section-desc">C++ <code>&lt;cctype&gt;</code> 提供了一系列判斷字元屬性的函式。點擊下方按鈕，觀察不同函式對一組混合字元的掃描結果。</p>
         <div class="cctype-filters" id="m4-filters">
           <button class="filter-btn active" onclick="runM4('isdigit', this)">isdigit</button>
           <button class="filter-btn" onclick="runM4('isalpha', this)">isalpha</button>
@@ -194,7 +209,7 @@
       </div>
       <div class="visual-box">
         <div class="cctype-chars" id="m4-chars"></div>
-        <div class="out-box" id="m4-out" style="width:90%; text-align:center;">掃描結果...</div>
+        <div class="out-box" id="m4-out" style="width:90%; text-align:center; font-weight:bold;">掃描結果...</div>
       </div>
     </div>
   </div>
@@ -204,16 +219,16 @@
     <div class="section-title">⌨️ 5. 跳脫字元 (Escape Sequences)</div>
     <div class="mod-grid">
       <div>
-        <p class="section-desc">跳脫字元用來表示無法直接輸入的控制符號（如換行）或與語法衝突的符號（如雙引號）。以反斜線 `\` 開頭。</p>
-        <table style="width:100%; font-family:monospace; font-size:0.85rem; color:#c9d1d9; border-collapse:collapse; margin-bottom:10px;">
-          <tr style="border-bottom:1px solid #30363d;">
-            <th style="text-align:left; padding:4px; color:#f59e0b;">符號</th>
-            <th style="text-align:left; padding:4px; color:#8b949e;">意義</th>
+        <p class="section-desc">跳脫字元用來表示無法直接輸入的控制符號（如換行）或與語法衝突的符號（如雙引號）。以反斜線 <code>\</code> 開頭。</p>
+        <table style="width:100%; font-family:monospace; font-size:0.9rem; color:var(--text-main); border-collapse:collapse; margin-bottom:10px; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <tr style="border-bottom:1px solid var(--border-color); background: var(--surface);">
+            <th style="text-align:left; padding:8px 10px; color:var(--text-main);">符號</th>
+            <th style="text-align:left; padding:8px 10px; color:var(--text-main);">意義</th>
           </tr>
-          <tr><td style="padding:4px;">\n</td><td style="padding:4px;">換行 (Newline)</td></tr>
-          <tr><td style="padding:4px;">\t</td><td style="padding:4px;">水平定位 (Tab)</td></tr>
-          <tr><td style="padding:4px;">\\</td><td style="padding:4px;">反斜線本身</td></tr>
-          <tr><td style="padding:4px;">\"</td><td style="padding:4px;">雙引號字元</td></tr>
+          <tr style="border-bottom:1px solid var(--border-color);"><td style="padding:8px 10px; color:var(--accent-purple); font-weight:bold;">\n</td><td style="padding:8px 10px;">換行 (Newline)</td></tr>
+          <tr style="border-bottom:1px solid var(--border-color);"><td style="padding:8px 10px; color:var(--accent-purple); font-weight:bold;">\t</td><td style="padding:8px 10px;">水平定位 (Tab)</td></tr>
+          <tr style="border-bottom:1px solid var(--border-color);"><td style="padding:8px 10px; color:var(--accent-purple); font-weight:bold;">\\</td><td style="padding:8px 10px;">反斜線本身</td></tr>
+          <tr><td style="padding:8px 10px; color:var(--accent-purple); font-weight:bold;">\"</td><td style="padding:8px 10px;">雙引號字元</td></tr>
         </table>
       </div>
       <div class="visual-box">
@@ -222,15 +237,15 @@
           <button class="esc-btn" onclick="addM5('\\n')">\n</button>
           <button class="esc-btn" onclick="addM5('\\t')">\t</button>
           <button class="esc-btn" onclick="addM5('\\&quot;')">\"</button>
-          <button class="esc-btn" onclick="clearM5()" style="border-color:#ef4444; color:#ef4444;">清除</button>
+          <button class="esc-btn" onclick="clearM5()" style="border-color:var(--red); color:var(--red); background:#fef2f2;">清除</button>
         </div>
-        <div style="width:95%; background:#161b22; padding:10px; border-radius:6px; margin-bottom:10px;">
-          <span style="color:#8b949e; font-size:0.8rem;">C++ 程式碼：</span><br>
-          <span style="font-family:monospace; color:#e2e8f0;">cout &lt;&lt; "<span id="m5-code" style="color:#c4b5fd;"></span>";</span>
+        <div style="width:95%; background:var(--code-bg); padding:10px; border-radius:6px; margin-bottom:10px; border:1px solid var(--border-color);">
+          <span style="color:var(--text-muted); font-size:0.8rem; font-weight:bold;">C++ 程式碼：</span><br>
+          <span style="font-family:monospace; color:var(--text-main); font-weight:bold;">cout &lt;&lt; "<span id="m5-code" style="color:var(--accent-purple);"></span>";</span>
         </div>
-        <div style="width:95%; background:#0d1117; padding:10px; border-radius:6px; min-height:50px;">
-          <span style="color:#8b949e; font-size:0.8rem;">Console 實際輸出：</span><br>
-          <span id="m5-out" style="font-family:monospace; color:#34d399; white-space:pre-wrap;"></span>
+        <div style="width:95%; background:#1e293b; padding:10px; border-radius:6px; min-height:50px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <span style="color:#94a3b8; font-size:0.8rem; font-weight:bold;">Console 實際輸出：</span><br>
+          <span id="m5-out" style="font-family:monospace; color:var(--green); white-space:pre-wrap; font-weight:bold;"></span>
         </div>
       </div>
     </div>
@@ -241,20 +256,20 @@
     <div class="section-title">⚠️ 6. 初學者大坑：單引號 vs 雙引號</div>
     <div class="mod-grid">
       <div>
-        <p class="section-desc">在 C++ 中，單引號 `'A'` 代表**單一字元** (char)，雙引號 `"A"` 代表**字串** (const char array)，字串會在結尾自動補上一個隱藏的 `\0` (Null 字元)。型別完全不同！</p>
-        <div class="code-block" style="border-color:#ef4444;">
-          <span class="code-line" style="color:#f85149;">char c = "A"; // ❌ 編譯錯誤！型別不符</span>
+        <p class="section-desc">在 C++ 中，單引號 <code>'A'</code> 代表<strong>單一字元</strong> (char)，雙引號 <code>"A"</code> 代表<strong>字串</strong> (const char array)，字串會在結尾自動補上一個隱藏的 <code>\0</code> (Null 字元)。型別完全不同！</p>
+        <div class="code-block" style="border-color:var(--red); background: #fef2f2;">
+          <span class="code-line" style="color:#b91c1c; font-weight:bold;">char c = "A"; // ❌ 編譯錯誤！型別不符</span>
         </div>
       </div>
       <div class="visual-box" style="flex-direction:row; gap:15px; align-items:flex-start;">
         <div class="mem-box char">
-          <div style="color:#f59e0b; font-family:monospace; font-weight:bold;">char c = 'A';</div>
-          <button class="btn-run" style="margin-top:10px; font-size:0.8rem; padding:4px 8px;" onclick="runM6('char')">觀察記憶體</button>
+          <div style="color:#b45309; font-family:monospace; font-weight:bold;">char c = 'A';</div>
+          <button class="btn-run" style="background:var(--yellow); margin-top:10px; font-size:0.8rem; padding:4px 8px; color:#fff;" onclick="runM6('char')">觀察記憶體</button>
           <div class="mem-cell-wrap" id="m6-char-mem"></div>
         </div>
         <div class="mem-box str">
-          <div style="color:#60a5fa; font-family:monospace; font-weight:bold;">char s[] = "A";</div>
-          <button class="btn-run" style="background:#1d4ed8; margin-top:10px; font-size:0.8rem; padding:4px 8px;" onclick="runM6('str')">觀察記憶體</button>
+          <div style="color:var(--accent2); font-family:monospace; font-weight:bold;">char s[] = "A";</div>
+          <button class="btn-run" style="background:var(--accent2); margin-top:10px; font-size:0.8rem; padding:4px 8px;" onclick="runM6('str')">觀察記憶體</button>
           <div class="mem-cell-wrap" id="m6-str-mem"></div>
         </div>
       </div>
@@ -277,10 +292,12 @@ function updateM1(fromChar) {
   }
   m1Ir.textContent = code; m1Cr.textContent = `'${ch}'`;
   document.getElementById('r-digits').classList.remove('active'); document.getElementById('r-upper').classList.remove('active'); document.getElementById('r-lower').classList.remove('active');
-  if(code>=48 && code<=57) { document.getElementById('r-digits').classList.add('active'); m1Out.textContent = `✅ '${ch}' 是數字字元 (48~57)`; }
-  else if(code>=65 && code<=90) { document.getElementById('r-upper').classList.add('active'); m1Out.textContent = `✅ '${ch}' 是大寫字母 (65~90)`; }
-  else if(code>=97 && code<=122) { document.getElementById('r-lower').classList.add('active'); m1Out.textContent = `✅ '${ch}' 是小寫字母 (97~122)`; }
-  else m1Out.textContent = `ℹ️ '${ch}' 是特殊或控制字元`;
+  
+  m1Out.style.color = 'var(--text-main)';
+  if(code>=48 && code<=57) { document.getElementById('r-digits').classList.add('active'); m1Out.innerHTML = `✅ <span style="color:var(--accent2);font-weight:bold;">'${ch}' 是數字字元 (48~57)</span>`; }
+  else if(code>=65 && code<=90) { document.getElementById('r-upper').classList.add('active'); m1Out.innerHTML = `✅ <span style="color:var(--yellow);font-weight:bold;">'${ch}' 是大寫字母 (65~90)</span>`; }
+  else if(code>=97 && code<=122) { document.getElementById('r-lower').classList.add('active'); m1Out.innerHTML = `✅ <span style="color:var(--green);font-weight:bold;">'${ch}' 是小寫字母 (97~122)</span>`; }
+  else m1Out.innerHTML = `ℹ️ <strong>'${ch}' 是特殊或控制字元</strong>`;
 }
 m1C.addEventListener('input', () => updateM1(true)); m1I.addEventListener('input', () => updateM1(false));
 
@@ -297,23 +314,24 @@ function updateM2() {
   const code = m2Base.charCodeAt(0); const resCode = code + off;
   const sign = off >= 0 ? '+' : '';
   document.getElementById('m2-offset').textContent = sign + off;
-  document.getElementById('m2-display').innerHTML = `<span style="color:#f59e0b;">'${m2Base}'</span> <span style="color:#a78bfa;">${sign}${off}</span> = <span style="color:#34d399;">${resCode>=0 && resCode<=127 ? `'${String.fromCharCode(resCode)}'` : '?'}</span>`;
-  document.getElementById('m2-out').innerHTML = `步驟 1：'${m2Base}' 的 ASCII 是 ${code}<br>步驟 2：${code} ${sign}${off} = ${resCode}<br>步驟 3：轉回字元 (char)${resCode} = ${resCode>=0 && resCode<=127 ? `'${String.fromCharCode(resCode)}'` : '超出範圍'}`;
+  document.getElementById('m2-display').innerHTML = `<span style="color:var(--yellow);">'${m2Base}'</span> <span style="color:var(--accent-purple);">${sign}${off}</span> = <span style="color:var(--green);">${resCode>=0 && resCode<=127 ? `'${String.fromCharCode(resCode)}'` : '?'}</span>`;
+  document.getElementById('m2-out').innerHTML = `步驟 1：'${m2Base}' 的 ASCII 是 ${code}<br>步驟 2：${code} ${sign}${off} = ${resCode}<br>步驟 3：轉回字元 (char)${resCode} = ${resCode>=0 && resCode<=127 ? `<strong style="color:var(--green)">'${String.fromCharCode(resCode)}'</strong>` : '<strong style="color:var(--red)">超出範圍</strong>'}`;
 }
 
 // ── Module 3: Case ──
 function runM3(dir) {
   const ch = document.getElementById('m3-input').value;
   const out = document.getElementById('m3-out');
-  if(!/[a-zA-Z]/.test(ch)) { out.innerHTML = '<span style="color:#ef4444;">請輸入英文字母！</span>'; return; }
+  out.style.fontStyle = 'normal';
+  if(!/[a-zA-Z]/.test(ch)) { out.innerHTML = '<span style="color:var(--red); font-weight:bold;">請輸入英文字母！</span>'; return; }
   const code = ch.charCodeAt(0);
   if(dir==='lower') {
-    if(ch>='a') { out.innerHTML = `<span style="color:#f59e0b;">'${ch}' 已經是小寫了！</span>`; return; }
-    out.innerHTML = `'${ch}'(${code}) <span style="color:#34d399;">+ 32</span> = ${code+32} → <span style="color:#34d399; font-size:1.2rem; font-weight:bold;">'${String.fromCharCode(code+32)}'</span>`;
+    if(ch>='a') { out.innerHTML = `<span style="color:var(--yellow); font-weight:bold;">'${ch}' 已經是小寫了！</span>`; return; }
+    out.innerHTML = `'${ch}'(${code}) <span style="color:var(--green); font-weight:bold;">+ 32</span> = ${code+32} → <span style="color:var(--green); font-size:1.2rem; font-weight:bold;">'${String.fromCharCode(code+32)}'</span>`;
     document.getElementById('m3-input').value = String.fromCharCode(code+32);
   } else {
-    if(ch<='Z') { out.innerHTML = `<span style="color:#f59e0b;">'${ch}' 已經是大寫了！</span>`; return; }
-    out.innerHTML = `'${ch}'(${code}) <span style="color:#f59e0b;">- 32</span> = ${code-32} → <span style="color:#f59e0b; font-size:1.2rem; font-weight:bold;">'${String.fromCharCode(code-32)}'</span>`;
+    if(ch<='Z') { out.innerHTML = `<span style="color:var(--yellow); font-weight:bold;">'${ch}' 已經是大寫了！</span>`; return; }
+    out.innerHTML = `'${ch}'(${code}) <span style="color:var(--yellow); font-weight:bold;">- 32</span> = ${code-32} → <span style="color:var(--yellow); font-size:1.2rem; font-weight:bold;">'${String.fromCharCode(code-32)}'</span>`;
     document.getElementById('m3-input').value = String.fromCharCode(code-32);
   }
 }
@@ -337,7 +355,7 @@ function runM4(fn, btn) {
       const res = fns[fn](ch);
       chip.className = `char-chip ${res ? 'true' : 'false'}`;
       if(res) t++;
-      if(i === m4Arr.length-1) document.getElementById('m4-out').textContent = `掃描結束：${t} 個符合條件`;
+      if(i === m4Arr.length-1) document.getElementById('m4-out').innerHTML = `掃描結束：<span style="color:var(--green)">${t} 個符合條件</span>`;
     }, i*150);
   });
 }
@@ -346,9 +364,9 @@ initM4(); setTimeout(() => runM4('isdigit', document.querySelector('#m4-filters 
 // ── Module 5: Escape ──
 let m5Code = '', m5Out = '';
 function addM5(tok) {
-  if(tok==='\\n') { m5Code+='<span style="color:#f59e0b;">\\n</span>'; m5Out+='\n'; }
-  else if(tok==='\\t') { m5Code+='<span style="color:#f59e0b;">\\t</span>'; m5Out+='\t'; }
-  else if(tok==='\\&quot;') { m5Code+='<span style="color:#f59e0b;">\\"</span>'; m5Out+='"'; }
+  if(tok==='\\n') { m5Code+='<span style="color:var(--accent-purple);">\\n</span>'; m5Out+='\n'; }
+  else if(tok==='\\t') { m5Code+='<span style="color:var(--accent-purple);">\\t</span>'; m5Out+='\t'; }
+  else if(tok==='\\&quot;') { m5Code+='<span style="color:var(--accent-purple);">\\"</span>'; m5Out+='"'; }
   else { m5Code+=tok; m5Out+=tok; }
   document.getElementById('m5-code').innerHTML = m5Code; document.getElementById('m5-out').textContent = m5Out;
 }

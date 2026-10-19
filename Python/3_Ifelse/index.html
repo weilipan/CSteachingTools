@@ -5,174 +5,225 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Python 判斷結構 if/elif/else 互動教學</title>
+  
+  <!-- 保留指定的 stylesheet 與 script -->
   <link rel="stylesheet" href="../../theme.css">
   <script src="../../layout.js" defer></script>
+  
   <style>
+    /* ===== 基礎設定 (全面淺色系) ===== */
     body {
       padding: 0;
       margin: 0;
-      background-color: #f8f9fa;
+      background-color: #f4f6f8;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #334155;
     }
 
     .container {
-      padding-top: 80px;
+      padding-top: 60px;
       padding-bottom: 60px;
       max-width: 1000px;
       margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
     }
 
     .card {
-      background: #fff;
+      background: #ffffff;
       border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      border: 1px solid #e2e8f0;
       padding: 28px 32px;
       margin-bottom: 32px;
       overflow: hidden;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s, transform 0.6s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
     }
 
     .section-title {
       font-size: 1.3rem;
       font-weight: 700;
-      color: #1a237e;
+      color: #1e293b;
       margin-bottom: 14px;
       display: flex;
       align-items: center;
       gap: 10px;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 10px;
     }
 
     .badge-num {
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
       color: #fff;
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: .85rem;
+      font-size: 0.9rem;
       flex-shrink: 0;
+      font-weight: bold;
     }
 
+    /* ===== Console 與 Code Panel (淺色版) ===== */
     .console-output {
       white-space: pre-wrap;
-      font-family: monospace;
-      background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 15px;
+      font-family: 'Consolas', monospace;
+      background: #f8fafc;
+      color: #0f172a;
+      padding: 18px 15px 15px;
       border-radius: 8px;
       min-height: 42px;
-      font-size: .88rem;
-      margin-top: 10px;
+      font-size: 0.9rem;
+      margin-top: 14px;
+      border: 1px solid #cbd5e1;
+      position: relative;
     }
 
+    .console-output::before {
+      content: '▶ Console';
+      position: absolute;
+      top: -10px;
+      left: 12px;
+      background: #cbd5e1;
+      color: #1e293b;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .mini-code, .cpanel, .m7-code-panel {
+      font-family: 'Consolas', monospace;
+      background: #f8fafc;
+      color: #1e293b;
+      border: 1px solid #e2e8f0;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+      border-radius: 8px;
+      line-height: 1.7;
+    }
+
+    .mini-code { font-size: 0.85rem; padding: 12px; }
+    .cpanel { font-size: 0.85rem; padding: 16px; min-width: 220px; }
+    .m7-code-panel { font-size: 0.85rem; padding: 16px; }
+
+    /* 淺色版語法高亮 (強制維持 inline 屬性，避免被 block 設定蓋掉而換行) */
+    .kw { color: #0284c7; font-weight: 700; display: inline; } 
+    .str { color: #16a34a; display: inline; } 
+    .num { color: #ea580c; display: inline; } 
+    .op { color: #db2777; font-weight: bold; display: inline; } 
+
+    /* ===== 按鈕 ===== */
     .btn {
-      padding: 8px 18px;
+      padding: 8px 20px;
       border-radius: 8px;
       border: none;
       cursor: pointer;
-      font-size: .9rem;
+      font-size: 0.95rem;
       font-weight: 600;
-      transition: all .2s;
+      transition: all 0.2s;
+      font-family: inherit;
     }
 
     .btn-p {
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
       color: #fff;
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25);
     }
 
-    .btn-p:hover {
+    .btn-p:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, .4);
+      box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
     }
 
     .btn-p:disabled {
-      opacity: .5;
-      cursor: default;
-      transform: none;
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
     }
 
     .btn-r {
-      background: #f1f3f5;
-      color: #555;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
     }
 
     .btn-r:hover {
-      background: #e2e6ea;
+      background: #e2e8f0;
     }
 
     .row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
-    /* M1 */
+    /* ===== M1: 冒號 ===== */
     #m1-code {
-      font-family: monospace;
-      font-size: 1.05rem;
-      background: #f6f8ff;
-      border: 2px solid #c5cae9;
+      font-family: 'Consolas', monospace;
+      font-size: 1.1rem;
+      background: #eff6ff;
+      border: 2px solid #bfdbfe;
       border-radius: 8px;
-      padding: 10px 14px;
+      padding: 12px 16px;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       flex-wrap: wrap;
-    }
-
-    .kw {
-      color: #7c4dff;
-      font-weight: 700;
-    }
-
-    .str {
-      color: #e65100;
     }
 
     .colon-slot {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 26px;
-      height: 26px;
-      border: 2px dashed #9e9e9e;
-      border-radius: 4px;
+      width: 28px;
+      height: 28px;
+      border: 2px dashed #94a3b8;
+      border-radius: 6px;
       cursor: pointer;
-      transition: all .3s;
-      font-size: 1.1rem;
+      transition: all 0.3s;
+      font-size: 1.2rem;
+      background: #ffffff;
     }
 
     .colon-slot.filled {
-      border-color: #43a047;
-      background: #e8f5e9;
-      color: #2e7d32;
-      font-weight: 700;
+      border-color: #22c55e;
+      background: #dcfce7;
+      color: #16a34a;
+      font-weight: 800;
     }
 
     .key-btn {
-      background: linear-gradient(135deg, #ffcc02, #ff9800);
+      background: linear-gradient(135deg, #f59e0b, #d97706);
       color: #fff;
-      font-size: 1.3rem;
-      font-weight: 700;
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
+      font-size: 1.4rem;
+      font-weight: 800;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
       cursor: pointer;
       border: none;
-      transition: transform .2s;
+      transition: transform 0.2s;
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
     }
 
-    .key-btn:hover {
-      transform: scale(1.12);
-    }
+    .key-btn:hover { transform: scale(1.1); }
 
     .gate {
       font-size: 3.5rem;
       text-align: center;
       margin: 10px 0;
-      transition: all .6s;
+      transition: all 0.6s;
       display: block;
     }
 
@@ -181,355 +232,116 @@
       20%, 60% { transform: translateX(-8px) }
       40%, 80% { transform: translateX(8px) }
     }
+    .shake { animation: shake 0.4s; }
 
-    .shake {
-      animation: shake .4s;
-    }
+    /* ===== M2: 火車 ===== */
+    .track-wrap { position: relative; height: 160px; margin: 10px 0; }
+    .track-svg { width: 100%; height: 160px; }
+    #m2-train { position: absolute; font-size: 2rem; top: 8px; left: 0; transition: all 0.7s ease; }
 
-    /* M2 */
-    .track-wrap {
-      position: relative;
-      height: 160px;
-      margin: 10px 0;
-    }
-
-    .track-svg {
-      width: 100%;
-      height: 160px;
-    }
-
-    #m2-train {
-      position: absolute;
-      font-size: 1.8rem;
-      top: 8px;
-      left: 0;
-      transition: all .7s ease;
-    }
-
-    /* M3 */
-    .funnel-area {
-      position: relative;
-      min-height: 230px;
-      display: flex;
-      justify-content: center;
-    }
-
+    /* ===== M3: 漏斗 ===== */
+    .funnel-area { position: relative; min-height: 240px; display: flex; justify-content: center; }
     .filter-layer {
-      width: 240px;
-      text-align: center;
-      padding: 9px 14px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: .9rem;
-      position: relative;
-      transition: all .4s;
+      width: 250px; text-align: center; padding: 10px 16px; border-radius: 8px;
+      font-weight: 700; font-size: 0.95rem; position: relative; transition: all 0.4s;
+    }
+    .fl-a { background: #eff6ff; border: 2px solid #3b82f6; color: #1d4ed8; }
+    .fl-b { background: #faf5ff; border: 2px solid #a855f7; color: #7e22ce; margin-top: 30px; }
+    .fl-c { background: #fff7ed; border: 2px solid #f97316; color: #c2410c; margin-top: 30px; }
+    
+    .filter-light { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #cbd5e1; margin-left: 8px; vertical-align: middle; transition: background 0.3s; border: 2px solid #fff; }
+    .filter-light.g { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+    .filter-light.r { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+    
+    .dimmed { opacity: 0.3; filter: grayscale(1); }
+    .badge-pop { position: absolute; right: -45px; top: 50%; transform: translateY(-50%); font-size: 1.5rem; opacity: 0; transition: opacity 0.4s; }
+
+    /* ===== M4: 縮排 ===== */
+    .indent-block { display: inline-block; width: 100%; font-family: 'Consolas', monospace; font-size: 0.95rem; }
+    .il { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+    .ctext { padding: 4px 10px; border-radius: 6px; background: #f8fafc; transition: all 0.3s; border: 1px solid transparent; }
+    .ctext.dimmed { opacity: 0.25; }
+    .ctext.bright { background: #dcfce7; color: #16a34a; font-weight: 700; border-color: #86efac; }
+    .tab-btn2 { padding: 4px 10px; font-size: 0.8rem; background: #e2e8f0; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap; color: #475569; font-weight: bold; }
+    .tab-btn2:hover { background: #cbd5e1; }
+    
+    .scope-overlay { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(34, 197, 94, 0.08); border-left: 4px solid #22c55e; border-radius: 0 8px 8px 0; pointer-events: none; opacity: 0; transition: opacity 0.5s; }
+
+    /* ===== M5 & M6 & M7 排版與代碼 ===== */
+    .dual { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 10px 0; }
+    @media (max-width: 600px) { .dual { grid-template-columns: 1fr; } }
+    
+    .track-col { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+    .track-col h4 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 700; text-align: center; }
+    .wrong h4 { color: #dc2626; }
+    .right h4 { color: #16a34a; }
+
+    /* ★ 核心修正：使用子選擇器 >，確保只針對 "行" 元素設定為 block，內部的語法高亮文字維持 inline */
+    .mini-code > span, .cpanel > span, .m7-code-panel > .ln { 
+      display: block; 
+      white-space: nowrap; 
+      border-radius: 4px; 
+      transition: background 0.3s; 
+      padding: 2px 6px; 
     }
 
-    .fl-a {
-      background: #e3f2fd;
-      border: 2px solid #1e88e5;
-      color: #0d47a1;
-    }
+    /* 安全縮排類別 */
+    .ind-1 { padding-left: 1.8rem !important; }
+    .ind-2 { padding-left: 3.6rem !important; }
 
-    .fl-b {
-      background: #f3e5f5;
-      border: 2px solid #8e24aa;
-      color: #4a148c;
-      margin-top: 28px;
-    }
+    /* 高亮狀態 (淺色主題) */
+    .active-hl { background: #fef3c7; color: #b45309 !important; font-weight: bold; }
+    .done-t { background: #dcfce7; color: #16a34a !important; font-weight: bold; }
+    .done-f { background: #fee2e2; color: #dc2626 !important; text-decoration: line-through; opacity: 0.7;}
 
-    .fl-c {
-      background: #fff3e0;
-      border: 2px solid #fb8c00;
-      color: #e65100;
-      margin-top: 28px;
-    }
+    /* ===== M6: 巢狀密碼 ===== */
+    .m6-wrap { display: flex; gap: 24px; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
+    .safe-box { font-size: 4.5rem; text-align: center; transition: all 0.6s; }
+    .lock-row { display: flex; gap: 12px; justify-content: center; margin-top: 10px; }
+    .lock { font-size: 2rem; transition: all 0.4s; }
+    .lock.open { transform: rotate(20deg) scale(1.2); filter: hue-rotate(120deg); }
+    
+    .io-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+    .io-row input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; width: 130px; outline: none; transition: border-color 0.2s; background: #f8fafc; }
+    .io-row input:focus { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
 
-    .filter-light {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #bdbdbd;
-      margin-left: 6px;
-      vertical-align: middle;
-      transition: background .3s;
-    }
+    /* ===== M7: 面板 ===== */
+    .m7-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 650px) { .m7-grid { grid-template-columns: 1fr; } }
+    
+    .vp { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    .vrow { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; font-family: 'Consolas', monospace; color: #475569;}
+    .vval { font-weight: 800; color: #3b82f6; transition: color 0.3s; }
+    @keyframes flashVar { 0%, 100% { color: #3b82f6 } 50% { color: #f97316 } }
+    .vval.fl { animation: flashVar 0.5s 2; }
+    
+    .char-cards { display: flex; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+    .cc { padding: 10px 14px; border-radius: 10px; border: 2px solid #e2e8f0; cursor: pointer; background: #fff; transition: all 0.2s; font-size: 0.9rem; line-height: 1.6; }
+    .cc:hover, .cc.active { border-color: #3b82f6; background: #eff6ff; box-shadow: 0 4px 10px rgba(59,130,246,0.15); }
 
-    .filter-light.g { background: #43a047; }
-    .filter-light.r { background: #e53935; }
-
-    .dimmed {
-      opacity: .25;
-      filter: grayscale(1);
-    }
-
-    .badge-pop {
-      position: absolute;
-      right: -42px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.4rem;
-      opacity: 0;
-      transition: opacity .4s;
-    }
-
-    /* M4 */
-    .indent-block {
-      display: inline-block;
-      width: 100%;
-      font-family: monospace;
-      font-size: .9rem;
-    }
-
-    .il {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin: 2px 0;
-    }
-
-    .ctext {
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: #f6f8ff;
-      transition: all .3s;
-      font-family: monospace;
-    }
-
-    .ctext.dimmed { opacity: .2; }
-    .ctext.bright { background: #d4edda; color: #1b5e20; font-weight: 700; }
-
-    .tab-btn2 {
-      padding: 2px 7px;
-      font-size: .72rem;
-      background: #e8f5e9;
-      border: 1px solid #a5d6a7;
-      border-radius: 4px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .scope-overlay {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(76, 175, 80, .12);
-      border-left: 4px solid #43a047;
-      border-radius: 0 8px 8px 0;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity .5s;
-    }
-
-    /* M5 & M6 & M7 程式碼區塊共用設定 */
-    .dual {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin: 10px 0;
-    }
-
-    .track-col {
-      background: #f8f9fa;
-      border-radius: 12px;
-      padding: 14px;
-    }
-
-    .track-col h4 {
-      margin: 0 0 8px;
-      font-size: .9rem;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .wrong h4 { color: #c62828; }
-    .right h4 { color: #2e7d32; }
-
-    .mini-code {
-      font-family: monospace;
-      font-size: .8rem;
-      background: #1e1e1e;
-      color: #ccc;
-      padding: 10px;
-      border-radius: 8px;
-      line-height: 1.6;
-    }
-
-    .cpanel {
-      font-family: monospace;
-      font-size: .82rem;
-      background: #1e1e1e;
-      color: #888;
-      padding: 12px;
-      border-radius: 10px;
-      min-width: 220px;
-      line-height: 1.7;
-    }
-
-    .m7-code-panel {
-      font-family: monospace;
-      font-size: .8rem;
-      background: #1e1e1e;
-      color: #aaa;
-      padding: 14px;
-      border-radius: 10px;
-      line-height: 1.75;
-    }
-
-    /* === 核心修正區：移除 white-space: pre，改用 nowrap 搭配 padding 縮排 === */
-    .mini-code span,
-    .cpanel span,
-    .m7-code-panel .ln {
-      display: block;
-      white-space: nowrap; /* 防止編輯器排版造成的斷行跑版 */
-      border-radius: 3px;
-      transition: background .3s;
-    }
-
-    .m7-code-panel .ln {
-      padding: 0 4px;
-    }
-
-    /* Python 安全縮排類別 */
-    .ind-1 { padding-left: 1.5rem !important; }
-    .ind-2 { padding-left: 3rem !important; }
-
-    /* M7 專用高亮狀態 */
-    .m7-code-panel .ln.active { background: rgba(255, 213, 79, .22); color: #ffd54f; }
-    .m7-code-panel .ln.done-t { background: rgba(67, 160, 71, .18); color: #a5d6a7; }
-    .m7-code-panel .ln.done-f { background: rgba(229, 57, 53, .12); color: #ef9a9a; }
-
-    /* M6 */
-    .m6-wrap {
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .safe-box {
-      font-size: 4rem;
-      text-align: center;
-      transition: all .6s;
-    }
-
-    .lock-row {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-top: 8px;
-    }
-
-    .lock {
-      font-size: 1.8rem;
-      transition: all .4s;
-    }
-
-    .lock.open {
-      transform: rotate(20deg) scale(1.2);
-      filter: hue-rotate(120deg);
-    }
-
-    .io-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-
-    .io-row input {
-      padding: 7px 10px;
-      border: 2px solid #c5cae9;
-      border-radius: 7px;
-      font-size: .9rem;
-      width: 120px;
-      outline: none;
-      transition: border-color .2s;
-    }
-
-    .io-row input:focus { border-color: #667eea; }
-
-    /* M7 面板 */
-    .m7-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .vp {
-      background: #f6f8ff;
-      border-radius: 10px;
-      padding: 12px;
-    }
-
-    .vrow {
-      display: flex;
-      justify-content: space-between;
-      padding: 5px 0;
-      border-bottom: 1px solid #e8eaf6;
-      font-size: .9rem;
-    }
-
-    .vval {
-      font-weight: 700;
-      color: #1a237e;
-      transition: color .3s;
-    }
-
-    @keyframes flashVar {
-      0%, 100% { color: #1a237e }
-      50% { color: #ff6d00 }
-    }
-
-    .vval.fl { animation: flashVar .5s 2; }
-
-    .char-cards {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin: 8px 0;
-    }
-
-    .cc {
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 2px solid #c5cae9;
-      cursor: pointer;
-      background: #fff;
-      transition: all .2s;
-      font-size: .83rem;
-      line-height: 1.5;
-    }
-
-    .cc:hover,
-    .cc.active {
-      border-color: #667eea;
-      background: #eef0ff;
-    }
+    /* ===== M8: 三元運算子 (NEW) ===== */
+    .m8-code-comp { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; align-items: center; }
+    @media (max-width: 650px) { .m8-code-comp { grid-template-columns: 1fr; } }
+    .slider-container { background: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 12px; margin-bottom: 16px; }
   </style>
 </head>
 
 <body>
   <div class="container">
 
-    <h1 style="text-align:center;font-size:1.9rem;font-weight:800;color:#1a237e;margin-bottom:6px;">🐍 Python 判斷結構互動教學
-    </h1>
-    <p style="text-align:center;color:#888;margin-bottom:32px;">if / elif / else — 讓程式學會做決定</p>
+    <h1 style="text-align:center;font-size:2rem;font-weight:800;color:#1e293b;margin-bottom:8px;">🐍 Python 判斷結構互動教學</h1>
+    <p style="text-align:center;color:#64748b;margin-bottom:36px;font-size:1.05rem;">if / elif / else — 讓程式學會做決定</p>
 
-    <div class="card" id="card1">
-      <div class="section-title"><span class="badge-num">1</span>單行道與守門員 — <code>if</code> 與冒號的魔法</div>
-      <p style="color:#555;font-size:.93rem;margin-bottom:12px;"><code>if</code> 語句結尾必須有 <strong>冒號
-          <code>:</code></strong>，它是開啟程式碼區塊的鑰匙。</p>
+    <!-- M1 -->
+    <div class="card">
+      <div class="section-title"><span class="badge-num">1</span>單行道與守門員 — if 與冒號的魔法</div>
+      <p style="color:#475569;font-size:0.95rem;margin-bottom:14px;"><code>if</code> 語句結尾必須有 <strong>冒號 <code>:</code></strong>，它是開啟程式碼區塊的鑰匙。</p>
       <div class="row">
         <div id="m1-code">
-          <span class="kw">if</span>&nbsp;password&nbsp;==&nbsp;<span class="str">"1234"</span>
+          <span class="kw">if</span>&nbsp;password&nbsp;<span class="op">==</span>&nbsp;<span class="str">"1234"</span>
           <span class="colon-slot" id="m1-slot" title="點我放置冒號"></span>
         </div>
-        <button class="key-btn" id="m1-key" title="點擊放置冒號">:</button>
+        <button class="key-btn" id="m1-key" title="點擊取得冒號">:</button>
         <button class="btn btn-p" id="m1-run">▶ 執行</button>
         <button class="btn btn-r" id="m1-reset">↺ 重置</button>
       </div>
@@ -537,35 +349,36 @@
       <div class="console-output" id="m1-console">-- 等待執行 --</div>
     </div>
 
-    <div class="card" id="card2">
-      <div class="section-title"><span class="badge-num">2</span>命運的岔路口 — <code>if...else</code></div>
-      <p style="color:#555;font-size:.93rem;margin-bottom:10px;">調整分數，觀察火車如何選擇不同軌道。</p>
+    <!-- M2 -->
+    <div class="card">
+      <div class="section-title"><span class="badge-num">2</span>命運的岔路口 — if...else</div>
+      <p style="color:#475569;font-size:0.95rem;margin-bottom:12px;">調整分數，觀察火車如何選擇不同軌道執行不同結果。</p>
       <div class="row">
-        <label style="font-weight:600;">分數：</label>
-        <input type="range" id="m2-slider" min="0" max="100" value="75" style="width:160px;">
-        <span id="m2-score" style="font-weight:700;font-size:1.3rem;color:#1a237e;min-width:36px;">75</span>
+        <label style="font-weight:700;color:#334155;">分數：</label>
+        <input type="range" id="m2-slider" min="0" max="100" value="75" style="width:180px;">
+        <span id="m2-score" style="font-weight:800;font-size:1.4rem;color:#3b82f6;min-width:40px;">75</span>
         <button class="btn btn-p" id="m2-run">🚂 發車</button>
         <button class="btn btn-r" id="m2-reset">↺ 重置</button>
       </div>
       <div class="track-wrap">
         <svg class="track-svg" viewBox="0 0 520 150" id="m2-svg">
-          <line x1="20" y1="50" x2="200" y2="50" stroke="#666" stroke-width="4" />
-          <line x1="200" y1="50" x2="400" y2="20" stroke="#2e7d32" stroke-width="4" />
-          <text x="405" y="22" font-size="13" fill="#2e7d32" font-weight="bold">if ≥60 及格 ✅</text>
-          <line x1="200" y1="50" x2="400" y2="90" stroke="#c62828" stroke-width="4" />
-          <text x="405" y="93" font-size="13" fill="#c62828" font-weight="bold">else 重修 ❌</text>
-          <circle cx="200" cy="50" r="7" fill="#ff9800" id="m2-switch" />
-          <line x1="200" y1="50" x2="260" y2="35" stroke="#ff9800" stroke-width="3" id="m2-needle" />
+          <line x1="20" y1="50" x2="200" y2="50" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+          <line x1="200" y1="50" x2="400" y2="20" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+          <text x="410" y="25" font-size="14" fill="#16a34a" font-weight="bold">if ≥60 及格 ✅</text>
+          <line x1="200" y1="50" x2="400" y2="90" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+          <text x="410" y="95" font-size="14" fill="#dc2626" font-weight="bold">else 重修 ❌</text>
+          <circle cx="200" cy="50" r="7" fill="#f59e0b" id="m2-switch" />
+          <line x1="200" y1="50" x2="260" y2="35" stroke="#f59e0b" stroke-width="3" id="m2-needle" stroke-linecap="round"/>
         </svg>
-        <div id="m2-train" style="position:absolute;font-size:1.7rem;top:24px;left:10px;transition:all .7s ease;">🚂
-        </div>
+        <div id="m2-train">🚂</div>
       </div>
       <div class="console-output" id="m2-console">-- 等待發車 --</div>
     </div>
 
-    <div class="card" id="card3">
-      <div class="section-title"><span class="badge-num">3</span>分發帽的抉擇 — <code>if...elif...else</code></div>
-      <p style="color:#555;font-size:.93rem;margin-bottom:10px;">選擇一顆分數球，觀察它穿越篩網被分類的過程。</p>
+    <!-- M3 -->
+    <div class="card">
+      <div class="section-title"><span class="badge-num">3</span>分發帽的抉擇 — if...elif...else</div>
+      <p style="color:#475569;font-size:0.95rem;margin-bottom:12px;">選擇一顆分數球，觀察它穿越篩網被分類的過程 (符合條件即攔截，否則穿透往下)。</p>
       <div class="row">
         <button class="btn btn-p m3-btn" data-score="95">🎱 95分</button>
         <button class="btn btn-p m3-btn" data-score="85">🎱 85分</button>
@@ -574,82 +387,78 @@
       </div>
       <div class="funnel-area">
         <div style="display:flex;flex-direction:column;align-items:center;padding-top:50px;position:relative;">
-          <div class="filter-layer fl-a" id="fl-a">score ≥ 90 → A 級 <span class="filter-light" id="fla-l"></span><span
-              class="badge-pop" id="bp-a">🥇</span></div>
-          <div class="filter-layer fl-b" id="fl-b">score ≥ 80 → B 級 <span class="filter-light" id="flb-l"></span><span
-              class="badge-pop" id="bp-b">🥈</span></div>
+          <div class="filter-layer fl-a" id="fl-a">score ≥ 90 → A 級 <span class="filter-light" id="fla-l"></span><span class="badge-pop" id="bp-a">🥇</span></div>
+          <div class="filter-layer fl-b" id="fl-b">score ≥ 80 → B 級 <span class="filter-light" id="flb-l"></span><span class="badge-pop" id="bp-b">🥈</span></div>
           <div class="filter-layer fl-c" id="fl-c">else → C 級 <span class="badge-pop" id="bp-c">🥉</span></div>
-          <div id="m3-ball"
-            style="font-size:2rem;position:absolute;left:50%;transform:translateX(-50%);top:0;display:none;transition:top .55s ease;">
-            🎱</div>
+          <div id="m3-ball" style="font-size:2.2rem;position:absolute;left:50%;transform:translateX(-50%);top:0;display:none;transition:top .55s ease;">🎱</div>
         </div>
       </div>
       <div class="console-output" id="m3-console">-- 點擊分數球開始 --</div>
     </div>
 
-    <div class="card" id="card4">
-      <div class="section-title"><span class="badge-num">4</span>無形的牆 — 縮排 Indentation 視覺化</div>
-      <p style="color:#555;font-size:.93rem;margin-bottom:10px;">點擊「縮排」按鈕，讓程式碼往右推，觀察「作用域」如何被框選。</p>
-      <div style="position:relative;display:inline-block;width:100%;" id="m4-wrap">
+    <!-- M4 -->
+    <div class="card">
+      <div class="section-title"><span class="badge-num">4</span>無形的牆 — 縮排 Indentation</div>
+      <p style="color:#475569;font-size:0.95rem;margin-bottom:12px;">點擊「縮排」按鈕，觀察程式碼「作用域」如何被框選。Python 不用大括號，靠縮排區分區塊！</p>
+      <div style="position:relative;display:inline-block;width:100%;background:#ffffff;border:1px solid #e2e8f0;padding:12px;border-radius:8px;" id="m4-wrap">
         <div class="scope-overlay" id="m4-scope"></div>
         <div class="indent-block" id="m4-block">
-          <div class="il"><span class="ctext" id="m4-l0">if score &gt;= 60:</span></div>
-          <div class="il"><button class="tab-btn2" data-line="1">縮排 →</button><span class="ctext"
-              id="m4-l1">print("及格")</span></div>
-          <div class="il"><button class="tab-btn2" data-line="2">縮排 →</button><span class="ctext" id="m4-l2">grade =
-              "B"</span></div>
-          <div class="il"><span class="ctext" id="m4-l3">print("完成")</span></div>
+          <div class="il"><span class="ctext" id="m4-l0"><span class="kw">if</span> score >= <span class="num">60</span><span class="op">:</span></span></div>
+          <div class="il"><button class="tab-btn2" data-line="1">Tab 縮排 →</button><span class="ctext" id="m4-l1"><span class="kw">print</span>(<span class="str">"及格"</span>)</span></div>
+          <div class="il"><button class="tab-btn2" data-line="2">Tab 縮排 →</button><span class="ctext" id="m4-l2">grade <span class="op">=</span> <span class="str">"B"</span></span></div>
+          <div class="il"><span class="ctext" id="m4-l3"><span class="kw">print</span>(<span class="str">"完成"</span>)</span></div>
         </div>
       </div>
-      <div class="row" style="margin-top:12px;">
+      <div class="row" style="margin-top:16px;">
         <button class="btn btn-p" id="m4-run">▶ 執行 (score=40)</button>
         <button class="btn btn-r" id="m4-reset">↺ 重置</button>
       </div>
       <div class="console-output" id="m4-console">-- 先縮排，再執行 --</div>
     </div>
 
-    <div class="card" id="card5">
-      <div class="section-title"><span class="badge-num">5</span>獨立 vs 互斥 — <code>if/if</code> vs <code>if/elif</code>
-        的陷阱</div>
-      <p style="color:#555;font-size:.93rem;margin-bottom:10px;">消費金額：<strong>$250</strong>。觀察兩種寫法的不同結果。</p>
+    <!-- M5 -->
+    <div class="card">
+      <div class="section-title"><span class="badge-num">5</span>獨立 vs 互斥 — if/if vs if/elif 的陷阱</div>
+      <p style="color:#475569;font-size:0.95rem;margin-bottom:12px;">設定消費金額為：<strong>$250</strong>。觀察兩種寫法在領取滿額折價券時的不同結果。</p>
       <div class="row">
         <button class="btn btn-p" id="m5-run">▶ 執行對比</button>
         <button class="btn btn-r" id="m5-reset">↺ 重置</button>
       </div>
       <div class="dual">
         <div class="track-col wrong">
-          <h4>❌ 兩個獨立 if（錯）</h4>
+          <h4>❌ 兩個獨立 if（錯誤）</h4>
           <div class="mini-code" id="m5-left-code">
-            <span id="m5-l1">if amount >= 100:</span>
-            <span id="m5-l2" class="ind-1">send_coupon(1)</span>
-            <span id="m5-l3">if amount >= 200:</span>
-            <span id="m5-l4" class="ind-1">send_coupon(2)</span>
+            <span id="m5-l1"><span class="kw">if</span> amount >= <span class="num">100</span><span class="op">:</span></span>
+            <span id="m5-l2" class="ind-1">send_coupon(<span class="num">1</span>)</span>
+            <span id="m5-l3"><span class="kw">if</span> amount >= <span class="num">200</span><span class="op">:</span></span>
+            <span id="m5-l4" class="ind-1">send_coupon(<span class="num">2</span>)</span>
           </div>
-          <div style="margin-top:10px;font-size:.9rem;min-height:32px;" id="m5-left-result"></div>
+          <div style="margin-top:12px;font-size:0.95rem;min-height:36px;color:#1e293b;" id="m5-left-result"></div>
         </div>
         <div class="track-col right">
           <h4>✅ if + elif（正確）</h4>
           <div class="mini-code" id="m5-right-code">
-            <span id="m5-r1">if amount >= 200:</span>
-            <span id="m5-r2" class="ind-1">send_coupon(2)</span>
-            <span id="m5-r3">elif amount >= 100:</span>
-            <span id="m5-r4" class="ind-1">send_coupon(1)</span>
+            <span id="m5-r1"><span class="kw">if</span> amount >= <span class="num">200</span><span class="op">:</span></span>
+            <span id="m5-r2" class="ind-1">send_coupon(<span class="num">2</span>)</span>
+            <span id="m5-r3"><span class="kw">elif</span> amount >= <span class="num">100</span><span class="op">:</span></span>
+            <span id="m5-r4" class="ind-1">send_coupon(<span class="num">1</span>)</span>
           </div>
-          <div style="margin-top:10px;font-size:.9rem;min-height:32px;" id="m5-right-result"></div>
+          <div style="margin-top:12px;font-size:0.95rem;min-height:36px;color:#1e293b;" id="m5-right-result"></div>
         </div>
       </div>
     </div>
 
-    <div class="card" id="card6">
-      <div class="section-title"><span class="badge-num">6</span>俄羅斯套娃 — 巢狀判斷 Nested if</div>
-      <p style="color:#555;font-size:.93rem;margin-bottom:10px;">輸入帳號與密碼，觀察雙重鎖如何逐層解鎖。</p>
+    <!-- M6 -->
+    <div class="card">
+      <div class="section-title"><span class="badge-num">6</span>俄羅斯套娃 — 巢狀判斷 (Nested if)</div>
+      <p style="color:#475569;font-size:0.95rem;margin-bottom:14px;">輸入帳號與密碼，觀察雙重鎖如何逐層解鎖。必須兩層條件都符合才能打開保險箱。</p>
       <div class="m6-wrap">
         <div>
           <div class="io-row">
             <input id="m6-user" type="text" placeholder="帳號 (admin)">
             <input id="m6-pwd" type="password" placeholder="密碼 (123)">
           </div>
-          <div class="row" style="margin-bottom:10px;">
+          <div class="row" style="margin-bottom:12px;">
             <button class="btn btn-p" id="m6-run">🔓 解鎖</button>
             <button class="btn btn-r" id="m6-reset">↺ 重置</button>
           </div>
@@ -660,71 +469,113 @@
           </div>
         </div>
         <div class="cpanel" id="m6-cpanel">
-          <span>if user == "admin":</span>
-          <span class="ind-1">if pwd == "123":</span>
-          <span class="ind-2">open_safe()</span>
-          <span class="ind-1">else:</span>
-          <span class="ind-2">print("密碼錯誤")</span>
-          <span>else:</span>
-          <span class="ind-1">print("帳號錯誤")</span>
+          <span id="m6-l0"><span class="kw">if</span> user <span class="op">==</span> <span class="str">"admin"</span><span class="op">:</span></span>
+          <span id="m6-l1" class="ind-1"><span class="kw">if</span> pwd <span class="op">==</span> <span class="str">"123"</span><span class="op">:</span></span>
+          <span id="m6-l2" class="ind-2">open_safe()</span>
+          <span id="m6-l3" class="ind-1"><span class="kw">else</span><span class="op">:</span></span>
+          <span id="m6-l4" class="ind-2"><span class="kw">print</span>(<span class="str">"密碼錯誤"</span>)</span>
+          <span id="m6-l5"><span class="kw">else</span><span class="op">:</span></span>
+          <span id="m6-l6" class="ind-1"><span class="kw">print</span>(<span class="str">"帳號錯誤"</span>)</span>
         </div>
       </div>
       <div class="console-output" id="m6-console">-- 輸入帳號密碼後執行 --</div>
     </div>
 
-    <div class="card" id="card7">
-      <div class="section-title"><span class="badge-num">🏆</span>綜合實戰 — 遊樂園自動售票機</div>
-      <p style="color:#555;font-size:.93rem;margin-bottom:6px;"><strong>規則：</strong>成人 $500｜兒童 (≤12歲) $250｜VIP 再打 8 折
+    <!-- M8: 三元運算子 -->
+    <div class="card">
+      <div class="section-title"><span class="badge-num" style="background:linear-gradient(135deg,#f59e0b,#ea580c);">8</span>進階技巧 — 三元運算子 (Ternary Operator)</div>
+      <p style="color:#475569;font-size:0.95rem;margin-bottom:14px;">當 <code>if/else</code> 裡只有簡單的賦值操作時，Python 提供了一行寫完的優雅語法：<br>
+        <strong><code>變數 = [條件成立的值] if [條件] else [條件不成立的值]</code></strong>
       </p>
+      
+      <div class="slider-container">
+        <div class="row" style="margin-bottom:0;">
+          <label style="font-weight:700;color:#334155;">年齡 Age：</label>
+          <input type="range" id="m8-slider" min="1" max="40" value="16" style="width:200px;">
+          <span id="m8-age-val" style="font-weight:800;font-size:1.4rem;color:#ea580c;min-width:40px;">16</span>
+        </div>
+      </div>
+
+      <div class="m8-code-comp">
+        <div class="track-col">
+          <h4 style="color:#475569;">傳統寫法 (4 行)</h4>
+          <div class="mini-code" id="m8-trad-code">
+            <span id="m8-l1"><span class="kw">if</span> age >= <span class="num">18</span><span class="op">:</span></span>
+            <span id="m8-l2" class="ind-1">status <span class="op">=</span> <span class="str">"成年"</span></span>
+            <span id="m8-l3"><span class="kw">else</span><span class="op">:</span></span>
+            <span id="m8-l4" class="ind-1">status <span class="op">=</span> <span class="str">"未成年"</span></span>
+          </div>
+        </div>
+        <div class="track-col" style="border-color:#fef08a; background:#fffbeb;">
+          <h4 style="color:#d97706;">三元運算子 (1 行)</h4>
+          <div class="mini-code" id="m8-ternary-code" style="background:#ffffff;">
+            <span id="m8-t1">
+              status <span class="op">=</span> <span class="str">"成年"</span> <span class="kw">if</span> age >= <span class="num">18</span> <span class="kw">else</span> <span class="str">"未成年"</span>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="console-output" id="m8-console" style="margin-top:16px;">▶ status = "未成年"</div>
+    </div>
+
+    <!-- M7 (綜合實戰) -->
+    <div class="card">
+      <div class="section-title"><span class="badge-num" style="background:linear-gradient(135deg,#10b981,#059669);">🏆</span>綜合實戰 — 遊樂園售票機</div>
+      <p style="color:#475569;font-size:0.95rem;margin-bottom:8px;"><strong>規則：</strong>成人 $500｜兒童 (≤12歲) $250｜VIP 再打 8 折</p>
       <div class="char-cards" id="m7-chars">
-        <div class="cc" data-age="10" data-vip="false">👧 10歲普通兒童<br><small>age=10, VIP=否</small></div>
-        <div class="cc" data-age="30" data-vip="true">👨‍💼 30歲VIP成人<br><small>age=30, VIP=是</small></div>
-        <div class="cc" data-age="8" data-vip="true">🧒 8歲VIP兒童<br><small>age=8, VIP=是</small></div>
+        <div class="cc" data-age="10" data-vip="false">👧 10歲普通兒童<br><span style="color:#64748b;font-size:0.8rem;">age=10, VIP=否</span></div>
+        <div class="cc" data-age="30" data-vip="true">👨‍💼 30歲VIP成人<br><span style="color:#64748b;font-size:0.8rem;">age=30, VIP=是</span></div>
+        <div class="cc" data-age="8" data-vip="true">🧒 8歲VIP兒童<br><span style="color:#64748b;font-size:0.8rem;">age=8, VIP=是</span></div>
       </div>
       <div class="m7-grid" id="m7-grid">
         <div class="m7-code-panel" id="m7-code">
-          <span class="ln" id="m7-ln0">age = {age}</span>
-          <span class="ln" id="m7-ln1">is_vip = {vip}</span>
+          <span class="ln" id="m7-ln0">age <span class="op">=</span> <span class="num">{age}</span></span>
+          <span class="ln" id="m7-ln1">is_vip <span class="op">=</span> <span class="kw">{vip}</span></span>
           <span class="ln" id="m7-ln2">&nbsp;</span>
-          <span class="ln" id="m7-ln3">if age &lt;= 12:</span>
-          <span class="ln ind-1" id="m7-ln4">price = 250</span>
-          <span class="ln" id="m7-ln5">else:</span>
-          <span class="ln ind-1" id="m7-ln6">price = 500</span>
+          <span class="ln" id="m7-ln3"><span class="kw">if</span> age &lt;= <span class="num">12</span><span class="op">:</span></span>
+          <span class="ln ind-1" id="m7-ln4">price <span class="op">=</span> <span class="num">250</span></span>
+          <span class="ln" id="m7-ln5"><span class="kw">else</span><span class="op">:</span></span>
+          <span class="ln ind-1" id="m7-ln6">price <span class="op">=</span> <span class="num">500</span></span>
           <span class="ln" id="m7-ln7">&nbsp;</span>
-          <span class="ln" id="m7-ln8">if is_vip:</span>
-          <span class="ln ind-1" id="m7-ln9">price = price * 0.8</span>
+          <span class="ln" id="m7-ln8"><span class="kw">if</span> is_vip<span class="op">:</span></span>
+          <span class="ln ind-1" id="m7-ln9">price <span class="op">=</span> price <span class="op">*</span> <span class="num">0.8</span></span>
           <span class="ln" id="m7-ln10">&nbsp;</span>
-          <span class="ln" id="m7-ln11">print(f"票價：${price}")</span>
+          <span class="ln" id="m7-ln11"><span class="kw">print</span>(<span class="str">f"票價：${price}"</span>)</span>
         </div>
         <div>
           <div class="vp" id="m7-vp">
-            <div style="font-weight:700;margin-bottom:8px;color:#1a237e;">📊 變數面板</div>
+            <div style="font-weight:800;margin-bottom:10px;color:#1e293b;">📊 變數面板</div>
             <div class="vrow"><span>age</span><span class="vval" id="v-age">—</span></div>
             <div class="vrow"><span>is_vip</span><span class="vval" id="v-vip">—</span></div>
             <div class="vrow"><span>price</span><span class="vval" id="v-price">—</span></div>
           </div>
-          <div class="console-output" id="m7-console" style="margin-top:10px;">-- 選擇角色後逐步執行 --</div>
+          <div class="console-output" id="m7-console" style="margin-top:14px;">-- 選擇角色後逐步執行 --</div>
         </div>
       </div>
-      <div class="row" style="margin-top:12px;">
-        <button class="btn btn-p" id="m7-step">⏭ 下一步</button>
+      <div class="row" style="margin-top:16px;">
+        <button class="btn btn-p" id="m7-step">⏭ 下一步 (Step)</button>
         <button class="btn btn-r" id="m7-reset">↺ 重置</button>
       </div>
     </div>
 
-  </div><script>
+  </div>
+
+  <script>
     const delay = ms => new Promise(r => setTimeout(r, ms));
 
-    // ─── Intersection Observer: fade-in each card ───
+    // ─── Intersection Observer ───
     const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity = 1; e.target.style.transform = 'translateY(0)'; observer.unobserve(e.target); } });
+      entries.forEach(e => { 
+        if (e.isIntersecting) { 
+          e.target.style.opacity = 1; 
+          e.target.style.transform = 'translateY(0)'; 
+          observer.unobserve(e.target); 
+        } 
+      });
     }, { threshold: 0.08 });
-    document.querySelectorAll('.card').forEach(c => {
-      c.style.opacity = '0'; c.style.transform = 'translateY(30px)'; c.style.transition = 'opacity .6s, transform .6s';
-      observer.observe(c);
-    });
+    document.querySelectorAll('.card').forEach(c => observer.observe(c));
 
-    // ═══════════════ MODULE 1 ═══════════════
+    // ═══════════════ M1 ═══════════════
     (function () {
       const slot = document.getElementById('m1-slot'),
         key = document.getElementById('m1-key'),
@@ -742,12 +593,12 @@
       runBtn.onclick = async () => {
         if (busy) return; busy = true;
         if (!filled) {
-          cons.innerHTML = '<span style="color:#ff5252">SyntaxError: expected \':\' after \'if\' expression</span>';
+          cons.innerHTML = '<span style="color:#dc2626;font-weight:bold;">SyntaxError: expected \':\' after \'if\' expression</span>';
           document.getElementById('m1-code').classList.add('shake');
           gate.textContent = '🚫'; gate.style.transform = '';
           await delay(500); document.getElementById('m1-code').classList.remove('shake');
         } else {
-          cons.innerHTML = '<span style="color:#69f0ae">✅ 歡迎光臨！密碼正確，城門開啟！</span>';
+          cons.innerHTML = '<span style="color:#16a34a;font-weight:bold;">✅ 語法正確！條件成立，城門開啟！</span>';
           gate.style.transition = 'all .7s'; gate.style.transform = 'scaleY(0.2) translateY(-60px)'; gate.style.opacity = '.3';
         }
         busy = false;
@@ -755,7 +606,7 @@
       resetBtn.onclick = () => { setSlot(false); gate.textContent = '🚪'; gate.style.transform = ''; gate.style.opacity = '1'; cons.textContent = '-- 等待執行 --'; busy = false; };
     })();
 
-    // ═══════════════ MODULE 2 ═══════════════
+    // ═══════════════ M2 ═══════════════
     (function () {
       const slider = document.getElementById('m2-slider'),
         scoreEl = document.getElementById('m2-score'),
@@ -768,27 +619,34 @@
 
       slider.oninput = () => scoreEl.textContent = slider.value;
 
-      function resetTrain() { train.style.transition = 'none'; train.style.left = '10px'; train.style.top = '24px'; setTimeout(() => train.style.transition = 'all .7s ease', 50); cons.textContent = '-- 等待發車 --'; needle.setAttribute('x2', '260'); needle.setAttribute('y2', '35'); }
+      function resetTrain() { 
+        train.style.transition = 'none'; train.style.left = '10px'; train.style.top = '24px'; 
+        setTimeout(() => train.style.transition = 'all .7s ease', 50); 
+        cons.textContent = '-- 等待發車 --'; 
+        needle.setAttribute('x2', '260'); needle.setAttribute('y2', '35'); 
+      }
 
       runBtn.onclick = async () => {
         if (busy) return; busy = true; runBtn.disabled = true;
         const s = parseInt(slider.value), pass = s >= 60;
-        // train moves to fork
         train.style.left = '175px'; train.style.top = '24px';
         await delay(800);
-        // switch needle
         if (pass) { needle.setAttribute('x2', '240'); needle.setAttribute('y2', '25'); }
         else { needle.setAttribute('x2', '240'); needle.setAttribute('y2', '62'); }
         await delay(400);
-        // train goes to branch
-        if (pass) { train.style.left = '380px'; train.style.top = '0px'; cons.innerHTML = `<span style="color:#69f0ae">score = ${s} ≥ 60 → ✅ 恭喜及格！</span>`; }
-        else { train.style.left = '380px'; train.style.top = '58px'; cons.innerHTML = `<span style="color:#ff5252">score = ${s} < 60 → ❌ 需要重修。</span>`; }
+        if (pass) { 
+          train.style.left = '380px'; train.style.top = '0px'; 
+          cons.innerHTML = `<span style="color:#16a34a;font-weight:bold;">score = ${s} ≥ 60 → ✅ 恭喜及格！</span>`; 
+        } else { 
+          train.style.left = '380px'; train.style.top = '58px'; 
+          cons.innerHTML = `<span style="color:#dc2626;font-weight:bold;">score = ${s} < 60 → ❌ 需要重修。</span>`; 
+        }
         busy = false; runBtn.disabled = false;
       };
       resetBtn.onclick = () => { busy = false; runBtn.disabled = false; resetTrain(); };
     })();
 
-    // ═══════════════ MODULE 3 ═══════════════
+    // ═══════════════ M3 ═══════════════
     (function () {
       const ball = document.getElementById('m3-ball'),
         fla = document.getElementById('fl-a'), flb = document.getElementById('fl-b'), flc = document.getElementById('fl-c'),
@@ -797,7 +655,14 @@
         cons = document.getElementById('m3-console');
       let busy = false;
 
-      function reset3() { ball.style.display = 'none';[fla, flb, flc].forEach(f => f.classList.remove('dimmed'));[lA, lB].forEach(l => { l.className = 'filter-light'; });[bA, bB, bC].forEach(b => b.style.opacity = '0'); cons.textContent = '-- 點擊分數球開始 --'; busy = false; document.querySelectorAll('.m3-btn').forEach(b => b.disabled = false); }
+      function reset3() { 
+        ball.style.display = 'none';
+        [fla, flb, flc].forEach(f => { f.classList.remove('dimmed'); f.style.boxShadow = ''; });
+        [lA, lB].forEach(l => { l.className = 'filter-light'; });
+        [bA, bB, bC].forEach(b => b.style.opacity = '0'); 
+        cons.textContent = '-- 點擊分數球開始 --'; busy = false; 
+        document.querySelectorAll('.m3-btn').forEach(b => b.disabled = false); 
+      }
       document.getElementById('m3-reset').onclick = reset3;
 
       document.querySelectorAll('.m3-btn').forEach(btn => {
@@ -808,28 +673,27 @@
           ball.style.display = 'block'; ball.style.top = '0px';
           await delay(300);
           cons.textContent = `▶ score = ${score}`;
-          // Layer A
           await delay(400); ball.style.top = '46px';
           await delay(600);
           if (score >= 90) {
             lA.className = 'filter-light g'; await delay(400);
-            bA.style.opacity = '1'; cons.innerHTML += `\n✅ score ≥ 90 → 🥇 A 級！`;
-            fla.style.boxShadow = '0 0 18px #1e88e5'; flb.classList.add('dimmed'); flc.classList.add('dimmed');
+            bA.style.opacity = '1'; cons.innerHTML += `\n<span style="color:#16a34a;">✅ score ≥ 90 → 🥇 A 級！</span>`;
+            fla.style.boxShadow = '0 0 15px rgba(59,130,246,0.5)'; flb.classList.add('dimmed'); flc.classList.add('dimmed');
           } else {
             lA.className = 'filter-light r'; await delay(400);
-            cons.innerHTML += `\n❌ score < 90，穿透…`;
+            cons.innerHTML += `\n❌ score < 90，穿透往下...`;
             ball.style.top = '130px';
             await delay(600);
             if (score >= 80) {
               lB.className = 'filter-light g'; await delay(400);
-              bB.style.opacity = '1'; cons.innerHTML += `\n✅ score ≥ 80 → 🥈 B 級！`;
-              flb.style.boxShadow = '0 0 18px #8e24aa'; flc.classList.add('dimmed');
+              bB.style.opacity = '1'; cons.innerHTML += `\n<span style="color:#16a34a;">✅ score ≥ 80 → 🥈 B 級！</span>`;
+              flb.style.boxShadow = '0 0 15px rgba(168,85,247,0.5)'; flc.classList.add('dimmed');
             } else {
               lB.className = 'filter-light r'; await delay(400);
-              cons.innerHTML += `\nscore < 80，穿透…`;
+              cons.innerHTML += `\n❌ score < 80，穿透往下...`;
               ball.style.top = '210px'; await delay(600);
-              bC.style.opacity = '1'; cons.innerHTML += `\n→ 🥉 C 級（else）`;
-              flc.style.boxShadow = '0 0 18px #fb8c00';
+              bC.style.opacity = '1'; cons.innerHTML += `\n<span style="color:#ea580c;">→ 🥉 C 級（else）</span>`;
+              flc.style.boxShadow = '0 0 15px rgba(249,115,22,0.5)';
             }
           }
           busy = false;
@@ -837,7 +701,7 @@
       });
     })();
 
-    // ═══════════════ MODULE 4 ═══════════════
+    // ═══════════════ M4 ═══════════════
     (function () {
       const scope = document.getElementById('m4-scope'),
         l1 = document.getElementById('m4-l1'), l2 = document.getElementById('m4-l2'),
@@ -852,7 +716,7 @@
       document.querySelectorAll('.tab-btn2').forEach(btn => {
         btn.onclick = () => {
           const li = parseInt(btn.dataset.line), el = li === 1 ? l1 : l2;
-          if (!indented[li]) { indented[li] = true; el.style.paddingLeft = '32px'; btn.disabled = true; updateScope(); }
+          if (!indented[li]) { indented[li] = true; el.style.paddingLeft = '36px'; btn.disabled = true; updateScope(); }
         };
       });
 
@@ -860,34 +724,33 @@
         if (busy) return; busy = true;
         const score = 40;
         const both = indented[1] && indented[2];
-        if (!both) { cons.innerHTML = '<span style="color:#ff5252">⚠️ 請先縮排兩行程式碼再執行！</span>'; busy = false; return; }
+        if (!both) { cons.innerHTML = '<span style="color:#dc2626;font-weight:bold;">⚠️ 請先縮排兩行程式碼再執行！</span>'; busy = false; return; }
         cons.textContent = `▶ score = ${score}, 執行中…`;
         await delay(400);
-        document.getElementById('m4-l0').style.background = '#fff3cd';
+        document.getElementById('m4-l0').classList.add('active-hl');
         cons.innerHTML += `\nif ${score} >= 60 → False`;
         await delay(700);
-        document.getElementById('m4-l0').style.background = '';
-        // dimmed scope block
+        document.getElementById('m4-l0').classList.remove('active-hl');
         l1.classList.add('dimmed'); l2.classList.add('dimmed');
-        scope.style.background = 'rgba(229,57,53,.08)'; scope.style.borderColor = '#e53935';
+        scope.style.background = 'rgba(239,68,68,0.08)'; scope.style.borderColor = '#ef4444';
         await delay(600);
-        cons.innerHTML += `\n⤵ 跳過縮排區塊...`;
+        cons.innerHTML += `\n⤵ 條件不成立，跳過縮排區塊...`;
         await delay(500);
         l3.classList.add('bright');
-        cons.innerHTML += `\n✅ print("完成") ← if 外部，照常執行`;
+        cons.innerHTML += `\n✅ print("完成") ← 不在縮排區塊內，照常執行`;
         busy = false;
       };
       document.getElementById('m4-reset').onclick = () => {
         [1, 2].forEach(i => { indented[i] = false; });
         l1.style.paddingLeft = ''; l2.style.paddingLeft = '';
         document.querySelectorAll('.tab-btn2').forEach(b => b.disabled = false);
-        [l1, l2, l3].forEach(l => { l.classList.remove('dimmed', 'bright'); l.style.background = ''; });
-        scope.style.opacity = '0'; scope.style.background = 'rgba(76,175,80,.12)'; scope.style.borderColor = '#43a047';
+        [l1, l2, l3].forEach(l => { l.classList.remove('dimmed', 'bright'); });
+        scope.style.opacity = '0'; scope.style.background = 'rgba(34,197,94,0.08)'; scope.style.borderColor = '#22c55e';
         cons.textContent = '-- 先縮排，再執行 --'; busy = false;
       };
     })();
 
-    // ═══════════════ MODULE 5 ═══════════════
+    // ═══════════════ M5 ═══════════════
     (function () {
       const runBtn = document.getElementById('m5-run'),
         resetBtn = document.getElementById('m5-reset'),
@@ -899,23 +762,16 @@
       function hl(id, on) {
         const el = document.getElementById(id);
         if (el) {
-          if (on) {
-            el.style.background = 'rgba(255,213,79,.25)';
-            el.style.color = '#ffd54f';
-          } else {
-            el.style.background = '';
-            el.style.color = '';
-          }
+          if (on) el.classList.add('active-hl');
+          else el.classList.remove('active-hl');
         }
       }
       function resetVis() {
         ids.forEach(id => hl(id, false));
-        lr.innerHTML = '';
-        rr.innerHTML = '';
+        lr.innerHTML = ''; rr.innerHTML = '';
         const elifEl = document.getElementById('m5-r3');
         if (elifEl) {
-          elifEl.style.color = '';
-          elifEl.style.textDecoration = '';
+          elifEl.classList.remove('done-f');
         }
         busy = false;
       }
@@ -923,37 +779,31 @@
 
       runBtn.onclick = async () => {
         if (busy) return; busy = true; resetVis(); busy = true;
-        const amount = 250;
-        // LEFT — two independent ifs
+        // LEFT 
         await delay(300); hl('m5-l1', true); await delay(600);
-        lr.innerHTML = '✅ 250≥100 → <span style="font-size:1.2rem">🎫</span>';
+        lr.innerHTML = '✅ 250≥100 → <span style="font-size:1.2rem">🎫 100元券</span>';
         hl('m5-l1', false); hl('m5-l2', true); await delay(600);
         hl('m5-l2', false); hl('m5-l3', true); await delay(600);
-        lr.innerHTML += ' ✅ 250≥200 → <span style="font-size:1.2rem">🎫</span>';
+        lr.innerHTML += '<br>✅ 250≥200 → <span style="font-size:1.2rem">🎫 200元券</span>';
         hl('m5-l3', false); hl('m5-l4', true); await delay(600);
         hl('m5-l4', false);
-        lr.innerHTML += '<br><strong style="color:#c62828">💥 兩張都拿到！邏輯錯誤！</strong>';
+        lr.innerHTML += '<br><strong style="color:#dc2626;">💥 兩張都拿到！邏輯錯誤！</strong>';
         await delay(500);
-        // RIGHT — if/elif
+        // RIGHT
         hl('m5-r1', true); await delay(600);
-        // 250>=200? YES
-        rr.innerHTML = '✅ 250≥200 → <span style="font-size:1.2rem">🎫🎫</span>';
+        rr.innerHTML = '✅ 250≥200 → <span style="font-size:1.2rem">🎫 200元券</span>';
         hl('m5-r1', false); hl('m5-r2', true); await delay(600);
         hl('m5-r2', false);
-        // elif skipped
         const elifEl = document.getElementById('m5-r3');
-        if (elifEl) {
-          elifEl.style.color = '#ef9a9a';
-          elifEl.style.textDecoration = 'line-through';
-        }
-        rr.innerHTML += '<br><span style="color:#e53935;font-size:1.1rem;font-weight:700;">✖ elif 被跳過（互斥）</span>';
+        if (elifEl) { elifEl.classList.add('done-f'); }
+        rr.innerHTML += '<br><span style="color:#64748b;font-weight:bold;">✖ elif 被跳過（因為已達成上方條件）</span>';
         await delay(400);
-        rr.innerHTML += '<br><strong style="color:#2e7d32">✅ 只發出一組，邏輯正確！</strong>';
+        rr.innerHTML += '<br><strong style="color:#16a34a;">✅ 只發出一組，邏輯正確！</strong>';
         busy = false;
       };
     })();
 
-    // ═══════════════ MODULE 6 ═══════════════
+    // ═══════════════ M6 ═══════════════
     (function () {
       const runBtn = document.getElementById('m6-run'),
         resetBtn = document.getElementById('m6-reset'),
@@ -961,18 +811,15 @@
         lock1 = document.getElementById('m6-lock1'), lock2 = document.getElementById('m6-lock2'),
         cpanel = document.getElementById('m6-cpanel'),
         cons = document.getElementById('m6-console');
-      const spans = cpanel.querySelectorAll('span');
+        
+      // 修正：使用 children 只選取獨立的行元素，避免算入內部的 .kw / .str 標籤
+      const lineSpans = Array.from(cpanel.children);
       let busy = false;
 
       function hlPanel(i, on) {
-        spans.forEach((s, j) => {
-          if (j === i && on) {
-            s.style.background = 'rgba(255,213,79,.18)';
-            s.style.color = '#ffd54f';
-          } else {
-            s.style.background = '';
-            s.style.color = '';
-          }
+        lineSpans.forEach((s, j) => {
+          if (j === i && on) s.classList.add('active-hl');
+          else s.classList.remove('active-hl');
         });
       }
 
@@ -980,33 +827,70 @@
         if (busy) return; busy = true;
         const u = document.getElementById('m6-user').value.trim();
         const p = document.getElementById('m6-pwd').value.trim();
-        // Reset vis
         [lock1, lock2].forEach(l => l.classList.remove('open')); safe.textContent = '🔒'; safe.style.transform = ''; cons.textContent = '';
         hlPanel(-1, false);
         await delay(300);
-        // outer if
         hlPanel(0, true); cons.textContent = `▶ if user == "admin" → ${u === 'admin' ? 'True' : 'False'}`;
         await delay(800);
         if (u === 'admin') {
-          lock1.classList.add('open'); cons.innerHTML += '\n🔑 第一道鎖：開啟！';
+          lock1.classList.add('open'); cons.innerHTML += '\n<span style="color:#16a34a;">🔑 第一道鎖：開啟！</span>';
           await delay(600);
           hlPanel(1, true); safe.textContent = '🔓'; cons.innerHTML += `\n    if pwd == "123" → ${p === '123' ? 'True' : 'False'}`;
           await delay(800);
           if (p === '123') {
             lock2.classList.add('open'); safe.textContent = '📦'; safe.style.transform = 'scale(1.2)';
-            cons.innerHTML += '\n🔐 第二道鎖：開啟！\n🎉 保險箱完全打開！';
+            cons.innerHTML += '\n<span style="color:#16a34a;">🔐 第二道鎖：開啟！\n🎉 保險箱完全打開！</span>';
           } else {
-            hlPanel(3, true); cons.innerHTML += '\n❌ 密碼錯誤，保險箱保持鎖定。';
+            hlPanel(3, true); cons.innerHTML += '\n<span style="color:#dc2626;">❌ 密碼錯誤，保險箱保持鎖定。</span>';
           }
         } else {
-          hlPanel(5, true); cons.innerHTML += '\n❌ 帳號錯誤，無法進入。';
+          hlPanel(5, true); cons.innerHTML += '\n<span style="color:#dc2626;">❌ 帳號錯誤，無法進入。</span>';
         }
         busy = false;
       };
-      resetBtn.onclick = () => { [lock1, lock2].forEach(l => l.classList.remove('open')); safe.textContent = '🔒'; safe.style.transform = ''; cons.textContent = '-- 輸入帳號密碼後執行 --'; spans.forEach(s => { s.style.background = ''; s.style.color = ''; }); document.getElementById('m6-user').value = ''; document.getElementById('m6-pwd').value = ''; busy = false; };
+      resetBtn.onclick = () => { [lock1, lock2].forEach(l => l.classList.remove('open')); safe.textContent = '🔒'; safe.style.transform = ''; cons.textContent = '-- 輸入帳號密碼後執行 --'; lineSpans.forEach(s => s.classList.remove('active-hl')); document.getElementById('m6-user').value = ''; document.getElementById('m6-pwd').value = ''; busy = false; };
     })();
 
-    // ═══════════════ MODULE 7 ═══════════════
+    // ═══════════════ M8 (三元運算子) ═══════════════
+    (function () {
+      const slider = document.getElementById('m8-slider');
+      const ageVal = document.getElementById('m8-age-val');
+      const cons = document.getElementById('m8-console');
+      
+      const t1 = document.getElementById('m8-t1');
+      const l1 = document.getElementById('m8-l1');
+      const l2 = document.getElementById('m8-l2');
+      const l3 = document.getElementById('m8-l3');
+      const l4 = document.getElementById('m8-l4');
+
+      function updateM8() {
+        const age = parseInt(slider.value);
+        ageVal.textContent = age;
+        
+        [l1, l2, l3, l4, t1].forEach(el => el.classList.remove('done-t', 'done-f'));
+        
+        if (age >= 18) {
+          l1.classList.add('done-t');
+          l2.classList.add('done-t');
+          l3.classList.add('done-f');
+          l4.classList.add('done-f');
+          t1.innerHTML = `status <span class="op">=</span> <span class="str" style="font-weight:bold;background:#dcfce7;padding:2px 4px;border-radius:4px;">"成年"</span> <span class="kw">if</span> age >= <span class="num">18</span> <span class="kw">else</span> <span class="str dimmed">"未成年"</span>`;
+          cons.innerHTML = `▶ status = <span style="color:#16a34a;font-weight:bold;">"成年"</span>`;
+        } else {
+          l1.classList.add('done-f');
+          l2.classList.add('done-f');
+          l3.classList.add('done-t');
+          l4.classList.add('done-t');
+          t1.innerHTML = `status <span class="op">=</span> <span class="str dimmed">"成年"</span> <span class="kw">if</span> age >= <span class="num">18</span> <span class="kw">else</span> <span class="str" style="font-weight:bold;background:#fee2e2;padding:2px 4px;border-radius:4px;color:#dc2626;">"未成年"</span>`;
+          cons.innerHTML = `▶ status = <span style="color:#dc2626;font-weight:bold;">"未成年"</span>`;
+        }
+      }
+      
+      slider.oninput = updateM8;
+      updateM8(); // init
+    })();
+
+    // ═══════════════ M7 (綜合實戰) ═══════════════
     (function () {
       const stepBtn = document.getElementById('m7-step'),
         resetBtn = document.getElementById('m7-reset'),
@@ -1016,16 +900,16 @@
       let stepIdx = 0, curAge = 10, curVip = false, curPrice = 0, busy = false, charLoaded = false;
 
       function setVar(el, val) { el.textContent = val; el.classList.add('fl'); setTimeout(() => el.classList.remove('fl'), 1100); }
-      // 更新這支函式，避免蓋掉我們原本加上的 ind-1 類別
-      function hlLine(i, cls = 'active') {
+      
+      function hlLine(i, cls = 'active-hl') {
         lns.forEach((l, j) => {
-          l.classList.remove('active', 'done-t', 'done-f');
+          l.classList.remove('active-hl', 'done-t', 'done-f');
           if (j === i && cls) l.classList.add(cls);
         });
       }
       function reset7() {
         stepIdx = 0; busy = false; curPrice = 0; charLoaded = false;
-        lns.forEach(l => l.classList.remove('active', 'done-t', 'done-f'));
+        lns.forEach(l => l.classList.remove('active-hl', 'done-t', 'done-f'));
         [vAge, vVip, vPrice].forEach(v => v.textContent = '—');
         cons.textContent = '-- 選擇角色後逐步執行 --';
         stepBtn.disabled = false;
@@ -1038,33 +922,32 @@
           curAge = parseInt(card.dataset.age); curVip = card.dataset.vip === 'true';
           charLoaded = true;
           document.querySelectorAll('.cc').forEach(c => c.classList.remove('active')); card.classList.add('active');
-          // fill code labels
-          lns[0].textContent = `age = ${curAge}`;
-          lns[1].textContent = `is_vip = ${curVip}`;
+          lns[0].innerHTML = `age <span class="op">=</span> <span class="num">${curAge}</span>`;
+          lns[1].innerHTML = `is_vip <span class="op">=</span> <span class="kw">${curVip ? 'True' : 'False'}</span>`;
           cons.textContent = `角色已載入：age=${curAge}, VIP=${curVip}\n點擊「下一步」開始追蹤！`;
         };
       });
 
       const steps = [
-        async () => { hlLine(0, 'active'); setVar(vAge, curAge); cons.textContent = `age = ${curAge}`; },
-        async () => { hlLine(1, 'active'); setVar(vVip, curVip); cons.textContent += `\nis_vip = ${curVip}`; },
-        async () => { hlLine(3, 'active'); const r = curAge <= 12; cons.textContent += `\nif age(${curAge}) <= 12 → ${r ? 'True ✅' : 'False ❌'}`; hlLine(3, r ? 'done-t' : 'done-f'); },
+        async () => { hlLine(0, 'active-hl'); setVar(vAge, curAge); cons.textContent = `▶ age = ${curAge}`; },
+        async () => { hlLine(1, 'active-hl'); setVar(vVip, curVip ? 'True' : 'False'); cons.textContent += `\n▶ is_vip = ${curVip ? 'True' : 'False'}`; },
+        async () => { hlLine(3, 'active-hl'); const r = curAge <= 12; cons.innerHTML += `\nif age(${curAge}) <= 12 → <span style="color:${r?'#16a34a':'#dc2626'};font-weight:bold;">${r ? 'True ✅' : 'False ❌'}</span>`; hlLine(3, r ? 'done-t' : 'done-f'); },
         async () => {
           const r = curAge <= 12;
           if (r) { curPrice = 250; hlLine(4, 'done-t'); setVar(vPrice, 250); cons.textContent += `\n  price = 250`; }
-          else { hlLine(5, 'active'); await delay(300); hlLine(6, 'done-t'); curPrice = 500; setVar(vPrice, 500); cons.textContent += `\n  price = 500 (else)`; }
+          else { hlLine(5, 'active-hl'); await delay(400); hlLine(6, 'done-t'); curPrice = 500; setVar(vPrice, 500); cons.textContent += `\n  price = 500 (else)`; }
         },
-        async () => { hlLine(8, 'active'); const r = curVip; cons.textContent += `\nif is_vip(${curVip}) → ${r ? 'True ✅' : 'False ❌'}`; hlLine(8, r ? 'done-t' : 'done-f'); },
+        async () => { hlLine(8, 'active-hl'); const r = curVip; cons.innerHTML += `\nif is_vip(${curVip}) → <span style="color:${r?'#16a34a':'#dc2626'};font-weight:bold;">${r ? 'True ✅' : 'False ❌'}</span>`; hlLine(8, r ? 'done-t' : 'done-f'); },
         async () => {
           if (curVip) { curPrice = Math.round(curPrice * 0.8); hlLine(9, 'done-t'); setVar(vPrice, curPrice); cons.textContent += `\n  price × 0.8 = ${curPrice} (VIP折扣)`; }
-          else { cons.textContent += `\n  ⤵ 無VIP折扣，跳過`; hlLine(9, 'done-f'); }
+          else { cons.textContent += `\n  ⤵ 條件不成立，無 VIP 折扣`; hlLine(9, 'done-f'); }
         },
-        async () => { hlLine(11, 'active'); cons.textContent += `\n🎫 最終票價：$${curPrice}`; stepBtn.disabled = true; }
+        async () => { hlLine(11, 'active-hl'); cons.innerHTML += `\n🎫 <span style="color:#2563eb;font-weight:bold;">最終票價：$${curPrice}</span>`; stepBtn.disabled = true; }
       ];
 
       stepBtn.onclick = async () => {
         if (busy || stepIdx >= steps.length) return;
-        if (!charLoaded) { cons.textContent = '⚠️ 請先選擇一個角色！'; return; }
+        if (!charLoaded) { cons.innerHTML = '<span style="color:#dc2626;font-weight:bold;">⚠️ 請先點擊上方卡片選擇一個角色！</span>'; return; }
         busy = true; await steps[stepIdx](); stepIdx++; busy = false;
       };
       resetBtn.onclick = reset7;

@@ -5,47 +5,72 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>C++ 凱撒密碼加解密 — 互動教學</title>
-    <!-- 保留的資源連結 -->
+    
     <link rel="stylesheet" href="../../theme.css" />
     <script src="../../layout.js" defer></script>
     <style>
+        /* ── 本頁專用的元件與互動樣式 (淺色化) ── */
+        :root {
+            --surface: #f1f5f9;
+            --code-bg: #f8fafc;
+            --accent2: #0284c7;
+            --accent-purple: #8b5cf6;
+            --green: #10b981;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+        }
+
         body {
             padding: 0;
             margin: 0;
+            padding-top: 40px; 
+            padding-bottom: 60px;
         }
 
         .container {
-            padding-top: 80px;
-            padding-bottom: 60px;
             max-width: 1000px;
             margin: 0 auto;
             padding-left: 20px;
             padding-right: 20px;
         }
 
+        .page-hero { text-align: center; margin-bottom: 40px; }
+        .page-hero h1 { font-size: 2.2rem; font-weight: 800; background: linear-gradient(90deg, #0366d6, #28a745, #005cc5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; }
+        .page-hero p { color: var(--text-muted); font-size: 1rem; margin:0;}
+
         .section-title {
+            color: var(--text-main); 
+            border-bottom: 2px solid var(--accent-color); 
+            display: inline-flex; 
+            align-items: center;
+            padding-bottom: 5px; 
+            margin-top: 0;
             margin-bottom: 1.2rem;
-            color: var(--text-primary, #cdd6f4);
+            font-size: 1.5rem;
+            font-weight: bold;
         }
 
         .tag {
             display: inline-block;
-            padding: 1px 7px;
+            padding: 2px 8px;
             border-radius: 5px;
             font-size: .78rem;
             font-weight: 700;
-            margin-left: .4rem;
-            background: rgba(124, 156, 252, .18);
-            color: var(--accent, #7c9cfc);
+            margin-left: .6rem;
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+            vertical-align: middle;
         }
 
         .card {
-            background: var(--bg-primary, #11111b);
+            background: #ffffff;
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            border: 1px solid #333;
-            color: var(--text-primary, #cdd6f4);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         /* Buttons */
@@ -56,28 +81,32 @@
             cursor: pointer;
             font-weight: 600;
             font-size: .88rem;
-            background: var(--accent, #7c9cfc);
-            color: #1e1e2e;
+            background: var(--accent-color);
+            color: #ffffff;
             transition: opacity .2s, transform .1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .btn:active {
             transform: scale(.96);
+            box-shadow: none;
         }
 
         .btn:hover {
-            opacity: .88;
+            filter: brightness(1.1);
         }
 
         .btn:disabled {
             opacity: .4;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
-        .btn.green { background: #a6e3a1; }
-        .btn.red { background: #f38ba8; }
-        .btn.yellow { background: #f9e2af; }
-        .btn.teal { background: #89dceb; }
+        .btn.green { background: var(--green); }
+        .btn.red { background: var(--red); }
+        .btn.yellow { background: var(--yellow); color: #fff; }
+        .btn.teal { background: var(--accent2); }
 
         .ctrl {
             display: flex;
@@ -92,13 +121,15 @@
             margin-top: 1rem;
             padding: .7rem 1rem;
             border-radius: 10px;
-            background: var(--bg-secondary, #1e1e2e);
-            border-left: 4px solid var(--accent, #7c9cfc);
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-color);
             font-family: monospace;
             font-size: .92rem;
             white-space: pre-wrap;
             min-height: 2.5rem;
-            color: var(--text-primary, #cdd6f4);
+            color: var(--text-main);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         /* ── MOD 1: Alphabet Slider ── */
@@ -106,11 +137,12 @@
             display: flex;
             overflow: hidden;
             position: relative;
-            border: 2px solid var(--border-color, #333);
+            border: 1px solid var(--border-color);
             border-radius: 10px;
-            background: var(--bg-secondary, #1e1e2e);
+            background: #ffffff;
             padding: .3rem 0;
             overflow-x: auto;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .alpha-track {
@@ -128,95 +160,102 @@
             font-family: monospace;
             font-weight: bold;
             font-size: 1rem;
-            border-right: 1px solid #333;
-            color: var(--text-primary, #cdd6f4);
+            border-right: 1px solid var(--border-color);
+            color: var(--text-main);
             flex-shrink: 0;
         }
 
-        .alpha-cell.active { background: rgba(124, 156, 252, .3); color: #7c9cfc; }
-        .alpha-cell.matched { background: rgba(166, 227, 161, .25); color: #a6e3a1; }
+        .alpha-cell.active { background: #e0f2fe; color: #0369a1; }
+        .alpha-cell.matched { background: #dcfce7; color: #15803d; }
 
-        .alpha-label { font-size: .75rem; color: #888; margin-bottom: .3rem; font-family: monospace; }
+        .alpha-label { font-size: .8rem; color: var(--text-muted); margin-bottom: .3rem; font-weight: bold; }
         .alpha-frame {
-            position: absolute; top: 0; width: 36px; height: 100%; border: 3px solid #f9e2af; box-sizing: border-box; pointer-events: none; border-radius: 4px; left: 0;
+            position: absolute; top: 0; width: 36px; height: 100%; border: 3px solid var(--accent-color); box-sizing: border-box; pointer-events: none; border-radius: 4px; left: 0; box-shadow: 0 0 5px rgba(3,102,214,0.4);
         }
 
-        input[type=range] { flex: 1; accent-color: var(--accent, #7c9cfc); }
-        .key-display { font-family: monospace; font-size: 1.1rem; font-weight: bold; color: #f9e2af; min-width: 30px; text-align: center; }
+        input[type=range] { flex: 1; accent-color: var(--accent-color); cursor: pointer; }
+        .key-display { font-family: monospace; font-size: 1.1rem; font-weight: bold; color: var(--accent-color); min-width: 30px; text-align: center; }
 
         /* ── MOD 2: ASCII Bug Bar ── */
-        .ascii-bar { display: flex; gap: 2px; flex-wrap: nowrap; overflow-x: auto; padding: .5rem 0; }
+        .ascii-bar { display: flex; gap: 4px; flex-wrap: nowrap; overflow-x: auto; padding: .5rem 0; }
         .ascii-item { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
-        .ascii-box { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 2px solid #444; border-radius: 6px; font-family: monospace; font-size: .8rem; font-weight: bold; color: var(--text-primary, #cdd6f4); transition: all .3s; }
-        .ascii-box.alpha-zone { border-color: #7c9cfc; background: rgba(124, 156, 252, .1); }
-        .ascii-box.danger-zone { border-color: #f38ba8; background: rgba(243, 139, 168, .15); color: #f38ba8; }
-        .ascii-box.cursor-pos { border-color: #f9e2af; background: #f9e2af; color: #1e1e2e; transform: scale(1.2); z-index: 2; }
-        .ascii-lbl { font-size: .65rem; color: #666; font-family: monospace; }
-        .warn-badge { margin-top: .8rem; padding: .5rem 1rem; border-radius: 8px; background: rgba(243, 139, 168, .15); border: 2px solid #f38ba8; color: #f38ba8; font-family: monospace; font-size: .9rem; display: none; }
+        .ascii-box { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: #ffffff; border-radius: 6px; font-family: monospace; font-size: .9rem; font-weight: bold; color: var(--text-main); transition: all .3s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
+        .ascii-box.alpha-zone { border-color: var(--accent2); background: #e0f2fe; color: #0369a1; }
+        .ascii-box.danger-zone { border-color: var(--red); background: #fee2e2; color: #b91c1c; }
+        .ascii-box.cursor-pos { border-color: var(--yellow); background: var(--yellow); color: #fff; transform: scale(1.2); z-index: 2; box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);}
+        .ascii-lbl { font-size: .7rem; color: var(--text-muted); font-family: monospace; font-weight: bold; }
+        .warn-badge { margin-top: .8rem; padding: .8rem 1rem; border-radius: 8px; background: #fef2f2; border: 2px solid #fca5a5; color: #b91c1c; font-family: monospace; font-size: .95rem; display: none; font-weight: bold; }
 
         /* ── MOD 3: Step Animation ── */
-        .step-stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; margin-top: 1rem; }
+        .step-stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; margin-top: 1rem; }
         @media(max-width:640px) { .step-stages { grid-template-columns: 1fr 1fr; } }
-        .stage-box { border: 2px solid #444; border-radius: 10px; padding: .8rem .6rem; text-align: center; transition: all .4s; opacity: .35; font-family: monospace; }
-        .stage-box.active { opacity: 1; border-color: #f9e2af; background: rgba(249, 226, 175, .1); }
-        .stage-box.done { opacity: 1; border-color: #a6e3a1; background: rgba(166, 227, 161, .1); }
-        .stage-num { font-size: 1.4rem; font-weight: bold; color: #f9e2af; }
-        .stage-title { font-size: .72rem; color: #888; margin: .2rem 0; }
-        .stage-formula { font-size: .78rem; color: #cdd6f4; margin: .3rem 0; }
-        .mod3-circle { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #444; display: flex; align-items: center; justify-content: center; margin: 0 auto .5rem; font-family: monospace; font-size: 1.2rem; font-weight: bold; transition: all .5s; }
+        .stage-box { border: 1px solid var(--border-color); background: #ffffff; border-radius: 10px; padding: .8rem .6rem; text-align: center; transition: all .4s; opacity: .4; font-family: monospace; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .stage-box.active { opacity: 1; border-color: var(--accent2); background: #e0f2fe; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(3,105,161,0.1);}
+        .stage-box.done { opacity: 1; border-color: var(--green); background: #dcfce7; }
+        .stage-title { font-size: .8rem; color: var(--text-muted); margin: .4rem 0; font-weight: bold; }
+        .stage-formula { font-size: .85rem; color: var(--text-main); margin: .3rem 0; font-weight: bold; }
+        .mod3-circle { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--border-color); background: #ffffff; display: flex; align-items: center; justify-content: center; margin: 0 auto .5rem; font-family: monospace; font-size: 1.4rem; font-weight: bold; transition: all .5s; color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
 
         /* ── MOD 4: Conveyor ── */
-        .conveyor-wrap { position: relative; overflow: hidden; border: 2px solid #444; border-radius: 10px; background: var(--bg-secondary, #1e1e2e); padding: 1rem; }
-        .conveyor-belt { display: flex; gap: .6rem; align-items: center; min-height: 80px; flex-wrap: wrap; }
-        .char-token { width: 54px; height: 64px; border: 2px solid #444; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; transition: all .4s; position: relative; font-size: 1.1rem; }
-        .char-token.scanning { border-color: #f9e2af; background: rgba(249, 226, 175, .15); }
-        .char-token.upper-ch { border-color: #7c9cfc; background: rgba(124, 156, 252, .2); color: #7c9cfc; }
-        .char-token.lower-ch { border-color: #a6e3a1; background: rgba(166, 227, 161, .2); color: #a6e3a1; }
-        .char-token.pass-ch { border-color: #89dceb; background: rgba(137, 220, 235, .1); color: #89dceb; }
-        .char-route { font-size: .65rem; margin-top: .3rem; color: #888; }
+        .conveyor-wrap { position: relative; overflow: hidden; border: 1px solid var(--border-color); border-radius: 10px; background: var(--surface); padding: 1rem; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);}
+        .conveyor-belt { display: flex; gap: .8rem; align-items: center; min-height: 80px; flex-wrap: wrap; }
+        .char-token { width: 54px; height: 64px; border: 1px solid var(--border-color); background: #ffffff; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; transition: all .4s; position: relative; font-size: 1.2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: var(--text-main); }
+        .char-token.scanning { border-color: var(--yellow); background: #fef3c7; color: #b45309; transform: scale(1.05); }
+        .char-token.upper-ch { border-color: var(--accent2); background: #e0f2fe; color: #0369a1; }
+        .char-token.lower-ch { border-color: var(--green); background: #dcfce7; color: #15803d; }
+        .char-token.pass-ch { border-color: #cbd5e1; background: #f8fafc; color: var(--text-muted); }
+        .char-route { font-size: .65rem; margin-top: .4rem; color: var(--text-muted); font-weight: normal; }
 
         /* ── MOD 5: String Iteration ── */
-        .iter-wrap { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: start; margin-top: .8rem; }
+        .iter-wrap { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1.5rem; align-items: start; margin-top: .8rem; }
         @media(max-width:640px) { .iter-wrap { grid-template-columns: 1fr; } .iter-arrow { transform: rotate(90deg); padding: 0.5rem 0; } }
-        .iter-chars, .cipher-cells { display: flex; gap: 4px; flex-wrap: wrap; }
-        .iter-cell { width: 40px; height: 48px; border: 2px solid #444; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; transition: all .3s; font-size: 1rem; gap: 2px; }
-        .iter-cell .ch { font-size: 1rem; }
-        .iter-cell .idx { font-size: .65rem; color: #666; }
-        .iter-cell.scanning { border-color: #f9e2af; background: rgba(249, 226, 175, .15); }
-        .iter-cell.done { border-color: #7c9cfc; background: rgba(124, 156, 252, .15); }
-        .iter-arrow { display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #888; padding-top: 1rem; }
-        .cipher-cells { min-height: 52px; }
-        .cipher-cell { width: 40px; height: 48px; border: 2px solid #a6e3a1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #a6e3a1; font-size: 1rem; animation: popIn .3s ease; }
+        .iter-chars, .cipher-cells { display: flex; gap: 6px; flex-wrap: wrap; }
+        .iter-cell { width: 44px; height: 54px; border: 1px solid var(--border-color); background: #ffffff; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; transition: all .3s; font-size: 1.1rem; gap: 2px; color: var(--text-main); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .iter-cell .ch { font-size: 1.1rem; }
+        .iter-cell .idx { font-size: .7rem; color: var(--text-muted); font-weight: normal; }
+        .iter-cell.scanning { border-color: var(--yellow); background: #fef3c7; color: #b45309; transform: translateY(-3px); }
+        .iter-cell.done { border-color: var(--accent2); background: #e0f2fe; }
+        .iter-arrow { display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--text-muted); padding-top: 1.2rem; }
+        .cipher-cells { min-height: 56px; }
+        .cipher-cell { width: 44px; height: 54px; border: 2px solid var(--green); background: #dcfce7; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #15803d; font-size: 1.2rem; animation: popIn .3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
 
         /* ── MOD 6: Clock ── */
         .clock-wrap { display: flex; gap: 2rem; flex-wrap: wrap; align-items: center; justify-content: center; margin-top: 1rem; }
         .clock-svg-wrap { position: relative; width: 180px; height: 180px; }
-        .clock-label { text-align: center; font-family: monospace; font-size: .9rem; margin-top: .5rem; }
-        .clock-info { font-size: .9rem; line-height: 1.8; font-family: monospace; color: var(--text-primary, #cdd6f4); }
+        .clock-label { text-align: center; font-family: monospace; font-size: .95rem; margin-top: .8rem; font-weight: bold; }
+        .clock-info { font-size: .95rem; line-height: 1.8; font-family: monospace; color: var(--text-main); font-weight: bold; }
 
         /* ── MOD 7: Dual Column & Code ── */
         .dual-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         @media(max-width:720px) { .dual-col { grid-template-columns: 1fr; } }
-        .sim-label { font-size: .85rem; color: #888; margin-bottom: .3rem; }
-        .sim-input { width: 100%; box-sizing: border-box; padding: .5rem .8rem; border-radius: 8px; border: 2px solid var(--border-color, #333); background: var(--bg-secondary, #1e1e2e); color: var(--text-primary, #cdd6f4); font-family: monospace; font-size: .95rem; }
-        .sim-input:focus { outline: none; border-color: var(--accent, #7c9cfc); }
-        .console-out { background: #0d0d16; border-radius: 10px; padding: 1rem; font-family: monospace; font-size: .88rem; white-space: pre-wrap; color: #a6e3a1; min-height: 60px; margin-top: .8rem; border: 2px solid #333; }
-        .code-panel { position: relative; border-radius: 10px; overflow: hidden; }
-        .code-panel pre { margin: 0; padding: 1rem; background: #0d0d16; color: #cdd6f4; font-family: monospace; font-size: .8rem; white-space: pre-wrap; line-height: 1.6; overflow-x: auto; border: 2px solid #333; border-radius: 10px; }
-        .copy-btn { position: absolute; top: 8px; right: 8px; padding: .25rem .65rem; border-radius: 6px; border: 1px solid #444; background: #1a1a2e; color: #cdd6f4; font-size: .75rem; cursor: pointer; transition: all .2s; z-index: 2; }
-        .copy-btn:hover { background: #7c9cfc; color: #1e1e2e; border-color: #7c9cfc; }
-        .inc { color: #f38ba8; } .str { color: #a6e3a1; } .kw { color: #cba6f7; } .fn { color: #89dceb; } .num { color: #fab387; } .cmt { color: #585b70; font-style: italic; }
+        .sim-label { font-size: .9rem; color: var(--text-main); margin-bottom: .4rem; font-weight: bold; }
+        .sim-input { width: 100%; box-sizing: border-box; padding: .6rem .8rem; border-radius: 8px; border: 1px solid var(--border-color); background: #ffffff; color: var(--text-main); font-family: monospace; font-size: .95rem; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+        .sim-input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(3,102,214,0.2); }
+        /* 終端機維持深色，較有真實感 */
+        .console-out { background: #1e293b; border-radius: 10px; padding: 1rem; font-family: monospace; font-size: .9rem; white-space: pre-wrap; color: #34d399; min-height: 60px; margin-top: .8rem; border: 2px solid #3b82f6; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: bold; }
+        .code-panel { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: inset 0 1px 3px rgba(0,0,0,0.03); }
+        .code-panel pre { margin: 0; padding: 1rem; background: var(--code-bg); color: var(--text-main); font-family: monospace; font-size: .85rem; white-space: pre-wrap; line-height: 1.6; overflow-x: auto; }
+        .copy-btn { position: absolute; top: 8px; right: 8px; padding: .35rem .75rem; border-radius: 6px; border: 1px solid var(--border-color); background: #ffffff; color: var(--text-main); font-size: .75rem; cursor: pointer; transition: all .2s; z-index: 2; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .copy-btn:hover { background: var(--surface); color: var(--accent-color); border-color: var(--accent-color); }
+        
+        /* 淺色版型 Code Highlight */
+        .inc { color: #d73a49; } .str { color: #032f62; } .kw { color: #d73a49; font-weight: bold; } .fn { color: #6f42c1; } .num { color: #005cc5; } .cmt { color: #6a737d; font-style: italic; }
 
-        /* ── MOD 8: Brute Force (新增) ── */
-        .brute-force-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 1rem; max-height: 250px; overflow-y: auto; padding: 0.5rem; background: var(--bg-secondary, #1e1e2e); border: 2px solid #444; border-radius: 8px; }
-        .bf-item { padding: 0.5rem; border: 1px solid #555; border-radius: 6px; font-family: monospace; font-size: 0.85rem; background: #181825; color: #cdd6f4; }
-        .bf-item.highlight { border-color: #f38ba8; background: rgba(243, 139, 168, 0.1); color: #f38ba8; font-weight: bold; }
+        /* ── MOD 8: Brute Force ── */
+        .brute-force-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.6rem; margin-top: 1rem; max-height: 250px; overflow-y: auto; padding: 0.8rem; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+        .bf-item { padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 0.85rem; background: #ffffff; color: var(--text-main); box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .bf-item.highlight { border-color: var(--green); background: #dcfce7; color: #15803d; font-weight: bold; box-shadow: 0 2px 5px rgba(21,128,61,0.15); }
     </style>
 </head>
 
 <body>
     <div class="container">
+
+        <div class="page-hero">
+            <h1>🛡️ C++ 凱撒密碼加解密 — 互動教學</h1>
+            <p>從 ASCII 基礎到演算法實作，透過互動動畫徹底搞懂經典加密法與 C++ 字元操作。</p>
+        </div>
 
         <!-- ════════════════ MOD 1 ════════════════ -->
         <section id="mod1">
@@ -224,7 +263,7 @@
             <div class="card">
                 <p>凱撒密碼是最古老的加密術之一：把字母表整體「位移」一個固定量 <strong>Key</strong>。<br>拖曳下方拉桿，觀察密碼表的對應關係。</p>
                 <div class="alpha-label">明文字母（固定）</div>
-                <div class="alpha-row" id="m1-plain-row" style="margin-bottom:.5rem;">
+                <div class="alpha-row" id="m1-plain-row" style="margin-bottom:.8rem;">
                     <div class="alpha-track" id="m1-plain-track"></div>
                     <div class="alpha-frame"></div>
                 </div>
@@ -232,12 +271,12 @@
                 <div class="alpha-row" id="m1-cipher-row">
                     <div class="alpha-track" id="m1-cipher-track"></div>
                 </div>
-                <div class="ctrl" style="margin-top:1rem;">
-                    <span style="font-family:monospace;font-size:.9rem;color:#888;">Key =</span>
+                <div class="ctrl" style="margin-top:1.5rem;">
+                    <span style="font-family:monospace;font-size:.95rem;color:var(--text-muted);font-weight:bold;">Key =</span>
                     <span class="key-display" id="m1-key-val">3</span>
                     <input type="range" id="m1-slider" min="0" max="25" value="3" />
                 </div>
-                <div class="result-box" id="m1-result">試試不同 Key 值，A → D (Key=3) 表示凱撒常用的位移 3。</div>
+                <div class="result-box" id="m1-result" style="color:var(--text-muted); font-style:italic;">試試不同 Key 值，A → D (Key=3) 表示凱撒常用的位移 3。</div>
             </div>
         </section>
 
@@ -247,7 +286,7 @@
             <div class="card">
                 <p>如果只是 <code>'Z' + 3</code>，ASCII 值 90 + 3 = <strong>93</strong>，對應的是 <code>']'</code> 符號，不是字母！</p>
                 <div class="ascii-bar" id="m2-ascii-bar"></div>
-                <div class="ctrl">
+                <div class="ctrl" style="margin-top: 1.5rem;">
                     <button class="btn red" id="m2-btn-run">🚨 'Z' + 3 → 結果是？</button>
                     <button class="btn yellow" id="m2-btn-reset">↺ 重置</button>
                 </div>
@@ -262,7 +301,7 @@
                 <p>公式：<code>(c - 'A' + key) % 26 + 'A'</code><br>以 <strong>'Y' (89) + key 3</strong> 為例，逐步拆解。</p>
                 <div class="step-stages" id="m3-stages">
                     <div class="stage-box" id="m3-s0">
-                        <div class="mod3-circle" id="m3-c0" style="border-color:#7c9cfc;color:#7c9cfc;">Y</div>
+                        <div class="mod3-circle" id="m3-c0" style="border-color:var(--accent2);color:var(--accent2);">Y<br><span style="font-size:0.7rem">89</span></div>
                         <div class="stage-title">起始值</div>
                         <div class="stage-formula">'Y' = 89</div>
                     </div>
@@ -282,8 +321,8 @@
                         <div class="stage-formula">27 % 26 = 1 🔄</div>
                     </div>
                 </div>
-                <div class="result-box" id="m3-result" style="display:none;"></div>
-                <div class="ctrl">
+                <div class="result-box" id="m3-result" style="display:none; font-weight:bold;"></div>
+                <div class="ctrl" style="margin-top: 1.5rem;">
                     <button class="btn" id="m3-btn-play">▶ 逐步演示</button>
                     <button class="btn yellow" id="m3-btn-reset">↺ 重置</button>
                 </div>
@@ -296,11 +335,11 @@
             <div class="card">
                 <p>使用 <code>&lt;cctype&gt;</code> 的函式進行分揀：<code>isupper()</code>、<code>islower()</code>、<code>isalpha()</code>。</p>
                 <div class="conveyor-wrap">
-                    <div style="font-size:.8rem;color:#888;margin-bottom:.5rem;">▶ 字元分揀輸送帶 — 字串 "Hi, C++"</div>
+                    <div style="font-size:.85rem;color:var(--text-muted);font-weight:bold;margin-bottom:.8rem;">▶ 字元分揀輸送帶 — 字串 "Hi, C++"</div>
                     <div class="conveyor-belt" id="m4-belt"></div>
                 </div>
-                <div class="result-box" id="m4-log" style="min-height:60px;">按下執行後，字元將依序通過分揀器。</div>
-                <div class="ctrl">
+                <div class="result-box" id="m4-log" style="min-height:60px; color:var(--text-muted); font-style:italic;">按下執行後，字元將依序通過分揀器。</div>
+                <div class="ctrl" style="margin-top: 1.5rem;">
                     <button class="btn" id="m4-btn-run">▶ 開始分揀</button>
                     <button class="btn yellow" id="m4-btn-reset">↺ 重置</button>
                 </div>
@@ -323,8 +362,8 @@
                         <div class="cipher-cells" id="m5-cipher"></div>
                     </div>
                 </div>
-                <div class="result-box" id="m5-log" style="min-height:50px;">Key = 3 ｜ C→F, a→d, t→w</div>
-                <div class="ctrl">
+                <div class="result-box" id="m5-log" style="min-height:50px; font-weight:bold;">Key = 3 ｜ C→F, a→d, t→w</div>
+                <div class="ctrl" style="margin-top: 1.5rem;">
                     <button class="btn" id="m5-btn-run">▶ 開始走訪加密</button>
                     <button class="btn yellow" id="m5-btn-reset">↺ 重置</button>
                 </div>
@@ -339,35 +378,35 @@
                 <div class="clock-wrap">
                     <div>
                         <svg id="m6-clock-a" width="180" height="180" viewBox="0 0 180 180"></svg>
-                        <div class="clock-label" style="color:#f38ba8;">❌ 直接 -3（逆時針）</div>
+                        <div class="clock-label" style="color:var(--red);">❌ 直接 -3（逆時針）</div>
                     </div>
-                    <div style="font-size:2rem;color:#888;align-self:center;">=</div>
+                    <div style="font-size:2rem;color:var(--text-muted);align-self:center;font-weight:bold;">=</div>
                     <div>
                         <svg id="m6-clock-b" width="180" height="180" viewBox="0 0 180 180"></svg>
-                        <div class="clock-label" style="color:#a6e3a1;">✅ +23（順時針）</div>
+                        <div class="clock-label" style="color:var(--green);">✅ +23（順時針）</div>
                     </div>
                 </div>
-                <div class="clock-info" id="m6-info" style="text-align:center;margin-top:.8rem;color:#888;">點擊按鈕查看動畫</div>
-                <div class="ctrl" style="justify-content:center;">
+                <div class="clock-info" id="m6-info" style="text-align:center;margin-top:1.5rem;color:var(--text-muted);">點擊按鈕查看動畫</div>
+                <div class="ctrl" style="justify-content:center; margin-top: 1.5rem;">
                     <button class="btn" id="m6-btn-run">🕐 播放時鐘動畫</button>
                     <button class="btn yellow" id="m6-btn-reset">↺ 重置</button>
                 </div>
             </div>
         </section>
 
-        <!-- ════════════════ MOD 8 (新增): 暴力破解 ════════════════ -->
+        <!-- ════════════════ MOD 8 ════════════════ -->
         <section id="mod8">
             <h2 class="section-title">⑦ 為什麼現在不用凱撒密碼？<span class="tag">暴力破解 (Brute Force)</span></h2>
             <div class="card">
                 <p>凱撒密碼的致命傷在於 <strong>金鑰空間（Key Space）太小</strong>。英文只有 26 個字母，扣除不位移的 0，只有 25 種可能。攻擊者只需嘗試這 25 種結果，就能靠肉眼找出一句合理的英文！</p>
                 <div class="sim-label">輸入攔截到的密文：</div>
                 <input class="sim-input" id="m8-text" value="Khoor, Zruog!" placeholder="輸入密文…" />
-                <div class="ctrl" style="margin-top:.6rem;">
+                <div class="ctrl" style="margin-top:.8rem;">
                     <button class="btn red" id="m8-btn-run">🗡️ 執行暴力破解</button>
                 </div>
                 <div class="brute-force-grid" id="m8-grid">
                     <!-- 破解結果會動態顯示於此 -->
-                    <div style="color:#888; padding:0.5rem; font-size:0.85rem;">點擊上方按鈕開始窮舉 1~25 種金鑰...</div>
+                    <div style="color:var(--text-muted); padding:0.5rem; font-size:0.9rem; font-weight:bold;">點擊上方按鈕開始窮舉 1~25 種金鑰...</div>
                 </div>
             </div>
         </section>
@@ -381,16 +420,16 @@
                     <div>
                         <div class="sim-label">輸入明文 / 密文</div>
                         <input class="sim-input" id="m7-text" value="Hello, World!" placeholder="輸入文字…" />
-                        <div class="ctrl" style="margin-top:.6rem;">
-                            <span style="font-family:monospace;font-size:.9rem;color:#888;">Key =</span>
+                        <div class="ctrl" style="margin-top:1rem;">
+                            <span style="font-family:monospace;font-size:.95rem;color:var(--text-main);font-weight:bold;">Key =</span>
                             <span class="key-display" id="m7-key-val">3</span>
-                            <input type="range" id="m7-slider" min="1" max="25" value="3" style="flex:1;accent-color:var(--accent,#7c9cfc);" />
+                            <input type="range" id="m7-slider" min="1" max="25" value="3" style="flex:1;accent-color:var(--accent-color);" />
                         </div>
-                        <div class="ctrl">
+                        <div class="ctrl" style="margin-top:1.5rem;">
                             <button class="btn" id="m7-btn-enc">🔐 執行加密</button>
                             <button class="btn teal" id="m7-btn-dec">🔓 執行解密</button>
                         </div>
-                        <div class="sim-label" style="margin-top:.8rem;">Console 輸出</div>
+                        <div class="sim-label" style="margin-top:1.5rem;">Console 輸出</div>
                         <div class="console-out" id="m7-console">// 結果會顯示在這裡…</div>
                     </div>
                     <!-- Right: Code -->
@@ -476,7 +515,9 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 buildRow(plainTrack, ALPHA, 'active');
                 const rotated = ALPHA.slice(k) + ALPHA.slice(0, k);
                 buildRow(cipherTrack, rotated, 'matched');
-                result.textContent = `Key = ${k} ｜ 'A' → '${rotated[0]}' ｜ 'Z' → '${rotated[25]}'\n明文 ${ALPHA[0]}${ALPHA[1]}${ALPHA[2]}…${ALPHA[25]} 對應密文 ${rotated[0]}${rotated[1]}${rotated[2]}…${rotated[25]}`;
+                result.innerHTML = `<strong>Key = ${k}</strong> ｜ 'A' → '${rotated[0]}' ｜ 'Z' → '${rotated[25]}'<br>明文 <span style="font-family:monospace">${ALPHA[0]}${ALPHA[1]}${ALPHA[2]}…${ALPHA[25]}</span> 對應密文 <span style="font-family:monospace">${rotated[0]}${rotated[1]}${rotated[2]}…${rotated[25]}</span>`;
+                result.style.color = 'var(--text-main)';
+                result.style.fontStyle = 'normal';
             }
 
             slider.addEventListener('input', update);
@@ -533,25 +574,23 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
 
         /* ══ MOD 3: Step Animation ══ */
         (function () {
-            const stages = [
-                { id: 'm3-s0', cid: 'm3-c0', color: '#7c9cfc', val: 'Y\n89' },
-                { id: 'm3-s1', cid: 'm3-c1', color: '#89dceb', val: '24' },
-                { id: 'm3-s2', cid: 'm3-c2', color: '#f9e2af', val: '27' },
-                { id: 'm3-s3', cid: 'm3-c3', color: '#cba6f7', val: '1 🔄' },
-            ];
             const result = document.getElementById('m3-result');
             let running = false;
 
             function reset() {
                 running = false;
-                stages.forEach(s => {
-                    const box = document.getElementById(s.id);
-                    box.className = 'stage-box';
-                    const circ = document.getElementById(s.cid);
-                    circ.style.borderColor = '#444';
-                    circ.style.color = '#cdd6f4';
-                    circ.style.background = 'transparent';
-                });
+                const s0 = document.getElementById('m3-s0'); const c0 = document.getElementById('m3-c0');
+                s0.className = 'stage-box'; c0.style.borderColor = 'var(--border-color)'; c0.style.color = 'var(--text-main)'; c0.style.background = 'transparent'; c0.innerHTML = 'Y<br><span style="font-size:0.7rem">89</span>';
+                
+                const s1 = document.getElementById('m3-s1'); const c1 = document.getElementById('m3-c1');
+                s1.className = 'stage-box'; c1.style.borderColor = 'var(--border-color)'; c1.style.color = 'var(--text-main)'; c1.style.background = 'transparent';
+                
+                const s2 = document.getElementById('m3-s2'); const c2 = document.getElementById('m3-c2');
+                s2.className = 'stage-box'; c2.style.borderColor = 'var(--border-color)'; c2.style.color = 'var(--text-main)'; c2.style.background = 'transparent';
+                
+                const s3 = document.getElementById('m3-s3'); const c3 = document.getElementById('m3-c3');
+                s3.className = 'stage-box'; c3.style.borderColor = 'var(--border-color)'; c3.style.color = 'var(--text-main)'; c3.style.background = 'transparent';
+                
                 result.style.display = 'none';
                 document.getElementById('m3-btn-play').disabled = false;
             }
@@ -566,14 +605,14 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 const s0 = document.getElementById('m3-s0');
                 const c0 = document.getElementById('m3-c0');
                 s0.className = 'stage-box active';
-                c0.style.borderColor = '#7c9cfc'; c0.style.color = '#7c9cfc';
+                c0.style.borderColor = 'var(--accent2)'; c0.style.color = 'var(--accent2)';
                 await delay(800);
                 s0.className = 'stage-box done';
 
                 const steps = [
-                    { i: 1, color: '#89dceb', bg: 'rgba(137,220,235,.15)' },
-                    { i: 2, color: '#f9e2af', bg: 'rgba(249,226,175,.15)' },
-                    { i: 3, color: '#cba6f7', bg: 'rgba(203,166,247,.15)' },
+                    { i: 1, color: 'var(--accent2)', bg: '#e0f2fe' },
+                    { i: 2, color: 'var(--yellow)', bg: '#fef3c7' },
+                    { i: 3, color: 'var(--accent-purple)', bg: '#f3e8ff' },
                 ];
                 for (const st of steps) {
                     const box = document.getElementById('m3-s' + st.i);
@@ -587,7 +626,7 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 }
 
                 result.style.display = 'block';
-                result.textContent = "① 89 - 65 = 24  (歸零到 0~25)\n② 24 + 3  = 27  (加上 Key)\n③ 27 % 26 = 1   (繞回字母表頭！)\n④  1 + 65 = 66  → 'B'\n\n∴ 'Y' 加密 Key=3 → 'B' ✅";
+                result.innerHTML = "① 89 - 65 = 24  (歸零到 0~25)<br>② 24 + 3  = 27  (加上 Key)<br>③ 27 % 26 = 1   (繞回字母表頭！)<br>④  1 + 65 = 66  → 'B'<br><br><strong style='color:var(--green); font-size:1.1rem;'>∴ 'Y' 加密 Key=3 → 'B' ✅</strong>";
                 running = false;
                 document.getElementById('m3-btn-play').disabled = false;
             }
@@ -607,6 +646,7 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 running = false;
                 belt.innerHTML = '';
                 log.textContent = '按下執行後，字元將依序通過分揀器。';
+                log.style.fontStyle = 'italic'; log.style.color = 'var(--text-muted)';
                 document.getElementById('m4-btn-run').disabled = false;
             }
 
@@ -623,6 +663,7 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 document.getElementById('m4-btn-run').disabled = true;
                 belt.innerHTML = '';
                 log.textContent = '';
+                log.style.fontStyle = 'normal'; log.style.color = 'var(--text-main)';
 
                 for (const ch of INPUT) {
                     const tok = makeToken(ch);
@@ -635,21 +676,21 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                         tok.classList.remove('scanning');
                         tok.classList.add('upper-ch');
                         route.textContent = 'isupper()✓';
-                        log.textContent += `'${ch}': isupper()=true → 大寫公式 (c-'A'+key)%26+'A'\n`;
+                        log.innerHTML += `<span style="color:var(--accent2); font-weight:bold;">'${ch}': isupper()=true</span> → 大寫公式 (c-'A'+key)%26+'A'\n`;
                     } else if (ch >= 'a' && ch <= 'z') {
                         tok.classList.remove('scanning');
                         tok.classList.add('lower-ch');
                         route.textContent = 'islower()✓';
-                        log.textContent += `'${ch}': islower()=true → 小寫公式 (c-'a'+key)%26+'a'\n`;
+                        log.innerHTML += `<span style="color:var(--green); font-weight:bold;">'${ch}': islower()=true</span> → 小寫公式 (c-'a'+key)%26+'a'\n`;
                     } else {
                         tok.classList.remove('scanning');
                         tok.classList.add('pass-ch');
                         route.textContent = 'isalpha()✗';
-                        log.textContent += `'${ch === ' ' ? '空白' : ch}': isalpha()=false → 原封不動放行\n`;
+                        log.innerHTML += `<span style="color:var(--text-muted); font-weight:bold;">'${ch === ' ' ? '空白' : ch}': isalpha()=false</span> → 原封不動放行\n`;
                     }
                     await delay(300);
                 }
-                log.textContent += '\n✅ 分揀完成！大寫/小寫/符號各走不同通道。';
+                log.innerHTML += '\n<strong style="color:var(--green);">✅ 分揀完成！大寫/小寫/符號各走不同通道。</strong>';
                 running = false;
                 document.getElementById('m4-btn-run').disabled = false;
             }
@@ -688,7 +729,7 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 running = false;
                 buildPlain();
                 cipherEl.innerHTML = '';
-                logEl.textContent = 'Key = 3 ｜ C→F, a→d, t→w';
+                logEl.innerHTML = 'Key = 3 ｜ C→F, a→d, t→w';
                 document.getElementById('m5-btn-run').disabled = false;
             }
 
@@ -714,10 +755,10 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                     cc.textContent = enc;
                     cipherEl.appendChild(cc);
 
-                    logEl.textContent += `i=${i}: '${ch}'(${ch.charCodeAt(0)}) → '${enc}'(${enc.charCodeAt(0)})\ncipher += '${enc}';\n`;
+                    logEl.innerHTML += `i=${i}: '${ch}'(${ch.charCodeAt(0)}) → <strong style="color:var(--green);">'${enc}'</strong>(${enc.charCodeAt(0)})\ncipher += <strong style="color:var(--green);">'${enc}'</strong>;\n`;
                     await delay(400);
                 }
-                logEl.textContent += `\n✅ cipher = "${PLAIN.split('').map(encChar).join('')}"`;
+                logEl.innerHTML += `\n<strong style="color:var(--green); font-size:1.1rem;">✅ cipher = "${PLAIN.split('').map(encChar).join('')}"</strong>`;
                 running = false;
                 document.getElementById('m5-btn-run').disabled = false;
             }
@@ -740,8 +781,8 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 const cx = 90, cy = 90, r = 72, innerR = 58;
                 const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 circle.setAttribute('cx', cx); circle.setAttribute('cy', cy);
-                circle.setAttribute('r', r); circle.setAttribute('fill', '#0d0d16');
-                circle.setAttribute('stroke', '#333'); circle.setAttribute('stroke-width', '2');
+                circle.setAttribute('r', r); circle.setAttribute('fill', '#ffffff');
+                circle.setAttribute('stroke', '#cbd5e1'); circle.setAttribute('stroke-width', '2');
                 svg.appendChild(circle);
 
                 const N = 26;
@@ -755,7 +796,7 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                     dot.setAttribute('cx', x.toFixed(1));
                     dot.setAttribute('cy', y.toFixed(1));
                     dot.setAttribute('r', isHighlight ? 8 : 4);
-                    dot.setAttribute('fill', isHighlight ? color : inTrail ? color + '66' : '#333');
+                    dot.setAttribute('fill', isHighlight ? color : inTrail ? color + '66' : '#cbd5e1');
                     svg.appendChild(dot);
                     if (i % 6 === 0 || isHighlight) {
                         const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -765,9 +806,10 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                         txt.setAttribute('y', ty.toFixed(1));
                         txt.setAttribute('text-anchor', 'middle');
                         txt.setAttribute('dominant-baseline', 'middle');
-                        txt.setAttribute('fill', isHighlight ? color : '#555');
+                        txt.setAttribute('fill', isHighlight ? color : '#64748b');
                         txt.setAttribute('font-size', '10');
                         txt.setAttribute('font-family', 'monospace');
+                        txt.setAttribute('font-weight', isHighlight ? 'bold' : 'normal');
                         txt.textContent = LETTERS[i];
                         svg.appendChild(txt);
                     }
@@ -776,9 +818,9 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
 
             function reset() {
                 running = false;
-                drawClock(svgA, 25, '#f38ba8', 0, null);
-                drawClock(svgB, 25, '#a6e3a1', 0, null);
-                info.style.color = '#888';
+                drawClock(svgA, 25, 'var(--red)', 0, null);
+                drawClock(svgB, 25, 'var(--green)', 0, null);
+                info.style.color = 'var(--text-muted)';
                 info.textContent = '點擊按鈕查看動畫';
                 document.getElementById('m6-btn-run').disabled = false;
             }
@@ -789,34 +831,34 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 document.getElementById('m6-btn-run').disabled = true;
 
                 info.textContent = "起始位置：Z (index 25)";
-                info.style.color = '#cdd6f4';
+                info.style.color = 'var(--text-main)';
                 await delay(600);
 
                 const trailA = [];
                 for (let step = 1; step <= 3; step++) {
                     const idx = (25 - step + 26) % 26;
                     trailA.push(idx);
-                    drawClock(svgA, idx, '#f38ba8', 0, [...trailA]);
+                    drawClock(svgA, idx, '#ef4444', 0, [...trailA]);
                     await delay(500);
                 }
                 info.textContent = "❌ 逆時針走 3 格：Z → W (index 22)\n   但 'Z'-'A' - 3 = 22，這裡沒問題…";
                 await delay(800);
                 info.textContent = "⚠️ 問題：'A'-3 時 → 0-3 = -3！C++ 的 -3%26 = -3 (非 23)！";
-                info.style.color = '#f38ba8';
+                info.style.color = 'var(--red)';
                 await delay(1200);
 
                 const trailB = [];
-                info.style.color = '#cdd6f4';
+                info.style.color = 'var(--text-main)';
                 info.textContent = "✅ 改用 +(26-3)=+23，順時針走 23 格";
                 for (let step = 1; step <= 23; step++) {
                     const idx = (25 + step) % 26;
                     trailB.push(idx);
-                    drawClock(svgB, idx, '#a6e3a1', 0, step <= 3 ? trailB.slice(-3) : trailB.slice(-5));
+                    drawClock(svgB, idx, '#10b981', 0, step <= 3 ? trailB.slice(-3) : trailB.slice(-5));
                     await delay(80);
                 }
                 await delay(500);
                 info.textContent = "✅ -3 ≡ +23 (mod 26)\n   兩者都到達同一個位置！\n   解密公式：(c - 'A' + 26 - key) % 26 + 'A'";
-                info.style.color = '#a6e3a1';
+                info.style.color = 'var(--green)';
                 running = false;
                 document.getElementById('m6-btn-run').disabled = false;
             }
@@ -826,7 +868,7 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
             reset();
         })();
 
-        /* ══ MOD 8: Brute Force (新增) ══ */
+        /* ══ MOD 8: Brute Force ══ */
         (function () {
             const btn = document.getElementById('m8-btn-run');
             const grid = document.getElementById('m8-grid');
@@ -848,7 +890,7 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                     const output = input.split('').map(c => decChar(c, key)).join('');
                     const item = document.createElement('div');
                     item.className = 'bf-item';
-                    item.innerHTML = `<span style="color:#888;">Key ${key.toString().padStart(2, '0')}:</span><br>${output}`;
+                    item.innerHTML = `<span style="color:var(--text-muted);">Key ${key.toString().padStart(2, '0')}:</span><br>${output}`;
                     grid.appendChild(item);
                     
                     // 簡單的關鍵字偵測來 Highlight (假設使用者輸入的是常見打招呼)
@@ -890,7 +932,7 @@ string <span class="fn">caesar</span>(string text, <span class="kw">int</span> k
                 const input = txt.value;
                 const output = input.split('').map(c => mode === 'enc' ? encChar(c, key) : decChar(c, key)).join('');
                 const op = mode === 'enc' ? '加密' : '解密';
-                cons.textContent = `// Key = ${key}，執行${op}\n輸入: "${input}"\n輸出: "${output}"\n\n// ${mode === 'enc' ? '公式: (c - base + key) % 26 + base' : '公式: (c - base + 26 - key) % 26 + base'}`;
+                cons.innerHTML = `// Key = ${key}，執行${op}\n輸入: "${input}"\n輸出: "<span style="color:#fff;">${output}</span>"\n\n// ${mode === 'enc' ? '公式: (c - base + key) % 26 + base' : '公式: (c - base + 26 - key) % 26 + base'}`;
             }
 
             document.getElementById('m7-btn-enc').addEventListener('click', () => process('enc'));
