@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第七章：Plotly Express 熱力圖與二維分佈</title>
+    <!-- 引入基礎公用版型與樣式 -->
+    <link rel="stylesheet" href="../../theme.css" />
+    <script src="../../layout.js" defer></script>
+    
+    <!-- 引入 Plotly.js 以在網頁上動態渲染範例圖表 -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <style>
+        .code-block {
+            background-color: var(--bg-body, #f6f8fa);
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 6px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            box-shadow: inset 0 1px 3px rgba(27,31,35,0.05);
+            flex-grow: 1;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid var(--border-color, #e1e4e8);
+            padding: 8px;
+            text-align: center;
+        }
+        .data-table th {
+            background-color: var(--bg-body, #f6f8fa);
+            color: var(--text-main, #24292e);
+            font-weight: 600;
+        }
+        .param-name {
+            font-weight: bold;
+            color: var(--accent-color, #0366d6);
+            background-color: #f0f8ff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+        }
+        
+        /* 左右對照與互動遊樂場區塊樣式 */
+        .playground {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+        .playground-left, .playground-right {
+            flex: 1 1 320px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .control-panel {
+            background-color: #f0f8ff;
+            border: 1px solid #cce5ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            margin-bottom: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-main, #24292e);
+            font-size: 0.9rem;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            background-color: white;
+            cursor: pointer;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--accent-color, #0366d6);
+        }
+        .chart-container {
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 8px;
+            padding: 10px;
+            background-color: var(--bg-card, #ffffff);
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(27,31,35,0.12));
+            flex-grow: 1;
+            display: block; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="section-title">第七章：Plotly Express 熱力圖 (px.density_heatmap)</h1>
+        
+        <div class="grid" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+            <div class="card">
+                <h2>1. 準備對照資料 (一週客流量紀錄)</h2>
+                <p>熱力圖是尋找「熱區」的神器，非常適合觀察兩個類別變數的交叉分佈。我們準備了一份咖啡廳一週內不同「時段」與「星期」的客流量紀錄。</p>
+                <pre class="code-block" style="flex-grow: 0;"><code>import pandas as pd
+import plotly.express as px
+
+# 模擬包含多筆「星期」與「時段」的原始紀錄 (此處為示意，實務上可能有上千筆)
+data = {
+    '星期': ['星期一', '星期一', '星期二', '星期六', '星期日', '星期日'],
+    '時段': ['早上', '中午', '早上', '下午', '下午', '晚上'],
+    '客流量': [25, 60, 30, 125, 120, 75]
+}
+df = pd.DataFrame(data)</code></pre>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <h2>2. 互動學習：熱力圖參數實驗室 🧪</h2>
+            <p><strong>親自動手玩玩看！</strong> 觀察如何利用顏色深淺一眼看出最繁忙的時段，並嘗試切換不同的色票與聚合函數。</p>
+            
+            <div class="playground">
+                <!-- 左側：控制面板與程式碼 -->
+                <div class="playground-left">
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>📈 histfunc (聚合函數：決定數值的計算方式)</label>
+                            <select id="sel-histfunc">
+                                <option value="sum">'sum' (加總：該時段的總客流)</option>
+                                <option value="avg">'avg' (平均：該時段的平均客流)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🎨 color_continuous_scale (連續色彩計畫)</label>
+                            <select id="sel-colorscale">
+                                <option value="Viridis">'Viridis' (預設紫綠漸層，對比高)</option>
+                                <option value="Blues">'Blues' (單一藍色漸層)</option>
+                                <option value="Sunset">'Sunset' (日落暖色漸層)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🔢 text_auto (直接在方格內顯示數值)</label>
+                            <select id="sel-text">
+                                <option value="True">True (顯示數值)</option>
+                                <option value="False">False (僅顯示顏色)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <pre class="code-block"><code id="dynamic-code">載入中...</code></pre>
+                </div>
+                
+                <!-- 右側：即時渲染的圖表 -->
+                <div class="playground-right">
+                    <div id="interactive-chart" class="chart-container" style="width:100%; min-height:450px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr;">
+            <div class="card">
+                <h2>📝 本章重點參數解析</h2>
+                <ul>
+                    <li><span class="param-name">x</span> 與 <span class="param-name">y</span>：分別放入兩個類別變數，Plotly 會自動幫你畫出一個網格（例如 X 軸是時段，Y 軸是星期）。</li>
+                    <li><span class="param-name">z</span>：指定要被計算的數值欄位（如客流量、營業額）。如果不指定 <code>z</code>，熱力圖預設只會單純計算該格子的「資料筆數 (Count)」。</li>
+                    <li><span class="param-name">histfunc</span>：決定 <code>z</code> 欄位的計算方式。最常用的是 <code>'sum'</code> (總和) 與 <code>'avg'</code> (平均值)。</li>
+                    <li><span class="param-name">color_continuous_scale</span>：熱力圖的靈魂！選擇適合的漸層色票，能幫助閱讀者快速聚焦。深色或亮色通常代表數值較大。</li>
+                    <li><span class="param-name">text_auto</span>：設為 <code>True</code> 時，格子裡面會直接印出數字，讓熱力圖兼具「視覺化」與「資料表」的雙重優點！</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const selHistfunc = document.getElementById('sel-histfunc');
+            const selColorscale = document.getElementById('sel-colorscale');
+            const selText = document.getElementById('sel-text');
+            const codeBlock = document.getElementById('dynamic-code');
+
+            // 原始標籤
+            const xLabels = ['早上', '中午', '下午', '晚上'];
+            const yLabels = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
+
+            // 模擬預先聚合好的 z 數值 (sum)
+            const zSum = [
+                [50, 120, 80, 40],   // 星期一
+                [60, 130, 90, 45],   // 星期二
+                [55, 125, 85, 50],   // 星期三
+                [65, 140, 95, 60],   // 星期四
+                [80, 160, 120, 110], // 星期五
+                [120, 200, 250, 180],// 星期六
+                [110, 190, 240, 150] // 星期日
+            ];
+
+            // 模擬預先聚合好的 z 數值 (avg) -> 假設為 sum 的一半
+            const zAvg = zSum.map(row => row.map(val => val / 2));
+
+            function updatePlayground() {
+                const funcVal = selHistfunc.value;
+                const colorVal = selColorscale.value;
+                const textVal = selText.value;
+
+                // 1. 動態生成 Python 程式碼
+                let codeStr = `fig = px.density_heatmap(
+    df,
+    x='時段',
+    y='星期',
+    z='客流量',`;
+                
+                if (funcVal === 'avg') {
+                    codeStr += `
+    histfunc='avg',             # 改為計算平均值`;
+                } else {
+                    codeStr += `
+    histfunc='sum',             # 計算總和`;
+                }
+
+                if (colorVal !== 'Viridis') {
+                    codeStr += `
+    color_continuous_scale='${colorVal}', # 更改色票`;
+                }
+
+                if (textVal === 'True') {
+                    codeStr += `
+    text_auto=True,             # 顯示數值`;
+                }
+
+                codeStr += `
+    title='咖啡廳一週客流量熱力圖'
+)
+fig.show()`;
+                
+                codeBlock.innerText = codeStr;
+
+                // 2. 動態更新 Plotly 圖表
+                let currentZ = funcVal === 'avg' ? zAvg : zSum;
+
+                let trace = {
+                    type: 'heatmap',
+                    x: xLabels,
+                    y: yLabels,
+                    z: currentZ,
+                    colorscale: colorVal,
+                    hovertemplate: '星期: %{y}<br>時段: %{x}<br>數值: %{z}<extra></extra>'
+                };
+
+                // 在 Plotly.js 中，heatmap 要顯示文字需設定 text 陣列與 texttemplate
+                if (textVal === 'True') {
+                    trace.text = currentZ;
+                    trace.texttemplate = "%{text}";
+                    trace.textfont = { size: 12 };
+                }
+
+                let layout = {
+                    title: { text: '咖啡廳一週客流量熱力圖', font: {size: 18} },
+                    margin: {t: 60, l: 80, r: 20, b: 60},
+                    xaxis: {title: '時段', categoryarray: xLabels}, // 強制排序
+                    yaxis: {
+                        title: '星期', 
+                        categoryarray: yLabels,
+                        autorange: 'reversed' // 讓星期一在最上面
+                    },
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)'
+                };
+
+                Plotly.newPlot('interactive-chart', [trace], layout, {responsive: true});
+            }
+
+            // 綁定事件監聽器
+            selHistfunc.addEventListener('change', updatePlayground);
+            selColorscale.addEventListener('change', updatePlayground);
+            selText.addEventListener('change', updatePlayground);
+
+            // 初始載入渲染
+            setTimeout(updatePlayground, 100);
+            
+            // 監聽視窗大小改變，強制重新繪圖確保 RWD
+            window.addEventListener('resize', function() {
+                Plotly.Plots.resize('interactive-chart');
+            });
+        });
+    </script>
+</body>
+</html>

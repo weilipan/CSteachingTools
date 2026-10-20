@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pandas 基礎運用：資料搜集與清理</title>
   <meta name="description" content="互動式視覺化教學：Pandas 資料搜集、清理、定位、篩選、統計與 Inplace 型態轉換。" />
+  
+  <!-- 保留共用的淺色版型 CSS 與動態 Layout JS -->
   <link rel="stylesheet" href="../../theme.css" />
   <script src="../../layout.js" defer></script>
+  
   <style>
     /* 修正跳轉遮擋與平滑滾動 */
     html { scroll-behavior: smooth; }
-    body { padding: 0; margin: 0; background-color: #f8f9fa; font-family: sans-serif; }
 
     /* 置頂導覽列 */
     .top-nav {
@@ -26,39 +28,19 @@
     }
     .nav-link:hover { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; transform: translateY(-1px); }
 
-    .container {
-      padding-top: 40px;
-      padding-bottom: 60px;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding-left: 16px;
-      padding-right: 16px;
-    }
-
+    /* 擴充 theme.css 的卡片樣式：加入進場動畫與錨點滾動修正 */
     .card {
-      background: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.10);
-      margin-bottom: 30px;
-      padding: 28px 28px 24px;
-      /* 動畫預設隱藏 */
       opacity: 0;
       transform: translateY(24px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
-      /* 關鍵修復：跳轉時保留頂部空間，避免被導覽列遮擋 */
-      scroll-margin-top: 100px; 
+      transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.2s, box-shadow 0.2s;
+      scroll-margin-top: 100px; /* 避免被置頂導覽列遮擋 */
     }
     .card.visible { opacity: 1; transform: translateY(0); }
 
-    .section-title {
-      font-size: 1.25rem; font-weight: 700; color: #2d3748; margin: 0 0 12px 0;
-      display: flex; align-items: center; gap: 8px;
-    }
     .section-title .badge {
       background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; font-size: 0.75rem;
       padding: 2px 10px; border-radius: 20px; font-weight: 600;
     }
-
     .doc-link {
       display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #2563eb;
       text-decoration: none; font-weight: 600; padding: 4px 10px; background: #eff6ff;
@@ -215,7 +197,7 @@
     .cursor-blink::after { content: '▋'; animation: cursorBlink 0.8s step-start infinite; }
     @keyframes cursorBlink { 50% { opacity: 0; } }
 
-    /* Page header */
+    /* Page hero */
     .page-hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 32px 28px; margin-bottom: 28px; color: #fff; }
     .page-hero h1 { margin: 0 0 8px; font-size: 1.6rem; font-weight: 800; }
     .page-hero p { margin: 0; opacity: 0.88; font-size: 0.95rem; }
@@ -237,6 +219,7 @@
   <a href="#card11" class="nav-link">11. 統計概況</a>
   <a href="#card12" class="nav-link">12. Inplace</a>
   <a href="#card13" class="nav-link">13. 實戰腳本</a>
+  <a href="#card14" class="nav-link">14. 存檔與下載</a>
 </nav>
 
 <div class="container">
@@ -612,6 +595,44 @@
         <div class="console-output m13-console" id="m13-console"></div>
       </div>
     </div>
+  </div>
+
+  <div class="card" id="card14">
+    <h2 class="section-title">💾 模組十四：結果輸出與打包 <span class="badge">Colab 存檔防雷指南</span></h2>
+    <p style="margin:0 0 12px;color:#4b5563;font-size:0.9rem;">在 Colab 雲端主機產生的檔案，只要關閉網頁就會被系統刪除！最保險的作法是直接下載到個人電腦中，之後還能寄到信箱備份。此外，存檔時切記加上 <code>index=False</code>，否則下次讀取時會多出無用的流水號！</p>
+
+    <div class="btn-group">
+      <button class="btn btn-red" onclick="exportAction('default')">1. df.to_csv() 預設存檔</button>
+      <button class="btn btn-blue" onclick="exportAction('no_index')">2. 加上 index=False</button>
+      <button class="btn btn-green" onclick="exportAction('download')">3. Colab 本機下載技法</button>
+      <button class="btn btn-gray" onclick="exportAction('reset')">↺ 重置</button>
+    </div>
+
+    <div class="code-block" id="m14-code-box" style="display:none; min-height: 80px; margin-top: 16px;">
+      <span class="ln"><span class="kw">from</span> google.colab <span class="kw">import</span> files</span>
+      <span class="ln">df.<span class="fn">to_csv</span>(<span class="str">'clean_data.csv'</span>, index=<span class="str">False</span>)</span>
+      <span class="ln">files.<span class="fn">download</span>(<span class="str">'clean_data.csv'</span>) <span class="cm"># 觸發瀏覽器強制下載！</span></span>
+    </div>
+
+    <!-- 模擬下次讀取時看到的表格狀態 -->
+    <table class="m9-filter-table" id="m14-table" style="display:none; margin-top: 16px;">
+      <thead>
+        <tr id="m14-thead">
+          <th class="m14-bad-col" style="background:#fee2e2; color:#991b1b;">Unnamed: 0</th>
+          <th>Name</th><th>Math</th><th>Science</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="m14-bad-col" style="background:#fef2f2; color:#991b1b; font-weight:bold;">0</td><td>Alice</td><td>85</td><td>90</td></tr>
+        <tr><td class="m14-bad-col" style="background:#fef2f2; color:#991b1b; font-weight:bold;">1</td><td>Bob</td><td>50</td><td>65</td></tr>
+      </tbody>
+    </table>
+
+    <div id="m14-download-anim" style="display:none; text-align:center; margin: 20px 0; padding: 16px; border: 2px dashed #10b981; border-radius: 8px; background: #d1fae5; color: #065f46; font-weight: bold; animation: pulse 1.5s infinite;">
+      ⬇️ 正在將 clean_data.csv 下載至您的電腦 Downloads 資料夾...
+    </div>
+
+    <div id="m14-status" style="font-size:0.85rem;color:#1e293b;background:#f1f5f9;padding:8px 12px;border-radius:6px;margin-top:12px;min-height:20px;font-weight:600;">跟著步驟點擊，體驗存檔的陷阱與正確打包方式！</div>
   </div>
 
 </div>
@@ -1026,6 +1047,34 @@
     hl(['m13-l4','m13-l5'], false); hl(['m13-l6'], true); await delay(300); await typeWriter(con, '[5/6] 篩選特定資料... ✔️'); await delay(300);
     hl(['m13-l6'], false); hl(['m13-l7'], true); await delay(300); await typeWriter(con, '[6/6] 統計摘要:\n🎉 資料準備完成！');
     hl(['m13-l7'], false); document.getElementById('m13-run-btn').disabled = false; m13Running = false;
+  }
+
+  /* ── M14: 輸出與打包 ── */
+  function exportAction(type) {
+    const status = document.getElementById('m14-status');
+    const table = document.getElementById('m14-table');
+    const badCols = document.querySelectorAll('.m14-bad-col');
+    const codeBox = document.getElementById('m14-code-box');
+    const dlAnim = document.getElementById('m14-download-anim');
+
+    // 重置顯示狀態
+    table.style.display = 'none'; codeBox.style.display = 'none'; dlAnim.style.display = 'none';
+    badCols.forEach(col => col.style.display = 'none');
+
+    if (type === 'default') {
+      table.style.display = 'table';
+      badCols.forEach(col => col.style.display = 'table-cell');
+      status.innerHTML = "🚨 <b>危險示範：</b> 預設存檔會把 DataFrame 的左側索引也存成一欄！下次讀取時，就會多出這個可怕的 <code>Unnamed: 0</code>。而且檔案留在 Colab 關閉網頁就沒了。";
+    } else if (type === 'no_index') {
+      table.style.display = 'table';
+      status.innerHTML = "✅ <b>最佳實踐：</b> 加上 <code>index=False</code> 捨棄無用的索引。乾淨的資料表準備就緒！";
+    } else if (type === 'download') {
+      codeBox.style.display = 'block';
+      dlAnim.style.display = 'block';
+      status.innerHTML = "📦 <b>打包帶走：</b> 匯入 <code>google.colab.files</code> 並呼叫 <code>download()</code>，就能繞過雲端限制，直接把檔案存進你自己的電腦裡，方便後續寄到 Gmail！";
+    } else {
+      status.innerHTML = "跟著步驟點擊，體驗存檔的陷阱與正確打包方式！";
+    }
   }
 </script>
 </body>

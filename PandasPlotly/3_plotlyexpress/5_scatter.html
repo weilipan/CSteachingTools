@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第五章：Plotly Express 直方圖與分佈</title>
+    <!-- 引入基礎公用版型與樣式 -->
+    <link rel="stylesheet" href="../../theme.css" />
+    <script src="../../layout.js" defer></script>
+    
+    <!-- 引入 Plotly.js 以在網頁上動態渲染範例圖表 -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <style>
+        .code-block {
+            background-color: var(--bg-body, #f6f8fa);
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 6px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            box-shadow: inset 0 1px 3px rgba(27,31,35,0.05);
+            flex-grow: 1;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid var(--border-color, #e1e4e8);
+            padding: 8px;
+            text-align: center;
+        }
+        .data-table th {
+            background-color: var(--bg-body, #f6f8fa);
+            color: var(--text-main, #24292e);
+            font-weight: 600;
+        }
+        .param-name {
+            font-weight: bold;
+            color: var(--accent-color, #0366d6);
+            background-color: #f0f8ff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+        }
+        
+        /* 左右對照與互動遊樂場區塊樣式 */
+        .playground {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+        .playground-left, .playground-right {
+            flex: 1 1 320px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .control-panel {
+            background-color: #f0f8ff;
+            border: 1px solid #cce5ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            margin-bottom: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-main, #24292e);
+            font-size: 0.9rem;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            background-color: white;
+            cursor: pointer;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--accent-color, #0366d6);
+        }
+        .chart-container {
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 8px;
+            padding: 10px;
+            background-color: var(--bg-card, #ffffff);
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(27,31,35,0.12));
+            flex-grow: 1;
+            display: block; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="section-title">第五章：Plotly Express 直方圖 (px.histogram) 與分佈</h1>
+        
+        <div class="grid" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+            <div class="card">
+                <h2>1. 準備對照資料 (客單價紀錄)</h2>
+                <p>直方圖專門用來觀察「連續數值的分佈頻率」。這裡我們有一份包含數十筆「客單價 (消費金額)」與所屬「分店」的原始紀錄。</p>
+                <pre class="code-block" style="flex-grow: 0;"><code>import pandas as pd
+import plotly.express as px
+
+data = {
+    '客單價 (元)': [85, 95, 105, 110, 110, 115, 120, 120, 125, 130, 
+                   135, 140, 150, 155, 160, 165, 170, 180, 190, 210, 220, 250],
+    '分店': ['台北', '台北', '台北', '台中', '台北', '台北', '台中', '台北', '台北', '台中',
+             '台中', '台中', '台北', '台中', '台北', '台北', '台中', '台北', '台中', '台北', '台中', '台北']
+}
+df = pd.DataFrame(data)</code></pre>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <h2>2. 互動學習：px.histogram 參數實驗室 🧪</h2>
+            <p><strong>親自動手玩玩看！</strong> 觀察 Plotly 如何自動將零散的金額「分箱 (binning)」，並試著切換 <code>barmode</code> 找出最適合比較雙分店差異的呈現方式。</p>
+            
+            <div class="playground">
+                <!-- 左側：控制面板與程式碼 -->
+                <div class="playground-left">
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>📏 nbins (自訂分組區間的數量)</label>
+                            <select id="sel-nbins">
+                                <option value="auto">Auto (自動計算最佳區間)</option>
+                                <option value="5">5 (區間變寬，分5組)</option>
+                                <option value="15">15 (區間變窄，分15組)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🎨 color (依據欄位分組顯示)</label>
+                            <select id="sel-color">
+                                <option value="None">無 (僅顯示整體分佈)</option>
+                                <option value="分店">'分店' (區分台北與台中)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>📊 barmode (多組資料時的呈現模式)</label>
+                            <select id="sel-barmode">
+                                <option value="relative">relative (預設：堆疊)</option>
+                                <option value="overlay">overlay (重疊，適合比較分佈)</option>
+                                <option value="group">group (並排顯示)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <pre class="code-block"><code id="dynamic-code">載入中...</code></pre>
+                </div>
+                
+                <!-- 右側：即時渲染的圖表 -->
+                <div class="playground-right">
+                    <div id="interactive-chart" class="chart-container" style="width:100%; min-height:450px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr;">
+            <div class="card">
+                <h2>📝 本章重點參數解析</h2>
+                <ul>
+                    <li><span class="param-name">x</span>：放入你想要觀察分佈的連續數值欄位（如客單價、年齡、成績）。Y 軸則會自動幫你計算該區間的「筆數 (Count)」。</li>
+                    <li><span class="param-name">nbins</span>：強制指定要將資料切成幾個區間（Bins）。如果沒有設定，Plotly 會自動幫你算出一個最美觀的區間寬度。</li>
+                    <li><span class="param-name">color</span>：加入類別欄位後，可以在同一張直方圖中同時觀察不同群體（如不同分店）的數據分佈。</li>
+                    <li><span class="param-name">barmode</span>：有分組 (`color`) 時非常重要！預設的 <code>relative</code> 會把次數往上堆疊；如果設為 <code>overlay</code> (重疊) 搭配透明度，或是 <code>group</code> (並排)，能更容易比較兩組分佈的差異。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const selNbins = document.getElementById('sel-nbins');
+            const selColor = document.getElementById('sel-color');
+            const selBarmode = document.getElementById('sel-barmode');
+            const codeBlock = document.getElementById('dynamic-code');
+
+            // 模擬原始資料
+            const dataTaipei = [85, 95, 105, 110, 115, 120, 125, 150, 160, 165, 180, 210, 250];
+            const dataTaichung = [110, 120, 130, 135, 140, 155, 170, 190, 220];
+
+            function updatePlayground() {
+                const nbinsVal = selNbins.value;
+                const colorVal = selColor.value;
+                const barmodeVal = selBarmode.value;
+
+                // 1. 動態生成 Python 程式碼
+                let codeStr = `fig = px.histogram(
+    df,
+    x='客單價 (元)',`;
+                
+                if (nbinsVal !== 'auto') {
+                    codeStr += `
+    nbins=${nbinsVal},               # 指定分為 ${nbinsVal} 個區間`;
+                }
+
+                if (colorVal === '分店') {
+                    codeStr += `
+    color='分店',             # 依據分店分色`;
+                    
+                    if (barmodeVal === 'overlay') {
+                        codeStr += `
+    barmode='overlay',        # 模式設為重疊以利比較
+    opacity=0.7,              # 增加透明度防止遮蔽`;
+                    } else if (barmodeVal === 'group') {
+                        codeStr += `
+    barmode='group',          # 模式設為並排`;
+                    } else {
+                        codeStr += `
+    barmode='relative',       # (預設) 堆疊模式`;
+                    }
+                } else {
+                    codeStr += `
+    opacity=0.7,`;
+                }
+
+                codeStr += `
+    title='來客單價分佈直方圖'
+)
+fig.show()`;
+                
+                codeBlock.innerText = codeStr;
+
+                // 2. 動態更新 Plotly 圖表
+                let traces = [];
+                let opacity = (colorVal === '分店' && barmodeVal === 'overlay') ? 0.7 : (colorVal === 'None' ? 0.7 : 0.9);
+
+                if (colorVal === '分店') {
+                    traces.push({
+                        type: 'histogram',
+                        x: dataTaipei,
+                        name: '台北',
+                        marker: {color: '#3498db'},
+                        opacity: opacity,
+                        nbinsx: nbinsVal === 'auto' ? null : parseInt(nbinsVal)
+                    });
+                    traces.push({
+                        type: 'histogram',
+                        x: dataTaichung,
+                        name: '台中',
+                        marker: {color: '#e74c3c'},
+                        opacity: opacity,
+                        nbinsx: nbinsVal === 'auto' ? null : parseInt(nbinsVal)
+                    });
+                } else {
+                    traces.push({
+                        type: 'histogram',
+                        x: [...dataTaipei, ...dataTaichung],
+                        name: '全部分店',
+                        marker: {color: '#9b59b6'},
+                        opacity: opacity,
+                        nbinsx: nbinsVal === 'auto' ? null : parseInt(nbinsVal)
+                    });
+                }
+
+                let layout = {
+                    title: { text: '來客單價分佈直方圖', font: {size: 18} },
+                    margin: {t: 60, l: 60, r: 40, b: 60},
+                    barmode: colorVal === '分店' ? barmodeVal : 'relative',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: {title: '客單價 (元)', gridcolor: '#e1e4e8'},
+                    yaxis: {title: '頻率 (次數)', gridcolor: '#e1e4e8'}
+                };
+
+                Plotly.newPlot('interactive-chart', traces, layout, {responsive: true});
+            }
+
+            // 綁定事件監聽器
+            selNbins.addEventListener('change', updatePlayground);
+            selColor.addEventListener('change', updatePlayground);
+            selBarmode.addEventListener('change', updatePlayground);
+
+            // 初始載入渲染，加上小延遲確保外層 Flex 容器已定位
+            setTimeout(updatePlayground, 100);
+            
+            // 監聽視窗大小改變，強制重新繪圖確保 RWD
+            window.addEventListener('resize', function() {
+                Plotly.Plots.resize('interactive-chart');
+            });
+        });
+    </script>
+</body>
+</html>

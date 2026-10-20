@@ -5,15 +5,40 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pandas 進階資料處理：定位、合併、特徵工程與聚合</title>
-  <meta name="description" content="互動式視覺化教學：Pandas loc 精準切片、merge 合併比較、特徵工程、groupby 聚合排序。" />
+  <meta name="description" content="互動式視覺化教學：Pandas loc 精準切片、merge 合併比較、特徵工程、groupby 聚合排序與樞紐分析。" />
+  
+  <!-- 保留共用的淺色版型 CSS 與動態 Layout JS -->
   <link rel="stylesheet" href="../../theme.css" />
   <script src="../../layout.js" defer></script>
+  
   <style>
-    /* ── 修正跳轉遮擋與平滑滾動 ── */
+    /* ── 全域與淺色變數 (對齊 theme.css) ── */
+    :root {
+      --accent-color: #0366d6;
+      --border-color: #e1e4e8;
+      --text-main: #24292e;
+      --text-muted: #586069;
+      --bg-body: #f6f8fa;
+      --bg-card: #ffffff;
+      --shadow-sm: 0 1px 3px rgba(27,31,35,0.12);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
     html { scroll-behavior: smooth; }
-    
-    /* ── 鐵律：版面保護 ── */
-    body { padding: 0; margin: 0; background-color: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+    /* ── 共用 Layout 樣式 (模擬 layout.js 動態產生的區塊) ── */
+    .app-header {
+      background-color: #ffffff; color: #24292e; padding: 1rem 2rem; text-align: center;
+      border-bottom: 1px solid #e1e4e8; box-shadow: 0 1px 3px rgba(27,31,35,0.05); position: relative; z-index: 101;
+    }
+    .app-header h1 { margin: 0; font-size: 1.5rem; font-weight: 600; }
+    .app-header a { color: #24292e; text-decoration: none; transition: color 0.2s ease-in-out; }
+    .app-header a:hover { color: var(--accent-color); }
+
+    .app-footer {
+      text-align: center; padding: 30px 20px; color: var(--text-muted); font-size: 0.9rem;
+      border-top: 1px solid var(--border-color); margin-top: 50px; background-color: #fafbfc;
+    }
 
     /* ── 置頂導覽列 ── */
     .top-nav {
@@ -24,43 +49,39 @@
     }
     .nav-link {
       text-decoration: none; font-size: 0.8rem; font-weight: 600; color: #475569;
-      padding: 6px 12px; background: #f1f5f9; border-radius: 20px; transition: all 0.2s;
-      border: 1px solid #e2e8f0;
+      padding: 6px 12px; background: #f1f5f9; border-radius: 20px; transition: all 0.2s; border: 1px solid #e2e8f0;
     }
     .nav-link:hover { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; transform: translateY(-1px); }
 
-    .container { padding-top: 40px; padding-bottom: 60px; max-width: 1000px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
+    /* Container 讓內容自動撐開推到底部 */
+    .container { max-width: 1000px; margin: 40px auto; padding: 0 20px 60px 20px; flex-grow: 1; }
 
-    /* ── 鐵律：Card ── */
+    /* Card 加入進場動畫與錨點滾動修正 */
     .card {
-      background: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
-      padding: 30px 32px; margin-bottom: 32px;
-      opacity: 0; transform: translateY(24px); transition: opacity 0.55s ease, transform 0.55s ease;
-      scroll-margin-top: 100px; /* 關鍵修復：跳轉時保留頂部空間 */
+      background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;
+      padding: 30px 32px; margin-bottom: 32px; color: var(--text-main); box-shadow: var(--shadow-sm);
+      opacity: 0; transform: translateY(24px); transition: opacity 0.55s ease, transform 0.55s ease, border-color 0.2s, box-shadow 0.2s;
+      scroll-margin-top: 100px;
     }
+    .card:hover { border-color: var(--accent-color); box-shadow: var(--shadow-md); }
     .card.visible { opacity: 1; transform: translateY(0); }
 
-    /* ── 提示框 (Tip Box) ── */
+    /* ── 提示框 & 標題 ── */
     .tip-box { background:#fffbeb; border:1px solid #fcd34d; border-radius:8px; padding:12px; font-size:0.85rem; color:#92400e; margin-top:12px; line-height:1.5; }
-
-    /* ── 鐵律：section-title ── */
     .section-title { font-size: 1.25rem; font-weight: 700; color: #2d3748; margin: 0 0 14px 0; display: flex; align-items: center; gap: 8px; }
     .section-title .badge { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 0.73rem; padding: 2px 10px; border-radius: 20px; font-weight: 600; }
+    .sub-title { font-size: 1rem; font-weight: 700; color: #4f46e5; margin: 20px 0 8px 0; display: flex; align-items: center; gap: 6px; }
+    .sub-title::before { content: ''; width: 4px; height: 1em; background: #6366f1; border-radius: 2px; display: inline-block; }
 
-    /* ── 鐵律：Console Output ── */
+    /* ── Console & Code ── */
     .console-output { white-space: pre-wrap; font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; font-size: 0.83rem; line-height: 1.6; min-height: 48px; }
-
-    /* ── 鐵律：縮排 class ── */
-    .ind-1 { padding-left: 1.5rem !important; }
-    .ind-2 { padding-left: 3rem !important; }
-
-    /* ── 程式碼區塊 ── */
+    .ind-1 { padding-left: 1.5rem !important; } .ind-2 { padding-left: 3rem !important; }
     .code-block { background: #282c34; border-radius: 8px; padding: 14px 16px; margin: 12px 0; overflow-x: auto; }
     .ln { display: block; white-space: nowrap; font-family: 'Courier New', monospace; font-size: 0.86rem; color: #abb2bf; line-height: 1.75; }
     .ln .kw { color: #c678dd; } .ln .fn { color: #61afef; } .ln .str { color: #98c379; } .ln .cm { color: #5c6370; font-style: italic; } .ln .num { color: #d19a66; } .ln .op { color: #56b6c2; }
     .highlight { background-color: rgba(255, 215, 0, 0.25) !important; color: #ffd700 !important; font-weight: bold; transition: background-color 0.3s; border-radius: 3px; }
 
-    /* ── 按鈕 ── */
+    /* ── 按鈕與選單 ── */
     .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
     .btn { padding: 7px 16px; border: none; border-radius: 7px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 0.82rem; font-weight: 600; transition: all 0.2s; letter-spacing: 0.01em; }
     .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12); }
@@ -72,12 +93,8 @@
     .btn-teal { background: #0d9488; color: #fff; } .btn-teal:hover { background: #0f766e; }
     .btn-indigo { background: #6366f1; color: #fff; } .btn-indigo:hover { background: #4f46e5; }
     .btn-gray { background: #6b7280; color: #fff; } .btn-gray:hover { background: #4b5563; }
-
-    /* ── select 下拉 ── */
     .fancy-select { padding: 8px 14px; border: 2px solid #e2e8f0; border-radius: 8px; background: #f8fafc; font-family: 'Courier New', monospace; font-size: 0.88rem; font-weight: 600; color: #334155; cursor: pointer; outline: none; transition: border-color 0.2s; }
     .fancy-select:focus { border-color: #6366f1; }
-
-    /* ── doc-link ── */
     .doc-link { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #2563eb; text-decoration: none; font-weight: 600; padding: 4px 10px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; margin-bottom: 16px; transition: all 0.2s; }
     .doc-link:hover { background: #dbeafe; transform: translateY(-1px); }
 
@@ -88,11 +105,12 @@
     .hero-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
     .hero-tag { background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; border-radius: 20px; padding: 3px 12px; font-size: 0.78rem; font-weight: 600; }
 
-    /* ── 兩欄佈局 ── */
+    /* ── 表格與佈局 ── */
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+    .dataset-preview { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; overflow-x: auto; }
+    .dataset-preview h4 { margin: 0 0 8px; font-size: 0.82rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 
-    /* ── 資料表格 ── */
     .df-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
     .df-table th { background: #f1f5f9; padding: 8px 12px; border: 1px solid #e2e8f0; color: #334155; font-weight: 700; text-align: center; transition: all 0.3s; }
     .df-table td { padding: 7px 12px; border: 1px solid #e2e8f0; color: #475569; text-align: center; transition: all 0.35s ease; }
@@ -106,7 +124,7 @@
     /* ── 狀態列 ── */
     .status-bar { font-size: 0.85rem; color: #1e293b; background: #f1f5f9; padding: 9px 14px; border-radius: 8px; margin-top: 10px; min-height: 20px; font-weight: 600; border-left: 3px solid #6366f1; transition: all 0.3s; }
 
-    /* ── 單元二：Merge 視覺化 ── */
+    /* ── 其他特殊模組樣式 ── */
     .how-selector { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
     .how-btn { padding: 8px 18px; border: 2px solid transparent; border-radius: 8px; cursor: pointer; font-size: 0.88rem; font-weight: 700; transition: all 0.2s; background: #f1f5f9; color: #64748b; }
     .how-btn.active-inner { background: #6366f1; color: #fff; border-color: #6366f1; }
@@ -115,7 +133,6 @@
     .how-btn.active-outer { background: #f59e0b; color: #fff; border-color: #f59e0b; }
     .how-btn:hover { transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1); }
 
-    /* ── 單元三：100% 長條圖 ── */
     .bar-chart-wrap { margin: 16px 0; }
     .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .bar-label { width: 80px; font-size: 0.82rem; font-weight: 600; color: #334155; text-align: right; flex-shrink: 0; }
@@ -126,18 +143,11 @@
     .bar-legend { display: flex; gap: 20px; margin-top: 10px; font-size: 0.8rem; font-weight: 600; }
     .legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; margin-right: 5px; vertical-align: middle; }
 
-    /* ── 單元四：Groupby ── */
     .chain-code { border-left: 3px solid #6366f1; padding-left: 12px; margin: 12px 0; }
     .rank-badge { display: inline-block; width: 22px; height: 22px; border-radius: 50%; text-align: center; line-height: 22px; font-size: 0.72rem; font-weight: 800; margin-right: 4px; }
     .rank-1 { background: #ffd700; color: #78350f; } .rank-2 { background: #d1d5db; color: #374151; } .rank-3 { background: #c97c3a; color: #fff; }
-
-    /* ── 區塊小標題 ── */
-    .sub-title { font-size: 1rem; font-weight: 700; color: #4f46e5; margin: 20px 0 8px 0; display: flex; align-items: center; gap: 6px; }
-    .sub-title::before { content: ''; width: 4px; height: 1em; background: #6366f1; border-radius: 2px; display: inline-block; }
-
-    /* ── 資料集預覽框 ── */
-    .dataset-preview { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; overflow-x: auto; }
-    .dataset-preview h4 { margin: 0 0 8px; font-size: 0.82rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    .pivot-heat { background: rgba(99, 102, 241, 0.1); font-weight: bold; color: #4338ca; }
   </style>
 </head>
 
@@ -147,22 +157,26 @@
   <nav class="top-nav">
     <a href="#card1" class="nav-link">1. loc 切片</a>
     <a href="#card2" class="nav-link">2. Merge 合併</a>
-    <a href="#card3" class="nav-link">3. 特徵工程</a>
-    <a href="#card4" class="nav-link">4. Groupby 聚合</a>
+    <a href="#card5" class="nav-link">3. Concat 堆疊</a>
+    <a href="#card6" class="nav-link">4. .str 清洗</a>
+    <a href="#card3" class="nav-link">5. 特徵工程</a>
+    <a href="#card4" class="nav-link">6. Groupby</a>
+    <a href="#card7" class="nav-link">7. 樞紐分析表</a>
   </nav>
 
   <div class="container">
 
     <div class="page-hero">
       <h1>🐼 Pandas 進階資料處理</h1>
-      <p>精準切片 × 多表合併 × 特徵工程 × 聚合排序 — 以寶可夢資料集為主角的互動式視覺化教學</p>
+      <p>精準切片 × 多表合併堆疊 × 特徵工程文字清洗 × 聚合樞紐 — 以寶可夢資料集為主角的互動式視覺化教學</p>
       <div class="hero-tags">
         <span class="hero-tag">loc 定位</span>
         <span class="hero-tag">pd.merge</span>
+        <span class="hero-tag">pd.concat</span>
         <span class="hero-tag">特徵工程</span>
-        <span class="hero-tag">100% 長條圖</span>
+        <span class="hero-tag">.str 屬性</span>
         <span class="hero-tag">groupby</span>
-        <span class="hero-tag">Method Chaining</span>
+        <span class="hero-tag">pivot_table</span>
       </div>
     </div>
 
@@ -240,7 +254,7 @@
 
     <!-- 🔗 單元二：Merge -->
     <div class="card" id="card2">
-      <h2 class="section-title">🔗 單元二：資料表的無縫接軌 <span class="badge">merge 比較</span></h2>
+      <h2 class="section-title">🔗 單元二：資料表的無縫接軌 <span class="badge">merge 橫向合併</span></h2>
       <a href="https://pandas.pydata.org/docs/reference/api/pandas.merge.html" target="_blank" class="doc-link">📚 pd.merge 官方文件</a>
       <p style="margin:0 0 14px;color:#4b5563;font-size:0.9rem;">
         兩張表的 ID 並不完全重疊。切換不同的 <code>how</code> 參數，觀察 NaN 如何出現。
@@ -300,14 +314,89 @@
       
       <div class="tip-box">
         💡 <b>進階技巧：抓漏神器 <code>indicator=True</code></b><br>
-        實務上進行 Left 或 Outer Merge 時，可以加上 <code>indicator=True</code> 參數。這會產生一個 <code>_merge</code> 欄位，標示該筆資料是來自 <code>both</code>（兩表皆有）、<code>left_only</code> 或 <code>right_only</code>，非常適合用來檢查資料對齊的狀況！
+        實務上進行 Left 或 Outer Merge 時，可以加上 <code>indicator=True</code> 參數。這會產生一個 <code>_merge</code> 欄位，標示該筆資料是來自 <code>both</code>（兩表皆有）、<code>left_only</code> 或 <code>right_only</code>。
       </div>
-
     </div>
 
-    <!-- ⚗️ 單元三：特徵工程 -->
+    <!-- 🗂️ 單元五：Concat 縱向堆疊 -->
+    <div class="card" id="card5">
+      <h2 class="section-title">🗂️ 單元五：縱向資料堆疊 <span class="badge">pd.concat</span></h2>
+      <p style="margin:0 0 14px;color:#4b5563;font-size:0.9rem;">與 <code>merge</code> (透過 ID 左右關聯) 不同，<code>concat</code> 是直接將兩份格式相近的表「上下疊加」。點擊按鈕觀察有無加上 <code>ignore_index=True</code> 的差別。</p>
+
+      <div class="two-col" style="margin-bottom:16px;">
+        <div class="dataset-preview">
+          <h4>第一世代 (df_gen1)</h4>
+          <table class="df-table">
+            <thead><tr><th>Index</th><th>Name</th><th>Type1</th></tr></thead>
+            <tbody>
+              <tr><td style="color:#94a3b8">0</td><td>小火龍</td><td>火</td></tr>
+              <tr><td style="color:#94a3b8">1</td><td>傑尼龜</td><td>水</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="dataset-preview">
+          <h4>第二世代 (df_gen2)</h4>
+          <table class="df-table">
+            <thead><tr><th>Index</th><th>Name</th><th>Type1</th></tr></thead>
+            <tbody>
+              <tr><td style="color:#94a3b8">0</td><td>菊草葉</td><td>草</td></tr>
+              <tr><td style="color:#94a3b8">1</td><td>火球鼠</td><td>火</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-red" onclick="concatAction('default')">1. pd.concat([df1, df2])</button>
+        <button class="btn btn-green" onclick="concatAction('ignore')">2. 加入 ignore_index=True</button>
+        <button class="btn btn-gray" onclick="concatAction('reset')">↺ 重置</button>
+      </div>
+
+      <div class="code-block" id="concat-code" style="display:none; min-height: 40px;">
+        <span class="ln" id="concat-line"></span>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="df-table" id="concat-table" style="display:none;">
+          <thead><tr><th>Index</th><th>Name</th><th>Type1</th></tr></thead>
+          <tbody id="concat-body"></tbody>
+        </table>
+      </div>
+      <div class="status-bar" id="concat-status">請點選按鈕查看上下疊加的結果。</div>
+    </div>
+
+    <!-- 🔤 單元六：文字清洗 -->
+    <div class="card" id="card6">
+      <h2 class="section-title">🔤 單元六：文字資料清洗 <span class="badge">.str 字串工具</span></h2>
+      <p style="margin:0 0 14px;color:#4b5563;font-size:0.9rem;">針對字串欄位，加上 <code>.str</code> 即可使用強大的字串過濾與替換功能。</p>
+
+      <div class="btn-group">
+        <button class="btn btn-blue" onclick="strAction('contains')">1. 過濾出含有 'Mega' 的名字</button>
+        <button class="btn btn-orange" onclick="strAction('replace')">2. 將 'Mega' 替換為 '超級'</button>
+        <button class="btn btn-gray" onclick="strAction('reset')">↺ 重置原表</button>
+      </div>
+
+      <div class="code-block" style="min-height: 40px;">
+        <span class="ln" id="str-code"><span class="cm"># 點擊上方按鈕查看程式碼</span></span>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="df-table">
+          <thead><tr><th>Name</th><th>Type1</th><th>Attack</th></tr></thead>
+          <tbody id="str-body">
+            <tr><td>噴火龍</td><td>火</td><td>84</td></tr>
+            <tr><td>噴火龍MegaX</td><td>火</td><td>130</td></tr>
+            <tr><td>超夢</td><td>超能力</td><td>110</td></tr>
+            <tr><td>超夢MegaY</td><td>超能力</td><td>150</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="status-bar" id="str-status">點擊按鈕體驗字串處理魔力。</div>
+    </div>
+
+    <!-- ⚗️ 單元三 (現為七)：特徵工程 -->
     <div class="card" id="card3">
-      <h2 class="section-title">⚗️ 單元三：欄位工程與邏輯運算 <span class="badge">特徵工程 + 等高長條圖</span></h2>
+      <h2 class="section-title">⚗️ 單元七：欄位工程與邏輯運算 <span class="badge">特徵工程 + 等高長條圖</span></h2>
 
       <div class="sub-title">① 增加欄位與純運算</div>
       <p style="margin:0 0 10px;color:#4b5563;font-size:0.88rem;">將 Attack 與 Defense 相加，建立新欄位 <code>Total_Stats</code>。</p>
@@ -359,14 +448,11 @@
       <div class="status-bar" id="fe-status">點擊「執行：新增 Total_Stats」開始</div>
     </div>
 
-    <!-- 📊 單元四：Groupby -->
+    <!-- 📊 單元四 (現為八)：Groupby -->
     <div class="card" id="card4">
-      <h2 class="section-title">📊 單元四：聚合、排序與進階洞察 <span class="badge">groupby · sort · nlargest</span></h2>
-      <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.groupby.html" target="_blank"
-        class="doc-link">📚 df.groupby 官方文件</a>
-      <p style="margin:0 0 14px;color:#4b5563;font-size:0.9rem;">
-        選擇你想探索的問題，觀察如何用 Pandas 的<strong>方法鏈結 (Method Chaining)</strong> 優雅地一行解決。
-      </p>
+      <h2 class="section-title">📊 單元八：聚合、排序與進階洞察 <span class="badge">groupby · sort · nlargest</span></h2>
+      <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.groupby.html" target="_blank" class="doc-link">📚 df.groupby 官方文件</a>
+      <p style="margin:0 0 14px;color:#4b5563;font-size:0.9rem;">選擇你想探索的問題，觀察如何用 Pandas 的<strong>方法鏈結 (Method Chaining)</strong> 優雅地一行解決。</p>
 
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
         <label style="font-weight:700;font-size:0.88rem;color:#475569;">探索問題：</label>
@@ -394,6 +480,78 @@
         </div>
       </div>
       <div class="status-bar" id="agg-status">使用 Method Chaining 可讓程式碼更簡潔易讀，一行完成多個操作</div>
+    </div>
+
+    <!-- 🧮 單元七 (現為九)：Pivot Table -->
+    <div class="card" id="card7">
+      <h2 class="section-title">🧮 單元九：樞紐分析表 <span class="badge">pivot_table</span></h2>
+      <p style="margin:0 0 14px;color:#4b5563;font-size:0.9rem;">處理多類別變數時，能像 Excel 一樣產出二維交叉統計表。我們提取部分資料來對照，觀察 <b>Type1</b> 如何變成列、<b>Type2</b> 變成欄，並計算 <b>Attack</b> 的平均值[cite: 5]。</p>
+
+      <div class="two-col" style="margin-bottom: 16px; align-items: stretch;">
+        <div class="dataset-preview">
+          <h4>📄 原始資料 df (部分提取)</h4>
+          <table class="df-table" style="text-align:center;">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th style="color:#4f46e5;">Type1<br><small>(index)</small></th>
+                <th style="color:#059669;">Type2<br><small>(columns)</small></th>
+                <th style="color:#d97706;">Attack<br><small>(values)</small></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>小火龍</td><td style="font-weight:bold;">火</td><td>-</td><td>52</td></tr>
+              <tr><td>噴火龍</td><td style="font-weight:bold;">火</td><td>飛行</td><td>84</td></tr>
+              <tr><td>妙蛙種子</td><td style="font-weight:bold;">草</td><td>毒</td><td>49</td></tr>
+              <tr><td>快龍</td><td style="font-weight:bold;">龍</td><td>飛行</td><td>134</td></tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="code-block" style="margin: 0; display:flex; flex-direction:column; justify-content:center;">
+          <span class="ln">pd.<span class="fn">pivot_table</span>(df,</span>
+          <span class="ln ind-1">index=<span class="str">'Type1'</span>,   <span class="cm"># Y 軸分類</span></span>
+          <span class="ln ind-1">columns=<span class="str">'Type2'</span>, <span class="cm"># X 軸分類</span></span>
+          <span class="ln ind-1">values=<span class="str">'Attack'</span>, <span class="cm"># 欲計算的數值欄位</span></span>
+          <span class="ln ind-1">aggfunc=<span class="str">'mean'</span>)  <span class="cm"># 聚合方式 (預設為平均值)</span></span>
+        </div>
+      </div>
+
+      <div class="sub-title">🧮 樞紐分析結果</div>
+      <div style="overflow-x:auto;">
+        <table class="df-table" style="text-align:center;">
+          <thead>
+            <tr>
+              <th rowspan="2" style="background:#e0e7ff; color:#3730a3;">Type1 (index)</th>
+              <th colspan="3" style="background:#d1fae5; color:#065f46;">Type2 (columns)</th>
+            </tr>
+            <tr>
+              <th>- (無次屬性)</th><th>飛行</th><th>毒</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="background:#f1f5f9; font-weight:bold; color:#4f46e5;">火</td>
+              <td style="color:#d97706;">52.0</td>
+              <td class="pivot-heat" style="color:#d97706;">84.0</td>
+              <td class="df-nan">NaN</td>
+            </tr>
+            <tr>
+              <td style="background:#f1f5f9; font-weight:bold; color:#4f46e5;">草</td>
+              <td class="df-nan">NaN</td>
+              <td class="df-nan">NaN</td>
+              <td class="pivot-heat" style="color:#d97706;">49.0</td>
+            </tr>
+            <tr>
+              <td style="background:#f1f5f9; font-weight:bold; color:#4f46e5;">龍</td>
+              <td class="df-nan">NaN</td>
+              <td class="pivot-heat" style="color:#d97706;">134.0</td>
+              <td class="df-nan">NaN</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="status-bar">💡 二維矩陣有助於快速發掘資料交叉點的規律[cite: 5]。例如「火」加上「飛行」的平均攻擊力是 84.0。空缺的部分 Pandas 會自動補上 NaN。</div>
     </div>
 
   </div>
@@ -464,39 +622,26 @@
       let filtered = [...DF_MERGED];
       let codeTxt = '';
       let statusTxt = '';
-      let selectedCols = null; // null means all columns
+      let selectedCols = null; 
 
       switch (val) {
         case 'all':
-          codeTxt = `<span class="cm"># 顯示全部資料</span>`;
-          statusTxt = `📋 顯示所有 ${filtered.length} 筆資料`;
-          break;
+          codeTxt = `<span class="cm"># 顯示全部資料</span>`; statusTxt = `📋 顯示所有 ${filtered.length} 筆資料`; break;
         case 'fire':
           filtered = filtered.filter(r => r.Type1 === '火');
-          codeTxt = `df.<span class="fn">loc</span>[df[<span class="str">'Type1'</span>] <span class="op">==</span> <span class="str">'火'</span>]`;
-          statusTxt = `🔥 篩選出 Type1 == '火' 的寶可夢`;
-          break;
+          codeTxt = `df.<span class="fn">loc</span>[df[<span class="str">'Type1'</span>] <span class="op">==</span> <span class="str">'火'</span>]`; statusTxt = `🔥 篩選出 Type1 == '火' 的寶可夢`; break;
         case 'water':
           filtered = filtered.filter(r => r.Type1 === '水');
-          codeTxt = `df.<span class="fn">loc</span>[df[<span class="str">'Type1'</span>] <span class="op">==</span> <span class="str">'水'</span>]`;
-          statusTxt = `💧 篩選出 Type1 == '水' 的寶可夢`;
-          break;
+          codeTxt = `df.<span class="fn">loc</span>[df[<span class="str">'Type1'</span>] <span class="op">==</span> <span class="str">'水'</span>]`; statusTxt = `💧 篩選出 Type1 == '水' 的寶可夢`; break;
         case 'atk_gt_90':
           filtered = filtered.filter(r => r.Attack > 90);
-          codeTxt = `df.<span class="fn">loc</span>[df[<span class="str">'Attack'</span>] <span class="op">&gt;</span> <span class="num">90</span>]`;
-          statusTxt = `⚔️ 篩選出 Attack > 90 的寶可夢`;
-          break;
+          codeTxt = `df.<span class="fn">loc</span>[df[<span class="str">'Attack'</span>] <span class="op">&gt;</span> <span class="num">90</span>]`; statusTxt = `⚔️ 篩選出 Attack > 90 的寶可夢`; break;
         case 'dual':
           filtered = filtered.filter(r => r.Type1 === '火' && r.Attack > 90);
-          codeTxt = `df.<span class="fn">loc</span>[(df[<span class="str">'Type1'</span>] <span class="op">==</span> <span class="str">'火'</span>) <span class="op">&amp;</span> (df[<span class="str">'Attack'</span>] <span class="op">&gt;</span> <span class="num">90</span>)]`;
-          statusTxt = `🔥⚔️ 雙條件：火屬性且 Attack > 90`;
-          break;
+          codeTxt = `df.<span class="fn">loc</span>[(df[<span class="str">'Type1'</span>] <span class="op">==</span> <span class="str">'火'</span>) <span class="op">&amp;</span> (df[<span class="str">'Attack'</span>] <span class="op">&gt;</span> <span class="num">90</span>)]`; statusTxt = `🔥⚔️ 雙條件：火屬性且 Attack > 90`; break;
         case 'row_col':
           filtered = filtered.filter(r => r.Type1 === '火');
-          codeTxt = `df.<span class="fn">loc</span>[df[<span class="str">'Type1'</span>] <span class="op">==</span> <span class="str">'火'</span>, [<span class="str">'Name'</span>, <span class="str">'Attack'</span>]]`;
-          statusTxt = `⭐ 實務最常用：同時給定「列條件」與「挑選特定欄位」`;
-          selectedCols = ['Name', 'Attack'];
-          break;
+          codeTxt = `df.<span class="fn">loc</span>[df[<span class="str">'Type1'</span>] <span class="op">==</span> <span class="str">'火'</span>, [<span class="str">'Name'</span>, <span class="str">'Attack'</span>]]`; statusTxt = `⭐ 實務最常用：同時給定「列條件」與「挑選特定欄位」`; selectedCols = ['Name', 'Attack']; break;
       }
 
       codeEl.innerHTML = codeTxt;
@@ -506,16 +651,10 @@
 
     function renderLocTable(rows, selectedCols) {
       const tbody = document.getElementById('loc-result-body');
-      
-      // Update Headers Dimming
       const allCols = ['ID', 'Name', 'Type1', 'Type2', 'HP', 'Attack', 'Defense'];
       allCols.forEach(col => {
         const th = document.getElementById(`th-${col}`);
-        if (selectedCols && !selectedCols.includes(col)) {
-          th.classList.add('df-cell-dimmed');
-        } else {
-          th.classList.remove('df-cell-dimmed');
-        }
+        if (selectedCols && !selectedCols.includes(col)) { th.classList.add('df-cell-dimmed'); } else { th.classList.remove('df-cell-dimmed'); }
       });
 
       if (rows.length === 0) {
@@ -582,8 +721,7 @@
       });
       document.getElementById('merge-how-str').textContent = `'${how}'`;
       const codeLine = document.getElementById('merge-code-line');
-      codeLine.classList.add('highlight');
-      setTimeout(() => codeLine.classList.remove('highlight'), 800);
+      codeLine.classList.add('highlight'); setTimeout(() => codeLine.classList.remove('highlight'), 800);
 
       const leftIds = how === 'inner' ? [1,2,3,5] : how === 'left' ? [1,2,3,4,5] : how === 'right' ? [1,2,3,5] : [1,2,3,4,5];
       const rightIds = how === 'inner' ? [1,2,3,5] : how === 'left' ? [1,2,3,5] : how === 'right' ? [1,2,3,5,8] : [1,2,3,5,8];
@@ -599,7 +737,60 @@
       document.getElementById('merge-status').textContent = MERGE_STATUS[how];
     }
 
-    /* ── 單元三：特徵工程 ── */
+    /* ── 單元五：Concat ── */
+    function concatAction(type) {
+      const codeBox = document.getElementById('concat-code');
+      const table = document.getElementById('concat-table');
+      const tbody = document.getElementById('concat-body');
+      const status = document.getElementById('concat-status');
+      
+      codeBox.style.display = 'block'; table.style.display = 'table';
+      
+      const gen1 = `<tr><td style="color:#94a3b8">0</td><td>小火龍</td><td>火</td></tr><tr><td style="color:#94a3b8">1</td><td>傑尼龜</td><td>水</td></tr>`;
+      const gen2 = `<tr class="df-new-col"><td style="color:#065f46">0</td><td>菊草葉</td><td>草</td></tr><tr class="df-new-col"><td style="color:#065f46">1</td><td>火球鼠</td><td>火</td></tr>`;
+      const gen2_ign = `<tr class="df-new-col"><td style="color:#065f46; font-weight:bold;">2</td><td>菊草葉</td><td>草</td></tr><tr class="df-new-col"><td style="color:#065f46; font-weight:bold;">3</td><td>火球鼠</td><td>火</td></tr>`;
+
+      if(type === 'default') {
+        document.getElementById('concat-line').innerHTML = `pd.<span class="fn">concat</span>([df_gen1, df_gen2], axis=<span class="num">0</span>)`;
+        tbody.innerHTML = gen1 + gen2;
+        status.innerHTML = "🚨 預設堆疊：成功上下接合，但是<b>左側索引發生了「0,1,0,1」重複的致命錯誤</b>！";
+      } else if (type === 'ignore') {
+        document.getElementById('concat-line').innerHTML = `pd.<span class="fn">concat</span>([df_gen1, df_gen2], ignore_index=<span class="kw">True</span>)`;
+        tbody.innerHTML = gen1 + gen2_ign;
+        status.innerHTML = "✅ 加入 <code>ignore_index=True</code>：捨棄舊索引並重新產生順序 (0,1,2,3)，這是最保險的堆疊方式！";
+      } else {
+        codeBox.style.display = 'none'; table.style.display = 'none';
+        status.innerHTML = "請點選按鈕查看上下疊加的結果。";
+      }
+    }
+
+    /* ── 單元六：.str 文字清洗 ── */
+    const STR_DATA = [
+      { n: '噴火龍', t: '火', a: 84 }, { n: '噴火龍MegaX', t: '火', a: 130 },
+      { n: '超夢', t: '超能力', a: 110 }, { n: '超夢MegaY', t: '超能力', a: 150 }
+    ];
+    function strAction(type) {
+      const codeEl = document.getElementById('str-code');
+      const tbody = document.getElementById('str-body');
+      const status = document.getElementById('str-status');
+      
+      if(type === 'contains') {
+        codeEl.innerHTML = `df[df[<span class="str">'Name'</span>].<span class="str">str</span>.<span class="fn">contains</span>(<span class="str">'Mega'</span>)]`;
+        const res = STR_DATA.filter(r => r.n.includes('Mega'));
+        tbody.innerHTML = res.map(r => `<tr class="df-highlight"><td>${r.n}</td><td>${r.t}</td><td>${r.a}</td></tr>`).join('');
+        status.innerHTML = "🔍 過濾成功！找出了所有包含 Mega 關鍵字的資料。";
+      } else if (type === 'replace') {
+        codeEl.innerHTML = `df[<span class="str">'Name'</span>] = df[<span class="str">'Name'</span>].<span class="str">str</span>.<span class="fn">replace</span>(<span class="str">'Mega'</span>, <span class="str">'超級'</span>)`;
+        tbody.innerHTML = STR_DATA.map(r => `<tr><td class="${r.n.includes('Mega') ? 'df-new-col' : ''}">${r.n.replace('Mega', '超級')}</td><td>${r.t}</td><td>${r.a}</td></tr>`).join('');
+        status.innerHTML = "✨ 替換成功！批次將名稱中的 Mega 改為了超級。";
+      } else {
+        codeEl.innerHTML = `<span class="cm"># 點擊上方按鈕查看程式碼</span>`;
+        tbody.innerHTML = STR_DATA.map(r => `<tr><td>${r.n}</td><td>${r.t}</td><td>${r.a}</td></tr>`).join('');
+        status.innerHTML = "點擊按鈕體驗字串處理魔力。";
+      }
+    }
+
+    /* ── 單元七：特徵工程 ── */
     const FE_DATA = [
       { Name: '小火龍', Attack: 52, Defense: 43 },
       { Name: '傑尼龜', Attack: 48, Defense: 65 },
@@ -697,7 +888,7 @@
       setTimeout(() => wrap.querySelectorAll('.bar-seg').forEach(seg => seg.style.width = seg.dataset.w + '%'), 50);
     }
 
-    /* ── 單元四：Groupby ── */
+    /* ── 單元八：Groupby ── */
     const AGG_CODES = {
       avg_atk_by_type: [
         `df.<span class="fn">groupby</span>(<span class="str">'Type1'</span>)[<span class="str">'Attack'</span>]`,

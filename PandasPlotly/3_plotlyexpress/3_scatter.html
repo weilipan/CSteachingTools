@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第三章：Plotly Express 散佈圖與氣泡圖</title>
+    <!-- 引入基礎公用版型與樣式 -->
+    <link rel="stylesheet" href="../../theme.css" />
+    <script src="../../layout.js" defer></script>
+    
+    <!-- 引入 Plotly.js 以在網頁上動態渲染範例圖表 -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <style>
+        .code-block {
+            background-color: var(--bg-body, #f6f8fa);
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 6px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            box-shadow: inset 0 1px 3px rgba(27,31,35,0.05);
+            flex-grow: 1;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid var(--border-color, #e1e4e8);
+            padding: 8px;
+            text-align: center;
+        }
+        .data-table th {
+            background-color: var(--bg-body, #f6f8fa);
+            color: var(--text-main, #24292e);
+            font-weight: 600;
+        }
+        .param-name {
+            font-weight: bold;
+            color: var(--accent-color, #0366d6);
+            background-color: #f0f8ff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+        }
+        
+        /* 左右對照與互動遊樂場區塊樣式 */
+        .playground {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+        .playground-left, .playground-right {
+            flex: 1 1 320px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .control-panel {
+            background-color: #f0f8ff;
+            border: 1px solid #cce5ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            margin-bottom: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-main, #24292e);
+            font-size: 0.9rem;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            background-color: white;
+            cursor: pointer;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--accent-color, #0366d6);
+        }
+        .chart-container {
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 8px;
+            padding: 10px;
+            background-color: var(--bg-card, #ffffff);
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(27,31,35,0.12));
+            flex-grow: 1;
+            display: block; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="section-title">第三章：Plotly Express 散佈圖與氣泡圖 (px.scatter)</h1>
+        
+        <div class="grid" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+            <div class="card">
+                <h2>1. 準備對照資料 (氣溫與銷量紀錄)</h2>
+                <p>我們準備了一組包含氣溫、銷量，並加入了「分店」、「客流量」與「是否為週末」等多重維度的資料表。</p>
+                <pre class="code-block" style="flex-grow: 0;"><code>import pandas as pd
+import plotly.express as px
+
+data = {
+    '氣溫 (℃)': [22, 25, 28, 30, 32, 24, 26, 29, 31, 34],
+    '冰咖啡銷量 (杯)': [50, 70, 90, 110, 150, 40, 65, 80, 120, 160],
+    '分店': ['台北', '台北', '台北', '台北', '台北', '台中', '台中', '台中', '台中', '台中'],
+    '客流量 (人)': [150, 200, 250, 300, 400, 120, 180, 220, 280, 350],
+    '週末': ['否', '否', '是', '否', '是', '否', '否', '是', '否', '是']
+}
+df = pd.DataFrame(data)</code></pre>
+                
+                <table class="data-table">
+                    <tr><th>氣溫 (℃)</th><th>冰咖啡銷量 (杯)</th><th>分店</th><th>客流量 (人)</th><th>週末</th></tr>
+                    <tr><td>22</td><td>50</td><td>台北</td><td>150</td><td>否</td></tr>
+                    <tr><td>25</td><td>70</td><td>台北</td><td>200</td><td>否</td></tr>
+                    <tr><td>28</td><td>90</td><td>台北</td><td>250</td><td>是</td></tr>
+                    <tr><td>...</td><td>...</td><td>...</td><td>...</td><td>...</td></tr>
+                    <tr><td>34</td><td>160</td><td>台中</td><td>350</td><td>是</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <h2>2. 互動學習：px.scatter 參數實驗室 🧪</h2>
+            <p><strong>親自動手玩玩看！</strong> 觀察如何利用顏色、大小與形狀，在一張平面圖表內呈現高達 <strong>5 個維度</strong>的資料。</p>
+            
+            <div class="playground">
+                <!-- 左側：控制面板與程式碼 -->
+                <div class="playground-left">
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>🎨 color (依據欄位改變顏色)</label>
+                            <select id="sel-color">
+                                <option value="None">無 (單一顏色)</option>
+                                <option value="分店">'分店' (區分台北與台中)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🫧 size (依據欄位改變大小 = 氣泡圖)</label>
+                            <select id="sel-size">
+                                <option value="None">無 (統一大小)</option>
+                                <option value="客流量">'客流量 (人)' (變身氣泡圖)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🔺 symbol (依據欄位改變形狀)</label>
+                            <select id="sel-symbol">
+                                <option value="None">無 (皆為圓形)</option>
+                                <option value="週末">'週末' (區分平假日)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <pre class="code-block"><code id="dynamic-code">載入中...</code></pre>
+                </div>
+                
+                <!-- 右側：即時渲染的圖表 -->
+                <div class="playground-right">
+                    <div id="interactive-chart" class="chart-container" style="width:100%; min-height:450px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr;">
+            <div class="card">
+                <h2>📝 本章重點參數解析</h2>
+                <ul>
+                    <li><span class="param-name">x</span> 與 <span class="param-name">y</span>：散佈圖的核心，用來觀察兩個連續數值（例如氣溫與銷量）之間是否具有正向或負向的關聯趨勢。</li>
+                    <li><span class="param-name">color</span>：透過顏色將資料點分群（例如分開看台北店與台中店的趨勢是否有差異）。</li>
+                    <li><span class="param-name">size</span>：散佈圖的必殺技！給定一個數值欄位，點的大小就會隨之改變，一秒將散佈圖升級為<strong>「氣泡圖 (Bubble Chart)」</strong>。</li>
+                    <li><span class="param-name">size_max</span>：搭配 size 使用，用來限制圖表中最大氣泡的尺寸（像素），避免數值過大時氣泡互相遮擋。</li>
+                    <li><span class="param-name">symbol</span>：將資料點的形狀依據欄位改變（如圓形、菱形、方形）。這對於印製成黑白文件時分辨類別非常實用。</li>
+                    <li><span class="param-name">opacity</span>：設定資料點的透明度 (0.0~1.0)，在氣泡圖或是資料點非常密集時，調整透明度可以幫助我們看出重疊區塊的分佈密度。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const selColor = document.getElementById('sel-color');
+            const selSize = document.getElementById('sel-size');
+            const selSymbol = document.getElementById('sel-symbol');
+            const codeBlock = document.getElementById('dynamic-code');
+
+            // 原始資料設定
+            const x1 = [22, 25, 28, 30, 32];
+            const y1 = [50, 70, 90, 110, 150];
+            const tr1 = [150, 200, 250, 300, 400];
+            const wk1 = ['否', '否', '是', '否', '是'];
+
+            const x2 = [24, 26, 29, 31, 34];
+            const y2 = [40, 65, 80, 120, 160];
+            const tr2 = [120, 180, 220, 280, 350];
+            const wk2 = ['否', '否', '是', '否', '是'];
+
+            function updatePlayground() {
+                const colorVal = selColor.value;
+                const sizeVal = selSize.value;
+                const symVal = selSymbol.value;
+
+                // 1. 動態生成 Python 程式碼
+                let codeStr = `fig = px.scatter(
+    df,
+    x='氣溫 (℃)',
+    y='冰咖啡銷量 (杯)',`;
+                
+                if (colorVal === '分店') {
+                    codeStr += `
+    color='分店',             # 依分店分色`;
+                }
+
+                if (sizeVal === '客流量') {
+                    codeStr += `
+    size='客流量 (人)',        # 變身氣泡圖
+    size_max=25,             # 限制氣泡最大尺寸`;
+                }
+
+                if (symVal === '週末') {
+                    codeStr += `
+    symbol='週末',            # 依週末改變形狀`;
+                }
+
+                codeStr += `
+    opacity=0.7,             # 增加透明度防遮擋
+    title='氣溫與冰咖啡銷量散佈圖'
+)
+fig.show()`;
+                
+                codeBlock.innerText = codeStr;
+
+                // 2. 動態更新 Plotly 圖表
+                // 將面積轉換為氣泡半徑大小以模擬 size_max 視覺效果
+                let sizeArr1 = sizeVal === '客流量' ? tr1.map(v => Math.max(8, Math.sqrt(v)*1.5)) : 10;
+                let sizeArr2 = sizeVal === '客流量' ? tr2.map(v => Math.max(8, Math.sqrt(v)*1.5)) : 10;
+
+                let symArr1 = symVal === '週末' ? wk1.map(w => w === '是' ? 'diamond' : 'circle') : 'circle';
+                let symArr2 = symVal === '週末' ? wk2.map(w => w === '是' ? 'diamond' : 'circle') : 'circle';
+
+                let trace1 = {
+                    x: x1, y: y1, mode: 'markers', name: '台北',
+                    marker: { color: '#3498db', size: sizeArr1, symbol: symArr1, opacity: 0.7, line: {width: 1, color: 'white'} },
+                    text: tr1.map((v, i) => `分店: 台北<br>客流量: ${v}<br>週末: ${wk1[i]}`),
+                    hovertemplate: '氣溫: %{x}℃<br>銷量: %{y}杯<br>%{text}<extra></extra>'
+                };
+
+                let trace2 = {
+                    x: x2, y: y2, mode: 'markers', name: '台中',
+                    marker: { color: '#e74c3c', size: sizeArr2, symbol: symArr2, opacity: 0.7, line: {width: 1, color: 'white'} },
+                    text: tr2.map((v, i) => `分店: 台中<br>客流量: ${v}<br>週末: ${wk2[i]}`),
+                    hovertemplate: '氣溫: %{x}℃<br>銷量: %{y}杯<br>%{text}<extra></extra>'
+                };
+
+                let dataToRender = [];
+                if (colorVal === '分店') {
+                    dataToRender = [trace1, trace2];
+                } else {
+                    // 若無分色，則合併繪製單一圖例
+                    let combinedTrace = {
+                        x: [...x1, ...x2], y: [...y1, ...y2], mode: 'markers', name: '全部分店',
+                        marker: { 
+                            color: '#9b59b6', 
+                            size: sizeVal === '客流量' ? [...sizeArr1, ...sizeArr2] : 10, 
+                            symbol: symVal === '週末' ? [...symArr1, ...symArr2] : 'circle', 
+                            opacity: 0.7, 
+                            line: {width: 1, color: 'white'} 
+                        },
+                        text: [...trace1.text, ...trace2.text],
+                        hovertemplate: '氣溫: %{x}℃<br>銷量: %{y}杯<br>%{text}<extra></extra>'
+                    };
+                    dataToRender = [combinedTrace];
+                }
+
+                let layout = {
+                    title: { text: '氣溫與冰咖啡銷量散佈圖', font: {size: 18} },
+                    margin: {t: 60, l: 60, r: 40, b: 60},
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: {title: '氣溫 (℃)', gridcolor: '#e1e4e8'},
+                    yaxis: {title: '冰咖啡銷量 (杯)', gridcolor: '#e1e4e8'},
+                    hovermode: 'closest'
+                };
+
+                Plotly.newPlot('interactive-chart', dataToRender, layout, {responsive: true});
+            }
+
+            // 綁定事件監聽器
+            selColor.addEventListener('change', updatePlayground);
+            selSize.addEventListener('change', updatePlayground);
+            selSymbol.addEventListener('change', updatePlayground);
+
+            // 初始載入渲染，加上小延遲確保外層 Flex 容器已定位
+            setTimeout(updatePlayground, 100);
+            
+            // 監聽視窗大小改變，強制重新繪圖確保 RWD
+            window.addEventListener('resize', function() {
+                Plotly.Plots.resize('interactive-chart');
+            });
+        });
+    </script>
+</body>
+</html>

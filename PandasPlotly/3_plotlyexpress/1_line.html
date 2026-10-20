@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第一章：Plotly Express 起步與折線圖</title>
+    <!-- 引入基礎公用版型與樣式 -->
+    <link rel="stylesheet" href="../../theme.css" />
+    <script src="../../layout.js" defer></script>
+    
+    <!-- 引入 Plotly.js 以在網頁上動態渲染範例圖表 -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <style>
+        .code-block {
+            background-color: var(--bg-body, #f6f8fa);
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 6px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            box-shadow: inset 0 1px 3px rgba(27,31,35,0.05);
+            flex-grow: 1;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid var(--border-color, #e1e4e8);
+            padding: 10px;
+            text-align: center;
+        }
+        .data-table th {
+            background-color: var(--bg-body, #f6f8fa);
+            color: var(--text-main, #24292e);
+            font-weight: 600;
+        }
+        .param-name {
+            font-weight: bold;
+            color: var(--accent-color, #0366d6);
+            background-color: #f0f8ff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+        }
+        
+        /* 左右對照與互動遊樂場區塊樣式 (同步第二章的修正版) */
+        .playground {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+        .playground-left, .playground-right {
+            flex: 1 1 320px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .control-panel {
+            background-color: #f0f8ff;
+            border: 1px solid #cce5ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            margin-bottom: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-main, #24292e);
+            font-size: 0.9rem;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            background-color: white;
+            cursor: pointer;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--accent-color, #0366d6);
+        }
+        .chart-container {
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 8px;
+            padding: 10px;
+            background-color: var(--bg-card, #ffffff);
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(27,31,35,0.12));
+            flex-grow: 1;
+            display: block; 
+        }
+        .doc-links {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .doc-links li {
+            margin-bottom: 10px;
+            padding-left: 24px;
+            position: relative;
+        }
+        .doc-links li::before {
+            content: "🔗";
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        .doc-links a {
+            color: var(--accent-color, #0366d6);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .doc-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="section-title">第一章：Plotly Express 起步與折線圖 (px.line)</h1>
+        
+        <div class="grid" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+            <div class="card">
+                <h2>📚 官方線上文件 (Online Documentation)</h2>
+                <p>遇到不清楚的參數或函式時，可以隨時參考以下連結：</p>
+                <ul class="doc-links">
+                    <li><a href="https://pandas.pydata.org/docs/" target="_blank">Pandas 官方文件 (Pandas Documentation)</a></li>
+                    <li><a href="https://plotly.com/python/line-charts/" target="_blank">Plotly 官方教學：折線圖 (Line Charts in Python)</a></li>
+                    <li><a href="https://plotly.com/python-api-reference/generated/plotly.express.line.html" target="_blank">API 參考手冊：px.line 完整參數說明</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+            <div class="card">
+                <h2>1. 準備對照資料 (建立 DataFrame)</h2>
+                <p>我們先建立一組簡單的「第一季咖啡銷量」資料表，並包含隱藏的「促銷活動」欄位，用以展現互動式圖表的魅力。</p>
+                <pre class="code-block" style="flex-grow: 0;"><code>import pandas as pd
+import plotly.express as px
+
+data = {
+    '月份': ['1月', '2月', '3月', '1月', '2月', '3月'],
+    '飲品': ['美式咖啡', '美式咖啡', '美式咖啡', '拿鐵', '拿鐵', '拿鐵'],
+    '銷量': [100, 120, 150, 80, 95, 110],
+    '促銷活動': ['無', '情人節買一送一', '春季9折', '無', '情人節第二杯半價', '春季9折']
+}
+df = pd.DataFrame(data)</code></pre>
+                
+                <table class="data-table">
+                    <tr><th>月份</th><th>飲品</th><th>銷量</th><th>促銷活動</th></tr>
+                    <tr><td>1月</td><td>美式咖啡</td><td>100</td><td>無</td></tr>
+                    <tr><td>2月</td><td>美式咖啡</td><td>120</td><td>情人節買一送一</td></tr>
+                    <tr><td>3月</td><td>美式咖啡</td><td>150</td><td>春季9折</td></tr>
+                    <tr><td>1月</td><td>拿鐵</td><td>80</td><td>無</td></tr>
+                    <tr><td>2月</td><td>拿鐵</td><td>95</td><td>情人節第二杯半價</td></tr>
+                    <tr><td>3月</td><td>拿鐵</td><td>110</td><td>春季9折</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <h2>2. 互動學習：px.line 參數實驗室 🧪</h2>
+            <p><strong>親自動手玩玩看！</strong> 請調整左側面板的下拉選單，觀察下方 <strong>Python 程式碼</strong> 與右側 <strong>視覺化圖表</strong> 是如何「即時連動」的。</p>
+            
+            <div class="playground">
+                <!-- 左側：控制面板與程式碼 -->
+                <div class="playground-left">
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>📍 markers (顯示資料點標記)</label>
+                            <select id="sel-markers">
+                                <option value="True">True (顯示圓點)</option>
+                                <option value="False">False (僅顯示線條)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>〰️ line_dash (依欄位改變線條樣式)</label>
+                            <select id="sel-dash">
+                                <option value="飲品">'飲品' (實線與虛線區分)</option>
+                                <option value="None">無 (皆為實線)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🖱️ hover_data (懸浮顯示隱藏資訊)</label>
+                            <select id="sel-hover">
+                                <option value="促銷活動">['促銷活動'] (顯示促銷內容)</option>
+                                <option value="None">無 (僅顯示預設軸資訊)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <pre class="code-block"><code id="dynamic-code">載入中...</code></pre>
+                </div>
+                
+                <!-- 右側：即時渲染的圖表 -->
+                <div class="playground-right">
+                    <div id="interactive-chart" class="chart-container" style="width:100%; min-height:450px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr;">
+            <div class="card">
+                <h2>📝 本章重點參數解析</h2>
+                <ul>
+                    <li><span class="param-name">color</span>：依據設定的欄位將資料分組，畫出多條不同顏色的折線。</li>
+                    <li><span class="param-name">markers</span>：設為 <code>True</code> 開啟資料點標記，折線轉折處會出現圓點，讓數據位置更明確。</li>
+                    <li><span class="param-name">line_dash</span>：依據欄位自動分配線條樣式（實線、虛線等），非常適合用在可能需要黑白列印的報告中。</li>
+                    <li><span class="param-name">hover_data</span>：Plotly 核心亮點！滑鼠停留在資料點上時，能額外顯示 DataFrame 內的隱藏資訊（如本例的促銷活動）。</li>
+                    <li><span class="param-name">labels</span>：傳入字典 (Dictionary)，用來替換圖表上顯示的欄位名稱，讓 X/Y 軸說明更正式。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 抓取 DOM 元素
+            const selMarkers = document.getElementById('sel-markers');
+            const selDash = document.getElementById('sel-dash');
+            const selHover = document.getElementById('sel-hover');
+            const codeBlock = document.getElementById('dynamic-code');
+
+            function updatePlayground() {
+                const markersVal = selMarkers.value;
+                const dashVal = selDash.value;
+                const hoverVal = selHover.value;
+
+                // 1. 動態生成 Python 程式碼
+                let codeStr = `fig = px.line(
+    df, 
+    x='月份', 
+    y='銷量', 
+    color='飲品', `;
+                
+                if (markersVal === 'True') {
+                    codeStr += `
+    markers=True,            # 顯示資料點`;
+                }
+
+                if (dashVal === '飲品') {
+                    codeStr += `
+    line_dash='飲品',        # 改變線條樣式`;
+                }
+
+                if (hoverVal === '促銷活動') {
+                    codeStr += `
+    hover_data=['促銷活動'], # 懸浮提示隱藏資訊`;
+                }
+
+                codeStr += `
+    title='第一季咖啡銷量趨勢圖',
+    color_discrete_sequence=['#3498db', '#e74c3c'], 
+    labels={'銷量': '銷售杯數 (杯)', '飲品': '飲品種類'}
+)
+fig.show()`;
+                
+                codeBlock.innerText = codeStr;
+
+                // 2. 動態更新 Plotly 圖表 (模擬 px 繪圖邏輯)
+                let trace1 = {
+                    x: ['1月', '2月', '3月'],
+                    y: [100, 120, 150],
+                    name: '美式咖啡',
+                    line: {color: '#3498db', width: 3, dash: 'solid'},
+                    marker: {size: 8}
+                };
+
+                let trace2 = {
+                    x: ['1月', '2月', '3月'],
+                    y: [80, 95, 110],
+                    name: '拿鐵',
+                    line: {color: '#e74c3c', width: 3, dash: 'solid'},
+                    marker: {size: 8}
+                };
+
+                // 處理 markers
+                if (markersVal === 'True') {
+                    trace1.mode = 'lines+markers';
+                    trace2.mode = 'lines+markers';
+                } else {
+                    trace1.mode = 'lines';
+                    trace2.mode = 'lines';
+                }
+
+                // 處理 line_dash
+                if (dashVal === '飲品') {
+                    trace2.line.dash = 'dash';
+                } else {
+                    trace2.line.dash = 'solid';
+                }
+
+                // 處理 hover_data
+                if (hoverVal === '促銷活動') {
+                    trace1.text = ['無', '情人節買一送一', '春季9折'];
+                    trace1.hovertemplate = '飲品種類=美式咖啡<br>月份=%{x}<br>銷售杯數 (杯)=%{y}<br>促銷活動=%{text}<extra></extra>';
+                    trace2.text = ['無', '情人節第二杯半價', '春季9折'];
+                    trace2.hovertemplate = '飲品種類=拿鐵<br>月份=%{x}<br>銷售杯數 (杯)=%{y}<br>促銷活動=%{text}<extra></extra>';
+                } else {
+                    trace1.hovertemplate = '飲品種類=美式咖啡<br>月份=%{x}<br>銷售杯數 (杯)=%{y}<extra></extra>';
+                    trace2.hovertemplate = '飲品種類=拿鐵<br>月份=%{x}<br>銷售杯數 (杯)=%{y}<extra></extra>';
+                }
+
+                let layout = {
+                    title: { text: '第一季咖啡銷量趨勢圖', font: {size: 18} },
+                    margin: {t: 60, l: 60, r: 40, b: 60},
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: {title: '月份', gridcolor: '#e1e4e8'}, 
+                    yaxis: {title: '銷售杯數 (杯)', gridcolor: '#e1e4e8'},
+                    legend: {title: {text: '飲品種類'}},
+                    hovermode: 'closest'
+                };
+
+                Plotly.newPlot('interactive-chart', [trace1, trace2], layout, {responsive: true});
+            }
+
+            // 綁定事件監聽器
+            selMarkers.addEventListener('change', updatePlayground);
+            selDash.addEventListener('change', updatePlayground);
+            selHover.addEventListener('change', updatePlayground);
+
+            // 初始載入渲染，加上小延遲確保外層 Flex 容器已定位
+            setTimeout(updatePlayground, 100);
+            
+            // 監聽視窗大小改變，強制重新繪圖確保 RWD
+            window.addEventListener('resize', function() {
+                Plotly.Plots.resize('interactive-chart');
+            });
+        });
+    </script>
+</body>
+</html>

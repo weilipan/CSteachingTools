@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第九章：Plotly Express 三元散佈圖與時間軸</title>
+    <!-- 引入基礎公用版型與樣式 -->
+    <link rel="stylesheet" href="../../theme.css" />
+    <script src="../../layout.js" defer></script>
+    
+    <!-- 引入 Plotly.js 以在網頁上動態渲染範例圖表 -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <style>
+        .code-block {
+            background-color: var(--bg-body, #f6f8fa);
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 6px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            box-shadow: inset 0 1px 3px rgba(27,31,35,0.05);
+            flex-grow: 1;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid var(--border-color, #e1e4e8);
+            padding: 8px;
+            text-align: center;
+        }
+        .data-table th {
+            background-color: var(--bg-body, #f6f8fa);
+            color: var(--text-main, #24292e);
+            font-weight: 600;
+        }
+        .param-name {
+            font-weight: bold;
+            color: var(--accent-color, #0366d6);
+            background-color: #f0f8ff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+        }
+        
+        /* 左右對照與互動遊樂場區塊樣式 */
+        .playground {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+        .playground-left, .playground-right {
+            flex: 1 1 320px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .control-panel {
+            background-color: #f0f8ff;
+            border: 1px solid #cce5ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            margin-bottom: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-main, #24292e);
+            font-size: 0.9rem;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            background-color: white;
+            cursor: pointer;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--accent-color, #0366d6);
+        }
+        .chart-container {
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 8px;
+            padding: 10px;
+            background-color: var(--bg-card, #ffffff);
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(27,31,35,0.12));
+            flex-grow: 1;
+            display: block; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="section-title">第九章：Plotly Express 三元散佈圖 (px.scatter_ternary) 與時間軸</h1>
+        
+        <div class="grid" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+            <div class="card">
+                <h2>1. 準備對照資料 (風味偏好演進)</h2>
+                <p>三元圖 (Ternary Plot) 非常適合用來展示「三個變數加總為 100%」的資料組成。我們來觀察 2024~2026 年，三家分店顧客對咖啡豆「酸度、甜度、苦味」偏好的演進趨勢！</p>
+                <pre class="code-block" style="flex-grow: 0;"><code>import pandas as pd
+import plotly.express as px
+
+# 準備包含三個組成變數 (加總為 100%) 以及時間維度 (年份) 的資料
+data = {
+    '年份': [2024, 2024, 2024, 2025, 2025, 2025, 2026, 2026, 2026],
+    '分店': ['台北', '台中', '高雄', '台北', '台中', '高雄', '台北', '台中', '高雄'],
+    '酸度 (%)': [30, 50, 20, 40, 40, 30, 50, 30, 40],
+    '甜度 (%)': [40, 30, 20, 40, 40, 30, 30, 50, 40],
+    '苦味 (%)': [30, 20, 60, 20, 20, 40, 20, 20, 20],
+    '客流量':   [200, 150, 180, 250, 180, 220, 300, 200, 250]
+}
+df = pd.DataFrame(data)</code></pre>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <h2>2. 互動學習：px.scatter_ternary 參數實驗室 🧪</h2>
+            <p><strong>親自動手玩玩看！</strong> 這是 Plotly 最強大的功能之一：只要加上 <code>animation_frame</code>，任何圖表都能一秒變成<strong>動態播放的微電影</strong>！</p>
+            
+            <div class="playground">
+                <!-- 左側：控制面板與程式碼 -->
+                <div class="playground-left">
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>⏱️ animation_frame (時間軸動畫)</label>
+                            <select id="sel-animation">
+                                <option value="None">無 (僅顯示靜態疊加圖)</option>
+                                <option value="年份" selected>'年份' (啟動下方播放器！)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🎨 color (依據欄位分色)</label>
+                            <select id="sel-color">
+                                <option value="None">無 (單一顏色)</option>
+                                <option value="分店" selected>'分店' (區分不同城市)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🫧 size (氣泡模式)</label>
+                            <select id="sel-size">
+                                <option value="None">無 (統一大小)</option>
+                                <option value="客流量" selected>'客流量' (加入第四維度資料)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <pre class="code-block"><code id="dynamic-code">載入中...</code></pre>
+                </div>
+                
+                <!-- 右側：即時渲染的圖表 -->
+                <div class="playground-right">
+                    <div id="interactive-chart" class="chart-container" style="width:100%; min-height:450px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr;">
+            <div class="card">
+                <h2>📝 本章重點參數解析</h2>
+                <ul>
+                    <li><span class="param-name">a, b, c</span>：三元圖專屬的坐標軸參數。放入加總會等於 100 (或 1) 的三個欄位，Plotly 會自動把資料投射到正三角形內部的相對位置。</li>
+                    <li><span class="param-name">animation_frame</span>：🔥 <strong>動畫神器！</strong> 指定一個代表時間序列的欄位（如年份、月份），圖表下方就會自動生成「播放鍵」與「滑桿」，讓資料點在地圖或座標系中隨著時間動起來。</li>
+                    <li><span class="param-name">animation_group</span>：*(進階)* 當點有顏色分組，又開啟了動畫時，Plotly 需要追蹤「同一個物件」在不同影格的移動軌跡。這時可以設定 <code>animation_group='分店'</code> 來確保過場動畫平滑自然。</li>
+                    <li><span class="param-name">size</span>：結合三元圖與氣泡圖，讓我們能同時觀察組成的比例 (A/B/C軸)、類別 (顏色)、以及總量 (氣泡大小)，是一張資訊密度極高的圖表！</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const selAnimation = document.getElementById('sel-animation');
+            const selColor = document.getElementById('sel-color');
+            const selSize = document.getElementById('sel-size');
+            const codeBlock = document.getElementById('dynamic-code');
+
+            // 原始資料設定
+            const dataSets = {
+                '2024': [
+                    {branch: '台北', a: 30, b: 40, c: 30, vol: 200, color: '#3498db'},
+                    {branch: '台中', a: 50, b: 30, c: 20, vol: 150, color: '#e74c3c'},
+                    {branch: '高雄', a: 20, b: 20, c: 60, vol: 180, color: '#2ecc71'}
+                ],
+                '2025': [
+                    {branch: '台北', a: 40, b: 40, c: 20, vol: 250, color: '#3498db'},
+                    {branch: '台中', a: 40, b: 40, c: 20, vol: 180, color: '#e74c3c'},
+                    {branch: '高雄', a: 30, b: 30, c: 40, vol: 220, color: '#2ecc71'}
+                ],
+                '2026': [
+                    {branch: '台北', a: 50, b: 30, c: 20, vol: 300, color: '#3498db'},
+                    {branch: '台中', a: 30, b: 50, c: 20, vol: 200, color: '#e74c3c'},
+                    {branch: '高雄', a: 40, b: 40, c: 20, vol: 250, color: '#2ecc71'}
+                ]
+            };
+
+            function getTraces(yearData, colorVal, sizeVal) {
+                if (colorVal === '分店') {
+                    return yearData.map(d => ({
+                        type: 'scatterternary',
+                        mode: 'markers',
+                        name: d.branch,
+                        a: [d.a], b: [d.b], c: [d.c],
+                        marker: {
+                            size: sizeVal === '客流量' ? Math.max(10, Math.sqrt(d.vol)*1.5) : 15,
+                            color: d.color,
+                            line: {color: 'white', width: 1.5}
+                        },
+                        text: [d.branch],
+                        customdata: [d.vol],
+                        hovertemplate: '<b>%{text}</b><br>酸度: %{a}%<br>甜度: %{b}%<br>苦味: %{c}%<br>客流量: %{customdata}<extra></extra>'
+                    }));
+                } else {
+                    return [{
+                        type: 'scatterternary',
+                        mode: 'markers',
+                        name: '全部分店',
+                        a: yearData.map(d => d.a),
+                        b: yearData.map(d => d.b),
+                        c: yearData.map(d => d.c),
+                        marker: {
+                            size: sizeVal === '客流量' ? yearData.map(d => Math.max(10, Math.sqrt(d.vol)*1.5)) : 15,
+                            color: '#9b59b6',
+                            line: {color: 'white', width: 1.5}
+                        },
+                        text: yearData.map(d => d.branch),
+                        customdata: yearData.map(d => d.vol),
+                        hovertemplate: '<b>%{text}</b><br>酸度: %{a}%<br>甜度: %{b}%<br>苦味: %{c}%<br>客流量: %{customdata}<extra></extra>'
+                    }];
+                }
+            }
+
+            function updatePlayground() {
+                const animVal = selAnimation.value;
+                const colorVal = selColor.value;
+                const sizeVal = selSize.value;
+
+                // 1. 動態生成 Python 程式碼
+                let codeStr = `fig = px.scatter_ternary(
+    df,
+    a='酸度 (%)',
+    b='甜度 (%)',
+    c='苦味 (%)',`;
+                
+                if (colorVal === '分店') {
+                    codeStr += `
+    color='分店',`;
+                }
+
+                if (sizeVal === '客流量') {
+                    codeStr += `
+    size='客流量',
+    size_max=30,`;
+                }
+
+                if (animVal === '年份') {
+                    codeStr += `
+    animation_frame='年份',  # 啟動時間軸播放器
+    animation_group='分店',  # 讓點平滑移動不交錯`;
+                }
+
+                codeStr += `
+    title='各分店咖啡風味偏好演進'
+)
+fig.show()`;
+                
+                codeBlock.innerText = codeStr;
+
+                // 2. 動態更新 Plotly 圖表
+                let layout = {
+                    title: { text: '各分店咖啡風味偏好演進', font: {size: 18} },
+                    // 關鍵修正：增加底部留白 (b: 130) 讓播放器與時間軸有空間顯示，不與座標軸重疊
+                    margin: {t: 60, l: 60, r: 60, b: 130},
+                    ternary: {
+                        sum: 100,
+                        aaxis: {title: '酸度 (%)', min: 0, linewidth: 2, ticks: 'outside', titlefont: {size: 14}},
+                        baxis: {title: '甜度 (%)', min: 0, linewidth: 2, ticks: 'outside', titlefont: {size: 14}},
+                        caxis: {title: '苦味 (%)', min: 0, linewidth: 2, ticks: 'outside', titlefont: {size: 14}},
+                        bgcolor: 'rgba(0,0,0,0)'
+                    },
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)'
+                };
+
+                let config = {responsive: true};
+                let frames = [];
+
+                if (animVal === '年份') {
+                    // 關鍵修正：重新定位播放器，並將 redraw 設為 true 確保三元圖能正確更新動畫
+                    layout.updatemenus = [{
+                        type: 'buttons',
+                        showactive: false,
+                        x: 0.1, y: -0.15, xanchor: 'right', yanchor: 'top',
+                        direction: 'left',
+                        pad: {t: 5, r: 10},
+                        buttons: [{
+                            label: '▶ 播放',
+                            method: 'animate',
+                            args: [null, {mode: 'immediate', fromcurrent: true, transition: {duration: 500}, frame: {duration: 1000, redraw: true}}]
+                        }, {
+                            label: '⏸ 暫停',
+                            method: 'animate',
+                            args: [[null], {mode: 'immediate', transition: {duration: 0}, frame: {duration: 0, redraw: false}}]
+                        }]
+                    }];
+                    
+                    // 關鍵修正：重新定位時間軸滑桿，對齊播放按鈕
+                    layout.sliders = [{
+                        pad: {l: 10, t: 0},
+                        x: 0.1, y: -0.15, xanchor: 'left', yanchor: 'top',
+                        len: 0.85,
+                        currentvalue: {visible: true, prefix: '年份: ', xanchor: 'right', font: {size: 14, color: '#333'}},
+                        steps: ['2024', '2025', '2026'].map(y => ({
+                            label: y,
+                            method: 'animate',
+                            args: [[y], {mode: 'immediate', transition: {duration: 500}, frame: {duration: 1000, redraw: true}}]
+                        }))
+                    }];
+
+                    // 建立動畫 Frames
+                    frames = [
+                        {name: '2024', data: getTraces(dataSets['2024'], colorVal, sizeVal)},
+                        {name: '2025', data: getTraces(dataSets['2025'], colorVal, sizeVal)},
+                        {name: '2026', data: getTraces(dataSets['2026'], colorVal, sizeVal)}
+                    ];
+
+                    Plotly.newPlot('interactive-chart', {
+                        data: getTraces(dataSets['2024'], colorVal, sizeVal),
+                        layout: layout,
+                        frames: frames
+                    }, config);
+                } else {
+                    // 靜態模式：將三年資料全部疊加顯示
+                    let allData = [...dataSets['2024'], ...dataSets['2025'], ...dataSets['2026']];
+                    Plotly.newPlot('interactive-chart', getTraces(allData, colorVal, sizeVal), layout, config);
+                }
+            }
+
+            // 綁定事件監聽器
+            selAnimation.addEventListener('change', updatePlayground);
+            selColor.addEventListener('change', updatePlayground);
+            selSize.addEventListener('change', updatePlayground);
+
+            // 初始載入渲染
+            setTimeout(updatePlayground, 100);
+            
+            // 監聽視窗大小改變，強制重新繪圖確保 RWD
+            window.addEventListener('resize', function() {
+                Plotly.Plots.resize('interactive-chart');
+            });
+        });
+    </script>
+</body>
+</html>

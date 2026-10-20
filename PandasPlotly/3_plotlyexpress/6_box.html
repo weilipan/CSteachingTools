@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第六章：Plotly Express 箱型圖與離群值</title>
+    <!-- 引入基礎公用版型與樣式 -->
+    <link rel="stylesheet" href="../../theme.css" />
+    <script src="../../layout.js" defer></script>
+    
+    <!-- 引入 Plotly.js 以在網頁上動態渲染範例圖表 -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <style>
+        .code-block {
+            background-color: var(--bg-body, #f6f8fa);
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 6px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            box-shadow: inset 0 1px 3px rgba(27,31,35,0.05);
+            flex-grow: 1;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid var(--border-color, #e1e4e8);
+            padding: 8px;
+            text-align: center;
+        }
+        .data-table th {
+            background-color: var(--bg-body, #f6f8fa);
+            color: var(--text-main, #24292e);
+            font-weight: 600;
+        }
+        .param-name {
+            font-weight: bold;
+            color: var(--accent-color, #0366d6);
+            background-color: #f0f8ff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+        }
+        
+        /* 左右對照與互動遊樂場區塊樣式 */
+        .playground {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+        .playground-left, .playground-right {
+            flex: 1 1 320px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .control-panel {
+            background-color: #f0f8ff;
+            border: 1px solid #cce5ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            margin-bottom: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-main, #24292e);
+            font-size: 0.9rem;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            background-color: white;
+            cursor: pointer;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--accent-color, #0366d6);
+        }
+        .chart-container {
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 8px;
+            padding: 10px;
+            background-color: var(--bg-card, #ffffff);
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(27,31,35,0.12));
+            flex-grow: 1;
+            display: block; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="section-title">第六章：Plotly Express 箱型圖 (px.box) 與離群值</h1>
+        
+        <div class="grid" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+            <div class="card">
+                <h2>1. 準備對照資料 (顧客停留時間)</h2>
+                <p>箱型圖最常用來尋找極端值與觀察資料集中趨勢。這裡我們收集了「台北」與「台中」分店在「平日/假日」的顧客座位停留時間。</p>
+                <pre class="code-block" style="flex-grow: 0;"><code>import pandas as pd
+import plotly.express as px
+
+# 模擬包含正常值與極端值(如坐了一整天的客人)的資料
+data = {
+    '分店': ['台北']*10 + ['台中']*10,
+    '平假日': ['平日']*5 + ['假日']*5 + ['平日']*5 + ['假日']*5,
+    '停留時間 (分鐘)': [
+        30, 45, 55, 65, 180,  # 台北平日 (180為離群值)
+        40, 60, 80, 100, 240, # 台北假日 (240為離群值)
+        20, 35, 45, 55, 90,   # 台中平日
+        30, 50, 65, 80, 150   # 台中假日 (150為離群值)
+    ]
+}
+df = pd.DataFrame(data)</code></pre>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <h2>2. 互動學習：px.box 參數實驗室 🧪</h2>
+            <p><strong>親自動手玩玩看！</strong> 觀察箱型圖如何將龐大的數據壓縮成一個簡單的箱子，並嘗試切換 <code>points</code> 來顯示隱藏在箱子背後的散佈點。</p>
+            
+            <div class="playground">
+                <!-- 左側：控制面板與程式碼 -->
+                <div class="playground-left">
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>📍 points (顯示資料點的方式)</label>
+                            <select id="sel-points">
+                                <option value="outliers">'outliers' (預設：僅顯示離群極端值)</option>
+                                <option value="all">'all' (顯示所有散佈資料點)</option>
+                                <option value="False">False (隱藏所有點)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🎨 color (次要分組比較)</label>
+                            <select id="sel-color">
+                                <option value="None">無 (僅依X軸分店分組)</option>
+                                <option value="平假日">'平假日' (進階比較平日與假日)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>✂️ notched (顯示中位數缺口)</label>
+                            <select id="sel-notched">
+                                <option value="False">False (預設：平整箱型)</option>
+                                <option value="True">True (漏斗狀，顯示信賴區間)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <pre class="code-block"><code id="dynamic-code">載入中...</code></pre>
+                </div>
+                
+                <!-- 右側：即時渲染的圖表 -->
+                <div class="playground-right">
+                    <div id="interactive-chart" class="chart-container" style="width:100%; min-height:450px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr;">
+            <div class="card">
+                <h2>📝 本章重點參數解析</h2>
+                <ul>
+                    <li><span class="param-name">x</span> 與 <span class="param-name">y</span>：通常 <code>x</code> 放入類別欄位（如分店），<code>y</code> 放入要觀察的數值欄位（如停留時間）。</li>
+                    <li><span class="param-name">points</span>：箱型圖預設只會幫你把不合群的「離群值 (`'outliers'`)」畫成點。若設為 <code>'all'</code>，Plotly 會在箱子旁邊加上散佈圖（Jitter），讓你看清楚真實的資料密集度！</li>
+                    <li><span class="param-name">color</span>：非常強大！除了 X 軸外，還可以再疊加一層分類。例如依據「平假日」分色，Plotly 會自動把平日與假日的箱子並排顯示，方便進行交叉比對。</li>
+                    <li><span class="param-name">notched</span>：設為 <code>True</code> 時箱子會出現凹槽，這代表統計上的「中位數 95% 信賴區間」。這是一個讓圖表瞬間變得很「學術專業」的秘密武器！</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const selPoints = document.getElementById('sel-points');
+            const selColor = document.getElementById('sel-color');
+            const selNotched = document.getElementById('sel-notched');
+            const codeBlock = document.getElementById('dynamic-code');
+
+            // 原始資料定義
+            const locTaipei = ['台北', '台北', '台北', '台北', '台北'];
+            const locTaichung = ['台中', '台中', '台中', '台中', '台中'];
+            
+            const timeTaipeiWkday = [30, 45, 55, 65, 180];
+            const timeTaipeiWkend = [40, 60, 80, 100, 240];
+            const timeTaichungWkday = [20, 35, 45, 55, 90];
+            const timeTaichungWkend = [30, 50, 65, 80, 150];
+
+            function updatePlayground() {
+                const pointsVal = selPoints.value;
+                const colorVal = selColor.value;
+                const notchedVal = selNotched.value;
+
+                // 1. 動態生成 Python 程式碼
+                let codeStr = `fig = px.box(
+    df,
+    x='分店',
+    y='停留時間 (分鐘)',`;
+                
+                if (colorVal === '平假日') {
+                    codeStr += `
+    color='平假日',           # 依平假日進階分組`;
+                }
+
+                if (pointsVal === 'all') {
+                    codeStr += `
+    points='all',             # 顯示所有資料點`;
+                } else if (pointsVal === 'False') {
+                    codeStr += `
+    points=False,             # 隱藏所有資料點`;
+                } else {
+                    codeStr += `
+    points='outliers',        # (預設) 僅顯示離群值`;
+                }
+
+                if (notchedVal === 'True') {
+                    codeStr += `
+    notched=True,             # 顯示漏斗狀缺口`;
+                }
+
+                codeStr += `
+    title='各分店顧客停留時間分佈'
+)
+fig.show()`;
+                
+                codeBlock.innerText = codeStr;
+
+                // 2. 動態更新 Plotly 圖表
+                let traces = [];
+                let boxpoints = pointsVal === 'False' ? false : pointsVal;
+                let notched = notchedVal === 'True';
+
+                if (colorVal === '平假日') {
+                    traces.push({
+                        type: 'box',
+                        x: [...locTaipei, ...locTaichung],
+                        y: [...timeTaipeiWkday, ...timeTaichungWkday],
+                        name: '平日',
+                        marker: {color: '#3498db'},
+                        boxpoints: boxpoints,
+                        jitter: 0.3,
+                        pointpos: -1.8,
+                        notched: notched
+                    });
+                    traces.push({
+                        type: 'box',
+                        x: [...locTaipei, ...locTaichung],
+                        y: [...timeTaipeiWkend, ...timeTaichungWkend],
+                        name: '假日',
+                        marker: {color: '#e74c3c'},
+                        boxpoints: boxpoints,
+                        jitter: 0.3,
+                        pointpos: -1.8,
+                        notched: notched
+                    });
+                } else {
+                    traces.push({
+                        type: 'box',
+                        x: [...locTaipei, ...locTaipei, ...locTaichung, ...locTaichung],
+                        y: [...timeTaipeiWkday, ...timeTaipeiWkend, ...timeTaichungWkday, ...timeTaichungWkend],
+                        name: '全時段',
+                        marker: {color: '#9b59b6'},
+                        boxpoints: boxpoints,
+                        jitter: 0.3,
+                        pointpos: -1.8,
+                        notched: notched
+                    });
+                }
+
+                let layout = {
+                    title: { text: '各分店顧客停留時間分佈', font: {size: 18} },
+                    margin: {t: 60, l: 60, r: 40, b: 60},
+                    boxmode: colorVal === '平假日' ? 'group' : 'overlay',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: {title: '分店', gridcolor: '#e1e4e8'},
+                    yaxis: {title: '停留時間 (分鐘)', gridcolor: '#e1e4e8'}
+                };
+
+                Plotly.newPlot('interactive-chart', traces, layout, {responsive: true});
+            }
+
+            // 綁定事件監聽器
+            selPoints.addEventListener('change', updatePlayground);
+            selColor.addEventListener('change', updatePlayground);
+            selNotched.addEventListener('change', updatePlayground);
+
+            // 初始載入渲染，加上小延遲確保外層 Flex 容器已定位
+            setTimeout(updatePlayground, 100);
+            
+            // 監聽視窗大小改變，強制重新繪圖確保 RWD
+            window.addEventListener('resize', function() {
+                Plotly.Plots.resize('interactive-chart');
+            });
+        });
+    </script>
+</body>
+</html>

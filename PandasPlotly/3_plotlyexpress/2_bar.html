@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第二章：Plotly Express 長條圖與數值比較</title>
+    <!-- 引入基礎公用版型與樣式 -->
+    <link rel="stylesheet" href="../../theme.css" />
+    <script src="../../layout.js" defer></script>
+    
+    <!-- 引入 Plotly.js 以在網頁上動態渲染範例圖表 -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <style>
+        .code-block {
+            background-color: var(--bg-body, #f6f8fa);
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 6px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            box-shadow: inset 0 1px 3px rgba(27,31,35,0.05);
+            flex-grow: 1; /* 讓程式碼區塊填滿剩餘空間 */
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid var(--border-color, #e1e4e8);
+            padding: 10px;
+            text-align: center;
+        }
+        .data-table th {
+            background-color: var(--bg-body, #f6f8fa);
+            color: var(--text-main, #24292e);
+            font-weight: 600;
+        }
+        .param-name {
+            font-weight: bold;
+            color: var(--accent-color, #0366d6);
+            background-color: #f0f8ff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+        }
+        
+        /* 左右對照與互動遊樂場區塊樣式 */
+        .playground {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+        .playground-left, .playground-right {
+            flex: 1 1 320px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* 關鍵修正：避免 Plotly 撐破 Flex 容器 */
+        }
+        .control-panel {
+            background-color: #f0f8ff;
+            border: 1px solid #cce5ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            margin-bottom: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-main, #24292e);
+            font-size: 0.9rem;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            background-color: white;
+            cursor: pointer;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--accent-color, #0366d6);
+        }
+        .chart-container {
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 8px;
+            padding: 10px;
+            background-color: var(--bg-card, #ffffff);
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(27,31,35,0.12));
+            flex-grow: 1;
+            /* 關鍵修正：移除 flex 置中設定，讓 Plotly 正確計算尺寸 */
+            display: block; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="section-title">第二章：Plotly Express 長條圖 (px.bar) 與數值比較</h1>
+        
+        <div class="grid" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+            <div class="card">
+                <h2>1. 準備對照資料 (分店咖啡銷量)</h2>
+                <p>我們建立一組包含不同「分店」、不同「飲品」銷量的資料，用來學習長條圖如何呈現分組與對比效果。</p>
+                <pre class="code-block" style="flex-grow: 0;"><code>import pandas as pd
+import plotly.express as px
+
+data = {
+    '分店': ['台北總店', '台北總店', '台中旗艦店', '台中旗艦店', '高雄站前店', '高雄站前店'],
+    '飲品': ['美式咖啡', '拿鐵', '美式咖啡', '拿鐵', '美式咖啡', '拿鐵'],
+    '銷量': [200, 150, 180, 220, 160, 190]
+}
+df = pd.DataFrame(data)</code></pre>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <h2>2. 互動學習：px.bar 參數實驗室 🧪</h2>
+            <p><strong>親自動手玩玩看！</strong> 請調整左側面板的下拉選單，觀察下方 <strong>Python 程式碼</strong> 與右側 <strong>視覺化圖表</strong> 是如何「即時連動」產生變化的。</p>
+            
+            <div class="playground">
+                <!-- 左側：控制面板與程式碼 -->
+                <div class="playground-left">
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>📊 barmode (長條圖模式：堆疊或並排)</label>
+                            <select id="sel-barmode">
+                                <option value="stack">stack (預設：堆疊)</option>
+                                <option value="group">group (並列顯示)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🔢 text_auto (是否直接在柱子上顯示數值)</label>
+                            <select id="sel-text">
+                                <option value="False">False (預設：不顯示)</option>
+                                <option value="True">True (顯示數值)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🔄 orientation (圖表方向：垂直或水平)</label>
+                            <select id="sel-orientation">
+                                <option value="v">v (預設：垂直長條圖)</option>
+                                <option value="h">h (水平長條圖)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <pre class="code-block"><code id="dynamic-code">載入中...</code></pre>
+                </div>
+                
+                <!-- 右側：即時渲染的圖表 -->
+                <div class="playground-right">
+                    <div id="interactive-chart" class="chart-container" style="width:100%; min-height:450px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr;">
+            <div class="card">
+                <h2>📝 本章重點參數解析</h2>
+                <ul>
+                    <li><span class="param-name">color</span>：在 <code>px.bar</code> 中，設定 color 除了改變顏色，預設還會將資料變成<strong>堆疊 (Stacked)</strong> 狀態。</li>
+                    <li><span class="param-name">barmode</span>：如果不想堆疊，設定 <code>'group'</code> 就能讓長條圖並排，更適合比較同一分店內不同飲品的業績差異。</li>
+                    <li><span class="param-name">text_auto</span>：設為 <code>True</code> 即可省去查閱 Y 軸刻度的麻煩，直接把數值貼在柱子上，報告呈現更直覺！</li>
+                    <li><span class="param-name">orientation</span>：設為 <code>'h'</code> (水平) 搭配 X、Y 軸欄位對調，能解決類別名稱過長導致文字擠在一起的問題。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 抓取 DOM 元素
+            const selBarmode = document.getElementById('sel-barmode');
+            const selText = document.getElementById('sel-text');
+            const selOrientation = document.getElementById('sel-orientation');
+            const codeBlock = document.getElementById('dynamic-code');
+
+            // 原始資料設定
+            const branches = ['台北總店', '台中旗艦店', '高雄站前店'];
+            const salesAmericano = [200, 180, 160];
+            const salesLatte = [150, 220, 190];
+
+            function updatePlayground() {
+                const barmode = selBarmode.value;
+                const textAuto = selText.value;
+                const orientation = selOrientation.value;
+
+                // 1. 動態生成 Python 程式碼
+                let codeStr = `fig = px.bar(
+    df, `;
+                
+                if (orientation === 'v') {
+                    codeStr += `
+    x='分店',
+    y='銷量', `;
+                } else {
+                    codeStr += `
+    x='銷量',         # 水平圖需將 X/Y 軸欄位對調
+    y='分店',
+    orientation='h',  # 啟動水平模式
+    `;
+                }
+
+                codeStr += `
+    color='飲品', `;
+
+                if (barmode === 'group') {
+                    codeStr += `
+    barmode='group',  # 設為並排顯示`;
+                } else {
+                    codeStr += `
+    barmode='stack',  # (預設) 堆疊顯示`;
+                }
+
+                if (textAuto === 'True') {
+                    codeStr += `
+    text_auto=True,   # 顯示數值標籤`;
+                }
+
+                codeStr += `
+    title='各區分店單日咖啡銷量比較',
+    color_discrete_sequence=['#2ecc71', '#f1c40f']
+)
+fig.show()`;
+                
+                codeBlock.innerText = codeStr;
+
+                // 2. 動態更新 Plotly 圖表 (模擬 px 繪圖邏輯)
+                let trace1 = { name: '美式咖啡', type: 'bar', marker: {color: '#2ecc71'} };
+                let trace2 = { name: '拿鐵', type: 'bar', marker: {color: '#f1c40f'} };
+
+                if (orientation === 'v') {
+                    trace1.x = branches; trace1.y = salesAmericano; trace1.orientation = 'v';
+                    trace2.x = branches; trace2.y = salesLatte; trace2.orientation = 'v';
+                    if (textAuto === 'True') { 
+                        trace1.text = salesAmericano; trace2.text = salesLatte; 
+                        trace1.textposition = 'auto'; trace2.textposition = 'auto'; 
+                    } else { 
+                        trace1.text = null; trace2.text = null; 
+                    }
+                } else {
+                    trace1.y = branches; trace1.x = salesAmericano; trace1.orientation = 'h';
+                    trace2.y = branches; trace2.x = salesLatte; trace2.orientation = 'h';
+                    if (textAuto === 'True') { 
+                        trace1.text = salesAmericano; trace2.text = salesLatte; 
+                        trace1.textposition = 'auto'; trace2.textposition = 'auto'; 
+                    } else { 
+                        trace1.text = null; trace2.text = null; 
+                    }
+                }
+
+                let layout = {
+                    title: { text: '各區分店單日咖啡銷量比較', font: {size: 18} },
+                    barmode: barmode,
+                    // 關鍵修正：增加左側留白 (l: 100) 以免文字被裁切
+                    margin: {t: 60, l: 100, r: 40, b: 60},
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    legend: {title: {text: '飲品種類'}}
+                };
+
+                if(orientation === 'v') {
+                    layout.xaxis = {title: '分店', gridcolor: '#e1e4e8'}; 
+                    layout.yaxis = {title: '銷量', gridcolor: '#e1e4e8'};
+                } else {
+                    layout.yaxis = {title: '分店', gridcolor: '#e1e4e8', autorange: 'reversed'}; // 讓台北總店在最上方
+                    layout.xaxis = {title: '銷量', gridcolor: '#e1e4e8'};
+                }
+
+                Plotly.newPlot('interactive-chart', [trace1, trace2], layout, {responsive: true});
+            }
+
+            // 綁定事件監聽器
+            selBarmode.addEventListener('change', updatePlayground);
+            selText.addEventListener('change', updatePlayground);
+            selOrientation.addEventListener('change', updatePlayground);
+
+            // 初始載入渲染，加上小延遲確保外層 Flex 容器已定位
+            setTimeout(updatePlayground, 100);
+            
+            // 監聽視窗大小改變，強制重新繪圖確保 RWD
+            window.addEventListener('resize', function() {
+                Plotly.Plots.resize('interactive-chart');
+            });
+        });
+    </script>
+</body>
+</html>
