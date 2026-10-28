@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>C++ 教學：前綴和 (Prefix Sum)</title>
+    <link rel="stylesheet" href="../../theme.css">
+    <script src="../../layout.js" defer></script>
+    <style>
+        .mod-grid { display: flex; gap: 20px; font-family: monospace; }
+        .left-col { flex: 1; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; overflow-x: auto;}
+        .right-col { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .watch-box, .terminal-box { background: #f4f4f4; padding: 15px; border-radius: 8px; border: 1px solid #ccc; }
+        .terminal-box { background: #000; color: #0f0; }
+        button { padding: 10px 15px; font-size: 16px; cursor: pointer; border-radius: 5px; border: 1px solid #999; background: #e0e0e0; }
+        button:hover { background: #ccc; }
+        span { display: block; padding-left: 5px; }
+        .cursor { background-color: #444; outline: 1px solid #888; }
+        .active-blue { background-color: #005f87; }
+        .active-green { background-color: #005f00; }
+        .active-yellow { background-color: #875f00; }
+        .active-red { background-color: #870000; }
+    </style>
+</head>
+<body>
+    <h2>前綴和 (Prefix Sum) 基礎實作動畫</h2>
+    <div class="mod-grid">
+        <div class="left-col">
+<pre><code><span id="L1">#include &lt;iostream&gt;</span>
+<span id="L2">#include &lt;vector&gt;</span>
+<span id="L3"></span>
+<span id="L4">using namespace std;</span>
+<span id="L5"></span>
+<span id="L6">int main() {</span>
+<span id="L7">    vector&lt;int&gt; arr = {3, 1, 4, 1, 5, 9, 2};</span>
+<span id="L8">    int n = arr.size();</span>
+<span id="L9"></span>
+<span id="L10">    // 建立前綴和陣列，大小與原陣列相同</span>
+<span id="L11">    vector&lt;int&gt; prefix(n);</span>
+<span id="L12"></span>
+<span id="L13">    // 基礎情況：第一個元素的前綴和等於原陣列的第一個元素</span>
+<span id="L14">    prefix[0] = arr[0];</span>
+<span id="L15"></span>
+<span id="L16">    // 從索引 1 開始計算前綴和</span>
+<span id="L17">    for (int i = 1; i &lt; n; i++) {</span>
+<span id="L18">        prefix[i] = prefix[i-1] + arr[i];</span>
+<span id="L19">    }</span>
+<span id="L20"></span>
+<span id="L21">    // 輸出觀察</span>
+<span id="L22">    for (int i = 0; i &lt; n; i++) {</span>
+<span id="L23">        cout &lt;&lt; prefix[i] &lt;&lt; " ";</span>
+<span id="L24">    }</span>
+<span id="L25">    </span>
+<span id="L26">    return 0;</span>
+<span id="L27">}</span></code></pre>
+        </div>
+        
+        <div class="right-col">
+            <button onclick="runMx()" id="runBtn">執行程式 (Run)</button>
+            <div class="watch-box">
+                <h3>監看區塊 (Watch Box)</h3>
+                <div id="watch-n">n: </div>
+                <div id="watch-i">i: </div>
+                <div id="watch-arr">arr: []</div>
+                <div id="watch-prefix">prefix: []</div>
+            </div>
+            <div class="terminal-box">
+                <h3>終端機輸出 (Terminal)</h3>
+                <div id="terminal-out"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sleep = ms => new Promise(res => setTimeout(res, ms));
+        const MAX_LINES = 27;
+
+        function focusLine(prefix, max, id, cls) {
+            for (let i = 1; i <= max; i++) {
+                let el = document.getElementById(prefix + i);
+                if (el) el.className = '';
+            }
+            if (id) {
+                let el = document.getElementById(prefix + id);
+                if (el) el.className = cls || 'cursor';
+            }
+        }
+
+        async function runMx() {
+            document.getElementById('runBtn').disabled = true;
+            document.getElementById('terminal-out').innerText = '';
+            let n = 0;
+            let i_val = '-';
+            let arr = [];
+            let prefix = [];
+            
+            const updateWatch = () => {
+                document.getElementById('watch-n').innerText = `n: ${n > 0 ? n : ''}`;
+                document.getElementById('watch-i').innerText = `i: ${i_val}`;
+                document.getElementById('watch-arr').innerText = `arr: [${arr.join(', ')}]`;
+                document.getElementById('watch-prefix').innerText = `prefix: [${prefix.join(', ')}]`;
+            };
+            
+            updateWatch();
+
+            // 進入 main
+            focusLine('L', MAX_LINES, 6, 'active-blue');
+            await sleep(800);
+
+            // arr 初始化
+            focusLine('L', MAX_LINES, 7, 'active-yellow');
+            arr = [3, 1, 4, 1, 5, 9, 2];
+            updateWatch();
+            await sleep(800);
+
+            // n 初始化
+            focusLine('L', MAX_LINES, 8, 'active-yellow');
+            n = 7;
+            updateWatch();
+            await sleep(800);
+
+            // prefix 宣告
+            focusLine('L', MAX_LINES, 11, 'active-yellow');
+            prefix = [0, 0, 0, 0, 0, 0, 0];
+            updateWatch();
+            await sleep(800);
+
+            // prefix[0]
+            focusLine('L', MAX_LINES, 14, 'active-yellow');
+            prefix[0] = arr[0];
+            updateWatch();
+            await sleep(800);
+
+            // 計算迴圈
+            for (let i = 1; i < n; i++) {
+                i_val = i;
+                focusLine('L', MAX_LINES, 17, 'active-blue');
+                updateWatch();
+                await sleep(500);
+
+                focusLine('L', MAX_LINES, 18, 'active-yellow');
+                prefix[i] = prefix[i-1] + arr[i];
+                updateWatch();
+                await sleep(600);
+            }
+
+            // 輸出迴圈
+            let outStr = '';
+            for (let i = 0; i < n; i++) {
+                i_val = i;
+                focusLine('L', MAX_LINES, 22, 'active-blue');
+                updateWatch();
+                await sleep(400);
+
+                focusLine('L', MAX_LINES, 23, 'active-green');
+                outStr += prefix[i] + ' ';
+                document.getElementById('terminal-out').innerText = outStr;
+                await sleep(400);
+            }
+
+            focusLine('L', MAX_LINES, 26, 'active-blue');
+            await sleep(800);
+
+            focusLine('L', MAX_LINES, 27, 'active-green');
+            document.getElementById('runBtn').disabled = false;
+        }
+    </script>
+</body>
+</html>

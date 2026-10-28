@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>C++ 巢狀迴圈 (Nested Loops) 互動式教學</title>
+  <meta name="description" content="學習 C++ 巢狀迴圈，透過動畫理解外層與內層的齒輪連動關係、2D 圖形建構與多重變數應用。"/>
+  
+  <!-- 共同版型不可刪除 -->
+  <link rel="stylesheet" href="../../theme.css">
+  <script src="../../layout.js" defer></script>
+
+  <style>
+    /* ── 淺色系版型變數 ── */
+    :root {
+      --surface: #f1f5f9;
+      --code-bg: #f8fafc;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --accent-color: #3b82f6; /* 外層藍 */
+      --accent2: #0284c7;
+      --accent3: #4338ca;
+      --green: #10b981;       /* 執行綠 */
+      --red: #ef4444;
+      --yellow: #f59e0b;      /* 內層黃 */
+      --purple: #8b5cf6;      /* 換行紫 */
+    }
+    
+    body { padding: 40px 20px; background-color: var(--surface); color: var(--text-main); font-family: sans-serif; }
+    .container { max-width: 900px; margin: 0 auto; }
+    
+    .section-title { 
+      font-size: 2.2rem; margin-bottom: 10px; text-align: center;
+      background: linear-gradient(90deg, #2563eb, #8b5cf6); 
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;
+    }
+    
+    .card {
+      background: #ffffff; border-radius: 12px; padding: 24px; margin-bottom: 30px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+    .card h2 { margin-top: 0; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; font-size: 1.5rem; }
+    
+    .mod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; margin-top: 20px; }
+    @media(max-width:768px){ .mod-grid { grid-template-columns: 1fr; } }
+    
+    /* ── 程式碼區塊 ── */
+    .code-block {
+      font-family: 'Courier New', Courier, monospace; font-size: 0.95rem;
+      background: var(--code-bg); border-radius: 8px; padding: 16px;
+      line-height: 1.8; border: 1px solid var(--border-color); overflow-x: auto;
+    }
+    .code-line { display: block; padding: 2px 8px; border-radius: 4px; transition: all 0.2s ease; border-left: 3px solid transparent; }
+    
+    /* 狀態高亮顏色 */
+    .active-outer { background: #e0f2fe; color: #0369a1; font-weight: bold; border-left-color: var(--accent-color); } 
+    .active-inner { background: #fef3c7; color: #b45309; font-weight: bold; border-left-color: var(--yellow); }
+    .active-body  { background: #dcfce7; color: #15803d; font-weight: bold; border-left-color: var(--green); }
+    .active-endl  { background: #f3e8ff; color: #6d28d9; font-weight: bold; border-left-color: var(--purple); }
+    .active-red   { background: #fee2e2; color: #b91c1c; font-weight: bold; border-left-color: var(--red); }
+
+    /* ── 控制與輸出 ── */
+    .btn-run {
+      padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer;
+      background: var(--accent-color); color: #fff; font-size: 1rem; font-weight: bold;
+      width: 100%; margin-bottom: 12px; transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .btn-run:hover { filter: brightness(1.1); }
+    .btn-run:active { transform: scale(0.98); }
+    .btn-run:disabled { opacity: 0.6; cursor: not-allowed; }
+    
+    .btn-green { background: var(--green); }
+    .btn-purple { background: var(--purple); }
+    
+    .ctrl-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; font-weight: bold; color: var(--text-muted); }
+    .num-input { width: 60px; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; }
+    
+    .watch-box {
+      background: #fff; border: 1px dashed var(--accent-color); border-radius: 8px;
+      padding: 12px 16px; font-family: monospace; font-size: 0.9rem; margin-bottom: 12px;
+      display: flex; justify-content: space-around; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .watch-col { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+    .watch-title { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
+    .outer-title { color: var(--accent-color); }
+    .inner-title { color: var(--yellow); }
+    .watch-val { font-weight: bold; font-size: 1.1rem; color: var(--text-main); }
+
+    .out-box {
+      background: #fff; border-left: 4px solid var(--border-color); border-radius: 0 6px 6px 0;
+      padding: 12px 16px; min-height: 40px; font-family: monospace; font-size: 1rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05); white-space: pre-wrap; line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div style="text-align: center; margin-bottom: 40px;">
+    <h1 class="section-title">C++ 巢狀迴圈互動式教學</h1>
+    <p style="color:var(--text-muted);">體驗二維邏輯：<strong>外層動一步，內層跑一圈</strong>。注意觀察藍色（外層）與黃色（內層）的交替節奏。</p>
+  </div>
+
+  <!-- 模組 1：時鐘齒輪機制 -->
+  <div class="card">
+    <h2>⚙️ 1. 時鐘齒輪機制 (外層與內層的關係)</h2>
+    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">想像外層是「小時」，內層是「分鐘」。分鐘必須跑完一整圈，小時才會進位。</p>
+    <div class="mod-grid">
+      <div>
+        <div class="code-block">
+          <span class="code-line" id="m1-l1"><span style="color:#64748b;">// 外層迴圈 (小時)</span></span>
+          <span class="code-line" id="m1-l2">for (int h = 1; h &lt;= 3; h++) {</span>
+          <span class="code-line" id="m1-l3">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#64748b;">// 內層迴圈 (分鐘)</span></span>
+          <span class="code-line" id="m1-l4">&nbsp;&nbsp;&nbsp;&nbsp;for (int m = 1; m &lt;= 4; m++) {</span>
+          <span class="code-line" id="m1-l5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; h &lt;&lt; "點 " &lt;&lt; m &lt;&lt; "分\n";</span>
+          <span class="code-line" id="m1-l6">&nbsp;&nbsp;&nbsp;&nbsp;}</span>
+          <span class="code-line" id="m1-l7">}</span>
+        </div>
+      </div>
+      <div>
+        <button class="btn-run" id="btn-m1" onclick="runM1()">▶ 啟動齒輪連動</button>
+        <div class="watch-box">
+          <div class="watch-col" style="border-right: 1px dashed var(--border-color); padding-right: 20px;">
+            <div class="watch-title outer-title">外層 (h)</div>
+            <div><span class="watch-val" id="w-m1-h">—</span></div>
+          </div>
+          <div class="watch-col">
+            <div class="watch-title inner-title">內層 (m)</div>
+            <div><span class="watch-val" id="w-m1-m">—</span></div>
+          </div>
+        </div>
+        <div class="out-box" id="m1-out" style="color:var(--text-muted); max-height:150px; overflow-y:auto;">— 等待執行 —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模組 2：2D 空間建構 -->
+  <div class="card">
+    <h2>🖨️ 2. 2D 空間建構 (矩形星星印表機)</h2>
+    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">外層控制「有幾行(Rows)」，內層控制「每行印幾顆星星(Cols)」。特別注意 <strong>換行 endl</strong> 的位置在內層結束後！</p>
+    <div class="mod-grid">
+      <div>
+        <div class="code-block">
+          <span class="code-line" id="m2-l1">for (int i = 1; i &lt;= rows; i++) {</span>
+          <span class="code-line" id="m2-l2">&nbsp;&nbsp;&nbsp;&nbsp;for (int j = 1; j &lt;= cols; j++) {</span>
+          <span class="code-line" id="m2-l3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "* ";</span>
+          <span class="code-line" id="m2-l4">&nbsp;&nbsp;&nbsp;&nbsp;}</span>
+          <span class="code-line" id="m2-l5">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#64748b;">// 內層結束後，換下一行</span></span>
+          <span class="code-line" id="m2-l6">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; endl;</span>
+          <span class="code-line" id="m2-l7">}</span>
+        </div>
+      </div>
+      <div>
+        <div class="ctrl-row">
+          <label>行數(rows):</label> <input type="number" id="m2-rows" class="num-input" value="3" min="1" max="5">
+          <label>列數(cols):</label> <input type="number" id="m2-cols" class="num-input" value="4" min="1" max="8">
+        </div>
+        <button class="btn-run btn-green" id="btn-m2" onclick="runM2()">▶ 開始列印</button>
+        <div class="watch-box">
+          <div class="watch-col" style="width: 50%;">
+            <div class="watch-title outer-title">外層 行 (i)</div>
+            <div><span class="watch-val" id="w-m2-i">—</span></div>
+          </div>
+          <div class="watch-col" style="width: 50%;">
+            <div class="watch-title inner-title">內層 列 (j)</div>
+            <div><span class="watch-val" id="w-m2-j">—</span></div>
+          </div>
+        </div>
+        <div class="out-box" id="m2-out" style="color:var(--text-main); font-weight:bold; letter-spacing: 2px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模組 3：變動邊界 -->
+  <div class="card">
+    <h2>📐 3. 變動邊界 (直角三角形)</h2>
+    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">內層迴圈不一定要跑固定的次數。如果把內層條件設為 <code>j &lt;= i</code>，每行的星星數量就會隨行數增加。</p>
+    <div class="mod-grid">
+      <div>
+        <div class="code-block">
+          <span class="code-line" id="m3-l1">for (int i = 1; i &lt;= 4; i++) {</span>
+          <span class="code-line" id="m3-l2">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#64748b;">// 條件動態依賴外層變數 i</span></span>
+          <span class="code-line" id="m3-l3">&nbsp;&nbsp;&nbsp;&nbsp;for (int j = 1; j &lt;= i; j++) {</span>
+          <span class="code-line" id="m3-l4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "* ";</span>
+          <span class="code-line" id="m3-l5">&nbsp;&nbsp;&nbsp;&nbsp;}</span>
+          <span class="code-line" id="m3-l6">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; endl;</span>
+          <span class="code-line" id="m3-l7">}</span>
+        </div>
+      </div>
+      <div>
+        <button class="btn-run btn-purple" id="btn-m3" onclick="runM3()">▶ 產生三角形</button>
+        <div class="watch-box">
+          <div class="watch-col">
+            <div class="watch-title inner-title">內層判斷條件</div>
+            <div><span style="font-family:monospace;">j &lt;= <span class="watch-val" style="color:var(--accent-color);" id="w-m3-cond">i</span></span></div>
+          </div>
+        </div>
+        <div class="out-box" id="m3-out" style="color:var(--text-main); font-weight:bold; letter-spacing: 2px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模組 4：數值連動 -->
+  <div class="card">
+    <h2>✖️ 4. 數值連動 (乘法表)</h2>
+    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">外層變數與內層變數可以組合做運算，這是處理棋盤、網格數據最常見的技巧。</p>
+    <div class="mod-grid">
+      <div>
+        <div class="code-block">
+          <span class="code-line" id="m4-l1">for (int i = 2; i &lt;= 3; i++) {</span>
+          <span class="code-line" id="m4-l2">&nbsp;&nbsp;&nbsp;&nbsp;for (int j = 1; j &lt;= 4; j++) {</span>
+          <span class="code-line" id="m4-l3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; i &lt;&lt; " x " &lt;&lt; j &lt;&lt; " = " &lt;&lt; (i*j) &lt;&lt; endl;</span>
+          <span class="code-line" id="m4-l4">&nbsp;&nbsp;&nbsp;&nbsp;}</span>
+          <span class="code-line" id="m4-l5">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "------\n";</span>
+          <span class="code-line" id="m4-l6">}</span>
+        </div>
+      </div>
+      <div>
+        <button class="btn-run" id="btn-m4" onclick="runM4()">▶ 計算乘法表</button>
+        <div class="watch-box">
+          <div class="watch-col" style="border-right: 1px dashed var(--border-color); padding-right: 20px;">
+            <div class="watch-title outer-title">被乘數 (i)</div>
+            <div><span class="watch-val" id="w-m4-i">—</span></div>
+          </div>
+          <div class="watch-col">
+            <div class="watch-title inner-title">乘數 (j)</div>
+            <div><span class="watch-val" id="w-m4-j">—</span></div>
+          </div>
+        </div>
+        <div class="out-box" id="m4-out" style="color:var(--text-muted); max-height:180px; overflow-y:auto;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// 輔助函式
+const sleep = ms => new Promise(res => setTimeout(res, ms));
+function clearAll(prefix, max) { for(let i=1; i<=max; i++) { let el = document.getElementById(prefix + i); if(el) el.className = 'code-line'; } }
+function hl(id, cls) { let el = document.getElementById(id); if(el) el.className = 'code-line ' + cls; }
+function out(id, html, append=true) { 
+  const el = document.getElementById(id); 
+  if(!append) el.innerHTML = ''; 
+  el.innerHTML += html; 
+  el.scrollTop = el.scrollHeight; // 自動捲動到底部
+}
+
+// ── 模組 1：齒輪機制 ──
+async function runM1() {
+  const btn = document.getElementById('btn-m1'); btn.disabled = true;
+  clearAll('m1-l', 7); document.getElementById('m1-out').innerHTML = '';
+  
+  for(let h=1; h<=3; h++) {
+    hl('m1-l2', 'active-outer'); 
+    document.getElementById('w-m1-h').textContent = h;
+    await sleep(400);
+    
+    for(let m=1; m<=4; m++) {
+      hl('m1-l4', 'active-inner'); 
+      document.getElementById('w-m1-m').textContent = m;
+      await sleep(250);
+      
+      hl('m1-l5', 'active-body'); 
+      out('m1-out', `${h}點 ${m}分<br>`);
+      await sleep(300);
+    }
+    // 內層結束，重置顯示
+    document.getElementById('w-m1-m').textContent = '完成';
+    await sleep(200);
+  }
+  
+  clearAll('m1-l', 7);
+  out('m1-out', `<span style="color:var(--accent-color); font-weight:bold;">> 迴圈結束</span>`);
+  btn.disabled = false;
+}
+
+// ── 模組 2：2D 星星印表機 ──
+async function runM2() {
+  const btn = document.getElementById('btn-m2'); btn.disabled = true;
+  clearAll('m2-l', 7); document.getElementById('m2-out').innerHTML = '';
+  
+  let r = parseInt(document.getElementById('m2-rows').value) || 3;
+  let c = parseInt(document.getElementById('m2-cols').value) || 4;
+  let displayStr = '';
+  
+  for(let i=1; i<=r; i++) {
+    hl('m2-l1', 'active-outer'); 
+    document.getElementById('w-m2-i').textContent = i;
+    await sleep(300);
+    
+    for(let j=1; j<=c; j++) {
+      hl('m2-l2', 'active-inner'); 
+      document.getElementById('w-m2-j').textContent = j;
+      await sleep(200);
+      
+      hl('m2-l3', 'active-body'); 
+      displayStr += '* ';
+      document.getElementById('m2-out').innerHTML = displayStr;
+      await sleep(200);
+    }
+    
+    // 執行換行
+    hl('m2-l6', 'active-endl');
+    displayStr += '<br>';
+    document.getElementById('m2-out').innerHTML = displayStr;
+    document.getElementById('w-m2-j').textContent = '結束';
+    await sleep(400);
+  }
+  
+  clearAll('m2-l', 7);
+  btn.disabled = false;
+}
+
+// ── 模組 3：變動邊界直角三角形 ──
+async function runM3() {
+  const btn = document.getElementById('btn-m3'); btn.disabled = true;
+  clearAll('m3-l', 7); document.getElementById('m3-out').innerHTML = '';
+  let displayStr = '';
+  
+  for(let i=1; i<=4; i++) {
+    hl('m3-l1', 'active-outer'); 
+    document.getElementById('w-m3-cond').textContent = i;
+    await sleep(400);
+    
+    for(let j=1; j<=i; j++) {
+      hl('m3-l3', 'active-inner'); await sleep(200);
+      hl('m3-l4', 'active-body'); 
+      displayStr += '* ';
+      document.getElementById('m3-out').innerHTML = displayStr;
+      await sleep(200);
+    }
+    
+    hl('m3-l6', 'active-endl');
+    displayStr += '<br>';
+    document.getElementById('m3-out').innerHTML = displayStr;
+    await sleep(400);
+  }
+  
+  clearAll('m3-l', 7);
+  btn.disabled = false;
+}
+
+// ── 模組 4：數值連動乘法表 ──
+async function runM4() {
+  const btn = document.getElementById('btn-m4'); btn.disabled = true;
+  clearAll('m4-l', 6); document.getElementById('m4-out').innerHTML = '';
+  
+  for(let i=2; i<=3; i++) {
+    hl('m4-l1', 'active-outer'); 
+    document.getElementById('w-m4-i').textContent = i;
+    await sleep(400);
+    
+    for(let j=1; j<=4; j++) {
+      hl('m4-l2', 'active-inner'); 
+      document.getElementById('w-m4-j').textContent = j;
+      await sleep(200);
+      
+      hl('m4-l3', 'active-body'); 
+      out('m4-out', `${i} x ${j} = <span style="color:var(--accent2); font-weight:bold;">${i*j}</span><br>`);
+      await sleep(250);
+    }
+    
+    hl('m4-l5', 'active-endl');
+    out('m4-out', `------<br>`);
+    await sleep(400);
+  }
+  
+  clearAll('m4-l', 6);
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>

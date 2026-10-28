@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>C++ while 迴圈 (While Loop) 互動式教學</title>
+  <meta name="description" content="學習 C++ while 迴圈、無窮迴圈陷阱、do-while 與 break/continue 流程控制。"/>
+  
+  <!-- 共同版型不可刪除 -->
+  <link rel="stylesheet" href="../../theme.css">
+  <script src="../../layout.js" defer></script>
+
+  <style>
+    /* ── 淺色系版型變數 ── */
+    :root {
+      --surface: #f1f5f9;
+      --code-bg: #f8fafc;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --accent-color: #3b82f6;
+      --accent2: #0284c7;
+      --accent3: #4338ca;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+    }
+    
+    body { padding: 40px 20px; background-color: var(--surface); color: var(--text-main); font-family: sans-serif; }
+    .container { max-width: 900px; margin: 0 auto; }
+    
+    .section-title { 
+      font-size: 2.2rem; margin-bottom: 10px; text-align: center;
+      background: linear-gradient(90deg, #2563eb, #10b981); 
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;
+    }
+    
+    .card {
+      background: #ffffff; border-radius: 12px; padding: 24px; margin-bottom: 30px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+    .card h2 { margin-top: 0; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; font-size: 1.5rem; }
+    
+    .mod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; margin-top: 20px; }
+    @media(max-width:768px){ .mod-grid { grid-template-columns: 1fr; } }
+    
+    /* ── 程式碼區塊 ── */
+    .code-block {
+      font-family: 'Courier New', Courier, monospace; font-size: 0.95rem;
+      background: var(--code-bg); border-radius: 8px; padding: 16px;
+      line-height: 1.8; border: 1px solid var(--border-color); overflow-x: auto;
+    }
+    .code-line { display: block; padding: 2px 8px; border-radius: 4px; transition: all 0.2s ease; border-left: 3px solid transparent; }
+    
+    /* 狀態高亮顏色 */
+    .active-cond { background: #e0f2fe; color: #0369a1; font-weight: bold; border-left-color: var(--accent-color); } /* 條件 */
+    .active-body { background: #dcfce7; color: #15803d; font-weight: bold; border-left-color: var(--green); }      /* 內容 */
+    .active-updt { background: #fef3c7; color: #b45309; font-weight: bold; border-left-color: var(--yellow); }     /* 更新 */
+    .active-red  { background: #fee2e2; color: #b91c1c; font-weight: bold; border-left-color: var(--red); }
+    .active-init { background: #f1f5f9; color: var(--text-main); font-weight: bold; border-left-color: var(--text-muted); }
+
+    /* ── 控制與輸出 ── */
+    .btn-run {
+      padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer;
+      background: var(--accent-color); color: #fff; font-size: 1rem; font-weight: bold;
+      width: 100%; margin-bottom: 12px; transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .btn-run:hover { filter: brightness(1.1); }
+    .btn-run:active { transform: scale(0.98); }
+    .btn-run:disabled { opacity: 0.6; cursor: not-allowed; }
+    
+    .btn-green { background: var(--green); }
+    .btn-red { background: var(--red); }
+    .btn-yellow { background: var(--yellow); color: #fff; }
+    .btn-gray { background: #64748b; }
+
+    .ctrl-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; font-weight: bold; color: var(--text-muted); }
+    
+    .watch-box {
+      background: #fff; border: 1px dashed var(--accent-color); border-radius: 8px;
+      padding: 12px 16px; font-family: monospace; font-size: 0.9rem; margin-bottom: 12px;
+      display: flex; flex-direction: column; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .watch-title { font-size: 0.8rem; color: var(--accent-color); font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
+    .watch-val { font-weight: bold; color: var(--accent3); }
+
+    .out-box {
+      background: #fff; border-left: 4px solid var(--border-color); border-radius: 0 6px 6px 0;
+      padding: 12px 16px; min-height: 40px; font-family: monospace; font-size: 0.95rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05); white-space: pre-wrap;
+    }
+    .danger-out { border-color: var(--red); background: #fef2f2; color: var(--red); }
+
+    /* HP 血條 */
+    .hp-bar-wrap { background:#e2e8f0; border-radius:10px; height:22px; margin-bottom:12px; overflow:hidden; border: 1px solid #cbd5e1; }
+    .hp-bar { height:100%; border-radius:10px; transition:width 0.4s, background 0.4s; background:var(--green); }
+    
+    /* 步驟狀態 */
+    .loop-steps { display: flex; gap: 8px; margin-bottom: 12px; }
+    .step-box {
+      width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; font-weight: bold; border: 2px solid var(--border-color); background: #fff; color: var(--text-muted);
+      transition: all 0.3s;
+    }
+    .step-box.done { border-color: var(--green); background: #dcfce7; color: #15803d; }
+    .step-box.skipped { border-color: var(--yellow); background: #fef3c7; color: #b45309; }
+    .step-box.broken { border-color: var(--red); background: #fee2e2; color: #b91c1c; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div style="text-align: center; margin-bottom: 40px;">
+    <h1 class="section-title">C++ while 迴圈互動式教學</h1>
+    <p style="color:var(--text-muted);">與 for 迴圈不同，while 專門處理<strong>「不知道會跑幾次，只要條件成立就繼續跑」</strong>的情況。</p>
+  </div>
+
+  <!-- 模組 1：基礎 while 迴圈 -->
+  <div class="card">
+    <h2>❤️ 1. 基礎條件迴圈 (HP 扣血)</h2>
+    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">先檢查條件，如果成立才執行迴圈內容。執行完再回來檢查條件。</p>
+    <div class="mod-grid">
+      <div>
+        <div class="code-block">
+          <span class="code-line" id="m1-l1">int hp = <span id="m1-hp-val" style="color:var(--accent2); font-weight:bold;">3</span>;</span>
+          <span class="code-line" id="m1-l2">while (hp &gt; 0) {</span>
+          <span class="code-line" id="m1-l3">&nbsp;&nbsp;&nbsp;&nbsp;hp--; <span style="color:#64748b;">// 變數更新</span></span>
+          <span class="code-line" id="m1-l4">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "扣血，剩餘: " &lt;&lt; hp &lt;&lt; endl;</span>
+          <span class="code-line" id="m1-l5">}</span>
+          <span class="code-line" id="m1-l6">cout &lt;&lt; "Game Over!";</span>
+        </div>
+      </div>
+      <div>
+        <div class="ctrl-row">
+          <label>初始 HP：</label>
+          <input type="range" id="m1-range" min="1" max="5" value="3" oninput="document.getElementById('m1-hp-val').textContent=this.value;">
+        </div>
+        <button class="btn-run btn-green" id="btn-m1" onclick="runM1()">▶ 執行迴圈</button>
+        <div class="hp-bar-wrap"><div class="hp-bar" id="m1-hp-bar" style="width:60%;"></div></div>
+        <div class="watch-box">
+          <div class="watch-title">Watch Box</div>
+          <div>變數 <span style="color:var(--accent-color);">hp</span> = <span class="watch-val" id="w-m1-hp">—</span></div>
+          <div>條件 <span style="color:var(--accent-color);">hp &gt; 0</span> : <span class="watch-val" id="w-m1-cond">—</span></div>
+        </div>
+        <div class="out-box" id="m1-out" style="color:var(--text-muted);">— 等待執行 —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模組 2：無窮迴圈陷阱 -->
+  <div class="card">
+    <h2>💣 2. 致命錯誤：無窮迴圈 (Infinite Loop)</h2>
+    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">初學者最常犯的錯：忘記在迴圈內更新變數，導致條件永遠成立，程式當機。</p>
+    <div class="mod-grid">
+      <div>
+        <div class="code-block">
+          <span class="code-line" id="m2-l1">int power = 3;</span>
+          <span class="code-line" id="m2-l2">while (power &gt; 0) {</span>
+          <span class="code-line" id="m2-l3">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "攻擊！";</span>
+          <span class="code-line" id="m2-l4" style="color:var(--red); font-weight:bold; text-decoration:line-through;">&nbsp;&nbsp;&nbsp;&nbsp;// 忘記寫 power--;</span>
+          <span class="code-line" id="m2-l5">}</span>
+        </div>
+      </div>
+      <div>
+        <button class="btn-run btn-red" id="btn-m2" onclick="runM2()">💣 觸發無窮迴圈</button>
+        <button class="btn-run btn-gray" id="btn-m2-stop" style="display:none;" onclick="stopM2()">🛑 強制停止</button>
+        <div class="watch-box">
+          <div class="watch-title">Watch Box</div>
+          <div>變數 <span style="color:var(--accent-color);">power</span> = <span class="watch-val" id="w-m2-pow">3</span> (永遠不變)</div>
+        </div>
+        <div class="out-box" id="m2-out" style="max-height:120px; overflow-y:auto; color:var(--text-muted);">— 等待執行 —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模組 3：do-while 迴圈 -->
+  <div class="card">
+    <h2>🎲 3. do-while 迴圈 (擲骰子)</h2>
+    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">先執行一次內容，再來檢查條件。非常適合用在「要求輸入」或「隨機生成直到符合」的情境。</p>
+    <div class="mod-grid">
+      <div>
+        <div class="code-block">
+          <span class="code-line" id="m3-l1">int num;</span>
+          <span class="code-line" id="m3-l2">do {</span>
+          <span class="code-line" id="m3-l3">&nbsp;&nbsp;&nbsp;&nbsp;num = rand() % 6 + 1; <span style="color:#64748b;">// 產生 1~6 亂數</span></span>
+          <span class="code-line" id="m3-l4">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; "擲出: " &lt;&lt; num &lt;&lt; endl;</span>
+          <span class="code-line" id="m3-l5">} while (num != 6);</span>
+          <span class="code-line" id="m3-l6">cout &lt;&lt; "出現 6 了，結束！";</span>
+        </div>
+      </div>
+      <div>
+        <button class="btn-run btn-green" id="btn-m3" onclick="runM3()">▶ 擲骰子直到出現 6</button>
+        <div class="watch-box">
+          <div class="watch-title">Watch Box</div>
+          <div>變數 <span style="color:var(--accent-color);">num</span> = <span class="watch-val" id="w-m3-num">—</span></div>
+          <div>條件 <span style="color:var(--accent-color);">num != 6</span> : <span class="watch-val" id="w-m3-cond">—</span></div>
+        </div>
+        <div class="out-box" id="m3-out" style="color:var(--text-muted);">— 等待執行 —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模組 4：break vs continue (陷阱提示) -->
+  <div class="card">
+    <h2>🚦 4. while 中的 break 與 continue 陷阱</h2>
+    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">
+      在 while 迴圈中使用 continue，若更新變數 (i++) 寫在後面，會被直接跳過導致無窮迴圈！<br>
+      因此本範例將 <code>i++</code> 放在最前面來確保安全。
+    </p>
+    <div class="mod-grid">
+      <div>
+        <div class="code-block">
+          <span class="code-line" id="m4-l1">int i = 0;</span>
+          <span class="code-line" id="m4-l2">while (i &lt; 5) {</span>
+          <span class="code-line" id="m4-l3">&nbsp;&nbsp;&nbsp;&nbsp;i++; <span style="color:#64748b;">// 💡寫在前面避免 continue 陷阱</span></span>
+          <span class="code-line" id="m4-l4">&nbsp;&nbsp;&nbsp;&nbsp;if (i == 3) {</span>
+          <span class="code-line" id="m4-l5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="m4-action" style="font-weight:bold; color:var(--accent2);">/* 請選擇操作 */</span></span>
+          <span class="code-line" id="m4-l6">&nbsp;&nbsp;&nbsp;&nbsp;}</span>
+          <span class="code-line" id="m4-l7">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; i &lt;&lt; " ";</span>
+          <span class="code-line" id="m4-l8">}</span>
+        </div>
+      </div>
+      <div>
+        <div class="ctrl-row" style="gap:15px;">
+          <button class="btn-run btn-yellow" id="btn-m4-cont" onclick="runM4('continue')" style="margin:0;">⏩ 測試 continue</button>
+          <button class="btn-run btn-red" id="btn-m4-break" onclick="runM4('break')" style="margin:0;">💥 測試 break</button>
+        </div>
+        <div class="loop-steps" id="m4-steps" style="margin-top:15px;">
+          <div class="step-box" id="m4-s1">1</div><div class="step-box" id="m4-s2">2</div><div class="step-box" id="m4-s3">3</div><div class="step-box" id="m4-s4">4</div><div class="step-box" id="m4-s5">5</div>
+        </div>
+        <div class="watch-box">
+          <div class="watch-title">Watch Box</div>
+          <div>目前回合 <span style="color:var(--accent-color);">i</span> = <span class="watch-val" id="w-m4-i">—</span></div>
+        </div>
+        <div class="out-box" id="m4-out" style="color:var(--text-muted);">— 等待執行 —</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// 輔助函式
+const sleep = ms => new Promise(res => setTimeout(res, ms));
+function clearAll(prefix, max) { for(let i=1; i<=max; i++) { let el = document.getElementById(prefix + i); if(el) el.className = 'code-line'; } }
+function hl(id, cls) { let el = document.getElementById(id); if(el) el.className = 'code-line ' + cls; }
+function resetSteps(prefix, max) { for(let i=1; i<=max; i++) { let el = document.getElementById(prefix + i); if(el) el.className = 'step-box'; } }
+function out(id, html, append=false) { 
+  const el = document.getElementById(id); 
+  el.style.color = 'var(--text-main)'; 
+  if(append) el.innerHTML += html; else el.innerHTML = html; 
+}
+
+// ── 模組 1：HP 扣血 ──
+async function runM1() {
+  const btn = document.getElementById('btn-m1'); btn.disabled = true;
+  clearAll('m1-l', 6); out('m1-out', '');
+  
+  let hp = parseInt(document.getElementById('m1-range').value);
+  const maxHp = 5;
+  const bar = document.getElementById('m1-hp-bar');
+  
+  hl('m1-l1', 'active-init');
+  document.getElementById('w-m1-hp').textContent = hp;
+  bar.style.width = (hp/maxHp*100) + '%'; bar.style.background = 'var(--green)';
+  await sleep(600);
+  
+  while(true) {
+    hl('m1-l2', 'active-cond'); 
+    let cond = (hp > 0);
+    document.getElementById('w-m1-cond').textContent = cond ? 'true (繼續)' : 'false (結束)';
+    document.getElementById('w-m1-cond').style.color = cond ? 'var(--green)' : 'var(--red)';
+    await sleep(700);
+    
+    if(!cond) {
+      hl('m1-l2', 'active-red'); await sleep(500);
+      break;
+    }
+    
+    hl('m1-l3', 'active-updt'); 
+    hp--; 
+    document.getElementById('w-m1-hp').textContent = hp;
+    bar.style.width = (hp/maxHp*100) + '%';
+    bar.style.background = hp === 0 ? 'var(--red)' : hp <= 2 ? 'var(--yellow)' : 'var(--green)';
+    await sleep(500);
+    
+    hl('m1-l4', 'active-body'); 
+    out('m1-out', `扣血，剩餘: ${hp}<br>`, true);
+    await sleep(600);
+  }
+  
+  hl('m1-l6', 'active-body');
+  out('m1-out', `<span style="color:var(--red); font-weight:bold;">> Game Over!</span>`, true);
+  clearAll('m1-l', 6);
+  btn.disabled = false;
+}
+
+// ── 模組 2：無窮迴圈 ──
+let m2Interval;
+function runM2() {
+  document.getElementById('btn-m2').style.display = 'none'; 
+  document.getElementById('btn-m2-stop').style.display = 'block';
+  hl('m2-l2', 'active-cond'); hl('m2-l3', 'active-body'); hl('m2-l4', 'active-red');
+  
+  const outBox = document.getElementById('m2-out');
+  outBox.innerHTML = ''; outBox.classList.add('danger-out');
+  
+  let ticks = 0;
+  m2Interval = setInterval(() => {
+    ticks++;
+    outBox.innerHTML += `攻擊！ (條件永遠成立 第 ${ticks} 次)<br>`;
+    outBox.scrollTop = outBox.scrollHeight;
+  }, 100);
+}
+function stopM2() {
+  clearInterval(m2Interval);
+  document.getElementById('btn-m2').style.display = 'block'; 
+  document.getElementById('btn-m2-stop').style.display = 'none';
+  clearAll('m2-l', 5); 
+  const outBox = document.getElementById('m2-out');
+  outBox.classList.remove('danger-out');
+  outBox.innerHTML += `<strong style="color:var(--green);">> 🛑 強制中斷執行</strong>`;
+}
+
+// ── 模組 3：do-while ──
+async function runM3() {
+  const btn = document.getElementById('btn-m3'); btn.disabled = true;
+  clearAll('m3-l', 6); out('m3-out', '');
+  let num = 0;
+  
+  hl('m3-l1', 'active-init'); await sleep(400);
+  
+  do {
+    hl('m3-l2', 'active-init'); await sleep(300);
+    
+    hl('m3-l3', 'active-updt'); 
+    num = Math.floor(Math.random() * 6) + 1;
+    document.getElementById('w-m3-num').textContent = num;
+    await sleep(500);
+    
+    hl('m3-l4', 'active-body'); 
+    out('m3-out', `擲出: ${num}<br>`, true);
+    await sleep(500);
+    
+    hl('m3-l5', 'active-cond'); 
+    let cond = (num !== 6);
+    document.getElementById('w-m3-cond').textContent = cond ? 'true (繼續)' : 'false (結束)';
+    document.getElementById('w-m3-cond').style.color = cond ? 'var(--green)' : 'var(--red)';
+    await sleep(700);
+    
+    if(!cond) { hl('m3-l5', 'active-red'); await sleep(500); break; }
+    
+  } while (num !== 6);
+  
+  hl('m3-l6', 'active-body');
+  out('m3-out', `<span style="color:var(--yellow); font-weight:bold;">> 出現 6 了，結束！</span>`, true);
+  clearAll('m3-l', 6);
+  btn.disabled = false;
+}
+
+// ── 模組 4：break vs continue ──
+async function runM4(mode) {
+  const btn1 = document.getElementById('btn-m4-cont'); const btn2 = document.getElementById('btn-m4-break');
+  btn1.disabled = true; btn2.disabled = true;
+  clearAll('m4-l', 8); resetSteps('m4-s', 5); out('m4-out', '');
+  
+  document.getElementById('m4-action').textContent = mode + ";";
+  
+  hl('m4-l1', 'active-init'); await sleep(400);
+  let i = 0;
+  
+  while(i < 5) {
+    hl('m4-l2', 'active-cond'); await sleep(500);
+    
+    hl('m4-l3', 'active-updt'); 
+    i++; 
+    document.getElementById('w-m4-i').textContent = i;
+    await sleep(500);
+    
+    if(i === 3) {
+      hl('m4-l5', mode === 'break' ? 'active-red' : 'active-updt');
+      
+      if(mode === 'break') {
+        document.getElementById('m4-s'+i).className = 'step-box broken';
+        out('m4-out', `<br><span style="color:var(--red); font-weight:bold;">💥 Break 觸發！強制終止迴圈。</span>`, true);
+        await sleep(600);
+        break; 
+      } else {
+        document.getElementById('m4-s'+i).className = 'step-box skipped';
+        out('m4-out', `<br><span style="color:var(--yellow); font-weight:bold;">⏩ Continue 觸發！跳過本次輸出，回到上方判斷條件。</span><br>`, true);
+        await sleep(600);
+        continue; 
+      }
+    }
+    
+    hl('m4-l7', 'active-body');
+    document.getElementById('m4-s'+i).className = 'step-box done';
+    out('m4-out', i + " ", true);
+    await sleep(500);
+  }
+  
+  clearAll('m4-l', 8);
+  btn1.disabled = false; btn2.disabled = false;
+}
+</script>
+</body>
+</html>

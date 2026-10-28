@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圖表標註：輔助線與區塊 (add_vline, add_hline, add_vrect, add_hrect)</title>
+    <!-- 引入基礎公用版型與樣式 -->
+    <link rel="stylesheet" href="../../theme.css" />
+    <script src="../../layout.js" defer></script>
+    
+    <!-- 引入 Plotly.js 以在網頁上動態渲染範例圖表 -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <style>
+        .code-block {
+            background-color: var(--bg-body, #f6f8fa);
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 6px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            box-shadow: inset 0 1px 3px rgba(27,31,35,0.05);
+            flex-grow: 1;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid var(--border-color, #e1e4e8);
+            padding: 10px;
+            text-align: center;
+        }
+        .data-table th {
+            background-color: var(--bg-body, #f6f8fa);
+            color: var(--text-main, #24292e);
+            font-weight: 600;
+        }
+        .param-name {
+            font-weight: bold;
+            color: var(--accent-color, #0366d6);
+            background-color: #f0f8ff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+        }
+        .playground {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+        .playground-left, .playground-right {
+            flex: 1 1 320px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .control-panel {
+            background-color: #f0f8ff;
+            border: 1px solid #cce5ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            margin-bottom: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-main, #24292e);
+            font-size: 0.9rem;
+        }
+        .control-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            background-color: white;
+            cursor: pointer;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--accent-color, #0366d6);
+        }
+        .chart-container {
+            border: 1px solid var(--border-color, #e1e4e8);
+            border-radius: 8px;
+            padding: 10px;
+            background-color: var(--bg-card, #ffffff);
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(27,31,35,0.12));
+            flex-grow: 1;
+            display: block; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="section-title">圖表標註與輔助線 (add_vline, add_hline, add_vrect, add_hrect)</h1>
+        
+        <div class="grid" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+            <div class="card">
+                <h2>1. 準備對照資料 (建立 DataFrame)</h2>
+                <p>我們使用單一產品的營收趨勢作為範例，以便清晰展示各種輔助線與區塊標註的效果。</p>
+                <pre class="code-block" style="flex-grow: 0;"><code>import pandas as pd
+import plotly.express as px
+
+data = {
+    '月份': ['1月', '2月', '3月', '4月', '5月', '6月'],
+    '營收': [80, 95, 130, 110, 150, 170]
+}
+df = pd.DataFrame(data)</code></pre>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <h2>2. 互動學習：輔助線與標註實驗室 🧪</h2>
+            <p><strong>親自動手玩玩看！</strong> 請操作左側下拉選單，觀察不同標註方法如何疊加到圖表上，以及右側圖表的即時變化。</p>
+            
+            <div class="playground">
+                <!-- 左側：控制面板與程式碼 -->
+                <div class="playground-left">
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>➖ add_hline (水平目標線)</label>
+                            <select id="sel-hline">
+                                <option value="None">無</option>
+                                <option value="True">顯示達標線 (y=120)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>丨 add_vline (垂直事件線)</label>
+                            <select id="sel-vline">
+                                <option value="None">無</option>
+                                <option value="True">顯示新產品發布日 (x='3月')</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🟩 add_hrect (水平區塊：警示區間)</label>
+                            <select id="sel-hrect">
+                                <option value="None">無</option>
+                                <option value="True">標示低營收區間 (y=70~100)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🟨 add_vrect (垂直區塊：活動期間)</label>
+                            <select id="sel-vrect">
+                                <option value="None">無</option>
+                                <option value="True">標示春季促銷期間 (x='4月'~'5月')</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <pre class="code-block"><code id="dynamic-code">載入中...</code></pre>
+                </div>
+                
+                <!-- 右側：即時渲染的圖表 -->
+                <div class="playground-right">
+                    <div id="interactive-chart" class="chart-container" style="width:100%; min-height:450px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr;">
+            <div class="card">
+                <h2>📝 本章重點參數解析</h2>
+                <ul>
+                    <li><span class="param-name">add_hline(y=數值)</span>：繪製水平線，常駐用於標示「KPI目標值」、「平均值」或「及格線」。可搭配 <code>line_dash</code> 調整線條樣式。</li>
+                    <li><span class="param-name">add_vline(x=數值/類別)</span>：繪製垂直線，常用於時間序列圖表中标註「重大事件發生日」或「政策實施點」。</li>
+                    <li><span class="param-name">add_hrect(y0=起點, y1=終點)</span>：繪製水平長方形區塊，可設置 <code>fillcolor</code> 與透明度 <code>opacity</code>，適合標示「正常安全範圍」或「危險警戒區間」。</li>
+                    <li><span class="param-name">add_vrect(x0=起點, x1=終點)</span>：繪製垂直長方形區塊，最常用於標註一段特定的「時間區間」（如：促銷檔期、經濟衰退期）。</li>
+                    <li><strong>💡 annotation_text 屬性</strong>：所有 <code>add_*</code> 方法皆可加入此參數，直接在輔助線或區塊旁顯示文字說明，讓圖表資訊更直覺。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 抓取 DOM 元素
+            const selHline = document.getElementById('sel-hline');
+            const selVline = document.getElementById('sel-vline');
+            const selHrect = document.getElementById('sel-hrect');
+            const selVrect = document.getElementById('sel-vrect');
+            const codeBlock = document.getElementById('dynamic-code');
+
+            function updatePlayground() {
+                const hlineVal = selHline.value;
+                const vlineVal = selVline.value;
+                const hrectVal = selHrect.value;
+                const vrectVal = selVrect.value;
+
+                // 1. 動態生成 Python 程式碼 (展示 annotation_text)
+                let codeStr = `fig = px.line(df, x='月份', y='營收', markers=True, title='上半年營收趨勢與標註')\n`;
+                
+                if (hlineVal === 'True') {
+                    codeStr += `\n# 加入水平目標線\nfig.add_hline(\n    y=120, line_dash="dash", line_color="green", \n    annotation_text="KPI 目標", annotation_position="top right"\n)`;
+                }
+                if (vlineVal === 'True') {
+                    codeStr += `\n# 加入垂直事件線\nfig.add_vline(\n    x="3月", line_dash="dot", line_color="red", \n    annotation_text="新產品發布", annotation_position="top left"\n)`;
+                }
+                if (hrectVal === 'True') {
+                    codeStr += `\n# 加入水平警示區塊\nfig.add_hrect(\n    y0=70, y1=100, fillcolor="red", opacity=0.1, \n    annotation_text="低營收警戒", annotation_position="inside left"\n)`;
+                }
+                if (vrectVal === 'True') {
+                    codeStr += `\n# 加入垂直活動區塊\nfig.add_vrect(\n    x0="4月", x1="5月", fillcolor="orange", opacity=0.2, \n    annotation_text="春季促銷檔期", annotation_position="top left"\n)`;
+                }
+
+                codeStr += `\n\nfig.show()`;
+                codeBlock.innerText = codeStr;
+
+                // 2. 動態更新 Plotly 圖表 (對應 Python 端的 annotation_text)
+                let trace1 = {
+                    x: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    y: [80, 95, 130, 110, 150, 170],
+                    name: '營收',
+                    mode: 'lines+markers',
+                    line: {color: '#3498db', width: 3},
+                    marker: {size: 8}
+                };
+
+                let shapes = [];
+                let annotations = [];
+
+                if (hlineVal === 'True') {
+                    shapes.push({
+                        type: 'line', y0: 120, y1: 120, x0: 0, x1: 1, xref: 'paper', yref: 'y',
+                        line: {color: 'green', width: 2, dash: 'dash'}
+                    });
+                    annotations.push({
+                        x: 0.95, y: 120, xref: 'paper', yref: 'y',
+                        text: 'KPI 目標', showarrow: false, yanchor: 'bottom', font: {color: 'green'}
+                    });
+                }
+
+                if (vlineVal === 'True') {
+                    shapes.push({
+                        type: 'line', x0: '3月', x1: '3月', y0: 0, y1: 1, xref: 'x', yref: 'paper',
+                        line: {color: 'red', width: 2, dash: 'dot'}
+                    });
+                    annotations.push({
+                        x: '3月', y: 0.95, xref: 'x', yref: 'paper',
+                        text: '新產品發布', showarrow: false, xanchor: 'right', font: {color: 'red'}
+                    });
+                }
+
+                if (hrectVal === 'True') {
+                    shapes.push({
+                        type: 'rect', y0: 70, y1: 100, x0: 0, x1: 1, xref: 'paper', yref: 'y',
+                        fillcolor: 'red', opacity: 0.1, line: {width: 0}
+                    });
+                    annotations.push({
+                        x: 0.05, y: 85, xref: 'paper', yref: 'y',
+                        text: '低營收警戒', showarrow: false, font: {color: '#c0392b'}
+                    });
+                }
+
+                if (vrectVal === 'True') {
+                    shapes.push({
+                        type: 'rect', x0: '4月', x1: '5月', y0: 0, y1: 1, xref: 'x', yref: 'paper',
+                        fillcolor: 'orange', opacity: 0.2, line: {width: 0}
+                    });
+                    annotations.push({
+                        x: '4月', y: 0.85, xref: 'x', yref: 'paper',
+                        text: '春季促銷檔期', showarrow: false, xanchor: 'left', xshift: 10, font: {color: '#d35400'}
+                    });
+                }
+
+                let layout = {
+                    title: { text: '上半年營收趨勢與標註', font: {size: 18} },
+                    margin: {t: 60, l: 60, r: 40, b: 60},
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: {title: '月份', gridcolor: '#e1e4e8'}, 
+                    yaxis: {title: '營收 (萬元)', gridcolor: '#e1e4e8', range: [50, 190]},
+                    shapes: shapes,
+                    annotations: annotations,
+                    hovermode: 'closest'
+                };
+
+                Plotly.newPlot('interactive-chart', [trace1], layout, {responsive: true});
+            }
+
+            // 綁定事件監聽器
+            selHline.addEventListener('change', updatePlayground);
+            selVline.addEventListener('change', updatePlayground);
+            selHrect.addEventListener('change', updatePlayground);
+            selVrect.addEventListener('change', updatePlayground);
+
+            // 初始載入渲染
+            setTimeout(updatePlayground, 100);
+            
+            // 監聽視窗大小改變
+            window.addEventListener('resize', function() {
+                Plotly.Plots.resize('interactive-chart');
+            });
+        });
+    </script>
+</body>
+</html>
