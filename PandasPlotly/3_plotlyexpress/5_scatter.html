@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>第五章：Plotly Express 直方圖與分佈</title>
+    <title>第五章：Plotly Express 散佈圖與趨勢線</title>
     <!-- 引入基礎公用版型與樣式 -->
     <link rel="stylesheet" href="../../theme.css" />
     <script src="../../layout.js" defer></script>
@@ -23,22 +23,6 @@
             margin-bottom: 20px;
             box-shadow: inset 0 1px 3px rgba(27,31,35,0.05);
             flex-grow: 1;
-        }
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-        }
-        .data-table th, .data-table td {
-            border: 1px solid var(--border-color, #e1e4e8);
-            padding: 8px;
-            text-align: center;
-        }
-        .data-table th {
-            background-color: var(--bg-body, #f6f8fa);
-            color: var(--text-main, #24292e);
-            font-weight: 600;
         }
         .param-name {
             font-weight: bold;
@@ -107,55 +91,53 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="section-title">第五章：Plotly Express 直方圖 (px.histogram) 與分佈</h1>
+        <h1 class="section-title">第五章：Plotly Express 散佈圖 (px.scatter) 與趨勢線</h1>
         
         <div class="grid" style="grid-template-columns: 1fr; margin-bottom: 20px;">
             <div class="card">
-                <h2>1. 準備對照資料 (客單價紀錄)</h2>
-                <p>直方圖專門用來觀察「連續數值的分佈頻率」。這裡我們有一份包含數十筆「客單價 (消費金額)」與所屬「分店」的原始紀錄。</p>
+                <h2>1. 準備對照資料 (廣告費與營收)</h2>
+                <p>散佈圖是用來觀察「兩個連續數值之間關聯性」的最佳圖表。加上趨勢線，更能秒懂資料的走向。這裡我們準備了一份「廣告費」與對應「營收」的數據。</p>
                 <pre class="code-block" style="flex-grow: 0;"><code>import pandas as pd
 import plotly.express as px
 
 data = {
-    '客單價 (元)': [85, 95, 105, 110, 110, 115, 120, 120, 125, 130, 
-                   135, 140, 150, 155, 160, 165, 170, 180, 190, 210, 220, 250],
-    '分店': ['台北', '台北', '台北', '台中', '台北', '台北', '台中', '台北', '台北', '台中',
-             '台中', '台中', '台北', '台中', '台北', '台北', '台中', '台北', '台中', '台北', '台中', '台北']
+    '廣告費 (千元)': [10, 15, 22, 25, 30, 35, 42, 48, 55, 60, 68, 70],
+    '營收 (萬元)': [15, 10, 30, 20, 25, 45, 50, 40, 65, 55, 80, 60],
+    '地區': ['北區', '南區', '北區', '南區', '南區', '北區', '北區', '南區', '北區', '南區', '北區', '南區']
 }
 df = pd.DataFrame(data)</code></pre>
             </div>
         </div>
 
         <div class="card" style="margin-bottom: 20px;">
-            <h2>2. 互動學習：px.histogram 參數實驗室 🧪</h2>
-            <p><strong>親自動手玩玩看！</strong> 觀察 Plotly 如何自動將零散的金額「分箱 (binning)」，並試著切換 <code>barmode</code> 找出最適合比較雙分店差異的呈現方式。</p>
+            <h2>2. 互動學習：px.scatter 趨勢線實驗室 📈</h2>
+            <p><strong>親自動手玩玩看！</strong> 試著加入 `trendline`，並觀察在有設定 `color` (分組) 的情況下，`trendline_scope` 如何改變趨勢線的計算範圍。</p>
             
             <div class="playground">
                 <!-- 左側：控制面板與程式碼 -->
                 <div class="playground-left">
                     <div class="control-panel">
                         <div class="control-group">
-                            <label>📏 nbins (自訂分組區間的數量)</label>
-                            <select id="sel-nbins">
-                                <option value="auto">Auto (自動計算最佳區間)</option>
-                                <option value="5">5 (區間變寬，分5組)</option>
-                                <option value="15">15 (區間變窄，分15組)</option>
-                            </select>
-                        </div>
-                        <div class="control-group">
                             <label>🎨 color (依據欄位分組顯示)</label>
                             <select id="sel-color">
-                                <option value="None">無 (僅顯示整體分佈)</option>
-                                <option value="分店">'分店' (區分台北與台中)</option>
+                                <option value="None">無 (僅顯示整體散佈)</option>
+                                <option value="地區">'地區' (區分北區與南區)</option>
                             </select>
                         </div>
                         <div class="control-group">
-                            <label>📊 barmode (多組資料時的呈現模式)</label>
-                            <select id="sel-barmode">
-                                <option value="relative">relative (預設：堆疊)</option>
-                                <option value="overlay">overlay (重疊，適合比較分佈)</option>
-                                <option value="group">group (並排顯示)</option>
+                            <label>📈 trendline (加入趨勢線)</label>
+                            <select id="sel-trendline">
+                                <option value="None">無</option>
+                                <option value="ols">'ols' (線性迴歸/最小平方法)</option>
                             </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🌐 trendline_scope (趨勢線計算範圍)</label>
+                            <select id="sel-scope">
+                                <option value="trace">'trace' (預設：各群體獨立畫線)</option>
+                                <option value="overall">'overall' (全體資料畫一條總線)</option>
+                            </select>
+                            <small style="color: #666; display: block; margin-top: 4px;">※ 需同時啟用 color 與 trendline 才有差異</small>
                         </div>
                     </div>
                     
@@ -173,10 +155,9 @@ df = pd.DataFrame(data)</code></pre>
             <div class="card">
                 <h2>📝 本章重點參數解析</h2>
                 <ul>
-                    <li><span class="param-name">x</span>：放入你想要觀察分佈的連續數值欄位（如客單價、年齡、成績）。Y 軸則會自動幫你計算該區間的「筆數 (Count)」。</li>
-                    <li><span class="param-name">nbins</span>：強制指定要將資料切成幾個區間（Bins）。如果沒有設定，Plotly 會自動幫你算出一個最美觀的區間寬度。</li>
-                    <li><span class="param-name">color</span>：加入類別欄位後，可以在同一張直方圖中同時觀察不同群體（如不同分店）的數據分佈。</li>
-                    <li><span class="param-name">barmode</span>：有分組 (`color`) 時非常重要！預設的 <code>relative</code> 會把次數往上堆疊；如果設為 <code>overlay</code> (重疊) 搭配透明度，或是 <code>group</code> (並排)，能更容易比較兩組分佈的差異。</li>
+                    <li><span class="param-name">x</span> 與 <span class="param-name">y</span>：放入要觀察相關性的兩個連續數值欄位。</li>
+                    <li><span class="param-name">trendline</span>：設定為 <code>'ols'</code> (Ordinary Least Squares) 時，Plotly 會自動透過 statsmodels 幫你計算並畫出線性迴歸趨勢線。</li>
+                    <li><span class="param-name">trendline_scope</span>：當你有使用 <code>color</code> 將資料分組時，預設會幫每一個群體各畫一條趨勢線 (<code>'trace'</code>)。若改為 <code>'overall'</code>，則無視分組，直接對所有資料點計算一條整體的趨勢線。</li>
                 </ul>
             </div>
         </div>
@@ -185,111 +166,134 @@ df = pd.DataFrame(data)</code></pre>
     <!-- 互動邏輯腳本 -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const selNbins = document.getElementById('sel-nbins');
             const selColor = document.getElementById('sel-color');
-            const selBarmode = document.getElementById('sel-barmode');
+            const selTrendline = document.getElementById('sel-trendline');
+            const selScope = document.getElementById('sel-scope');
             const codeBlock = document.getElementById('dynamic-code');
 
             // 模擬原始資料
-            const dataTaipei = [85, 95, 105, 110, 115, 120, 125, 150, 160, 165, 180, 210, 250];
-            const dataTaichung = [110, 120, 130, 135, 140, 155, 170, 190, 220];
+            const dataNorth = { x: [10, 22, 35, 42, 55, 68], y: [15, 30, 45, 50, 65, 80] };
+            const dataSouth = { x: [15, 25, 30, 48, 60, 70], y: [10, 20, 25, 40, 55, 60] };
+            
+            // 簡單線性迴歸計算 (OLS)
+            function calculateOLS(x, y) {
+                let n = x.length;
+                let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+                for (let i = 0; i < n; i++) {
+                    sumX += x[i]; sumY += y[i];
+                    sumXY += x[i] * y[i]; sumXX += x[i] * x[i];
+                }
+                let slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+                let intercept = (sumY - slope * sumX) / n;
+                return { slope, intercept };
+            }
+
+            // 產生趨勢線 Trace 的工具函數
+            function getTrendlineTrace(xArr, yArr, name, color, isDash=false) {
+                let ols = calculateOLS(xArr, yArr);
+                let minX = Math.min(...xArr);
+                let maxX = Math.max(...xArr);
+                return {
+                    type: 'scatter',
+                    mode: 'lines',
+                    x: [minX, maxX],
+                    y: [ols.slope * minX + ols.intercept, ols.slope * maxX + ols.intercept],
+                    name: name + ' (趨勢線)',
+                    line: { color: color, width: 3, dash: isDash ? 'dash' : 'solid' },
+                    showlegend: false,
+                    hoverinfo: 'skip'
+                };
+            }
 
             function updatePlayground() {
-                const nbinsVal = selNbins.value;
                 const colorVal = selColor.value;
-                const barmodeVal = selBarmode.value;
+                const trendlineVal = selTrendline.value;
+                const scopeVal = selScope.value;
 
                 // 1. 動態生成 Python 程式碼
-                let codeStr = `fig = px.histogram(
+                let codeStr = `fig = px.scatter(
     df,
-    x='客單價 (元)',`;
-                
-                if (nbinsVal !== 'auto') {
-                    codeStr += `
-    nbins=${nbinsVal},               # 指定分為 ${nbinsVal} 個區間`;
+    x='廣告費 (千元)',
+    y='營收 (萬元)',`;
+
+                if (colorVal === '地區') {
+                    codeStr += `\n    color='地區',             # 依據地區分色`;
                 }
 
-                if (colorVal === '分店') {
-                    codeStr += `
-    color='分店',             # 依據分店分色`;
+                if (trendlineVal === 'ols') {
+                    codeStr += `\n    trendline='ols',          # 啟用線性迴歸趨勢線`;
                     
-                    if (barmodeVal === 'overlay') {
-                        codeStr += `
-    barmode='overlay',        # 模式設為重疊以利比較
-    opacity=0.7,              # 增加透明度防止遮蔽`;
-                    } else if (barmodeVal === 'group') {
-                        codeStr += `
-    barmode='group',          # 模式設為並排`;
-                    } else {
-                        codeStr += `
-    barmode='relative',       # (預設) 堆疊模式`;
+                    if (colorVal === '地區' && scopeVal === 'overall') {
+                        codeStr += `\n    trendline_scope='overall',# 無視分組，計算整體趨勢`;
                     }
-                } else {
-                    codeStr += `
-    opacity=0.7,`;
                 }
 
-                codeStr += `
-    title='來客單價分佈直方圖'
-)
-fig.show()`;
+                codeStr += `\n    title='廣告費與營收關聯散佈圖'\n)\nfig.show()`;
                 
                 codeBlock.innerText = codeStr;
 
                 // 2. 動態更新 Plotly 圖表
                 let traces = [];
-                let opacity = (colorVal === '分店' && barmodeVal === 'overlay') ? 0.7 : (colorVal === 'None' ? 0.7 : 0.9);
+                let allX = [...dataNorth.x, ...dataSouth.x];
+                let allY = [...dataNorth.y, ...dataSouth.y];
 
-                if (colorVal === '分店') {
+                if (colorVal === '地區') {
+                    // 加入散佈點
                     traces.push({
-                        type: 'histogram',
-                        x: dataTaipei,
-                        name: '台北',
-                        marker: {color: '#3498db'},
-                        opacity: opacity,
-                        nbinsx: nbinsVal === 'auto' ? null : parseInt(nbinsVal)
+                        type: 'scatter', mode: 'markers',
+                        x: dataNorth.x, y: dataNorth.y,
+                        name: '北區', marker: {color: '#3498db', size: 10}
                     });
                     traces.push({
-                        type: 'histogram',
-                        x: dataTaichung,
-                        name: '台中',
-                        marker: {color: '#e74c3c'},
-                        opacity: opacity,
-                        nbinsx: nbinsVal === 'auto' ? null : parseInt(nbinsVal)
+                        type: 'scatter', mode: 'markers',
+                        x: dataSouth.x, y: dataSouth.y,
+                        name: '南區', marker: {color: '#e74c3c', size: 10}
                     });
+
+                    // 加入趨勢線
+                    if (trendlineVal === 'ols') {
+                        if (scopeVal === 'overall') {
+                            traces.push(getTrendlineTrace(allX, allY, '整體', '#2c3e50', true));
+                        } else {
+                            traces.push(getTrendlineTrace(dataNorth.x, dataNorth.y, '北區', '#2980b9'));
+                            traces.push(getTrendlineTrace(dataSouth.x, dataSouth.y, '南區', '#c0392b'));
+                        }
+                    }
                 } else {
+                    // 未分組
                     traces.push({
-                        type: 'histogram',
-                        x: [...dataTaipei, ...dataTaichung],
-                        name: '全部分店',
-                        marker: {color: '#9b59b6'},
-                        opacity: opacity,
-                        nbinsx: nbinsVal === 'auto' ? null : parseInt(nbinsVal)
+                        type: 'scatter', mode: 'markers',
+                        x: allX, y: allY,
+                        name: '全地區', marker: {color: '#9b59b6', size: 10}
                     });
+
+                    if (trendlineVal === 'ols') {
+                        traces.push(getTrendlineTrace(allX, allY, '整體', '#8e44ad'));
+                    }
                 }
 
                 let layout = {
-                    title: { text: '來客單價分佈直方圖', font: {size: 18} },
+                    title: { text: '廣告費與營收關聯散佈圖', font: {size: 18} },
                     margin: {t: 60, l: 60, r: 40, b: 60},
-                    barmode: colorVal === '分店' ? barmodeVal : 'relative',
                     plot_bgcolor: 'rgba(0,0,0,0)',
                     paper_bgcolor: 'rgba(0,0,0,0)',
-                    xaxis: {title: '客單價 (元)', gridcolor: '#e1e4e8'},
-                    yaxis: {title: '頻率 (次數)', gridcolor: '#e1e4e8'}
+                    xaxis: {title: '廣告費 (千元)', gridcolor: '#e1e4e8'},
+                    yaxis: {title: '營收 (萬元)', gridcolor: '#e1e4e8'},
+                    hovermode: 'closest'
                 };
 
                 Plotly.newPlot('interactive-chart', traces, layout, {responsive: true});
             }
 
             // 綁定事件監聽器
-            selNbins.addEventListener('change', updatePlayground);
             selColor.addEventListener('change', updatePlayground);
-            selBarmode.addEventListener('change', updatePlayground);
+            selTrendline.addEventListener('change', updatePlayground);
+            selScope.addEventListener('change', updatePlayground);
 
-            // 初始載入渲染，加上小延遲確保外層 Flex 容器已定位
+            // 初始載入渲染
             setTimeout(updatePlayground, 100);
             
-            // 監聽視窗大小改變，強制重新繪圖確保 RWD
+            // 監聽視窗大小改變
             window.addEventListener('resize', function() {
                 Plotly.Plots.resize('interactive-chart');
             });
