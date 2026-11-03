@@ -1,168 +1,460 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <title>C++ 教學：前綴和 (Prefix Sum)</title>
-    <link rel="stylesheet" href="../../theme.css">
-    <script src="../../layout.js" defer></script>
-    <style>
-        .mod-grid { display: flex; gap: 20px; font-family: monospace; }
-        .left-col { flex: 1; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; overflow-x: auto;}
-        .right-col { flex: 1; display: flex; flex-direction: column; gap: 15px; }
-        .watch-box, .terminal-box { background: #f4f4f4; padding: 15px; border-radius: 8px; border: 1px solid #ccc; }
-        .terminal-box { background: #000; color: #0f0; }
-        button { padding: 10px 15px; font-size: 16px; cursor: pointer; border-radius: 5px; border: 1px solid #999; background: #e0e0e0; }
-        button:hover { background: #ccc; }
-        span { display: block; padding-left: 5px; }
-        .cursor { background-color: #444; outline: 1px solid #888; }
-        .active-blue { background-color: #005f87; }
-        .active-green { background-color: #005f00; }
-        .active-yellow { background-color: #875f00; }
-        .active-red { background-color: #870000; }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>C++ 一維陣列前綴和 (Prefix Sum) 互動式教學</title>
+  <meta name="description" content="學習前綴和的概念、0-based 與 1-based 實作差異，以及如何用 O(1) 時間解決區間總和查詢。"/>
+  
+  <link rel="stylesheet" href="../../theme.css">
+  <script src="../../layout.js" defer></script>
+
+  <style>
+    /* ── 本頁專用的元件與互動樣式 (淺色化) ── */
+    :root {
+      --surface: #f1f5f9;
+      --code-bg: #f8fafc;
+      --accent2: #0284c7;
+      --accent-purple: #8b5cf6;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+    }
+    
+    body { padding-top: 40px; padding-bottom: 60px; }
+    .section-title { 
+      font-size: 2rem; margin-bottom: 5px; background: linear-gradient(90deg, #0366d6, #28a745, #005cc5); 
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: bold;
+    }
+    .card h2 { color: var(--text-main); border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 5px; margin-top: 0; }
+    
+    .mod-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; align-items: start; margin-top: 15px; }
+    @media(max-width:850px){ .mod-grid { grid-template-columns: 1fr; } }
+    
+    .code-block {
+      font-family: 'Courier New', monospace; font-size: 0.9rem;
+      background: var(--code-bg); border-radius: 10px; padding: 14px 18px;
+      line-height: 1.7; border: 1px solid var(--border-color); overflow-x: auto;
+      color: var(--text-main); box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .code-line { display: block; padding: 2px 6px; border-radius: 4px; transition: all .2s; }
+    .code-line.active-green { background: #dcfce7; color: #15803d; font-weight: bold; border-left: 3px solid var(--green); }
+    .code-line.active-red { background: #fee2e2; color: #b91c1c; font-weight: bold; border-left: 3px solid var(--red); }
+    .code-line.active-blue { background: #e0f2fe; color: #0369a1; font-weight: bold; border-left: 3px solid var(--accent2); }
+    .code-line.active-yellow { background: #fef3c7; color: #b45309; font-weight: bold; border-left: 3px solid var(--yellow); }
+    .code-line.cursor { background: #f1f5f9; outline: 2px solid var(--accent-color); color: var(--text-main); }
+
+    .ctrl-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; font-weight: bold; color: var(--text-main); }
+    .num-input { width: 70px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background:#ffffff; color:var(--text-main); font-size:0.9rem; text-align:center; outline: none; }
+    .num-input:focus { border-color: var(--accent-color); }
+    
+    .btn-run {
+      padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer;
+      background: var(--green); color: #fff; font-size: 0.9rem; font-weight: 600;
+      transition: background .2s, transform .1s; margin-bottom: 10px; width: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .btn-run:hover { filter: brightness(1.1); }
+    .btn-run:active { transform: scale(.98); }
+    .btn-run:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-action { background: var(--accent-color); width: auto; margin-bottom:0; }
+
+    .out-box {
+      background:#ffffff; border-left: 4px solid var(--border-color); border-radius: 0 6px 6px 0;
+      padding:10px 14px; min-height:40px; font-family:monospace; font-size:0.9rem; color:var(--text-main); margin-top:12px; white-space: pre-wrap; box-shadow: 0 1px 2px rgba(0,0,0,0.05); line-height: 1.5;
+    }
+
+    /* ── Array Visuals ── */
+    .array-vis-wrap { padding: 10px 0 15px; display: flex; flex-direction: column; align-items: center; gap: 15px; overflow-x: auto;}
+    .array-row { display: flex; align-items: center; gap: 10px; }
+    .array-label { font-size: 0.85rem; font-weight: bold; color: var(--accent-color); width: 60px; text-align: right; }
+    .array-vis { display: inline-flex; position: relative; border-radius: 8px; overflow: hidden; border: 2px solid var(--border-color); background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    
+    .arr-cell-col { display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid var(--border-color); width: 50px; padding: 8px 5px; position:relative; transition:.3s;}
+    .arr-cell-col:last-child { border-right: none; }
+    .arr-cell-col.active { background: #e0f2fe; box-shadow: inset 0 0 0 2px var(--accent2); }
+    .arr-cell-col.updated { background: #dcfce7; }
+    .arr-cell-col.range-hl { background: #fef3c7; box-shadow: inset 0 0 0 2px var(--yellow); }
+    .arr-cell-col.target-r { background: #dcfce7; box-shadow: inset 0 0 0 2px var(--green); }
+    .arr-cell-col.target-l { background: #fee2e2; box-shadow: inset 0 0 0 2px var(--red); }
+    .arr-cell-col.fade-col { opacity: 0.35; background: #f1f5f9; } /* 1-based index 0淡化 */
+    .arr-cell-col.empty-cell .arr-val { color: #cbd5e1; }
+    
+    .arr-idx { font-family: monospace; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;}
+    .arr-val { font-family: monospace; font-size: 1.2rem; font-weight: bold; color: var(--text-main); transition: .3s;}
+    .arr-cell-col.active .arr-val { color: var(--accent2); }
+    
+    /* OOB Zones */
+    .oob-zone {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      width: 50px; padding: 8px 5px; border: 2px dashed var(--red); border-radius: 8px; background: #fef2f2; margin-right: 10px; opacity: 0.4; transition: .3s;
+    }
+    .oob-zone.triggered { opacity: 1; animation: shake .4s; background: #fca5a5; }
+    .oob-zone .arr-val { color: #b91c1c; font-size: 1.2rem;}
+    
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  </style>
 </head>
 <body>
-    <h2>前綴和 (Prefix Sum) 基礎實作動畫</h2>
+<div class="container">
+  <div style="text-align: center; margin-bottom: 40px;">
+    <h1 class="section-title">⚡ C++ 前綴和 (Prefix Sum) 教學</h1>
+    <p style="color:var(--text-muted);">用 O(N) 預處理換取 O(1) 區間查詢的魔法。對比 0-based 與 1-based 實作差異！</p>
+  </div>
+
+  <!-- Module 1: 0-based Build -->
+  <div class="card">
+    <h2>🏗️ 1. 建構前綴和陣列 (0-based)</h2>
     <div class="mod-grid">
-        <div class="left-col">
-<pre><code><span id="L1">#include &lt;iostream&gt;</span>
-<span id="L2">#include &lt;vector&gt;</span>
-<span id="L3"></span>
-<span id="L4">using namespace std;</span>
-<span id="L5"></span>
-<span id="L6">int main() {</span>
-<span id="L7">    vector&lt;int&gt; arr = {3, 1, 4, 1, 5, 9, 2};</span>
-<span id="L8">    int n = arr.size();</span>
-<span id="L9"></span>
-<span id="L10">    // 建立前綴和陣列，大小與原陣列相同</span>
-<span id="L11">    vector&lt;int&gt; prefix(n);</span>
-<span id="L12"></span>
-<span id="L13">    // 基礎情況：第一個元素的前綴和等於原陣列的第一個元素</span>
-<span id="L14">    prefix[0] = arr[0];</span>
-<span id="L15"></span>
-<span id="L16">    // 從索引 1 開始計算前綴和</span>
-<span id="L17">    for (int i = 1; i &lt; n; i++) {</span>
-<span id="L18">        prefix[i] = prefix[i-1] + arr[i];</span>
-<span id="L19">    }</span>
-<span id="L20"></span>
-<span id="L21">    // 輸出觀察</span>
-<span id="L22">    for (int i = 0; i &lt; n; i++) {</span>
-<span id="L23">        cout &lt;&lt; prefix[i] &lt;&lt; " ";</span>
-<span id="L24">    }</span>
-<span id="L25">    </span>
-<span id="L26">    return 0;</span>
-<span id="L27">}</span></code></pre>
+      <div>
+        <div class="code-block">
+          <span class="code-line" id="m1-l0">int arr[5] = {3, 1, 4, 2, 5};</span>
+          <span class="code-line" id="m1-l1">int prefix[5];</span>
+          <span class="code-line" id="m1-l2">prefix[0] = arr[0];</span>
+          <span class="code-line" id="m1-l3">for(<span style="color:var(--accent-color);font-weight:bold;">int i = 1</span>; i &lt; 5; i++) {</span>
+          <span class="code-line" id="m1-l4">&nbsp;&nbsp;&nbsp;&nbsp;prefix[i] = prefix[i-1] + arr[i];</span>
+          <span class="code-line" id="m1-l5">}</span>
         </div>
-        
-        <div class="right-col">
-            <button onclick="runMx()" id="runBtn">執行程式 (Run)</button>
-            <div class="watch-box">
-                <h3>監看區塊 (Watch Box)</h3>
-                <div id="watch-n">n: </div>
-                <div id="watch-i">i: </div>
-                <div id="watch-arr">arr: []</div>
-                <div id="watch-prefix">prefix: []</div>
-            </div>
-            <div class="terminal-box">
-                <h3>終端機輸出 (Terminal)</h3>
-                <div id="terminal-out"></div>
-            </div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top: 10px;">💡 核心概念：<code>prefix[i]</code> 儲存了從 <code>arr[0]</code> 加到 <code>arr[i]</code> 的總和。</p>
+      </div>
+      <div>
+        <button class="btn-run" id="btn-m1" onclick="runM1()">▶ 動態建構前綴和</button>
+        <div class="array-vis-wrap">
+          <div class="array-row">
+            <div class="array-label">arr</div>
+            <div class="array-vis" id="m1-arr"></div>
+          </div>
+          <div class="array-row">
+            <div class="array-label">prefix</div>
+            <div class="array-vis" id="m1-pref"></div>
+          </div>
         </div>
+        <div class="out-box" id="m1-out" style="color:var(--text-muted); font-style:italic;">— 點擊執行觀察累加過程 —</div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        const sleep = ms => new Promise(res => setTimeout(res, ms));
-        const MAX_LINES = 27;
+  <!-- Module 2: 0-based Query -->
+  <div class="card">
+    <h2>🔍 2. 區間查詢 (0-based)</h2>
+    <div class="mod-grid">
+      <div>
+        <div class="code-block">
+          <span class="code-line" id="m2-l0" style="color:#64748b;">// 查詢區間 arr[L] 到 arr[R] 的和</span>
+          <span class="code-line" id="m2-l1">int sum;</span>
+          <span class="code-line" id="m2-l2">if (L == 0) {</span>
+          <span class="code-line" id="m2-l3">&nbsp;&nbsp;&nbsp;&nbsp;sum = prefix[R];</span>
+          <span class="code-line" id="m2-l4">} else {</span>
+          <span class="code-line" id="m2-l5">&nbsp;&nbsp;&nbsp;&nbsp;sum = prefix[R] - prefix[L-1];</span>
+          <span class="code-line" id="m2-l6">}</span>
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top: 10px;">⚠️ 在 0-based 系統中，如果 <code>L > 0</code>，我們要減去左邊界<strong>前一格</strong> (<code>L-1</code>) 的前綴和，才能保留 <code>L</code> 到 <code>R</code> 的區段。</p>
+      </div>
+      <div>
+        <div class="ctrl-row" style="justify-content: center;">
+          <span>查詢 L =</span><input type="number" class="num-input" id="m2-L" value="1" min="0" max="4">
+          <span>, R =</span><input type="number" class="num-input" id="m2-R" value="3" min="0" max="4">
+          <button class="btn-run btn-action" id="btn-m2" onclick="runM2()">▶ 動畫計算 Sum</button>
+        </div>
+        <div class="array-vis-wrap">
+          <div class="array-row">
+            <div class="array-label">arr</div>
+            <div class="array-vis" id="m2-arr"></div>
+          </div>
+          <div class="array-row">
+            <div class="array-label">prefix</div>
+            <div class="array-vis" id="m2-pref"></div>
+          </div>
+        </div>
+        <div class="out-box" id="m2-out" style="min-height:60px; color:var(--text-muted); font-style:italic;">— 輸入 L 與 R 並點擊計算 —</div>
+      </div>
+    </div>
+  </div>
 
-        function focusLine(prefix, max, id, cls) {
-            for (let i = 1; i <= max; i++) {
-                let el = document.getElementById(prefix + i);
-                if (el) el.className = '';
-            }
-            if (id) {
-                let el = document.getElementById(prefix + id);
-                if (el) el.className = cls || 'cursor';
-            }
-        }
+  <!-- Module 3: Out of Bounds (0-based trap) -->
+  <div class="card">
+    <h2>💀 3. 邊界陷阱：忘記判斷 L==0</h2>
+    <div class="mod-grid">
+      <div>
+        <div class="code-block">
+          <span class="code-line" id="m3-l0" style="color:#64748b;">// 如果偷懶不寫 if (L == 0)...</span>
+          <span class="code-line" id="m3-l1">int L = 0, R = 3;</span>
+          <span class="code-line" id="m3-l2">int sum = prefix[R] - prefix[<span id="m3-code-l1" style="font-weight:bold; color:var(--red);">L-1</span>];</span>
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top: 10px;">🚨 當 <code>L = 0</code>，<code>L-1</code> 會變成 <code>-1</code>，導致存取未知的記憶體區塊，計算出錯誤結果！</p>
+      </div>
+      <div>
+        <div class="ctrl-row" style="justify-content:center;">
+          <button class="btn-run btn-action" id="btn-m3" onclick="runM3()">🔍 模擬 L=0 無防護越界</button>
+        </div>
+        <div class="array-vis-wrap" style="align-items:center;">
+          <div class="array-row">
+            <div class="array-label">prefix</div>
+            <div class="oob-zone" id="m3-oob"><div class="arr-idx">[-1]</div><div class="arr-val">💀</div></div>
+            <div class="array-vis" id="m3-pref"></div>
+          </div>
+        </div>
+        <div class="out-box" id="m3-out" style="color:var(--text-muted); font-style:italic;">— 點擊模擬觀察越界發生 —</div>
+      </div>
+    </div>
+  </div>
 
-        async function runMx() {
-            document.getElementById('runBtn').disabled = true;
-            document.getElementById('terminal-out').innerText = '';
-            let n = 0;
-            let i_val = '-';
-            let arr = [];
-            let prefix = [];
-            
-            const updateWatch = () => {
-                document.getElementById('watch-n').innerText = `n: ${n > 0 ? n : ''}`;
-                document.getElementById('watch-i').innerText = `i: ${i_val}`;
-                document.getElementById('watch-arr').innerText = `arr: [${arr.join(', ')}]`;
-                document.getElementById('watch-prefix').innerText = `prefix: [${prefix.join(', ')}]`;
-            };
-            
-            updateWatch();
+  <!-- Module 4: 1-based Build & Query -->
+  <div class="card">
+    <h2>🏆 4. 完美解法：1-based Indexing (推薦)</h2>
+    <div class="mod-grid">
+      <div>
+        <div class="code-block">
+          <span class="code-line" id="m4-l0">int arr[6] = {<span style="color:var(--text-muted);">0</span>, 3, 1, 4, 2, 5}; <span style="color:#64748b;">// index 1~5</span></span>
+          <span class="code-line" id="m4-l1">int prefix[6] = {0}; <span style="color:#64748b;">// prefix[0] 預設為 0</span></span>
+          <span class="code-line" id="m4-l2">for(int i = 1; i &lt;= 5; i++) {</span>
+          <span class="code-line" id="m4-l3">&nbsp;&nbsp;&nbsp;&nbsp;prefix[i] = prefix[i-1] + arr[i];</span>
+          <span class="code-line" id="m4-l4">}</span>
+          <span class="code-line" id="m4-l5" style="color:#64748b;">// 查詢 [L, R]，公式統一，不需 if！</span>
+          <span class="code-line" id="m4-l6">int sum = prefix[R] - prefix[L-1];</span>
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top: 10px;">🌟 將陣列往右移一格，我們讓 <code>prefix[0] = 0</code>。當 <code>L = 1</code> 時 <code>L-1 = 0</code>，剛好減去安全的 <code>0</code>，程式碼更簡潔且不易出錯！</p>
+      </div>
+      <div>
+        <div class="ctrl-row" style="justify-content: center;">
+          <span>查詢 L =</span><input type="number" class="num-input" id="m4-L" value="1" min="1" max="5">
+          <span>, R =</span><input type="number" class="num-input" id="m4-R" value="3" min="1" max="5">
+          <button class="btn-run btn-action" id="btn-m4" onclick="runM4()">▶ 動畫計算 1-based Sum</button>
+        </div>
+        <div class="array-vis-wrap">
+          <div class="array-row">
+            <div class="array-label">arr</div>
+            <div class="array-vis" id="m4-arr"></div>
+          </div>
+          <div class="array-row">
+            <div class="array-label">prefix</div>
+            <div class="array-vis" id="m4-pref"></div>
+          </div>
+        </div>
+        <div class="out-box" id="m4-out" style="min-height:60px; color:var(--text-muted); font-style:italic;">— 即使 L=1 也不會越界了！ —</div>
+      </div>
+    </div>
+  </div>
 
-            // 進入 main
-            focusLine('L', MAX_LINES, 6, 'active-blue');
-            await sleep(800);
+</div>
 
-            // arr 初始化
-            focusLine('L', MAX_LINES, 7, 'active-yellow');
-            arr = [3, 1, 4, 1, 5, 9, 2];
-            updateWatch();
-            await sleep(800);
+<script>
+const BASE_ARR_0 = [3, 1, 4, 2, 5];
+const PREF_ARR_0 = [3, 4, 8, 10, 15]; 
 
-            // n 初始化
-            focusLine('L', MAX_LINES, 8, 'active-yellow');
-            n = 7;
-            updateWatch();
-            await sleep(800);
+const BASE_ARR_1 = [0, 3, 1, 4, 2, 5];
+const PREF_ARR_1 = [0, 3, 4, 8, 10, 15];
 
-            // prefix 宣告
-            focusLine('L', MAX_LINES, 11, 'active-yellow');
-            prefix = [0, 0, 0, 0, 0, 0, 0];
-            updateWatch();
-            await sleep(800);
+const sleep = ms => new Promise(res => setTimeout(res, ms));
+function hl(id, cls) { let el = document.getElementById(id); if(el) el.className = 'code-line ' + cls; }
+function clr(prefix, max) { for(let i=0; i<=max; i++) { let el = document.getElementById(prefix + i); if(el) el.className = 'code-line'; } }
 
-            // prefix[0]
-            focusLine('L', MAX_LINES, 14, 'active-yellow');
-            prefix[0] = arr[0];
-            updateWatch();
-            await sleep(800);
+function renderArray(containerId, data, emptyPref = false, fadeZero = false) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  data.forEach((val, i) => {
+    let isFaded = fadeZero && i === 0;
+    let html = `
+      <div class="arr-idx">[${i}]</div>
+      <div class="arr-val">${emptyPref ? '?' : val}</div>
+    `;
+    const col = document.createElement('div');
+    col.className = 'arr-cell-col' + (isFaded ? ' fade-col' : '') + (emptyPref ? ' empty-cell' : '');
+    col.id = `${containerId}-c${i}`;
+    col.innerHTML = html;
+    c.appendChild(col);
+  });
+}
 
-            // 計算迴圈
-            for (let i = 1; i < n; i++) {
-                i_val = i;
-                focusLine('L', MAX_LINES, 17, 'active-blue');
-                updateWatch();
-                await sleep(500);
+// 初始化渲染
+renderArray('m1-arr', BASE_ARR_0);
+renderArray('m1-pref', PREF_ARR_0, true);
+renderArray('m2-arr', BASE_ARR_0);
+renderArray('m2-pref', PREF_ARR_0);
+renderArray('m3-pref', PREF_ARR_0);
+renderArray('m4-arr', BASE_ARR_1, false, true); 
+renderArray('m4-pref', PREF_ARR_1, false, true); 
 
-                focusLine('L', MAX_LINES, 18, 'active-yellow');
-                prefix[i] = prefix[i-1] + arr[i];
-                updateWatch();
-                await sleep(600);
-            }
+// ── Module 1 (0-based Build) ──
+async function runM1() {
+  const btn = document.getElementById('btn-m1'); 
+  if(btn) btn.disabled = true;
+  clr('m1-l', 5); 
+  const out = document.getElementById('m1-out');
+  out.style.fontStyle = 'normal'; out.innerHTML = '';
+  
+  renderArray('m1-pref', PREF_ARR_0, true);
+  
+  // 修正：確保只亮單行
+  clr('m1-l', 5); hl('m1-l2', 'active-blue');
+  document.getElementById('m1-arr-c0').classList.add('active');
+  document.getElementById('m1-pref-c0').querySelector('.arr-val').textContent = BASE_ARR_0[0];
+  document.getElementById('m1-pref-c0').classList.remove('empty-cell');
+  document.getElementById('m1-pref-c0').classList.add('updated');
+  out.innerHTML = `> prefix[0] = arr[0] = ${BASE_ARR_0[0]}<br>`;
+  await sleep(1000);
+  
+  for(let i=1; i<5; i++) {
+    for(let k=0; k<5; k++) {
+      document.getElementById(`m1-pref-c${k}`).classList.remove('updated', 'active');
+      document.getElementById(`m1-arr-c${k}`).classList.remove('active');
+    }
+    
+    clr('m1-l', 5); hl('m1-l3', 'cursor'); await sleep(400); // 修正同步
+    
+    clr('m1-l', 5); hl('m1-l4', 'active-yellow'); // 修正同步
+    document.getElementById(`m1-pref-c${i-1}`).classList.add('active'); 
+    document.getElementById(`m1-arr-c${i}`).classList.add('active');    
+    await sleep(600);
+    
+    let sum = PREF_ARR_0[i-1] + BASE_ARR_0[i];
+    document.getElementById(`m1-pref-c${i}`).querySelector('.arr-val').textContent = sum;
+    document.getElementById(`m1-pref-c${i}`).classList.remove('empty-cell');
+    document.getElementById(`m1-pref-c${i}`).classList.add('updated');
+    out.innerHTML += `> prefix[${i}] = prefix[${i-1}] + arr[${i}] = ${PREF_ARR_0[i-1]} + ${BASE_ARR_0[i]} = ${sum}<br>`;
+    await sleep(800);
+  }
+  clr('m1-l', 5); 
+  for(let k=0; k<5; k++) {
+    document.getElementById(`m1-pref-c${k}`).classList.remove('updated', 'active');
+    document.getElementById(`m1-arr-c${k}`).classList.remove('active');
+  }
+  out.innerHTML += `<strong style="color:var(--green);">✅ 前綴和陣列建構完成！</strong>`;
+  if(btn) btn.disabled = false;
+}
 
-            // 輸出迴圈
-            let outStr = '';
-            for (let i = 0; i < n; i++) {
-                i_val = i;
-                focusLine('L', MAX_LINES, 22, 'active-blue');
-                updateWatch();
-                await sleep(400);
+// ── Module 2 (0-based Query) ──
+async function runM2() {
+  const btn = document.getElementById('btn-m2');
+  const L = parseInt(document.getElementById('m2-L').value);
+  const R = parseInt(document.getElementById('m2-R').value);
+  const out = document.getElementById('m2-out');
+  out.style.fontStyle = 'normal'; out.innerHTML = '';
+  clr('m2-l', 6);
+  
+  for(let k=0; k<5; k++) {
+    document.getElementById(`m2-arr-c${k}`).className = 'arr-cell-col';
+    document.getElementById(`m2-pref-c${k}`).className = 'arr-cell-col';
+  }
+  
+  if (L < 0 || R > 4 || L > R) {
+    out.innerHTML = `<strong style="color:var(--red);">❌ 錯誤：請確保 0 ≤ L ≤ R ≤ 4。</strong>`;
+    return;
+  }
+  if(btn) btn.disabled = true;
 
-                focusLine('L', MAX_LINES, 23, 'active-green');
-                outStr += prefix[i] + ' ';
-                document.getElementById('terminal-out').innerText = outStr;
-                await sleep(400);
-            }
+  clr('m2-l', 6); hl('m2-l0', 'active-yellow');
+  out.innerHTML = `> 準備查詢區間 arr[${L}] 到 arr[${R}] 的總和...<br>`;
+  await sleep(600);
+  
+  for(let i=L; i<=R; i++) {
+    document.getElementById(`m2-arr-c${i}`).classList.add('range-hl');
+    await sleep(200);
+  }
+  await sleep(500);
+  clr('m2-l', 6);
+  
+  if (L === 0) {
+    clr('m2-l', 6); hl('m2-l2', 'active-blue'); await sleep(500); // 修正同步
+    clr('m2-l', 6); hl('m2-l3', 'active-green'); // 修正同步
+    document.getElementById(`m2-pref-c${R}`).classList.add('target-r');
+    out.innerHTML += `> L == 0，直接讀取 <strong>prefix[R]</strong>。<br>> Sum = prefix[${R}] = <strong>${PREF_ARR_0[R]}</strong>`;
+  } else {
+    clr('m2-l', 6); hl('m2-l2', 'cursor'); await sleep(500); // 修正同步
+    clr('m2-l', 6); hl('m2-l4', 'active-blue'); await sleep(500); // 修正同步
+    clr('m2-l', 6); hl('m2-l5', 'active-green'); // 修正同步
+    
+    document.getElementById(`m2-pref-c${R}`).classList.add('target-r');
+    await sleep(600);
+    document.getElementById(`m2-pref-c${L-1}`).classList.add('target-l');
+    await sleep(600);
+    
+    out.innerHTML += `> L > 0，執行 <strong>prefix[R] - prefix[L-1]</strong>。<br>> Sum = prefix[${R}] - prefix[${L-1}]<br>> Sum = ${PREF_ARR_0[R]} - ${PREF_ARR_0[L-1]} = <strong>${PREF_ARR_0[R] - PREF_ARR_0[L-1]}</strong>`;
+  }
+  
+  await sleep(1500);
+  clr('m2-l', 6);
+  if(btn) btn.disabled = false;
+}
 
-            focusLine('L', MAX_LINES, 26, 'active-blue');
-            await sleep(800);
+// ── Module 3 (0-based OOB) ──
+async function runM3() {
+  const btn = document.getElementById('btn-m3');
+  if(btn) btn.disabled = true;
+  
+  const out = document.getElementById('m3-out');
+  out.style.fontStyle = 'normal'; out.innerHTML = '';
+  const oob = document.getElementById('m3-oob');
+  
+  clr('m3-l', 2);
+  for(let k=0; k<5; k++) document.getElementById(`m3-pref-c${k}`).className = 'arr-cell-col';
+  oob.classList.remove('triggered');
+  
+  clr('m3-l', 2); hl('m3-l1', 'active-blue'); // 修正同步
+  out.innerHTML = '> 已設定 L = 0, R = 3<br>';
+  await sleep(800);
+  
+  clr('m3-l', 2); hl('m3-l2', 'active-yellow'); // 修正同步
+  document.getElementById(`m3-pref-c3`).classList.add('target-r'); 
+  out.innerHTML += '> 準備讀取 prefix[3] - prefix[-1]...<br>';
+  await sleep(1000);
+  
+  clr('m3-l', 2); hl('m3-l2', 'active-red'); // 修正同步
+  oob.classList.add('triggered');
+  let trash = Math.floor(Math.random() * 9000) - 4000;
+  
+  out.innerHTML += `<strong>💀 越界錯誤！</strong>嘗試讀取 <code>prefix[-1]</code>。<br>> 取得未定義的垃圾值：${trash}<br>> 計算結果：${PREF_ARR_0[3]} - (${trash}) = <strong style="color:var(--red);">${PREF_ARR_0[3] - trash} (完全錯誤)</strong>`;
+  
+  await sleep(1500);
+  clr('m3-l', 2);
+  if(btn) btn.disabled = false;
+}
 
-            focusLine('L', MAX_LINES, 27, 'active-green');
-            document.getElementById('runBtn').disabled = false;
-        }
-    </script>
+// ── Module 4 (1-based Query) ──
+async function runM4() {
+  const btn = document.getElementById('btn-m4');
+  const L = parseInt(document.getElementById('m4-L').value);
+  const R = parseInt(document.getElementById('m4-R').value);
+  const out = document.getElementById('m4-out');
+  out.style.fontStyle = 'normal'; out.innerHTML = '';
+  clr('m4-l', 6);
+  
+  for(let k=0; k<=5; k++) {
+    document.getElementById(`m4-arr-c${k}`).className = 'arr-cell-col' + (k===0 ? ' fade-col' : '');
+    document.getElementById(`m4-pref-c${k}`).className = 'arr-cell-col' + (k===0 ? ' fade-col' : '');
+  }
+  
+  if (L < 1 || R > 5 || L > R) {
+    out.innerHTML = `<strong style="color:var(--red);">❌ 錯誤：請確保 1 ≤ L ≤ R ≤ 5。</strong>`;
+    return;
+  }
+  if(btn) btn.disabled = true;
+
+  clr('m4-l', 6); hl('m4-l5', 'active-yellow'); // 修正同步
+  out.innerHTML = `> 準備查詢區間 arr[${L}] 到 arr[${R}] 的總和...<br>`;
+  await sleep(600);
+  
+  for(let i=L; i<=R; i++) {
+    document.getElementById(`m4-arr-c${i}`).classList.add('range-hl');
+    await sleep(200);
+  }
+  await sleep(500);
+  
+  clr('m4-l', 6); hl('m4-l6', 'active-green'); // 修正同步
+  document.getElementById(`m4-pref-c${R}`).classList.add('target-r');
+  await sleep(600);
+  document.getElementById(`m4-pref-c${L-1}`).classList.add('target-l');
+  await sleep(600);
+  
+  if(L === 1) {
+    out.innerHTML += `> L = 1。<br>> Sum = prefix[${R}] - prefix[0]<br>> Sum = ${PREF_ARR_1[R]} - 0 = <strong>${PREF_ARR_1[R]}</strong><br><strong style="color:var(--green);">✨ 由於 prefix[0]=0，即使不寫 if 也能自動正確計算！</strong>`;
+  } else {
+    out.innerHTML += `> L = ${L}。<br>> Sum = prefix[${R}] - prefix[${L-1}]<br>> Sum = ${PREF_ARR_1[R]} - ${PREF_ARR_1[L-1]} = <strong>${PREF_ARR_1[R] - PREF_ARR_1[L-1]}</strong>`;
+  }
+  
+  await sleep(1500);
+  clr('m4-l', 6);
+  if(btn) btn.disabled = false;
+}
+</script>
 </body>
 </html>
