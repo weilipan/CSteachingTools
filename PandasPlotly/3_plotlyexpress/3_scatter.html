@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="../../theme.css" />
     <script src="../../layout.js" defer></script>
     
-    <!-- 引入 Plotly.js 以在網頁上動態渲染範例圖表 -->
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!-- 引入 Plotly.js 以在網頁上動態渲染範例圖表 (使用 cdnjs 備用來源防止阻擋) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
     
     <style>
         .code-block {
@@ -138,7 +138,7 @@ df = pd.DataFrame(data)</code></pre>
 
         <div class="card" style="margin-bottom: 20px;">
             <h2>2. 互動學習：px.scatter 參數實驗室 🧪</h2>
-            <p><strong>親自動手玩玩看！</strong> 觀察如何利用顏色、大小與形狀，在一張平面圖表內呈現高達 <strong>5 個維度</strong>的資料。</p>
+            <p><strong>親自動手玩玩看！</strong> 觀察如何利用顏色、大小與形狀，在一張平面圖表內呈現高達 <strong>5 個維度</strong>的資料，並加入趨勢線觀察線性關係。</p>
             
             <div class="playground">
                 <!-- 左側：控制面板與程式碼 -->
@@ -165,6 +165,21 @@ df = pd.DataFrame(data)</code></pre>
                                 <option value="週末">'週末' (區分平假日)</option>
                             </select>
                         </div>
+                        <div class="control-group">
+                            <label>📈 trendline (加入趨勢線)</label>
+                            <select id="sel-trendline">
+                                <option value="None">無</option>
+                                <option value="ols">'ols' (線性迴歸/最小平方法)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>🌐 trendline_scope (趨勢線計算範圍)</label>
+                            <select id="sel-scope">
+                                <option value="trace">'trace' (預設：各群體獨立畫線)</option>
+                                <option value="overall">'overall' (全體資料畫一條總線)</option>
+                            </select>
+                            <small style="color: #666; display: block; margin-top: 4px;">※ 需同時啟用 color 與 trendline 才有差異</small>
+                        </div>
                     </div>
                     
                     <pre class="code-block"><code id="dynamic-code">載入中...</code></pre>
@@ -186,6 +201,8 @@ df = pd.DataFrame(data)</code></pre>
                     <li><span class="param-name">size</span>：散佈圖的必殺技！給定一個數值欄位，點的大小就會隨之改變，一秒將散佈圖升級為<strong>「氣泡圖 (Bubble Chart)」</strong>。</li>
                     <li><span class="param-name">size_max</span>：搭配 size 使用，用來限制圖表中最大氣泡的尺寸（像素），避免數值過大時氣泡互相遮擋。</li>
                     <li><span class="param-name">symbol</span>：將資料點的形狀依據欄位改變（如圓形、菱形、方形）。這對於印製成黑白文件時分辨類別非常實用。</li>
+                    <li><span class="param-name">trendline</span>：設定為 <code>'ols'</code> 時，會自動計算並畫出線性迴歸趨勢線，幫助觀察氣溫與銷量的線性關係。</li>
+                    <li><span class="param-name">trendline_scope</span>：有使用 <code>color</code> 分組時，預設幫各群體獨立畫線 (<code>'trace'</code>)。改為 <code>'overall'</code> 則無視分組，直接畫出全體趨勢線。</li>
                     <li><span class="param-name">opacity</span>：設定資料點的透明度 (0.0~1.0)，在氣泡圖或是資料點非常密集時，調整透明度可以幫助我們看出重疊區塊的分佈密度。</li>
                 </ul>
             </div>
@@ -198,6 +215,8 @@ df = pd.DataFrame(data)</code></pre>
             const selColor = document.getElementById('sel-color');
             const selSize = document.getElementById('sel-size');
             const selSymbol = document.getElementById('sel-symbol');
+            const selTrendline = document.getElementById('sel-trendline');
+            const selScope = document.getElementById('sel-scope');
             const codeBlock = document.getElementById('dynamic-code');
 
             // 原始資料設定
@@ -211,10 +230,39 @@ df = pd.DataFrame(data)</code></pre>
             const tr2 = [120, 180, 220, 280, 350];
             const wk2 = ['否', '否', '是', '否', '是'];
 
+            // OLS 迴歸計算函數
+            function calculateOLS(x, y) {
+                let n = x.length;
+                let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+                for (let i = 0; i < n; i++) {
+                    sumX += x[i]; sumY += y[i];
+                    sumXY += x[i] * y[i]; sumXX += x[i] * x[i];
+                }
+                let slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+                let intercept = (sumY - slope * sumX) / n;
+                return { slope, intercept };
+            }
+
+            // 產生趨勢線 Trace
+            function getTrendlineTrace(xArr, yArr, name, color, isDash=false) {
+                let ols = calculateOLS(xArr, yArr);
+                let minX = Math.min(...xArr);
+                let maxX = Math.max(...xArr);
+                return {
+                    type: 'scatter', mode: 'lines',
+                    x: [minX, maxX], y: [ols.slope * minX + ols.intercept, ols.slope * maxX + ols.intercept],
+                    name: name + ' (趨勢線)',
+                    line: { color: color, width: 3, dash: isDash ? 'dash' : 'solid' },
+                    showlegend: false, hoverinfo: 'skip'
+                };
+            }
+
             function updatePlayground() {
                 const colorVal = selColor.value;
                 const sizeVal = selSize.value;
                 const symVal = selSymbol.value;
+                const trendlineVal = selTrendline.value;
+                const scopeVal = selScope.value;
 
                 // 1. 動態生成 Python 程式碼
                 let codeStr = `fig = px.scatter(
@@ -223,95 +271,118 @@ df = pd.DataFrame(data)</code></pre>
     y='冰咖啡銷量 (杯)',`;
                 
                 if (colorVal === '分店') {
-                    codeStr += `
-    color='分店',             # 依分店分色`;
+                    codeStr += `\n    color='分店',             # 依分店分色`;
                 }
 
                 if (sizeVal === '客流量') {
-                    codeStr += `
-    size='客流量 (人)',        # 變身氣泡圖
-    size_max=25,             # 限制氣泡最大尺寸`;
+                    codeStr += `\n    size='客流量 (人)',        # 變身氣泡圖\n    size_max=25,             # 限制氣泡最大尺寸`;
                 }
 
                 if (symVal === '週末') {
-                    codeStr += `
-    symbol='週末',            # 依週末改變形狀`;
+                    codeStr += `\n    symbol='週末',            # 依週末改變形狀`;
                 }
 
-                codeStr += `
-    opacity=0.7,             # 增加透明度防遮擋
-    title='氣溫與冰咖啡銷量散佈圖'
-)
-fig.show()`;
+                if (trendlineVal === 'ols') {
+                    codeStr += `\n    trendline='ols',          # 啟用線性迴歸趨勢線`;
+                    if (colorVal === '分店' && scopeVal === 'overall') {
+                        codeStr += `\n    trendline_scope='overall',# 無視分組計算整體趨勢`;
+                    }
+                }
+
+                codeStr += `\n    opacity=0.7,             # 增加透明度防遮擋\n    title='氣溫與冰咖啡銷量散佈圖'\n)\nfig.show()`;
                 
                 codeBlock.innerText = codeStr;
 
-                // 2. 動態更新 Plotly 圖表
-                // 將面積轉換為氣泡半徑大小以模擬 size_max 視覺效果
-                let sizeArr1 = sizeVal === '客流量' ? tr1.map(v => Math.max(8, Math.sqrt(v)*1.5)) : 10;
-                let sizeArr2 = sizeVal === '客流量' ? tr2.map(v => Math.max(8, Math.sqrt(v)*1.5)) : 10;
+                // 2. 錯誤捕捉與動態更新 Plotly 圖表
+                try {
+                    if (typeof Plotly === 'undefined') {
+                        document.getElementById('interactive-chart').innerHTML = 
+                            '<div style="color:#d73a49; padding:20px; text-align:center; margin-top:50px;">' +
+                            '<h3>⚠️ 無法載入 Plotly 繪圖引擎</h3><p>請檢查網路連線或 CDN 阻擋情況。</p></div>';
+                        return;
+                    }
 
-                let symArr1 = symVal === '週末' ? wk1.map(w => w === '是' ? 'diamond' : 'circle') : 'circle';
-                let symArr2 = symVal === '週末' ? wk2.map(w => w === '是' ? 'diamond' : 'circle') : 'circle';
+                    // 處理大小與形狀陣列
+                    let sizeArr1 = sizeVal === '客流量' ? tr1.map(v => Math.max(8, Math.sqrt(v)*1.5)) : 10;
+                    let sizeArr2 = sizeVal === '客流量' ? tr2.map(v => Math.max(8, Math.sqrt(v)*1.5)) : 10;
+                    let symArr1 = symVal === '週末' ? wk1.map(w => w === '是' ? 'diamond' : 'circle') : 'circle';
+                    let symArr2 = symVal === '週末' ? wk2.map(w => w === '是' ? 'diamond' : 'circle') : 'circle';
 
-                let trace1 = {
-                    x: x1, y: y1, mode: 'markers', name: '台北',
-                    marker: { color: '#3498db', size: sizeArr1, symbol: symArr1, opacity: 0.7, line: {width: 1, color: 'white'} },
-                    text: tr1.map((v, i) => `分店: 台北<br>客流量: ${v}<br>週末: ${wk1[i]}`),
-                    hovertemplate: '氣溫: %{x}℃<br>銷量: %{y}杯<br>%{text}<extra></extra>'
-                };
-
-                let trace2 = {
-                    x: x2, y: y2, mode: 'markers', name: '台中',
-                    marker: { color: '#e74c3c', size: sizeArr2, symbol: symArr2, opacity: 0.7, line: {width: 1, color: 'white'} },
-                    text: tr2.map((v, i) => `分店: 台中<br>客流量: ${v}<br>週末: ${wk2[i]}`),
-                    hovertemplate: '氣溫: %{x}℃<br>銷量: %{y}杯<br>%{text}<extra></extra>'
-                };
-
-                let dataToRender = [];
-                if (colorVal === '分店') {
-                    dataToRender = [trace1, trace2];
-                } else {
-                    // 若無分色，則合併繪製單一圖例
-                    let combinedTrace = {
-                        x: [...x1, ...x2], y: [...y1, ...y2], mode: 'markers', name: '全部分店',
-                        marker: { 
-                            color: '#9b59b6', 
-                            size: sizeVal === '客流量' ? [...sizeArr1, ...sizeArr2] : 10, 
-                            symbol: symVal === '週末' ? [...symArr1, ...symArr2] : 'circle', 
-                            opacity: 0.7, 
-                            line: {width: 1, color: 'white'} 
-                        },
-                        text: [...trace1.text, ...trace2.text],
+                    let trace1 = {
+                        x: x1, y: y1, mode: 'markers', name: '台北',
+                        marker: { color: '#3498db', size: sizeArr1, symbol: symArr1, opacity: 0.7, line: {width: 1, color: 'white'} },
+                        text: tr1.map((v, i) => `分店: 台北<br>客流量: ${v}<br>週末: ${wk1[i]}`),
                         hovertemplate: '氣溫: %{x}℃<br>銷量: %{y}杯<br>%{text}<extra></extra>'
                     };
-                    dataToRender = [combinedTrace];
+
+                    let trace2 = {
+                        x: x2, y: y2, mode: 'markers', name: '台中',
+                        marker: { color: '#e74c3c', size: sizeArr2, symbol: symArr2, opacity: 0.7, line: {width: 1, color: 'white'} },
+                        text: tr2.map((v, i) => `分店: 台中<br>客流量: ${v}<br>週末: ${wk2[i]}`),
+                        hovertemplate: '氣溫: %{x}℃<br>銷量: %{y}杯<br>%{text}<extra></extra>'
+                    };
+
+                    let dataToRender = [];
+                    let allX = [...x1, ...x2];
+                    let allY = [...y1, ...y2];
+
+                    if (colorVal === '分店') {
+                        dataToRender = [trace1, trace2];
+                        if (trendlineVal === 'ols') {
+                            if (scopeVal === 'overall') {
+                                dataToRender.push(getTrendlineTrace(allX, allY, '整體', '#2c3e50', true));
+                            } else {
+                                dataToRender.push(getTrendlineTrace(x1, y1, '台北', '#2980b9'));
+                                dataToRender.push(getTrendlineTrace(x2, y2, '台中', '#c0392b'));
+                            }
+                        }
+                    } else {
+                        let combinedTrace = {
+                            x: allX, y: allY, mode: 'markers', name: '全部分店',
+                            marker: { 
+                                color: '#9b59b6', 
+                                size: sizeVal === '客流量' ? [...sizeArr1, ...sizeArr2] : 10, 
+                                symbol: symVal === '週末' ? [...symArr1, ...symArr2] : 'circle', 
+                                opacity: 0.7, line: {width: 1, color: 'white'} 
+                            },
+                            text: [...trace1.text, ...trace2.text],
+                            hovertemplate: '氣溫: %{x}℃<br>銷量: %{y}杯<br>%{text}<extra></extra>'
+                        };
+                        dataToRender = [combinedTrace];
+                        if (trendlineVal === 'ols') {
+                            dataToRender.push(getTrendlineTrace(allX, allY, '整體', '#8e44ad'));
+                        }
+                    }
+
+                    let layout = {
+                        title: { text: '氣溫與冰咖啡銷量散佈圖', font: {size: 18} },
+                        margin: {t: 60, l: 60, r: 40, b: 60},
+                        plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
+                        xaxis: {title: '氣溫 (℃)', gridcolor: '#e1e4e8'},
+                        yaxis: {title: '冰咖啡銷量 (杯)', gridcolor: '#e1e4e8'},
+                        hovermode: 'closest'
+                    };
+
+                    Plotly.newPlot('interactive-chart', dataToRender, layout, {responsive: true});
+                } catch (error) {
+                    document.getElementById('interactive-chart').innerHTML = 
+                        '<div style="color:red; padding:20px;">繪圖發生錯誤：' + error.message + '</div>';
                 }
-
-                let layout = {
-                    title: { text: '氣溫與冰咖啡銷量散佈圖', font: {size: 18} },
-                    margin: {t: 60, l: 60, r: 40, b: 60},
-                    plot_bgcolor: 'rgba(0,0,0,0)',
-                    paper_bgcolor: 'rgba(0,0,0,0)',
-                    xaxis: {title: '氣溫 (℃)', gridcolor: '#e1e4e8'},
-                    yaxis: {title: '冰咖啡銷量 (杯)', gridcolor: '#e1e4e8'},
-                    hovermode: 'closest'
-                };
-
-                Plotly.newPlot('interactive-chart', dataToRender, layout, {responsive: true});
             }
 
             // 綁定事件監聽器
             selColor.addEventListener('change', updatePlayground);
             selSize.addEventListener('change', updatePlayground);
             selSymbol.addEventListener('change', updatePlayground);
+            selTrendline.addEventListener('change', updatePlayground);
+            selScope.addEventListener('change', updatePlayground);
 
-            // 初始載入渲染，加上小延遲確保外層 Flex 容器已定位
             setTimeout(updatePlayground, 100);
             
-            // 監聽視窗大小改變，強制重新繪圖確保 RWD
             window.addEventListener('resize', function() {
-                Plotly.Plots.resize('interactive-chart');
+                if (typeof Plotly !== 'undefined') {
+                    Plotly.Plots.resize('interactive-chart');
+                }
             });
         });
     </script>
